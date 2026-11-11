@@ -1,4 +1,4 @@
-const CACHE = "fc26-lig-v2";
+const CACHE = "fc26-lig-v7";
 const FILES = [
   "./",
   "./index.html",
@@ -9,8 +9,13 @@ const FILES = [
   "./apple-touch-icon.png"
 ];
 
+// Tek bir dosya eksik/404 olsa bile kurulum tamamen başarısız olmasın (addAll hepsini iptal eder).
 self.addEventListener("install", e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
+  e.waitUntil(
+    caches.open(CACHE)
+      .then(c => Promise.all(FILES.map(f => c.add(f).catch(() => {}))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener("activate", e => {
@@ -21,11 +26,13 @@ self.addEventListener("activate", e => {
   );
 });
 
-// Önce ağ, olmazsa önbellek: index.html güncellenince eski sürümde takılmaz, internet yokken de açılır.
+// Önce ağ, olmazsa önbellek. GitHub Pages _headers dosyasını okumaz ve dosyaları ~10 dk tarayıcı
+// önbelleğinde tutar; bu yüzden ağ isteğinde HTTP önbelleğini atlıyoruz ({cache:"no-cache"}),
+// böylece index.html güncellenince hemen yeni sürüm gelir. İnternet yokken önbellekten açılır.
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request, { cache: "no-cache" })
       .then(res => {
         if (res && res.ok && new URL(e.request.url).origin === location.origin) {
           const copy = res.clone();

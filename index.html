@@ -283,6 +283,7 @@ button{transition:transform .08s}button:active{transform:scale(.96)}
 @keyframes rise{from{opacity:0;transform:translateY(12px)}}
 .hero.gold{position:relative;overflow:hidden}
 .hero.gold::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.65) 50%,transparent 65%);background-size:250% 100%;animation:shine 2.4s ease-in-out 1 both}
+.fwx{position:fixed;inset:0;width:100%;height:100%;z-index:30;pointer-events:none}
 .cfx{position:fixed;inset:0;z-index:30;pointer-events:none;overflow:hidden}
 .cfx i{position:absolute;top:-16px;height:14px;opacity:0;animation:cfx 2.4s ease-in both}
 @keyframes cfx{0%{opacity:0;transform:translateY(0) rotate(0)}10%{opacity:1}100%{opacity:0;transform:translateY(105vh) rotate(720deg)}}
@@ -816,7 +817,7 @@ function cmpCard(){const S=store.seasons;if(S.length<2)return "";
   return cd("Sezon karşılaştır",`<div class="cmp"><select id="ca" class="sel">${o(a)}</select><select id="cb" class="sel">${o(b)}</select></div>`+rows.map(([l,f])=>`<div class="row"><span class="lb" style="width:74px">${l}</span><span class="n">${esc(f(a))}</span><span class="n">${esc(f(b))}</span></div>`).join(""))}
 function setView(){const dk=store.theme||"";
   return cd("Tema",`<div class="bar" style="margin:0">${[["","Otomatik"],["light","Taktik tahtası"],["dark","Gece stadyumu"]].map(([v,l])=>`<button class="btn ${dk==v?"on":""}" data-a="theme" data-v="${v}">${l}</button>`).join("")}</div>`)
-  +cd("Hareket",`<div class="note" style="margin:0 0 6px">Sekme geçişi, kart parlaması, kura ve takım seçimi animasyonu, konfeti.</div><div class="bar" style="margin:0">${[[1,"Açık"],[0,"Kapalı"]].map(([v,l])=>`<button class="btn ${(store.motion===0?0:1)==v?"on":""}" data-a="mot" data-v="${v}">${l}</button>`).join("")}</div>`)
+  +cd("Hareket",`<div class="note" style="margin:0 0 6px">Sekme geçişi, kart parlaması, kura ve takım seçimi animasyonu, konfeti, galibiyet havai fişeği.</div><div class="bar" style="margin:0">${[[1,"Açık"],[0,"Kapalı"]].map(([v,l])=>`<button class="btn ${(store.motion===0?0:1)==v?"on":""}" data-a="mot" data-v="${v}">${l}</button>`).join("")}</div>`)
   +cd("Yedekleme",`<div class="note" style="margin:0 0 6px">Sezonlar sadece bu tarayıcıda saklanır. ${bkInfo()}</div><div class="bar"><button class="btn p" data-a="exf">Yedeği dosya olarak kaydet</button><button class="btn" data-a="imfb">Dosyadan yükle</button></div><input type="file" id="imf" accept=".json,application/json,text/plain" hidden>${st.bkadv?`<div class="rt">Yedek kodu (dosya kullanamıyorsan)</div><textarea id="bk" class="f" rows="4" placeholder="Yedek kodu burada görünür ya da buraya yapıştır">${st.bk?esc(st.bk):""}</textarea><div class="bar"><button class="btn" data-a="ex">Yedek oluştur</button><button class="btn" data-a="cpb">Kopyala</button><button class="btn" data-a="im">Geri yükle</button></div><div class="bar" style="margin:0"><button class="chip" data-a="bkadv">Yedek kodunu gizle</button></div>`:`<div class="bar" style="margin:8px 0 0"><button class="chip" data-a="bkadv">Yedek kodu ile (gelişmiş)</button></div>`}`)
   +rcvCard()+trashCard()+appCard()
   +cd("Takım havuzu",`<div class="note" style="margin:0">${T.length} takım · ${new Set(T.map(t=>t.c)).size} ülke. Genel, hücum, orta saha ve defans güçleri oyundaki kulüp listesinden alındı. Brezilya takımları dahil değil.</div>`)
@@ -1374,6 +1375,39 @@ document.addEventListener("pointermove",e=>{
 document.addEventListener("pointerup",tcReset);document.addEventListener("pointercancel",tcReset);
 document.addEventListener("pointerout",e=>{const w=e.target.closest&&e.target.closest(".tcw");if(w&&!(e.relatedTarget&&e.relatedTarget.closest&&e.relatedTarget.closest(".tcw")))tcReset()});
 
+/* ---------- HAVAI FİŞEK (galibiyet) ---------- */
+function fireworks(lv){if(rm())return;
+  const cv=document.createElement("canvas");cv.className="fwx";cv.setAttribute("aria-hidden","true");
+  const dpr=Math.min(window.devicePixelRatio||1,2),W=innerWidth,H=innerHeight;
+  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);document.body.appendChild(cv);
+  const c=cv.getContext("2d");if(!c){cv.remove();return}
+  c.scale(dpr,dpr);
+  const PAL=[["#f8e08a","#d4a017"],["#3ee6a8","#0f9d6b"],["#ff4fa3","#ff9ad0"],["#ff7a7a","#ffb347"],["#7ab8ff","#c58bff"]];
+  const nb=lv>=3?9:lv==2?7:5,per=lv>=3?100:lv==2?85:70,rk=[],P=[];
+  const sched=rg(nb).map(i=>i*340+Math.random()*180);
+  const t0=performance.now();let last=t0,li=0;
+  function boom(x,y){const pal=PAL[Math.random()*PAL.length|0],ring=Math.random()<.4;
+    for(let i=0;i<per;i++){const a=Math.PI*2*i/per+Math.random()*.08,v=ring?3.6:1.2+Math.random()*3.8;
+      P.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,d:.007+Math.random()*.01,c:pal[i%2],r:1.3+Math.random()*1.4})}}
+  function frame(now){
+    const dt=Math.min(40,now-last),k=dt/16.7;last=now;
+    while(li<sched.length&&now-t0>=sched[li]){li++;
+      rk.push({x:W*(.12+Math.random()*.76),y:H+8,ty:H*(.14+Math.random()*.3),vy:-(H*.016+Math.random()*3)})}
+    c.globalCompositeOperation="destination-out";c.fillStyle="rgba(0,0,0,.2)";c.fillRect(0,0,W,H);
+    c.globalCompositeOperation="source-over";
+    for(let i=rk.length-1;i>=0;i--){const r=rk[i];r.y+=r.vy*k;r.vy*=Math.pow(.985,k);
+      c.globalAlpha=1;c.fillStyle="#f5b301";c.beginPath();c.arc(r.x,r.y,2,0,6.2832);c.fill();
+      if(r.y<=r.ty||r.vy>-2){boom(r.x,r.y);rk.splice(i,1)}}
+    for(let i=P.length-1;i>=0;i--){const p=P[i];
+      p.vx*=Math.pow(.985,k);p.vy=p.vy*Math.pow(.985,k)+.045*k;p.x+=p.vx*k;p.y+=p.vy*k;p.l-=p.d*k;
+      if(p.l<=0){P.splice(i,1);continue}
+      c.globalAlpha=Math.min(1,p.l*1.4);c.fillStyle=p.c;c.beginPath();c.arc(p.x,p.y,p.r,0,6.2832);c.fill()}
+    c.globalAlpha=1;
+    if(li<sched.length||rk.length||P.length)requestAnimationFrame(frame);else cv.remove()}
+  requestAnimationFrame(frame);
+  try{navigator.vibrate&&navigator.vibrate([60,40,60,40,160])}catch(e){}
+  setTimeout(()=>cv.remove(),9000)}
+
 /* ---------- KONFETİ ---------- */
 function confetti(){if(rm())return;
   const d=document.createElement("div");d.className="cfx";d.setAttribute("aria-hidden","true");
@@ -1436,7 +1470,7 @@ document.addEventListener("click",e=>{
   else if(a=="msave"){const op=st.mop;if(op==null)return;
     const m={id:Date.now(),opp:op,on:T[op].n,rd:st.mrd,lg:legInfo(s).lg,gf:st.mg||0,ga:st.mo||0,sc:Object.fromEntries(Object.entries(st.msc||{}).filter(e=>e[1]>0))};
     {const pr=predict(s,op);if(pr)m.pr=[pr.w,pr.d,pr.l]}Object.keys(m.sc).forEach(n=>{if(!s.pl.some(p=>p.n==n))s.pl.push({n,g:0,a:0})});
-    s.mt.push(m);mApply(s,m,1);st.mg=0;st.mo=0;st.msc={};st.mop=null;st.mlg=null;st.qs=false;un="Kaydedildi · "+m.on+" "+m.gf+"–"+m.ga}
+    s.mt.push(m);mApply(s,m,1);st.mg=0;st.mo=0;st.msc={};st.mop=null;st.mlg=null;st.qs=false;un="Kaydedildi · "+m.on+" "+m.gf+"–"+m.ga;{const df=m.gf-m.ga;st.fw=df>0?(df>=3?3:df==2?2:1):0}}
   else if(a=="mdel"){const m=s.mt.find(x=>x.id==id);if(m){s.mt=s.mt.filter(x=>x.id!=id);mApply(s,m,-1);un="Maç silindi"}}
   else if(a=="kurag"){mkImg("kura",s);return}
   else if(a=="karne"){mkImg("karne",store.seasons.find(y=>y.id==id)||s);return}
@@ -1515,7 +1549,7 @@ document.addEventListener("click",e=>{
   else if(a=="rst"){ask("Tüm sezonlar, maçlar ve ayarlar silinecek. Önce yedek almanı öneririm. Devam edilsin mi?",()=>resetAll());render();return}
   else if(a=="sum")st.sum=id;
   else return;
-  save();render();flush(un,snap);if(st.cel){st.cel=0;scrollTo(0,0);confetti()}if(a=="gofin"){const e=$("fincard");if(e)e.scrollIntoView({block:"start"})}
+  save();render();flush(un,snap);if(st.cel){st.cel=0;scrollTo(0,0);confetti()}if(st.fw){const f=st.fw;st.fw=0;fireworks(f)}if(a=="gofin"){const e=$("fincard");if(e)e.scrollIntoView({block:"start"})}
   if(a=="next"){try{const e=document.querySelector(".card.hl");if(e&&e.scrollIntoView)e.scrollIntoView({block:"center",behavior:rm()?"auto":"smooth"})}catch(x){}}});
 document.addEventListener("change",e=>{
   hideToast();
