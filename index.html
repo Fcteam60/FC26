@@ -409,7 +409,7 @@ button{transition:transform .08s}button:active{transform:scale(.96)}
 <div id="dlg"></div>
 <script>
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="8",ELK="fc26lig4_log";let SWR=null;
+const VER="9",ELK="fc26lig4_log";let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -598,6 +598,8 @@ let st={tab:0,dr:null,k:0,G:null},store=null,loadWarn="";
  else if(r4===null){try{const r=localStorage.getItem("fc26lig3");if(r){const o=JSON.parse(r);if(okS(o))store=mig(o)}}catch(e){}}}
 if(!store)store={v:4,tn:TN,cur:1,nx:1,seasons:[mk(1,1)]};
 const K5=["w","d","l","gf","ga"];
+const mres=m=>m.gf>m.ga?"w":m.gf<m.ga?"l":(m.pf!=null&&m.pa!=null&&m.pf!==m.pa?(m.pf>m.pa?"w":"l"):"d");
+const mscTxt=m=>`${m.gf}–${m.ga}${m.pf!=null&&m.pa!=null?` (P ${m.pf}–${m.pa})`:m.et?" (UZ)":""}`;
 function ixOf(n){if(IX[n]!==undefined)return IX[n];const a=ALIAS[n];return a!==undefined&&IX[a]!==undefined?IX[a]:undefined}
 function msum(s){const r={w:0,d:0,l:0,gf:0,ga:0};(s.mt||[]).forEach(m=>{const a=+m.gf||0,b=+m.ga||0;r[mres(m)]++;r.gf+=a;r.ga+=b});return r}
 function reTs(s){const m=msum(s),b=s.tb||{};s.ts=s.ts||{};K5.forEach(k=>{s.ts[k]=Math.max(0,(+b[k]||0)+m[k])})}
@@ -1075,8 +1077,6 @@ function teamView(s){
 
 const CF=[["g","Gol"],["a","Asist"],["m","Maç"],["mom","MOTM"],["k","Kart"]];
 const rds=c=>{const o=c.gs?["Grup"]:[];for(let t=adv(c);t>=2;t/=2)o.push(RN[t]);return o};
-const mres=m=>m.gf>m.ga?"w":m.gf<m.ga?"l":(m.pf!=null&&m.pa!=null&&m.pf!==m.pa?(m.pf>m.pa?"w":"l"):"d");
-const mscTxt=m=>`${m.gf}–${m.ga}${m.pf!=null&&m.pa!=null?` (P ${m.pf}–${m.pa})`:m.et?" (UZ)":""}`;
 function mApply(s,m,sg){reTs(s);
   const pl=new Set();
   Object.entries(m.sc||{}).forEach(([n,g])=>{if(g>0)pl.add(n);const p=s.pl.find(x=>x.n==n);if(p)p.g=Math.max(0,(p.g||0)+sg*g)});
