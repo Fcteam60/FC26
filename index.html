@@ -418,7 +418,7 @@ button{transition:transform .08s}button:active{transform:scale(.96)}
 <div id="dlg"></div>
 <script>
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="13",ELK="fc26lig4_log";let SWR=null;
+const VER="13.1",ELK="fc26lig4_log";let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -435,6 +435,9 @@ const SQP={GK:"K",CB:"D",LB:"D",RB:"D",LWB:"D",RWB:"D",CDM:"M",CM:"M",CAM:"M",LM
 const SQC={};
 function squadOf(i){const t=T[i];if(!t)return [];if(SQC[t.n])return SQC[t.n];const raw=SQ[t.n];
   return SQC[t.n]=raw?raw.split(";").map(x=>{const q=x.split(",");return{n:q[0],p:q[1],o:+q[2],a:+q[3],j:+q[4],t:q[5],g:SQP[q[1]]||"M"}}):[]}
+const nz=t=>String(t||"").toLocaleLowerCase("tr").replace(/ı/g,"i").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ø/g,"o").replace(/ł/g,"l").replace(/đ/g,"d");
+const sqFind=(i,n)=>i==null?null:(squadOf(i).find(p=>nz(p.n)==nz(n))||null);
+const sqFindAny=n=>{const k=nz(n);if(!k)return null;for(let i=0;i<T.length;i++){const p=squadOf(i).find(x=>nz(x.n)==k);if(p)return{p,i}}return null};
 const EU=new Set("ESP ENG ITA GER FRA POR TUR NED BEL SCO GRE CZE UKR CRO DEN".split(" "));
 const CN={ENG:["İngiltere","\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}"],SCO:["İskoçya","\u{1F3F4}\u{E0067}\u{E0062}\u{E0073}\u{E0063}\u{E0074}\u{E007F}"],ESP:["İspanya","ES"],ITA:["İtalya","IT"],GER:["Almanya","DE"],FRA:["Fransa","FR"],POR:["Portekiz","PT"],TUR:["Türkiye","TR"],KSA:["Suudi Arabistan","SA"],NED:["Hollanda","NL"],ARG:["Arjantin","AR"],GRE:["Yunanistan","GR"],CZE:["Çekya","CZ"],BEL:["Belçika","BE"],UKR:["Ukrayna","UA"],CRO:["Hırvatistan","HR"],DEN:["Danimarka","DK"],USA:["ABD","US"],URU:["Uruguay","UY"]};
 const H3=(a,b,c)=>`<rect width="24" height="5.4" fill="${a}"/><rect y="5.3" width="24" height="5.4" fill="${b}"/><rect y="10.6" width="24" height="5.4" fill="${c}"/>`;
@@ -1497,8 +1500,7 @@ function homeView(s){
 /* ---------- OYUNCU ADI TAMAMLAMA / KADRO TAŞIMA ---------- */
 /* ---------- KADRO: İNCELE, OYUNCU EKLE, GOL ATANLAR ---------- */
 const SQL={K:"Kaleciler",D:"Defans",M:"Orta saha",F:"Forvet"};
-const sqFind=(i,n)=>i==null?null:(squadOf(i).find(p=>nz(p.n)==nz(n))||null);
-const sqFindAny=n=>{const k=nz(n);if(!k)return null;for(let i=0;i<T.length;i++){const p=squadOf(i).find(x=>nz(x.n)==k);if(p)return{p,i}}return null};
+
 const pmeta=(s,n)=>{const p=sqFind(s.my,n);if(p)return ` <small class="pm">${p.p}</small>`;const a=sqFindAny(n);return a?` <small class="pm">${a.p.p} · transfer (${esc(T[a.i].n)})</small>`:` <small class="pm">transfer</small>`};
 const sqChips=(a,c)=>`<div class="cw">${[["A","Hepsi"],["F","Forvet"],["M","Orta saha"],["D","Defans"],["K","Kaleci"]].map(([k,l])=>`<button class="chip${c==k?" on":""}" data-a="${a}" data-v="${k}">${l}</button>`).join("")}</div>`;
 function tiDlg(){
@@ -1995,7 +1997,6 @@ async function macCv(q){const x=q.x,m=q.m,r=mres(m),oi=m.opp!=null&&T[m.opp]?m.o
   return cv}
 
 /* Global arama */
-const nz=t=>String(t||"").toLocaleLowerCase("tr").replace(/ı/g,"i").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ø/g,"o").replace(/ł/g,"l").replace(/đ/g,"d");
 let PIX=null,TIX=null;
 const pidx=()=>PIX||(PIX=T.flatMap((t,i)=>squadOf(i).map(p=>({i,p,k:nz(p.n)}))));
 const tidx=()=>TIX||(TIX=T.map((t,i)=>({i,k:nz(t.n+" "+CN[t.c][0])})));
