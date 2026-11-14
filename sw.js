@@ -1,4 +1,4 @@
-const CACHE = "fc26-lig-v14-1";
+const CACHE = "fc26-lig-v17-0";
 const FILES = [
   "./",
   "./index.html",
@@ -9,11 +9,14 @@ const FILES = [
   "./apple-touch-icon.png"
 ];
 
-// Tek bir dosya eksik/404 olsa bile kurulum tamamen başarısız olmasın (addAll hepsini iptal eder).
+// Kurulumda tarayıcı HTTP önbelleğini atla (cache:"reload"): GitHub Pages dosyaları ~10 dk önbellekte tutar,
+// yoksa yeni SW eski index.html'i önbelleğe alabilir. Tek dosya eksik olsa bile kurulum başarısız olmaz.
 self.addEventListener("install", e => {
   e.waitUntil(
     caches.open(CACHE)
-      .then(c => Promise.all(FILES.map(f => c.add(f).catch(() => {}))))
+      .then(c => Promise.all(FILES.map(f =>
+        c.add(new Request(f, { cache: "reload" })).catch(err => console.warn("SW asset skip:", f, err))
+      )))
       .then(() => self.skipWaiting())
   );
 });
@@ -26,20 +29,26 @@ self.addEventListener("activate", e => {
   );
 });
 
-// Önce ağ, olmazsa önbellek. GitHub Pages _headers dosyasını okumaz ve dosyaları ~10 dk tarayıcı
-// önbelleğinde tutar; bu yüzden ağ isteğinde HTTP önbelleğini atlıyoruz ({cache:"no-cache"}),
-// böylece index.html güncellenince hemen yeni sürüm gelir. İnternet yokken önbellekten açılır.
+// Stale-While-Revalidate: önbellekten anında aç, arka planda ağdan güncelle.
+// Arka plan güncellemesi e.waitUntil içinde: tarayıcı işlem bitmeden SW'yi kapatamaz.
+// Sayfa gezintisinde sorgu dizesi (?utm=...) önbellek eşleşmesini bozmasın diye ignoreSearch kullanılır.
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
-  e.respondWith(
-    fetch(e.request, { cache: "no-cache" })
-      .then(res => {
-        if (res && res.ok && new URL(e.request.url).origin === location.origin) {
-          const copy = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, copy));
-        }
-        return res;
-      })
-      .catch(() => caches.match(e.request).then(r => r || caches.match("./index.html")))
-  );
+  const isNav = e.request.mode === "navigate";
+  e.respondWith((async () => {
+    const cached = await caches.match(e.request, { ignoreSearch: isNav });
+    const update = fetch(e.request, { cache: "no-cache" }).then(async res => {
+      if (res && res.ok && new URL(e.request.url).origin === location.origin) {
+        const c = await caches.open(CACHE);
+        await c.put(e.request, res.clone());
+      }
+      return res;
+    });
+    if (cached) { e.waitUntil(update.catch(() => {})); return cached; }
+    try { return await update; }
+    catch (_) {
+      if (isNav) { const idx = await caches.match("./index.html"); if (idx) return idx; }
+      return Response.error();
+    }
+  })());
 });
