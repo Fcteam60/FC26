@@ -474,7 +474,7 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
 <datalist id="allpl"></datalist>
 <script>
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="17.7",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="17.8",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -735,7 +735,7 @@ function withSn(s,fn){
   try{return fn()}finally{bak.forEach(([t,g,a,o,d])=>{t.g=g;t.a=a;t.o=o;t.d=d})}}
 const RT=(s,i)=>{const t=T[i],q=hasSn(s)&&s.sn[t.n];return Array.isArray(q)&&q.length==4?{n:t.n,c:t.c,g:q[0],a:q[1],o:q[2],d:q[3]}:t};
 const norm=()=>store.seasons.forEach(s=>{
-  s.pl=s.pl||[];s.mt=s.mt||[];s.ts=s.ts||{};s.oy=Object.assign({d:"",h:"",c:""},s.oy&&typeof s.oy=="object"?s.oy:{});
+  s.pl=s.pl||[];s.mt=s.mt||[];s.delM=Array.isArray(s.delM)?s.delM:[];s.ts=s.ts||{};s.oy=Object.assign({d:"",h:"",c:""},s.oy&&typeof s.oy=="object"?s.oy:{});
   s.cfg=Object.assign(cp(DEFC),s.cfg||{});fixC(s.cfg);
   s.rl=Object.assign(cp(DEFR),s.rl||{});s.rl.xc=s.rl.xc||[];
   if(s.G===undefined)s.G=null;
@@ -919,8 +919,53 @@ function matchTab(){const A0=allM(),ds=new Set(A0.map(dOf)),fd=ds.has(st.sfd)?st
   const cl=Object.entries(CO).map(([c,L])=>({c:c,o:tally(L)})).sort((a,b)=>b.o.n-a.o.n),cm=cl[0]?cl[0].o.n:1;
   const bst=cl.filter(x=>x.o.n>=3).sort((a,b)=>b.o.w/b.o.n-a.o.w/a.o.n)[0];
   const c7=cl.length?cd("Rakip ülkeler",(bst?`<div class="note" style="margin:0 0 6px">En başarılı olduğun ülke: <b>${CN[bst.c][0]}</b> (%${Math.round(bst.o.w/bst.o.n*100)} galibiyet)</div>`:"")+cl.slice(0,8).map(x=>`<div class="row"><span class="n" style="flex:0 0 110px">${fl(x.c)} ${CN[x.c][0]}</span><div class="bk"><i style="width:${x.o.n/cm*100}%"></i></div><b>${x.o.n}</b><span class="lb" style="min-width:38px;text-align:right">%${Math.round(x.o.w/x.o.n*100)}</span></div>`).join("")+`<div class="note">Sağdaki: o ülkeye karşı galibiyet oranı.</div>`):"";
-  return fb+tacticalDnaCard(cur)+xgSummaryCard(ML)+c1+formCard(ML)+c3+c4+c5+c6+surCard(ML)+oyDiff(A0)+c7}
-/* ---------- KARİYER ÖZETİ ---------- */
+  return fb+tacticalDnaCard(cur)+xgSummaryCard(ML)+c1+formCard(ML)+c3+c4+c5+etPkCard(ML)+c6+surCard(ML)+oyDiff(A0)+c7}
+/* ---------- KARİYER ÖZETİ, UZATMA/PENALTI, CLUTCH & MEVKİ DAĞILIMI ---------- */
+function etPkCard(ML){
+  const etL=(ML||[]).filter(m=>m.et||(m.pf!=null&&m.pa!=null));
+  const pkL=(ML||[]).filter(m=>m.pf!=null&&m.pa!=null);
+  if(!etL.length)return "";
+  const etO=tally(etL);
+  let pkW=0,pkLcnt=0,pfTot=0,paTot=0;
+  pkL.forEach(m=>{if(m.pf>m.pa)pkW++;else if(m.pf<m.pa)pkLcnt++;pfTot+=+m.pf||0;paTot+=+m.pa||0});
+  const pkN=pkW+pkLcnt;
+  let h=`<div class="mtl c2">${tile(etL.length,"uzatma maçı",`${etO.w}G ${etO.d}B ${etO.l}M · %${Math.round(etO.w/etL.length*100)}`)}${tile(pkN?pct(pkW,pkN):"—","penaltı kazanma",pkN?`${pkW}G ${pkLcnt}M (${pfTot}–${paTot})`:"seri penaltı yok")}</div>`;
+  const rec=etL.slice(-5).reverse().map(m=>`<div class="row"><i class="fd ${mres(m)}"></i><span class="n">${esc(m.rd)} · ${esc(m.on)}</span><b>${mscTxt(m)}</b></div>`).join("");
+  return cd("Uzatma ve penaltı karnesi<small>kırılma anları</small>",h+rec)}
+function clutchStats(seasons){
+  const C=nob();
+  seasons.forEach(x=>(x.mt||[]).filter(m=>m.rd&&m.rd!="Grup").forEach(m=>{
+    const isFin=m.rd==RN[2],seen=new Set();
+    const ens=n=>{const k=nz(n);if(!k)return null;return C[k]=C[k]||{n:String(n).trim(),g:0,a:0,ga:0,mom:0,m:0,fg:0,fa:0}};
+    Object.entries(m.sc||{}).forEach(([n,g])=>{if(+g>0){const o=ens(n);if(o){o.g+=+g;o.ga+=+g;if(isFin)o.fg+=+g;seen.add(nz(n))}}});
+    Object.entries(m.as||{}).forEach(([n,a])=>{if(+a>0){const o=ens(n);if(o){o.a+=+a;o.ga+=+a;if(isFin)o.fa+=+a;seen.add(nz(n))}}});
+    if(m.mom){const o=ens(m.mom);if(o){o.mom+=1;seen.add(nz(m.mom))}}
+    seen.forEach(k=>{if(C[k])C[k].m+=1})}));
+  return Object.values(C).filter(o=>o.ga>0||o.mom>0).sort((a,b)=>b.ga-a.ga||b.g-a.g||b.mom-a.mom)}
+function posOfPlayer(s,n){
+  if(s&&s.my!=null){const p=sqFind(s.my,n);if(p)return p.g}
+  const a=sqFindAny(n);return a?a.p.g:"U"}
+function posDistCard(seasons){
+  const G={F:{l:"Forvet",g:0,a:0},M:{l:"Orta saha",g:0,a:0},D:{l:"Defans",g:0,a:0},K:{l:"Kaleci",g:0,a:0},U:{l:"Bilinmiyor (özel/transfer)",g:0,a:0}};
+  let totG=0,totA=0;
+  seasons.forEach(x=>{
+    const mG=nob(),mA=nob();
+    (x.mt||[]).forEach(m=>{
+      Object.entries(m.sc||{}).forEach(([n,v])=>{if(+v>0)mG[nz(n)]=(mG[nz(n)]||0)+(+v)});
+      Object.entries(m.as||{}).forEach(([n,v])=>{if(+v>0)mA[nz(n)]=(mA[nz(n)]||0)+(+v)})});
+    const seen=new Set();
+    (x.pl||[]).forEach(p=>{
+      const k=nz(p.n);seen.add(k);
+      const pos=posOfPlayer(x,p.n),g=Math.max(p.g||0,mG[k]||0),a=Math.max(p.a||0,mA[k]||0);
+      G[pos].g+=g;G[pos].a+=a;totG+=g;totA+=a});
+    Object.entries(mG).forEach(([k,g])=>{if(!seen.has(k)){const pos=posOfPlayer(x,k);G[pos].g+=g;totG+=g}});
+    Object.entries(mA).forEach(([k,a])=>{if(!seen.has(k)){const pos=posOfPlayer(x,k);G[pos].a+=a;totA+=a}})});
+  if(!totG&&!totA)return "";
+  const keys=["F","M","D","K","U"].filter(k=>G[k].g>0||G[k].a>0);
+  const rows=keys.map(k=>{
+    const o=G[k],gp=totG?Math.round(o.g/totG*100):0;
+    return `<div class="row"><span class="n" style="flex:0 0 135px">${o.l}</span><div class="bk"><i style="width:${gp}%"></i></div><b>${o.g}G</b><span class="lb" style="min-width:74px;text-align:right">%${gp}${totA?` · ${o.a}A`:""}</span></div>`}).join("");
+  return cd("Mevki dağılımı<small>gol ve asist katkısı</small>",rows+`<div class="note">Kadro ve FC 27 veritabanındaki mevkilere göre hesaplanır; veritabanında olmayan özel isimler “Bilinmiyor” diliminde gösterilir.</div>`)}
 function duoStats(seasons){
   const D=nob(),B=nob();
   seasons.forEach(x=>(x.mt||[]).forEach(m=>{
@@ -950,8 +995,8 @@ function seasonAwards(s){
   const ageOf=n=>{const q=s.my!=null?sqFind(s.my,n):null;if(q)return q.a;const a=sqFindAny(n);return a?a.p.a:99};
   const wkL=active.filter(p=>ageOf(p.n)<=21&&((p.g||0)+(p.a||0)+(p.mom||0)>0)).sort((a,b)=>mvpScore(b)-mvpScore(a));
   const wk=wkL[0]?{n:wkL[0].n,age:ageOf(wkL[0].n),g:wkL[0].g||0,a:wkL[0].a||0,mom:wkL[0].mom||0}:null;
-  const ds=duoStats([s]);
-  return{mvp:{n:mvp.n,g:mvp.g||0,a:mvp.a||0,mom:mvp.mom||0,m:mvp.m||0},boot:topT("g"),play:topT("a"),ga:topGA,wk,duo:ds.duos[0]||null,both:ds.both[0]||null}}
+  const ds=duoStats([s]),cl=clutchStats([s])[0]||null;
+  return{mvp:{n:mvp.n,g:mvp.g||0,a:mvp.a||0,mom:mvp.mom||0,m:mvp.m||0},boot:topT("g"),play:topT("a"),ga:topGA,wk,duo:ds.duos[0]||null,both:ds.both[0]||null,clutch:cl}}
 function awardsCard(s){
   const aw=seasonAwards(s);if(!aw)return "";
   const items=[];
@@ -959,6 +1004,7 @@ function awardsCard(s){
   if(aw.boot)items.push(`<div class="awd"><div class="awi">👟 Altın Ayakkabı</div><b>${esc(aw.boot.n)}</b><span>${aw.boot.v} gol</span></div>`);
   if(aw.play)items.push(`<div class="awd"><div class="awi">🎯 Oyun Kurucu</div><b>${esc(aw.play.n)}</b><span>${aw.play.v} asist</span></div>`);
   if(aw.ga)items.push(`<div class="awd"><div class="awi">⚡ Skor Katkısı (G+A)</div><b>${esc(aw.ga.n)}</b><span>${aw.ga.v} katkı (${aw.ga.g}G + ${aw.ga.a}A)</span></div>`);
+  if(aw.clutch)items.push(`<div class="awd"><div class="awi">🔥 Eleme (Clutch) Yıldızı</div><b>${esc(aw.clutch.n)}</b><span>Elemede ${aw.clutch.g}G · ${aw.clutch.a}A</span></div>`);
   if(aw.wk)items.push(`<div class="awd"><div class="awi">💎 Genç Yıldız (${aw.wk.age} yaş)</div><b>${esc(aw.wk.n)}</b><span>${aw.wk.g}G · ${aw.wk.a}A${aw.wk.mom?` · ${aw.wk.mom}★`:""}</span></div>`);
   if(aw.duo)items.push(`<div class="awd"><div class="awi">🤝 Altın İkili</div><b>${esc(aw.duo.n)}</b><span>${aw.duo.m} maçta ${aw.duo.tot} ortak gol</span></div>`);
   return cd(`Sezon ödülleri <small>${ s.res?"kesinleşti":"canlı liderler"}</small>`,`<div class="awg">${items.join("")}</div>`)}
@@ -1042,6 +1088,8 @@ const dTR=t=>new Date(Number(t)).toLocaleDateString("tr-TR");
 function vS(s){
   if(!s||typeof s!="object"||s.id==null||typeof s.name!="string")return false;
   if(s.mt!=null&&!Array.isArray(s.mt))return false;
+  if(s.delM!=null&&!Array.isArray(s.delM))delete s.delM;
+  if(s.delM)s.delM=s.delM.map(x=>+x).filter(Number.isFinite);
   if(s.pl!=null&&!Array.isArray(s.pl))return false;
   if(s.ts!=null&&typeof s.ts!="object")return false;
   if(s.tb!=null&&typeof s.tb!="object")return false;
@@ -1060,6 +1108,8 @@ function vBk(o){
   if(!o||typeof o!="object"||!okS(o))return null;
   if(!o.seasons.every(vS))return null;
   o.trash=Array.isArray(o.trash)?o.trash.filter(t=>t&&vS(t.s)):[];
+  if(o.delS!=null&&!Array.isArray(o.delS))delete o.delS;
+  if(o.delS)o.delS=o.delS.map(x=>+x).filter(Number.isFinite);
   if(o.ach!=null&&!Array.isArray(o.ach))delete o.ach;
   if(o.achd!=null&&typeof o.achd!="object")delete o.achd;
   return o}
@@ -1070,9 +1120,11 @@ function parseBk(t){t=(t||"").trim();if(!t)return null;let o;
   return vBk(o)}
 function mergeSeasons(loc,inc){
   const newer=(inc.ut||0)>(loc.ut||0)?inc:loc,older=newer===inc?loc:inc;
-  const out=cp(newer),mMap=new Map();
-  (older.mt||[]).forEach(m=>{if(m&&m.id!=null)mMap.set(m.id,cp(m))});
-  (newer.mt||[]).forEach(m=>{if(m&&m.id!=null)mMap.set(m.id,cp(m))});
+  const out=cp(newer),delSet=new Set([...(loc.delM||[]),...(inc.delM||[])]);
+  out.delM=Array.from(delSet);
+  const mMap=new Map();
+  (older.mt||[]).forEach(m=>{if(m&&m.id!=null&&!delSet.has(m.id))mMap.set(m.id,cp(m))});
+  (newer.mt||[]).forEach(m=>{if(m&&m.id!=null&&!delSet.has(m.id))mMap.set(m.id,cp(m))});
   out.mt=Array.from(mMap.values()).sort((a,b)=>(a.id||0)-(b.id||0));
   const pMap=new Map();
   (older.pl||[]).forEach(p=>{if(p&&p.n)pMap.set(nz(p.n),cp(p))});
@@ -1083,8 +1135,12 @@ function mergeSeasons(loc,inc){
   return out}
 function mergeBk(o){
   let snapOk=false;try{localStorage.setItem("fc26lig4_birlesme_oncesi",JSON.stringify(store));snapOk=true}catch(e){}
-  DROP=[];mig(o);const dr=[...new Set(DROP)];DROP=[];let add=0,upd=0,same=0;
+  DROP=[];mig(o);const dr=[...new Set(DROP)];DROP=[];let add=0,upd=0,same=0,skp=0;
+  const delSSet=new Set([...(store.delS||[]),...(o.delS||[])]);
+  store.delS=Array.from(delSSet);
+  store.seasons=store.seasons.filter(x=>!delSSet.has(x.id));
   o.seasons.forEach(s=>{
+    if(delSSet.has(s.id)){skp++;return}
     const l=store.seasons.find(x=>x.id==s.id&&x.name==s.name&&x.date==s.date);
     if(l){
       const merged=mergeSeasons(l,s);
@@ -1093,11 +1149,13 @@ function mergeBk(o){
       return}
     if(store.seasons.some(x=>x.id==s.id))s.id=newId();
     store.seasons.push(s);add++});
-  store.trash=(store.trash||[]).concat(o.trash||[]).slice(0,10);
-  store.ach=Array.from(new Set((store.ach||[]).concat(o.ach||[])));store.achd=Object.assign({},o.achd||{},store.achd||{});
+  if(!store.seasons.length){store.nx=1;store.seasons.push(mk(Date.now(),1));store.cur=store.seasons[0].id}
+  else if(!store.seasons.some(x=>x.id==store.cur))store.cur=store.seasons[store.seasons.length-1].id;
+  store.trash=(store.trash||[]).concat(o.trash||[]).filter(t=>t&&t.s&&!store.seasons.some(x=>x.id==t.s.id)).slice(0,10);
+  store.ach=Array.from(new Set((store.ach||[]).concat(o.ach||[])));store.achd=Object.assign({},o.achd||{},o.achd||{});
   norm();store.seasons.sort((a,b)=>a.id-b.id);sync();
   st.tab=7;
-  return "Birleştirildi "+(snapOk?"(önceki durum Kurtarma’ya saklandı)":"(UYARI: önceki durum saklanamadı, depolama dolu olabilir)")+": "+add+" yeni, "+upd+" birleştirilen, "+same+" aynı sezon"+(dr.length?" · "+dr.length+" takım güncel listede yok, atlandı":"")}
+  return "Birleştirildi "+(snapOk?"(önceki durum Kurtarma’ya saklandı)":"(UYARI: önceki durum saklanamadı, depolama dolu olabilir)")+": "+add+" yeni, "+upd+" birleştirilen, "+same+" aynı sezon"+(skp?" · "+skp+" silinmiş sezon atlandı":"")+(dr.length?" · "+dr.length+" takım güncel listede yok, atlandı":"")}
 function readImp(f){
   if(f.size>20e6){ask("Dosya çok büyük, geçerli bir yedek olmayabilir.");render();return}
   const r=new FileReader();
@@ -1105,7 +1163,7 @@ function readImp(f){
   r.onerror=()=>{ask("Dosya okunamadı.");render()};
   r.readAsText(f)}
 const impDlg=()=>{const o=st.imp.o,n=o.seasons.length,m=o.seasons.reduce((a,s)=>a+((s.mt||[]).length),0);
-  return `<div class="dlg"><div class="dbox" role="dialog" aria-modal="true"><div class="rs">Yedeği yükle</div><div class="note" style="margin:0 0 8px">${n} sezon · ${m} maç bulundu (${esc(st.imp.src||"yedek")}).</div>${impWarn(o)}<button class="btn p opt" data-a="impm">Birleştir<small>Aynı sezonların maçları birleşir; yerelde sildiğin bir maç yedekte varsa geri gelir</small></button><button class="btn opt" data-a="impr">Hepsini değiştir<small>Bu cihazdaki tüm kayıtlar yedekle değiştirilir</small></button><div class="bar"><button class="btn" data-a="no">Vazgeç</button></div></div></div>`};
+  return `<div class="dlg"><div class="dbox" role="dialog" aria-modal="true"><div class="rs">Yedeği yükle</div><div class="note" style="margin:0 0 8px">${n} sezon · ${m} maç bulundu (${esc(st.imp.src||"yedek")}).</div>${impWarn(o)}<button class="btn p opt" data-a="impm">Birleştir<small>Aynı sezonların maçları güvenle birleşir; sildiğin maç ve sezonlar geri gelmez</small></button><button class="btn opt" data-a="impr">Hepsini değiştir<small>Bu cihazdaki tüm kayıtlar yedekle değiştirilir</small></button><div class="bar"><button class="btn" data-a="no">Vazgeç</button></div></div></div>`};
 async function exportFile(){
   const pl=store.lb,pm=store.lbm;
   store.tn=TN;store.v=4;store.app=VER;store.lb=Date.now();store.lbm=nMatch();
@@ -1130,6 +1188,7 @@ function bkRemind(){
 const sfBan=()=>`<div class="big" role="alert" style="text-align:left"><b class="wr">Değişiklikler kaydedilemedi.</b><div class="note" style="margin:4px 0 8px">Tarayıcı depolaması dolu ya da kapalı olabilir (özel sekme?). Sekmeyi kapatırsan son girdiğin veriler kaybolur. Şimdi yedek al.</div><button class="btn p" data-t="6">Yedek al</button></div>`;
 function delSeason(id){
   const x=store.seasons.find(q=>q.id==id);if(!x)return;
+  store.delS=Array.from(new Set([...(store.delS||[]),x.id]));
   store.trash=[{s:x,t:Date.now()}].concat(store.trash||[]).slice(0,10);
   store.seasons=store.seasons.filter(q=>q.id!=id);
   const fresh=!store.seasons.length;
@@ -1140,6 +1199,7 @@ function delSeason(id){
 function restoreSeason(id){
   const j=(store.trash||[]).findIndex(t=>t.s.id==id);if(j<0)return;
   const s=store.trash.splice(j,1)[0].s;
+  store.delS=(store.delS||[]).filter(x=>x!=s.id);
   if(store.seasons.some(x=>x.id==s.id))s.id=newId();
   store.seasons.push(s);norm();store.seasons.sort((a,b)=>a.id-b.id);
   return "Sezon geri getirildi: "+s.name}
@@ -1170,7 +1230,7 @@ const resetCard=()=>`<button class="acbtn dgrbtn ${st.rstopen?"on":""}" data-a="
 /* ---------- TAKIM VE KURA KİLİDİ ---------- */
 const hasData=s=>(s.mt||[]).length>0||(s.pl||[]).length>0||!!s.res||Object.values(s.tb||{}).some(v=>v);
 const tmLock=s=>!!s.G||(s.mt||[]).length>0;
-function wipeS(s){s.mt=[];s.pl=[];s.res=null;s.gq=null;s.gqs={};s.ts={};s.tb={};reTs(s)}
+function wipeS(s){s.delM=Array.from(new Set([...(s.delM||[]),...(s.mt||[]).map(m=>m.id).filter(Boolean)]));s.mt=[];s.pl=[];s.res=null;s.gq=null;s.gqs={};s.ts={};s.tb={};reTs(s)}
 function doUnlock(s){const had=hasData(s);wipeS(s);s.lk=false;s.P=null;s.G=null;s.my=null;s.sn=null;s.dn=0;st.mode=null;st.tp=false;st.dr=null;st.k=0;sync();return had?"Kurulum açıldı, sezon verileri sıfırlandı":"Kurulum açıldı, takım ve kura silindi"}
 function doReset(s){const had=hasData(s);wipeS(s);s.G=null;s.my=null;st.mode=null;st.dr=null;st.k=0;sync();return had?"Takım ve kura sıfırlandı, sezon verileri silindi":"Takım ve kura sıfırlandı"}
 const lockNote=(s,lk)=>lk?`<div class="note" style="margin:8px 0">Takım kilitli: kura onaylandı${(s.mt||[]).length?" ve maç girildi":""}. Sonradan değiştirmek kura ve maç kayıtlarını bozar.</div><button class="btn opt" data-a="chteam">Takımı değiştir<small>${hasData(s)?"Kurayı ve bu sezonun maç, oyuncu, sonuç kayıtlarını sıfırlar":"Kurayı sıfırlar, yeniden takım seçip kura çekersin"}</small></button>`:`<div class="note" style="margin:8px 0">Kura çekimi başladı, takım artık değiştirilemez. Değiştirmek istersen önce çekilen kurayı iptal et.</div><button class="btn opt" data-a="dcancel">Kurayı iptal et<small>Çekilen kura silinir</small></button>`;
@@ -1364,7 +1424,7 @@ function matchCard(s,sheet){
 function statView(s){
   if(s.my==null)return `<div class="big">İstatistik girmek için önce Takımım sekmesinden takım seç.</div>`;
   const t=s.ts,v=k=>t[k]||0,TS=[["w","G"],["d","B"],["l","M"],["gf","AG"],["ga","YG"]],mm=msum(s),ex=TS.filter(([k])=>(+(s.tb||{})[k]||0)!==0);
-  return matchLog(s)+tacticalDnaCard(s)+xgSummaryCard(s.mt||[])+awardsCard(s)+`<div class="card" style="margin-top:10px"><h3>★ ${T[s.my].n}<small>${esc(s.name)}</small></h3><div class="mtl"><div><b>${v("w")+v("d")+v("l")}</b><span>Maç</span></div><div><b>${v("w")*3+v("d")}</b><span>Puan</span></div><div><b>${v("gf")-v("ga")>0?"+":""}${v("gf")-v("ga")}</b><span>Averaj</span></div></div><div class="note" style="margin:0">${v("w")}G ${v("d")}B ${v("l")}M · AG ${v("gf")} · YG ${v("ga")}${ex.length?" · Elle eklenen var":""}</div><div class="bar" style="margin:8px 0 0"><button class="chip" data-a="tsx">${st.tsx?"Düzeltmeyi kapat":"Düzelt"}</button></div>${st.tsx?`<div class="lb" style="margin-top:8px">Takım sezon toplamları (G galibiyet, B beraberlik, M mağlubiyet, AG atılan gol, YG yenen gol). Kayıtlı maçlar otomatik eklenir; kutuyu değiştirirsen fark “elle eklenen” olarak ayrı saklanır.</div><div class="cs">${TS.map(([k,l])=>`<label class="lb">${l}<input class="tin" data-ts="${k}" inputmode="numeric" maxlength="3" value="${v(k)}"></label>`).join("")}</div><div class="note">Maç kayıtlarından: ${mm.w}G ${mm.d}B ${mm.l}M · AG ${mm.gf} · YG ${mm.ga}${ex.length?" · Elle eklenen: "+ex.map(([k,l])=>l+" "+(s.tb[k]>0?"+":"")+s.tb[k]).join(", "):""}</div>`:""}</div>
+  return matchLog(s)+tacticalDnaCard(s)+xgSummaryCard(s.mt||[])+etPkCard(s.mt||[])+posDistCard([s])+awardsCard(s)+`<div class="card" style="margin-top:10px"><h3>★ ${T[s.my].n}<small>${esc(s.name)}</small></h3><div class="mtl"><div><b>${v("w")+v("d")+v("l")}</b><span>Maç</span></div><div><b>${v("w")*3+v("d")}</b><span>Puan</span></div><div><b>${v("gf")-v("ga")>0?"+":""}${v("gf")-v("ga")}</b><span>Averaj</span></div></div><div class="note" style="margin:0">${v("w")}G ${v("d")}B ${v("l")}M · AG ${v("gf")} · YG ${v("ga")}${ex.length?" · Elle eklenen var":""}</div><div class="bar" style="margin:8px 0 0"><button class="chip" data-a="tsx">${st.tsx?"Düzeltmeyi kapat":"Düzelt"}</button></div>${st.tsx?`<div class="lb" style="margin-top:8px">Takım sezon toplamları (G galibiyet, B beraberlik, M mağlubiyet, AG atılan gol, YG yenen gol). Kayıtlı maçlar otomatik eklenir; kutuyu değiştirirsen fark “elle eklenen” olarak ayrı saklanır.</div><div class="cs">${TS.map(([k,l])=>`<label class="lb">${l}<input class="tin" data-ts="${k}" inputmode="numeric" maxlength="3" value="${v(k)}"></label>`).join("")}</div><div class="note">Maç kayıtlarından: ${mm.w}G ${mm.d}B ${mm.l}M · AG ${mm.gf} · YG ${mm.ga}${ex.length?" · Elle eklenen: "+ex.map(([k,l])=>l+" "+(s.tb[k]>0?"+":"")+s.tb[k]).join(", "):""}</div>`:""}</div>
   <div class="card" style="margin-top:10px"><h3>Oyuncu ekle<small>kadro veya transfer</small></h3><div class="bar" style="margin-bottom:0"><input id="pn" class="f" style="flex:1;margin:0" maxlength="30" placeholder="Oyuncu adı (tüm takımlardan arayabilirsin)" list="allpl" autocomplete="off"><button class="btn p" data-a="padd">Ekle</button></div>${allPlayersList()}${sqBtn(s)}</div>${sqCard(s)}
   <div class="card" style="margin-top:10px"><h3>Oyuncular<small>Toplam: ${sum(s.pl,"g")} gol · ${sum(s.pl,"a")} asist</small></h3>`+
   (()=>{if(!s.pl.length)return emp("Henüz oyuncu yok. Yukarıdan ilk oyuncuyu ekle.");
@@ -1395,6 +1455,8 @@ function histView(){
   const topGA=pl.filter(p=>p.ga>0).sort((a,b)=>b.ga-a.ga||b.g-a.g).slice(0,5).map((p,i)=>`<div class="row"><span class="lb" style="width:18px">${i+1}</span><span class="n">${esc(p.n)} <small class="pm">${p.g}G + ${p.a}A</small></span><span class="g">${p.ga}</span></div>`).join("")||`<div class="note">Veri yok</div>`;
   const topGAPM=pl.filter(p=>p.m>=2&&p.ga>0).sort((a,b)=>(b.ga/b.m)-(a.ga/a.m)||b.ga-a.ga).slice(0,5).map((p,i)=>`<div class="row"><span class="lb" style="width:18px">${i+1}</span><span class="n">${esc(p.n)} <small class="pm">${p.ga} katkı / ${p.m}M</small></span><span class="g">${fx(p.ga/p.m)}</span></div>`).join("")||`<div class="note">En az 2 maç oynayan oyuncu yok</div>`;
   const topGpm=pl.filter(p=>p.m>=3&&p.g>0).sort((a,b)=>(b.g/b.m)-(a.g/a.m)||b.g-a.g).slice(0,5).map((p,i)=>`<div class="row"><span class="lb" style="width:18px">${i+1}</span><span class="n">${esc(p.n)} <small class="pm">${p.g}G / ${p.m}M</small></span><span class="g">${fx(p.g/p.m)}</span></div>`).join("")||`<div class="note">En az 3 maç oynayan golcü yok</div>`;
+  const clL=clutchStats(store.seasons);
+  const topClutch=clL.slice(0,5).map((p,i)=>`<div class="row"><span class="lb" style="width:18px">${i+1}</span><span class="n">${esc(p.n)} <small class="pm">${p.g}G + ${p.a}A${p.fg+p.fa?` · Finalde ${p.fg}G ${p.fa}A`:""}${p.mom?` · ${p.mom}★`:""}</small></span><span class="g">${p.ga}</span></div>`).join("")||`<div class="note">Eleme turlarında gol/asist kaydı henüz yok</div>`;
   const ds=duoStats(store.seasons);
   const topDuos=ds.duos.slice(0,5).map((d,i)=>`<div class="row"><span class="lb" style="width:18px">${i+1}</span><span class="n">${esc(d.n)} <small class="pm">${d.m} maçta birlikte</small></span><span class="g">${d.tot}</span></div>`).join("")||`<div class="note">Aynı maçta gol ve asist yapan ikili henüz yok</div>`;
   const topBoth=ds.both.slice(0,5).map((b,i)=>`<div class="row"><span class="lb" style="width:18px">${i+1}</span><span class="n">${esc(b.n)} <small class="pm">toplam ${b.g}G + ${b.a}A</small></span><span class="g">${b.c} maç</span></div>`).join("")||`<div class="note">Aynı maçta hem gol hem asist yapan oyuncu henüz yok</div>`;
@@ -1404,11 +1466,13 @@ function histView(){
   const A1=card("Toplu istatistik",R("Sezon / biten",ss.length+" / "+n)+R("Şampiyonluk",cnt[7])+R("Finale kalma",cnt[6]+cnt[7])+R("Yarı final ve üstü",cnt[5]+cnt[6]+cnt[7])+(best>=0?R("En iyi sonuç",SN[best]):""));
   const A2=card("Sonuç dağılımı",SN.map((x,i)=>i).filter(i=>i==0||i>=3||cnt[i]>0).map(i=>`<div class="row"><span class="n" style="flex:0 0 150px">${SN[i]}</span><div class="bk"><i style="width:${cnt[i]/mx*100}%"></i></div><b>${cnt[i]}</b></div>`).join(""));
   const A3=(gp.length?card("Grupta elenme puanları",R("Ortalama",fx(gp.reduce((a,b)=>a+b,0)/gp.length))+R("En düşük / en yüksek",Math.min(...gp)+" / "+Math.max(...gp))):"");
-  const A4=card("Gol, asist ve yıldızlar",R("Toplam gol / asist / MOTM",sum(pl,"g")+" / "+sum(pl,"a")+" / "+sum(pl,"mom"))+`<div class="rt">Toplam skor katkısı krallığı (G + A)</div>${topGA}<div class="rt">Maç başına skor katkısı (G+A / Maç · en az 2 maç)</div>${topGAPM}<div class="rt">Altın ikililer (aynı maçta gol + asist işbirliği)</div>${topDuos}<div class="rt">En çok skora etki eden yıldızlar (aynı maçta hem gol hem asist)</div>${topBoth}<div class="rt">Gol krallığı</div>${top("g")}<div class="rt">Asist krallığı</div>${top("a")}<div class="rt">Maçın Adamı (MOTM) krallığı</div>${top("mom")}<div class="rt">Maç başı gol (en az 3 maç)</div>${topGpm}`);
+  const A4=card("Gol, asist ve yıldızlar",R("Toplam gol / asist / MOTM",sum(pl,"g")+" / "+sum(pl,"a")+" / "+sum(pl,"mom"))+`<div class="rt">🔥 Clutch (Eleme & Final maçları) yıldızları</div>${topClutch}<div class="rt">Toplam skor katkısı krallığı (G + A)</div>${topGA}<div class="rt">Maç başına skor katkısı (G+A / Maç · en az 2 maç)</div>${topGAPM}<div class="rt">Altın ikililer (aynı maçta gol + asist işbirliği)</div>${topDuos}<div class="rt">En çok skora etki eden yıldızlar (aynı maçta hem gol hem asist)</div>${topBoth}<div class="rt">Gol krallığı</div>${top("g")}<div class="rt">Asist krallığı</div>${top("a")}<div class="rt">Maçın Adamı (MOTM) krallığı</div>${top("mom")}<div class="rt">Maç başı gol (en az 3 maç)</div>${topGpm}`);
   const A5=card("Oynanan takımlar",Object.values(TM).sort((a,b)=>b.k-a.k).map(o=>`<div class="row"><span class="n">${o.n}</span><span class="lb">${o.k} sezon · ${SN[o.b]}</span></div>`).join("")||`<div class="note">Veri yok</div>`);
   const A6c=x=>`<div class="card" style="margin-top:6px"><h3>${esc(x.name)}${x.id==store.cur?" •":""}<small>${x.date}</small></h3><div>${x.my!=null?"★ "+T[x.my].n+" ("+cn(T[x.my].c)+")":"Takım seçilmedi"}</div><div class="rs">${x.res?rlb(x.res,x.cfg):"Devam ediyor"}</div>${pathSvg(x)}<div class="note" style="margin-top:2px">${fmt(x.cfg)}</div>${x.pl.length?`<div class="note">${sum(x.pl,"g")} gol · ${sum(x.pl,"a")} asist</div>`:""}${x.res&&x.res.note?`<div class="note">${esc(x.res.note)}</div>`:""}<div class="bar"><button class="btn" data-a="open" data-id="${x.id}">Aç</button><button class="btn" data-a="sum" data-id="${x.id}">Özet</button><button class="btn" data-a="karne" data-id="${x.id}">Karne</button><button class="btn" data-a="ren" data-id="${x.id}">Adı değiştir</button><button class="btn" data-a="del" data-id="${x.id}">Sil</button></div></div>`;
-  const ht=st.ht||"o",nav=`<div class="bar hn" style="margin:12px 0 0">${[["o","Özet"],["r","Rekorlar"],["b","Rozetler"],["s","Sezonlar"],["p","Rakipler"],["m","Maçlar"]].map(([k,l])=>`<button class="chip ${ht==k?"on":""}" data-a="ht" data-v="${k}" style="flex:1">${l}</button>`).join("")}</div>`;
-  const body=ht=="r"?recCard()+A4+A5+cmpCard():ht=="b"?achCard():ht=="s"?seasonsView(ss,A6c):ht=="p"?oppCard():ht=="m"?matchTab():careerCard()+xpCard()+powerCard()+A1+A2+A3+tsCard()+chartCard();
+  const A=achList(),achDone=A.filter(a=>a.done).length,achOp=!!(st.hm&&st.hm.ach);
+  const achFold=`<button class="acbtn ${achOp?"on":""}" data-a="hm" data-k="ach" aria-expanded="${achOp}"><span>🏅 Rozetler<small>${achDone}/${A.length} kazanıldı</small></span><span class="acchev">${achOp?"▴":"▾"}</span></button>${achOp?`<div class="acbody">${achCard()}</div>`:""}`;
+  const ht=(st.ht&&st.ht!="b")?st.ht:"o",nav=`<div class="bar hn" style="margin:12px 0 0">${[["o","Özet"],["r","Rekorlar"],["s","Sezonlar"],["p","Rakipler"],["m","Maçlar"]].map(([k,l])=>`<button class="chip ${ht==k?"on":""}" data-a="ht" data-v="${k}" style="flex:1">${l}</button>`).join("")}</div>`;
+  const body=ht=="r"?recCard()+A4+posDistCard(store.seasons)+A5+cmpCard():ht=="s"?seasonsView(ss,A6c):ht=="p"?oppCard():ht=="m"?matchTab():careerCard()+xpCard()+powerCard()+A1+A2+A3+tsCard()+chartCard()+achFold;
   return vitrinCard()+nav+body}
 
 /* ---------- PAYLAŞILABİLİR GÖRSELLER ---------- */
@@ -1980,7 +2044,7 @@ document.addEventListener("click",e=>{
     if(oldM)s.mt[s.mt.indexOf(oldM)]=m;else s.mt.push(m);
     const des=matchDeserve(m);
     mApply(s);st.med=null;st.mg=0;st.mo=0;st.mu=0;st.mp=undefined;st.mpf=0;st.mpa=0;st.msc=nob();st.mas=nob();st.mmom="";st.mop=null;st.mlg=null;st.qs=false;st.madv=false;st.mst=defMst();un=(oldM?"Güncellendi · ":"Kaydedildi · ")+m.on+" "+mscTxt(m)+(des&&des.k!="fair"?" · "+des.t:"")+(st.stwarn?" ("+st.stwarn+")":"");st.stwarn=null;if(!oldM){const df=m.gf-m.ga,pw=pf!=null&&pa!=null&&pf>pa;st.fw=df>0?(df>=3?3:df==2?2:1):(pw?2:0)}}
-  else if(a=="mdel"){const m=s.mt.find(x=>x.id==id);if(m){s.mt=s.mt.filter(x=>x.id!=id);mApply(s);un="Maç silindi"}}
+  else if(a=="mdel"){const m=s.mt.find(x=>x.id==id);if(m){s.delM=Array.from(new Set([...(s.delM||[]),m.id]));s.mt=s.mt.filter(x=>x.id!=id);mApply(s);un="Maç silindi"}}
   else if(a=="kurag"){mkImg("kura",s);return}
   else if(a=="karne"){mkImg("karne",store.seasons.find(y=>y.id==id)||s);return}
   else if(a=="mkart"){const q=findM(id);if(!q)return;mkImg("mac",q);return}
@@ -2440,35 +2504,43 @@ function tacticalDnaCard(s){
 
 function xgSummaryCard(ML){
   const totalM=(ML||[]).length,L=(ML||[]).filter(m=>m&&m.stats&&m.stats.myXg!=null);
-  if(!L.length)return "";
-  const n=L.length,totGf=L.reduce((a,m)=>a+(+m.gf||0),0),totGa=L.reduce((a,m)=>a+(+m.ga||0),0);
-  const totXg=L.reduce((a,m)=>a+(+m.stats.myXg||0),0),totOx=L.reduce((a,m)=>a+(+(m.stats.oppXg??0)),0);
+  const shAll=(ML||[]).filter(m=>m&&m.stats&&m.stats.myShots!=null&&m.stats.myShots>0);
+  const gkAll=(ML||[]).filter(m=>m&&m.stats&&m.stats.oppSot!=null);
+  if(!L.length&&!shAll.length&&!gkAll.length)return "";
+  const n=L.length,totGf=L.reduce((a,m)=>a+(+m.gf||0),0);
+  const totXg=L.reduce((a,m)=>a+(+m.stats.myXg||0),0);
   const diff=totGf-totXg,ds=(diff>0?"+":"")+diff.toFixed(2).replace(".",",");
   const xpL=L.filter(m=>m.stats.oppXg!=null);
   const totXpts=xpL.reduce((a,m)=>a+calcMatchXpts(m.stats.myXg,m.stats.oppXg).xPts,0);
   const actPts=xpL.reduce((a,m)=>{const r=mres(m);return a+(r=="w"?3:r=="d"?1:0)},0);
   const xpDiff=actPts-totXpts,xps=(xpDiff>0?"+":"")+xpDiff.toFixed(1).replace(".",",");
-  const posL=L.filter(m=>m.stats.myPos!=null),avgPos=posL.length?Math.round(posL.reduce((a,m)=>a+m.stats.myPos,0)/posL.length):null;
-  const pasL=L.filter(m=>m.stats.myPass!=null),avgPas=pasL.length?Math.round(pasL.reduce((a,m)=>a+m.stats.myPass,0)/pasL.length):null;
-  const shL=L.filter(m=>m.stats.myShots!=null&&m.stats.myShots>0),totSh=shL.reduce((a,m)=>a+m.stats.myShots,0),totShXg=shL.reduce((a,m)=>a+(+m.stats.myXg||0),0);
-  const sotL=shL.filter(m=>m.stats.mySot!=null),totSot=sotL.reduce((a,m)=>a+m.stats.mySot,0),totShForSot=sotL.reduce((a,m)=>a+m.stats.myShots,0);
-  const xgPerSh=totSh>0?(totShXg/totSh).toFixed(2).replace(".",","):null;
+  const posL=(ML||[]).filter(m=>m&&m.stats&&m.stats.myPos!=null),avgPos=posL.length?Math.round(posL.reduce((a,m)=>a+m.stats.myPos,0)/posL.length):null;
+  const pasL=(ML||[]).filter(m=>m&&m.stats&&m.stats.myPass!=null),avgPas=pasL.length?Math.round(pasL.reduce((a,m)=>a+m.stats.myPass,0)/pasL.length):null;
+  const totSh=shAll.reduce((a,m)=>a+m.stats.myShots,0),totShGf=shAll.reduce((a,m)=>a+(+m.gf||0),0);
+  const shWithXg=shAll.filter(m=>m.stats.myXg!=null),totShXg=shWithXg.reduce((a,m)=>a+(+m.stats.myXg||0),0),totShXgCnt=shWithXg.reduce((a,m)=>a+m.stats.myShots,0);
+  const sotL=shAll.filter(m=>m.stats.mySot!=null),totSot=sotL.reduce((a,m)=>a+m.stats.mySot,0),totShForSot=sotL.reduce((a,m)=>a+m.stats.myShots,0);
+  const xgPerSh=totShXgCnt>0?(totShXg/totShXgCnt).toFixed(2).replace(".",","):null;
   const sotPct=totShForSot>0?Math.round(totSot/totShForSot*100)+"%":null;
-  const avgSh=shL.length?(totSh/shL.length).toFixed(1).replace(".",","):null;
+  const convPct=totSh>0?Math.round(totShGf/totSh*100)+"%":null;
+  const avgSh=shAll.length?(totSh/shAll.length).toFixed(1).replace(".",","):null;
   const posG=posL.length&&avgPos>0?((posL.reduce((a,m)=>a+(+m.gf||0),0)/posL.length)/(avgPos/50)).toFixed(2).replace(".",","):null;
+  const totOppSot=gkAll.reduce((a,m)=>a+Math.max(0,+m.stats.oppSot||0),0);
+  const totSaves=gkAll.reduce((a,m)=>a+Math.max(0,(+m.stats.oppSot||0)-(+m.ga||0)),0);
+  const gkPct=totOppSot>0?Math.round(totSaves/totOppSot*100)+"%":null;
   const unlucky=L.filter(m=>{const d=matchDeserve(m);return d&&d.k=="unlucky"});
   const steal=L.filter(m=>{const d=matchDeserve(m);return d&&d.k=="undeserved"});
-  const statusTxt=diff>=0.5?"Mükemmel bitiricilik: Beklentinin üzerinde gol üretiyorsun.":diff<=-0.5?"Bitiricilik sorunu: Pozisyon zenginliğine göre gol sayın düşük kalıyor.":"Dengeli bitiricilik: xG beklentisiyle paralel skor üretiyorsun.";
+  const statusTxt=!n?"Gelişmiş şut/kaleci istatistikleri hesaplandı.":diff>=0.5?"Mükemmel bitiricilik: Beklentinin üzerinde gol üretiyorsun.":diff<=-0.5?"Bitiricilik sorunu: Pozisyon zenginliğine göre gol sayın düşük kalıyor.":"Dengeli bitiricilik: xG beklentisiyle paralel skor üretiyorsun.";
   let rows="";
   if(unlucky.length||steal.length){
     const hl=[...unlucky.map(m=>({m,d:matchDeserve(m)})),...steal.map(m=>({m,d:matchDeserve(m)}))].slice(-5).reverse();
     rows=`<div class="rt">Hak Ediş (Deservingness) Öne Çıkanlar</div>`+hl.map(({m,d})=>`<div class="row"><span class="desbdg ${d.k}">${d.ic} ${esc(d.t)}</span><span class="n">${esc(m.on)} (${m.gf}–${m.ga})</span><span class="lb">xG ${m.stats.myXg.toFixed(2).replace(".",",")} – ${(m.stats.oppXg??0).toFixed(2).replace(".",",")}</span></div>`).join("");
   }
-  const effRow=(xgPerSh||sotPct||posG)?`<div class="mtl" style="margin-top:8px"><div><b>${xgPerSh||"—"}</b><span>Şut Başına xG</span><small>şut kalitesi</small></div><div><b>${sotPct||"—"}</b><span>Şut İsabeti</span><small>${avgSh?avgSh+" şut/maç":"kaleyi bulan"}</small></div><div><b>${posG||"—"}</b><span>Top Verimliliği</span><small>%50 top başına gol</small></div></div>`:"";
-  return cd(`xG, xPts & Verimlilik Analizi<small>${n}/${totalM} maç kapsama</small>`,
-    `<div class="mtl"><div><b>${totXg.toFixed(1).replace(".",",")}</b><span>Toplam xG</span><small>gerçekte ${totGf} gol (${ds})</small></div><div><b style="color:${xpDiff>=0?"var(--ac)":"#f97316"}">${totXpts.toFixed(1).replace(".",",")}</b><span>Beklenen Puan (xPts)</span><small>gerçekte ${actPts}p (${xps})</small></div><div><b>${avgPos!=null?"%"+avgPos:"—"}</b><span>Ort. Topla Oynama</span><small>${avgPas!=null?"%"+avgPas+" pas":"kapsama "+n+"/"+totalM}</small></div></div>`+
-    effRow+
-    `<div class="note" style="margin:4px 0 6px"><b>${statusTxt}</b> Poisson xPts modeli yalnızca xG verisi girilmiş <b>${n}/${totalM} maçı</b> baz alır.</div>`+rows);
+  const topRow=n?`<div class="mtl"><div><b>${totXg.toFixed(1).replace(".",",")}</b><span>Toplam xG</span><small>gerçekte ${totGf} gol (${ds})</small></div><div><b style="color:${xpDiff>=0?"var(--ac)":"#f97316"}">${totXpts.toFixed(1).replace(".",",")}</b><span>Beklenen Puan (xPts)</span><small>gerçekte ${actPts}p (${xps})</small></div><div><b>${avgPos!=null?"%"+avgPos:"—"}</b><span>Ort. Topla Oynama</span><small>${avgPas!=null?"%"+avgPas+" pas":"kapsama "+n+"/"+totalM}</small></div></div>`:"";
+  const effRow=(xgPerSh||sotPct||convPct||gkPct||posG)?`<div class="mtl" style="margin-top:8px"><div><b>${convPct||"—"}</b><span>Şut Dönüşümü</span><small>${totSh?totShGf+"/"+totSh+" gol/şut":"gol / şut"}</small></div><div><b>${sotPct||"—"}</b><span>Şut İsabeti</span><small>${xgPerSh?xgPerSh+" xG/şut":(avgSh?avgSh+" şut/maç":"kaleyi bulan")}</small></div><div><b>${gkPct||"—"}</b><span>Kaleci Kurtarış</span><small>${totOppSot?totSaves+"/"+totOppSot+" kurtarış":(posG?posG+" top verim":"isabetli şuttan")}</small></div></div>`:"";
+  const covCnt=Math.max(n,shAll.length,gkAll.length);
+  return cd(`xG, xPts & Verimlilik Analizi<small>${covCnt}/${totalM} maç kapsama</small>`,
+    topRow+effRow+
+    `<div class="note" style="margin:4px 0 6px"><b>${statusTxt}</b> ${n?`Poisson xPts modeli xG verisi girilmiş <b>${n}/${totalM} maçı</b> baz alır.`:""}${gkAll.length?` Kaleci kurtarış oranı <b>${gkAll.length} maçtaki</b> rakip isabetli şutlardan hesaplandı.`:""}</div>`+rows);
 }
 
 
