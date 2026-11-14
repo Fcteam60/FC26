@@ -473,7 +473,7 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
 <datalist id="allpl"></datalist>
 <script>
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="17.3",ELK="fc26lig4_log";let SWR=null;
+const VER="17.4",ELK="fc26lig4_log";let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -1632,10 +1632,10 @@ function homeView(s){
     const t=s.ts||{},n=(t.w||0)+(t.d||0)+(t.l||0);
     if(n)h+=cd("Sezon durumu",R2("Maç",n)+R2("G-B-M",(t.w||0)+"-"+(t.d||0)+"-"+(t.l||0))+R2("Gol (attığı / yediği)",(t.gf||0)+" / "+(t.ga||0))+R2("Form",`<span class="fm">${dotsOf(ms)}</span>`));
     const hasAw=(s.pl||[]).some(p=>(p.g||0)+(p.a||0)+(p.mom||0)+(p.m||0)>0);
-    if(hasAw){const aw=seasonAwards(s);if(aw)h+=fold("aw","🏆 Sezon Ödülleri",aw.mvp.n+" ("+aw.mvp.g+"G "+aw.mvp.a+"A)",()=>awardsCard(s))}
+    if(hasAw){const aw=seasonAwards(s);if(aw)h+=fold("aw","🏆 Sezon Ödülleri",esc(aw.mvp.n)+" ("+aw.mvp.g+"G "+aw.mvp.a+"A)",()=>awardsCard(s))}
     const rvL=!fin?rivals(s):[];
     if(rvL.length)h+=fold("an","🔍 Rakip Analizi",rvL.length+" rakip",()=>analCard(s));
-    h+=fold("oy","⚙️ Oyun Ayarları",oyTxt(s)||"Seçilmedi",()=>oyCard(s));
+    h+=fold("oy","⚙️ Oyun Ayarları",esc(oyTxt(s)||"Seçilmedi"),()=>oyCard(s));
   }
   return h}
 /* ---------- OYUNCU ADI TAMAMLAMA / KADRO TAŞIMA ---------- */

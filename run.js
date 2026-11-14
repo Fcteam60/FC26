@@ -98,7 +98,7 @@ console.log("güvenlik ve yedek");
 
 console.log("v17.1 denetim iyileştirmeleri");
 {
-  t("VER 17.3 olarak güncellendi", ctx.__x.VER === "17.3", ctx.__x.VER);
+  t("VER 17.4 olarak güncellendi", ctx.__x.VER === "17.4", ctx.__x.VER);
   t("sqFindAny O(1) Map önbelleği çalışıyor", ctx.__x.sqFindAny("Vitinha") && ctx.__x.sqFindAny("vitinha").p.n === "Vitinha");
   const remapTest = { tn: ["Inter", "Milan"], seasons: [{ id: 1, name: "S1", date: "d", sn: { "Inter": [85, 85, 85, 85] }, mt: [] }] };
   ctx.remap(remapTest);
