@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "FC 26 Grup Ligi",
-  "short_name": "FC26 Lig",
-  "description": "FC 26 Grup Ligi ve Turnuva Takip Uygulaması",
+  "name": "FC 27 Grup Ligi",
+  "short_name": "FC27 Lig",
+  "description": "FC 27 Grup Ligi ve Turnuva Takip Uygulaması",
   "lang": "tr",
   "start_url": "./index.html",
   "scope": "./",

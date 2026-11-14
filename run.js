@@ -6,14 +6,14 @@ const src = html.slice(html.indexOf("<script>") + 8, html.lastIndexOf("</script>
 const mem = {};
 const mkEl = () => new Proxy(function () {}, { get: (t, k) => { if (k === "style" || k === "dataset" || k === "classList") return mkEl(); if (k === "firstChild") return null; if (k === "textContent" || k === "innerHTML" || k === "value") return ""; if (k === Symbol.toPrimitive) return () => ""; return mkEl(); }, set: () => true, apply: () => mkEl() });
 const doc = new Proxy({}, { get: (t, k) => (k === "addEventListener" ? () => {} : k === "hidden" ? false : mkEl()), set: () => true });
-const ctx = { document: doc, localStorage: { getItem: k => (k in mem ? mem[k] : null), setItem: (k, v) => { mem[k] = String(v); }, removeItem: k => { delete mem[k]; } },
+const ctx = { document: doc, localStorage: { getItem: k => (k in mem ? mem[k] : null), setItem: (k, v) => { if (mem.__fail) throw new Error("quota"); mem[k] = String(v); }, removeItem: k => { delete mem[k]; } },
   navigator: { userAgent: "node" }, location: { origin: "x", href: "x", search: "", hash: "" }, history: { replaceState() {} },
   addEventListener() {}, scrollTo() {}, requestAnimationFrame() {}, matchMedia: () => ({ matches: false, addEventListener() {} }),
   performance, setTimeout, clearTimeout, console, Date, Math, JSON, Intl, URL, TextEncoder, TextDecoder, atob, btoa,
   Blob: function () {}, File: function () {}, FileReader: function () {}, Image: function () {}, getComputedStyle: () => ({}), CSS: { supports: () => false } };
 ctx.window = ctx; ctx.globalThis = ctx;
 vm.createContext(ctx);
-vm.runInContext(src + "\n;globalThis.__x={store:()=>store,T:()=>T,cleanStats,esc,st}", ctx);
+vm.runInContext(src + "\n;globalThis.__x={store:()=>store,T:()=>T,TN:()=>TN,cleanStats,esc,st,VER,sqFindAny,dotsOf,bkName,slug,impWarn}", ctx);
 
 let pass = 0, fail = 0;
 const t = (name, cond, extra) => { if (cond) pass++; else { fail++; console.log("  ✗", name, extra !== undefined ? "→ " + JSON.stringify(extra) : ""); } };
@@ -98,13 +98,42 @@ console.log("güvenlik ve yedek");
 
 console.log("v17.1 denetim iyileştirmeleri");
 {
-  t("VER 17.1 olarak güncellendi", ctx.VER === "17.1", ctx.VER);
-  t("sqFindAny O(1) Map önbelleği çalışıyor", ctx.sqFindAny("Vitinha") && ctx.sqFindAny("vitinha").p.n === "Vitinha");
+  t("VER 17.3 olarak güncellendi", ctx.__x.VER === "17.3", ctx.__x.VER);
+  t("sqFindAny O(1) Map önbelleği çalışıyor", ctx.__x.sqFindAny("Vitinha") && ctx.__x.sqFindAny("vitinha").p.n === "Vitinha");
   const remapTest = { tn: ["Inter", "Milan"], seasons: [{ id: 1, name: "S1", date: "d", sn: { "Inter": [85, 85, 85, 85] }, mt: [] }] };
   ctx.remap(remapTest);
   t("remap s.sn anahtarlarını ALIAS üzerinden günceller (Inter -> Lombardia FC)", Array.isArray(remapTest.seasons[0].sn["Lombardia FC"]));
-  const fdHtml = ctx.dotsOf([{ gf: 2, ga: 0, on: "PSG" }]);
+  const fdHtml = ctx.__x.dotsOf([{ gf: 2, ga: 0, on: "PSG" }]);
   t("dotsOf renk körlüğü için aria-label ve title içerir", fdHtml.includes('aria-label="Galibiyet (G)"') && fdHtml.includes('role="img"'));
+}
+
+
+console.log("v17.2 sahip adı, sürüm, yedek güvenliği");
+{
+  const X = ctx.__x; X.store().owner = "Ali Çağrı";
+  t("yedek adı: sahip + tarih, Türkçe harfler temiz", /^fc27-yedek-Ali-Cagri-\d{4}-\d\d-\d\d\.json$/.test(X.bkName()), X.bkName());
+  X.store().owner = ""; t("sahip yoksa ad yine geçerli", /^fc27-yedek-\d{4}-\d\d-\d\d\.json$/.test(X.bkName()), X.bkName());
+  X.store().owner = "Ali Çağrı";
+  t("ownDiff: farklı sahip → true", ctx.ownDiff({ owner: "Veli" }) === true);
+  t("ownDiff: aynı sahip / sahipsiz yedek → false", ctx.ownDiff({ owner: "Ali Çağrı" }) === false && ctx.ownDiff({}) === false && ctx.ownDiff(null) === false);
+  t("verGt sürüm karşılaştırması", ctx.verGt("17.3", "17.2") && ctx.verGt("17.10", "17.9") && !ctx.verGt("17.2", "17.2") && !ctx.verGt("17.1", "17.2"));
+  t("impWarn: farklı sahip ve yeni sürüm uyarısı", X.impWarn({ owner: "Veli", app: "99.0" }).includes("Veli") && X.impWarn({ owner: "Veli", app: "99.0" }).includes("v99.0"));
+  t("impWarn: sorun yoksa boş", X.impWarn({ owner: "Ali Çağrı", app: "17.2" }) === "");
+  // 14 sezonluk gidiş-dönüş (yedek -> doğrulama -> aynı veri)
+  const base = X.store().seasons[0], o = { v: 4, tn: X.TN(), cur: 14, nx: 14, seasons: [] };
+  for (let k = 1; k <= 14; k++) { const s = JSON.parse(JSON.stringify(base)); s.id = k; s.name = "Sezon " + k; s.ut = k; s.mt = [];
+    for (let i = 0; i < 40; i++) s.mt.push({ id: k * 1000 + i, opp: 1, on: "X", rd: "Grup", gf: i % 4, ga: i % 3, et: 0, pf: null, pa: null, sc: {}, as: {}, mom: "", stats: i % 2 ? { myXg: 1.2, oppXg: 0.7 } : null });
+    o.seasons.push(s); }
+  const p = ctx.parseBk(JSON.stringify(o));
+  t("14 sezon yedeği doğrulanır", p !== null && p.seasons.length === 14);
+  t("gidiş-dönüşte maçlar birebir aynı", p && JSON.stringify(p.seasons.map(s => s.mt)) === JSON.stringify(o.seasons.map(s => s.mt)));
+  const r = ctx.mergeSeasons(p.seasons[3], p.seasons[3]);
+  t("kendisiyle birleştirme: maç sayısı değişmez (çift sayım yok)", r.mt.length === 40 && r.ts.gf === p.seasons[3].mt.reduce((a, m) => a + m.gf, 0));
+  // sıfırlama: depolama doluyken durmalı, sahip adı korunmalı
+  const before = X.store(); mem.__fail = true; const msg = ctx.resetAll(); mem.__fail = false;
+  t("depolama doluyken sıfırlama durur, veri korunur", X.store() === before && typeof msg === "string" && msg.startsWith("Sıfırlanmadı"), msg);
+  ctx.resetAll();
+  t("normal sıfırlama: kurtarma kopyası yazıldı, sahip adı korundu", X.store() !== before && X.store().owner === "Ali Çağrı" && !!mem["fc26lig4_sifirlanan"]);
 }
 
 console.log(`\n${pass} geçti, ${fail} kaldı`);
