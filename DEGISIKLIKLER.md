@@ -1,5 +1,9 @@
 # Değişiklik listesi
 
+## v17.7 (performans ve güvenlik)
+- `__proto__` düzeltmesi: oyuncu/takım adıyla anahtarlanan nesneler artık prototipsiz (`Object.create(null)`); `__proto__` adlı bir isim veriyi bozmaz.
+- Hızlı skor paneli açılırken kasma azaltıldı: karartma katmanından blur kaldırıldı ve koyulaştırıldı, panelden `backdrop-filter` kaldırılıp gölge küçültüldü, panel opak yapıldı, `body.qo` iken arkadaki tüm bulanıklıklar kapatıldı.
+
 ## v17.6 (FC 27 adlandırması)
 - Paylaşılan görsellerin dosya adı `fc26-…` yerine `fc27-…` oldu.
 - Paket, klasör ve depo adı FC27 olarak düzenlendi. Depolama anahtarları (`fc26lig4`) kullanıcı verisi için bilerek korundu.
