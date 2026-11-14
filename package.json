@@ -1,0 +1,9 @@
+{
+  "name": "fc27-lig",
+  "version": "17.6.0",
+  "private": true,
+  "description": "FC 27 Grup Ligi ve Turnuva Takip Uygulaması (PWA)",
+  "scripts": {
+    "test": "node tests/run.js && node tests/e2e.js && node tests/e2e2.js && node tests/sw-test.js && node tests/xss.js"
+  }
+}

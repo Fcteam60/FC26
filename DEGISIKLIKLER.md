@@ -1,25 +1,22 @@
-# FC26 Lig v17: değişiklik listesi
+# Değişiklik listesi
 
-## Dağıtım
-Bu klasördeki dosyaları GitHub Pages kök dizinindeki eskileriyle değiştir (index.html, sw.js, 4 PNG).
-manifest.webmanifest ve _nojekyll değişmedi. tests/ klasörü yayına gerekmez, yerel kontrol içindir.
-sw.js içindeki CACHE adı v17-0 olduğu için uygulama açılışta güncelleme banner'ı gösterir.
-Sonraki her yayında CACHE adını bir artır (örn. v17-1).
+## v17.6 (FC 27 adlandırması)
+- Paylaşılan görsellerin dosya adı `fc26-…` yerine `fc27-…` oldu.
+- Paket, klasör ve depo adı FC27 olarak düzenlendi. Depolama anahtarları (`fc26lig4`) kullanıcı verisi için bilerek korundu.
 
-## Düzeltmeler
-1. xPts hızı: sonuçlar önbelleğe alınıyor, Poisson olasılıkları bir kez hesaplanıyor.
-   İstatistik ekranı 500 maçta ~59 → ~7 ms, 2000 maçta ~173 → ~19 ms.
-2. xPts doğruluğu: Poisson 16 gole uzatıldı, olasılıklar normalize ediliyor, xG tavanı 12 → 7.
-   (Eski: xG 12-0 maçı için xPts 1,04 çıkıyordu.)
-3. Service worker: kurulumda HTTP önbelleği atlanıyor (cache:"reload"), arka plan güncellemesi
-   waitUntil içinde, gezinmede ?utm gibi sorgu dizeleri önbellek eşleşmesini bozmuyor.
-4. Yedek birleştirme: birleşen sezonda oyuncu ve takım toplamları maçlardan yeniden hesaplanıyor.
-   Önceki durum saklanamazsa mesaj artık bunu açıkça söylüyor. Diyalog, yerelde silinen maçın
-   yedekte varsa geri geleceğini belirtiyor.
-5. cleanStats yan etkisiz: cleanStatsW {s, warns} döndürür, uyarı yalnızca kayıt anında gösterilir.
-6. Erişilebilirlik: klavye odak halkası (:focus-visible), 11 px metinler 12 px.
-7. İkonlar PNG-8'e sıkıştırıldı: toplam ~1 MB → ~260 KB (görsel fark yok).
-8. Testler: tests/run.js (37 test) ve tests/sw-test.js (11 test). Çalıştırma: node tests/run.js
+## v17.5 (temizlik sürümü)
+- Depo düzeni: testler `tests/` klasörüne taşındı, eski `fc26-lig-v2.zip` ve fazlalık `_nojekyll` kaldırıldı.
+- `npm test` komutu ve GitHub Actions ile otomatik test eklendi.
+- Savunma: "Tümünü göster" (`all`) kura durumu yokken, "Sezon adı kaydet" (`rens`) ad penceresi yokken çökmez.
+- README eklendi; sürüm ve önbellek adı 17.5 yapıldı.
+
+## v17.0 – v17.4
+1. xPts hızlandırıldı (önbellek, Poisson bir kez hesaplanır) ve doğruluğu artırıldı (16 gol, normalizasyon, xG tavanı 7).
+2. Service worker: kurulumda HTTP önbelleği atlanır, arka plan güncellemesi `waitUntil` içinde, `?utm` gibi sorgular önbelleği bozmaz.
+3. Yedek birleştirme: birleşen sezonda oyuncu ve takım toplamları maçlardan yeniden hesaplanır.
+4. `cleanStats` yan etkisiz; erişilebilirlik (`:focus-visible`, en az 12 px metin).
+5. İkonlar PNG-8'e sıkıştırıldı (~1 MB → ~260 KB).
+6. Sahip adı, sürüm gösterimi, hata günlüğü ve yedek güvenliği eklendi.
 
 ## Bilinen sınırlar
 - Birleştirme bir "birleşim"dir: yerelde sildiğin maç yedekte varsa geri gelir.

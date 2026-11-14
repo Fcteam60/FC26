@@ -473,7 +473,7 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
 <datalist id="allpl"></datalist>
 <script>
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="17.4",ELK="fc26lig4_log";let SWR=null;
+const VER="17.6",ELK="fc26lig4_log";let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -1526,7 +1526,7 @@ async function mkImg(kind,x){
   if(kind=="kura"&&!x.G){ask("Önce kurayı çek.");render();return}
   try{try{await document.fonts.load('700 30px "FC Sayi"')}catch(e){}const cv=kind=="kura"?await kuraCv(x):kind=="kariyer"?await kariyerCv():kind=="mac"?await macCv(x):await karneCv(x);
     const blob=await new Promise(r=>cv.toBlob(r,"image/png"));
-    st.img={title:kind=="kariyer"?"Kariyer özeti":kind=="mac"?"Maç kartı":x.name+(kind=="kura"?" kurası":" karnesi"),name:"fc26-"+kind+"-"+x.name.replace(/[^\w\u00c0-\u024f]+/g,"-").replace(/^-+|-+$/g,"").toLowerCase()+".png",url:cv.toDataURL("image/png"),blob,msg:"",x,w:cv.width,h:cv.height,anim:kind=="karne"&&!rm()}}
+    st.img={title:kind=="kariyer"?"Kariyer özeti":kind=="mac"?"Maç kartı":x.name+(kind=="kura"?" kurası":" karnesi"),name:"fc27-"+kind+"-"+x.name.replace(/[^\w\u00c0-\u024f]+/g,"-").replace(/^-+|-+$/g,"").toLowerCase()+".png",url:cv.toDataURL("image/png"),blob,msg:"",x,w:cv.width,h:cv.height,anim:kind=="karne"&&!rm()}}
   catch(e){ask("Görsel oluşturulamadı.")}
   render();if(st.img&&st.img.anim)playKarne(st.img)}
 const imgDlg=()=>`<div class="dlg"><div class="dbox wide" role="dialog" aria-modal="true"><div class="rs">${esc(st.img.title)}</div>${st.img.anim?`<canvas id="kcv" class="shimg" width="${st.img.w||1080}" height="${st.img.h||1400}" role="img" aria-label="${esc(st.img.title)}"></canvas>`:`<img class="shimg" src="${st.img.url}" alt="${esc(st.img.title)}">`}<div class="note" style="margin:0 0 4px">${esc(st.img.msg||"Görsele basılı tutarak da kaydedebilirsin.")}</div><div class="bar" style="margin:8px 0 0"><button class="btn p" data-a="shimg">Paylaş</button><a class="btn" href="${st.img.url}" download="${esc(st.img.name)}">İndir</a><button class="btn" data-a="no">Kapat</button></div></div></div>`;
@@ -2013,7 +2013,7 @@ document.addEventListener("click",e=>{
   else if(a=="dcancel"){st.dr=null;st.k=0}
   else if(a=="new"){if(s.G){ask("Kura onaylandı. Yeniden çekmek için önce kurayı sıfırla.");render();return}st.dr=withSn(s,()=>genDraw(s,1500,1));st.k=0;if(st.dr)s.dn=(s.dn||0)+1;else ask("Bu kurallarla kura üretilemedi. Kurulumda ülke sınırını gevşetip tekrar dene.")}
   else if(a=="next"){st.k++;const q=st.dr&&st.dr.seq[st.k-1];if(q&&q[0]===s.my){try{navigator.vibrate&&navigator.vibrate([70,50,140])}catch(e){}}}
-  else if(a=="all")st.k=st.dr.seq.length;
+  else if(a=="all"&&st.dr)st.k=st.dr.seq.length;
   else if(a=="use"){if(!st.dr||s.G)return;s.G=st.dr.G.map(g=>g.slice());sync();st.tab=3}
   else if(a=="bal"){if(s.G){ask("Kura onaylandı. Yeniden çekmek için önce kurayı sıfırla.");render();return}const d=withSn(s,()=>genDraw(s,4000,.4,1500));if(d){s.dn=(s.dn||0)+1;s.G=d.G.map(g=>g.slice());sync();st.tab=3;un="Gruplar otomatik kuruldu"}else ask("Bu kurallarla kura üretilemedi. Kurulumda ülke sınırını gevşetip tekrar dene.")}
   else if(a=="yes"){const f=st.ask&&st.ask.fn;st.ask=null;if(f){const r=f();if(typeof r=="string")un=r}}
@@ -2032,7 +2032,7 @@ document.addEventListener("click",e=>{
   else if(a=="own"){st.own=1}
   else if(a=="owno"){st.own=0}
   else if(a=="owns"){const v=($("ow").value||"").replace(/\s+/g," ").trim().slice(0,20);if(!v){$("ow").focus();return}store.owner=v;st.own=0;un="Kayıtlar "+v+" adına"}
-  else if(a=="rens"){const v=($("rn").value||"").replace(/\s+/g," ").trim().slice(0,24),x=store.seasons.find(q=>q.id==st.ren.id);if(!v){$("rn").focus();return}if(x){x.name=v;un="Sezon adı değiştirildi"}st.ren=null}
+  else if(a=="rens"){const v=($("rn").value||"").replace(/\s+/g," ").trim().slice(0,24),x=st.ren?store.seasons.find(q=>q.id==st.ren.id):null;if(!v){$("rn").focus();return}if(x){x.name=v;un="Sezon adı değiştirildi"}st.ren=null}
   else if(a=="mman")st.mode="man";
   else if(a=="ns"){store.nx=nextNo();const n=mk(Date.now(),store.nx,s);store.seasons.push(n);store.cur=n.id;sync();st.mode=null;st.tab=7}
   else if(a=="pick"){if(tmLock(s)||st.dr){ask("Takım kilitli. Değiştirmek için önce Takımı değiştir ya da Kurayı iptal et’i kullan.");render();return}withSn(s,()=>spin(s));return}
