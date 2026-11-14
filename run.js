@@ -95,5 +95,17 @@ console.log("güvenlik ve yedek");
   t("geçersiz yedek reddedilir", ctx.parseBk("bu bir yedek değil") === null && ctx.parseBk("") === null && ctx.parseBk("{}") === null);
 }
 
+
+console.log("v17.1 denetim iyileştirmeleri");
+{
+  t("VER 17.1 olarak güncellendi", ctx.VER === "17.1", ctx.VER);
+  t("sqFindAny O(1) Map önbelleği çalışıyor", ctx.sqFindAny("Vitinha") && ctx.sqFindAny("vitinha").p.n === "Vitinha");
+  const remapTest = { tn: ["Inter", "Milan"], seasons: [{ id: 1, name: "S1", date: "d", sn: { "Inter": [85, 85, 85, 85] }, mt: [] }] };
+  ctx.remap(remapTest);
+  t("remap s.sn anahtarlarını ALIAS üzerinden günceller (Inter -> Lombardia FC)", Array.isArray(remapTest.seasons[0].sn["Lombardia FC"]));
+  const fdHtml = ctx.dotsOf([{ gf: 2, ga: 0, on: "PSG" }]);
+  t("dotsOf renk körlüğü için aria-label ve title içerir", fdHtml.includes('aria-label="Galibiyet (G)"') && fdHtml.includes('role="img"'));
+}
+
 console.log(`\n${pass} geçti, ${fail} kaldı`);
 process.exit(fail ? 1 : 0);
