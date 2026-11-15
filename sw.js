@@ -1,7 +1,10 @@
-const CACHE = "fc27-lig-v17-11";
+const CACHE = "fc27-lig-v17-18";
 const FILES = [
   "./",
   "./index.html",
+  "./style.css",
+  "./data.js",
+  "./app.js",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png",
@@ -26,6 +29,8 @@ self.addEventListener("activate", e => {
     caches.keys()
       .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
+      .then(() => self.clients.matchAll({ type: "window" }))
+      .then(clients => clients.forEach(cl => cl.postMessage({ type: "SW_UPDATED", cache: CACHE })))
   );
 });
 
@@ -41,6 +46,9 @@ self.addEventListener("fetch", e => {
       if (res && res.ok && new URL(e.request.url).origin === location.origin) {
         const c = await caches.open(CACHE);
         await c.put(e.request, res.clone());
+        if (isNav) {
+          await c.put("./index.html", res.clone());
+        }
       }
       return res;
     });
