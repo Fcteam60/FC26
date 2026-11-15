@@ -1,5 +1,12 @@
 # Değişiklik listesi
 
+## v17.19 (Hata Düzeltmesi: Lig → Saf Eleme Geçişi)
+- **`isLg` düzeltmesi:** `q===0` tek başına lig sayılıyordu. Lig modunda `q=0` olduğundan, "Direkt eleme" moduna geçince `gs=0, q=0` kalıyor ve `fixC` ayarı yeniden lige çeviriyordu. Artık lig koşulu `c.lg` veya (`q===0` ve `gs>0`); `gs=0` olan saf eleme kupası lig sayılmaz. Eski (`lg` bayrağı olmayan) lig kayıtları `gs>0 ve q=0` ile hâlâ doğru tanınır.
+- **`gmode` eleme dalı:** Eleme/grup moduna geçerken `q` değeri 0 ise 2'ye çekilir (daha önce yalnızca grup modunda yapılıyordu).
+- **`genDraw`:** `tight` verilmezse `1` varsayılır (NaN'a düşmesin diye sigorta).
+- **`matchTab`:** Yerel `cur` değişkeni `curS` olarak yeniden adlandırıldı (modül düzeyindeki `cur()` ile gölgelenme riski kalktı).
+- `VER` 17.19, `package.json` 17.19.0, `sw.js` önbelleği `fc27-lig-v17-19`.
+
 ## v17.18 (3. Aşama: Monolith Yapıdan Çıkış – `style.css` ve `app.js` Fiziksel Ayrımı)
 - **Fiziksel bölme:** Tek parça ~300 KB'lık `index.html`, üç dosyaya ayrıldı: `index.html` (yalnızca HTML iskeleti), `style.css` (tüm stiller ve gömülü yazı tipi) ve `app.js` (tüm uygulama mantığı). Kod satır satır aynıdır; davranış değişmemiştir.
 - **`defer` yükleme sırası:** `<link rel="stylesheet" href="style.css">`, ardından `<script src="data.js" defer>` ve `<script src="app.js" defer>`. `defer` betikleri belge sırasıyla çalıştığından `RAW`/`SQ` verileri her zaman `app.js`'ten önce hazırdır. ES modülü kullanılmadı.

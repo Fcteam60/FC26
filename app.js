@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="17.18",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="17.19",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -51,7 +51,7 @@ const ALIAS={"Inter":"Lombardia FC","Inter Milan":"Lombardia FC","Milan":"Milano
 const SN=["Grup aşamasında elendi","Son 64’te elendi","Son 32’de elendi","Son 16’da elendi","Çeyrek finalde elendi","Yarı finalde elendi","Finalde kaybetti","Şampiyon "];
 const SNL={0:"Ligde alt sıralar",4:"Ligde orta sıralar",5:"Ligi 3. bitirdi",6:"Ligi 2. bitirdi",7:"Lig Şampiyonu "};
 const LGN=[4,6,8,10,12,14,16,18,20,22,24];
-const isLg=c=>!!(c&&(c.lg||c.q===0||(c.gs==c.N&&c.q===0)));
+const isLg=c=>!!(c&&(c.lg||(c.q===0&&c.gs>0)));
 const stTxt=(c,st)=>isLg(c)?(SNL[st]||SN[st]):SN[st];
 const RN={64:"Son 64",32:"Son 32",16:"Son 16",8:"Çeyrek final",4:"Yarı final",2:"Final"};
 const RKM={64:1,32:2,16:3,8:4,4:5};
@@ -119,7 +119,7 @@ function ruleLines(s){
   return o}
 
 /* ---------- KURA ÜRETİMİ ---------- */
-function genDraw(s,tries,tight,ms){ms=ms||900;const t0=Date.now();
+function genDraw(s,tries,tight,ms){ms=ms||900;tight=tight||1;const t0=Date.now();
   const c=s.cfg,P=s.P,z=gsz(c),G=P.length/z,gc=isLg(c)?(s.rl.cap||99):(s.rl.gcap||99),pot=s.rl.dm!="rnd";
   const base=pot?P.slice().sort((x,y)=>V(T[y])-V(T[x])):null;
   const tg=.55*Math.sqrt(8/z)*tight,ta=1.3*Math.sqrt(8/z)*tight;
@@ -442,7 +442,7 @@ function formCard(ML){const L=ML.slice(-10),n=L.length;if(n<2)return "";
   return cd(`Form<small>son ${n} maç</small>`,`<div class="note" style="margin:0 0 4px">Maç başı <b>${f2(tot,n)}</b> puan.${tr}</div><svg viewBox="0 0 300 108" style="width:100%" role="img" aria-label="Hareketli ortalama puan"><g>${gr}</g><path d="${ln}" fill="none" stroke-width="2.5" style="stroke:var(--ac)"/>${dots}</svg><div class="mfr">${L.map(m=>`<div class="mfc"><i class="${mres(m)}">${LT[mres(m)]}</i><span>${m.gf}-${m.ga}</span></div>`).join("")}</div><div class="note">Çizgi: son 3 maçın ortalama puanı (G=3, B=1, M=0).</div>`)}
 function matchTab(){const A0=allM(),ds=new Set(A0.map(dOf)),fd=ds.has(st.sfd)?st.sfd:"",A=fd?A0.filter(e=>dOf(e)==fd):A0,ML=A.map(e=>e.m),fb=oyFilter(A0,fd);
   if(!ML.length)return fb+cd("Maç istatistikleri",emp("Maç sonuçları girildikçe ortalamalar, form ve skorlar burada görünür."));
-  const cur=store.seasons.find(x=>x.id==store.cur),C=tally(ML),S=tally((cur&&cur.mt)||[]),ad=C.gf-C.ga;
+  const curS=store.seasons.find(x=>x.id==store.cur),C=tally(ML),S=tally((curS&&curS.mt)||[]),ad=C.gf-C.ga;
   const c1=cd("Genel görünüm<small>kariyer</small>",`<div class="mtl">${tile(C.n,"maç")}${tile(pct(C.w,C.n),"galibiyet")}${tile((ad>0?"+":"")+ad,"averaj",C.gf+" - "+C.ga)}</div>`+sbar(C)+`<div class="mgl"><span class="w">${C.w} G</span><span class="d">${C.d} B</span><span class="l">${C.l} M</span></div>`);
   const sv=f=>S.n?"bu sezon "+f(S):"";
   const c3=cd("Maç başına",`<div class="mtl c2">${tile(f2(C.gf,C.n),"atılan gol",sv(o=>f2(o.gf,o.n)))}${tile(f2(C.ga,C.n),"yenen gol",sv(o=>f2(o.ga,o.n)))}${tile(pct(C.cs,C.n),"temiz kasa",sv(o=>pct(o.cs,o.n)))}${tile(f2(C.w*3+C.d,C.n),"puan",sv(o=>f2(o.w*3+o.d,o.n)))}</div>`);
@@ -459,7 +459,7 @@ function matchTab(){const A0=allM(),ds=new Set(A0.map(dOf)),fd=ds.has(st.sfd)?st
   const cl=Object.entries(CO).map(([c,L])=>({c:c,o:tally(L)})).sort((a,b)=>b.o.n-a.o.n),cm=cl[0]?cl[0].o.n:1;
   const bst=cl.filter(x=>x.o.n>=3).sort((a,b)=>b.o.w/b.o.n-a.o.w/a.o.n)[0];
   const c7=cl.length?cd("Rakip ülkeler",(bst?`<div class="note" style="margin:0 0 6px">En başarılı olduğun ülke: <b>${CN[bst.c][0]}</b> (%${Math.round(bst.o.w/bst.o.n*100)} galibiyet)</div>`:"")+cl.slice(0,8).map(x=>`<div class="row"><span class="n" style="flex:0 0 110px">${fl(x.c)} ${CN[x.c][0]}</span><div class="bk"><i style="width:${x.o.n/cm*100}%"></i></div><b>${x.o.n}</b><span class="lb" style="min-width:38px;text-align:right">%${Math.round(x.o.w/x.o.n*100)}</span></div>`).join("")+`<div class="note">Sağdaki: o ülkeye karşı galibiyet oranı.</div>`):"";
-  return fb+tacticalDnaCard(cur)+xgSummaryCard(ML)+c1+formCard(ML)+c3+c4+c5+etPkCard(ML)+c6+surCard(ML)+oyDiff(A0)+c7}
+  return fb+tacticalDnaCard(curS)+xgSummaryCard(ML)+c1+formCard(ML)+c3+c4+c5+etPkCard(ML)+c6+surCard(ML)+oyDiff(A0)+c7}
 /* ---------- KARİYER ÖZETİ, UZATMA/PENALTI, CLUTCH & MEVKİ DAĞILIMI ---------- */
 function etPkCard(ML){
   const etL=(ML||[]).filter(m=>m.et||(m.pf!=null&&m.pa!=null));
@@ -1747,7 +1747,7 @@ document.addEventListener("click",e=>{
   else if(a=="shimg"){const im=st.img;if(!im)return;
     try{const f=new File([im.blob],im.name,{type:"image/png"});if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:im.title}).catch(()=>{});return}}catch(e){}
     im.msg="Bu tarayıcı doğrudan paylaşmayı desteklemiyor. İndir düğmesini kullan ya da görsele basılı tutup kaydet.";render();return}
-  else if(a=="gmode"){const m=+dv;if(m==2){s.cfg.lg=1;if(!LGN.includes(s.cfg.N))s.cfg.N=16;s.cfg.gs=s.cfg.N;s.cfg.q=0}else{delete s.cfg.lg;if(![4,8,16,32,64].includes(s.cfg.N))s.cfg.N=16;s.cfg.gs=m?(s.cfg.gs&&s.cfg.gs<s.cfg.N?s.cfg.gs:4):0;if(m&&!s.cfg.q)s.cfg.q=2}s.G=null;fixC(s.cfg)}
+  else if(a=="gmode"){const m=+dv;if(m==2){s.cfg.lg=1;if(!LGN.includes(s.cfg.N))s.cfg.N=16;s.cfg.gs=s.cfg.N;s.cfg.q=0}else{delete s.cfg.lg;if(![4,8,16,32,64].includes(s.cfg.N))s.cfg.N=16;s.cfg.gs=m?(s.cfg.gs&&s.cfg.gs<s.cfg.N?s.cfg.gs:4):0;if(!s.cfg.q)s.cfg.q=2}s.G=null;fixC(s.cfg)}
   else if(a=="rl")s.rl[dk]=dv;
   else if(a=="xc"){const x=s.rl.xc,j=x.indexOf(dv);if(j<0)x.push(dv);else x.splice(j,1)}
   else if(a=="xcall")s.rl.xc=[];
