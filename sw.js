@@ -1,9 +1,10 @@
-const CACHE = "fc27-lig-v17-19";
+const CACHE = "fc27-lig-v18-2";
 const FILES = [
   "./",
   "./index.html",
   "./style.css",
   "./data.js",
+  "./storage.js",
   "./app.js",
   "./manifest.webmanifest",
   "./icon-192.png",

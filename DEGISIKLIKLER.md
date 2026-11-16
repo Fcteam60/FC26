@@ -1,5 +1,43 @@
 # Değişiklik listesi
 
+## v18.3 (Hata düzeltmeleri: veri ezilmesi koruması ve ilk açılış bildirimi)
+- **IndexedDB okuma hatasında veri ezilmesi engellendi (`storage.js` & `app.js`):** Ana kayıt okunurken geçici bir IndexedDB hatası olursa `kv.get` bunu "kayıt yok" gibi `null` döndürüp uygulamanın boş sezonla mevcut kaydı ezmesine yol açabiliyordu. Artık okuma hatası ayrı bayrakla (`hadMainReadFailure`) izlenir; bu durumda `st.readFail` kilidi devreye girer, hiçbir şey kaydedilmez ve kullanıcıya "Sayfayı Yenile" uyarısı gösterilir.
+- **İlk açılışta yanlış "Yeni sürüm var" bildirimi giderildi (`app.js`):** Service worker ilk kurulumda `SW_UPDATED` mesajı gönderiyordu; mesaj dinleyicisi artık yalnızca sayfa zaten bir SW tarafından kontrol ediliyorsa (`had`) bildirimi gösterir.
+- `VER` 18.3, `package.json` 18.3.0, `sw.js` önbelleği `fc27-lig-v18-3`.
+
+
+## v18.2 (Aşama 4: Eski `localStorage` Kopyası Temizliği, Ölü Kod Temizliği ve Dokümantasyon)
+- **Kullanıcı onaylı eski `localStorage` kopyası temizliği (`legacyLsInfo`, `clearLegacyLs`, `oldlsx`):** IndexedDB'ye geçiş bayrağı (`fc26lig4_idb=1`) aktifken `localStorage`'da hâlâ eski `fc26lig4` veya `fc26lig3` kopyası duruyorsa `Ayarlar › Depolama ve kota` kartında boyutuyla birlikte gösterilir. Kullanıcı **"Eski localStorage kopyasını sil"** butonuna bastığında onay penceresi açılır; silmeden hemen önce IndexedDB'deki `main` kaydının varlığı ve bütünlüğü doğrulanır, ardından eski kopya silinir.
+- **Kullanılmayan (ölü) kodların temizliği (`app.js`):** Eski sürümlerden (v17.9 ve v17.11 öncesi) kalan ve artık hiçbir görünümde çağrılmayan `sqCard`, `sqBtn`, `prevSq`, `pnames`, `allPlayersList`, `stripes`, `scTot`, `asTot`, `cleanStats` fonksiyonları ile bunlara ait atıl olay dalları (`sqx`, `sqf`, `sqadd`, `sqxi`, `sqall`, `msn`, `masn`, `padd`, `psq`, `tsx` ve mükerrer `reload` dalı) temizlendi.
+- **Kapsamlı depolama dokümantasyonu (`README.md`):** `storage.js` mimarisi, `kv` soyutlama katmanı, IndexedDB (`fc26lig4` / `kv` / `main`) yapısı, taşıma protokolü (`fc26lig4_idb=1`), sıralı yazma kuyruğu (`queueSave` / `flushSaveQueue`), `BroadcastChannel` çoklu sekme kilidi ve yedek plan (`localStorage` fallback) `README.md` içinde ayrıntılı olarak belgelendi.
+- `VER` 18.2, `package.json` 18.2.0, `sw.js` önbelleği `fc27-lig-v18-2`.
+
+
+## v18.1 (Aşama 3: Dayanıklılık – Çoklu Sekme `BroadcastChannel`, Kapanışta Yazma, Kota Göstergesi ve Yedek Hatırlatması)
+- **`BroadcastChannel` ile çoklu sekme senkronizasyonu (`storage.js` & `app.js`):** IndexedDB yazmaları `storage` olayını tetiklemediği için `BroadcastChannel("fc26lig4_sync")` kanalı eklendi. Her sekme benzersiz bir `TAB_ID` alır; bir sekmede `fc26lig4` kaydedildiğinde diğer açık sekmelere anında bildirim gider ve `st.staleTab = true` kilidiyle eski sekmenin yeni veriyi ezmesi engellenir (`localStorage` yedek modu için `storage` dinleyicisi de korundu).
+- **Sekme kapanırken / arka plana giderken anında yazma (`visibilitychange` & `pagehide`):** 200 ms biriktirmeli yazma kuyruğunda (`queueSave`) bekleyen bir değişiklik varsa, sekme kapatılırken (`pagehide`) veya arka plana atılırken (`visibilitychange` → `hidden`) zamanlayıcı iptal edilip `flushSaveQueue()` derhal çalıştırılır.
+- **Gerçek depolama ve kota göstergesi (`estimateStorage` & `quotaCard`):** `Ayarlar` sekmesine `navigator.storage.estimate()` API'sini ve gerçek uygulama verisi boyutunu (ana veri + kurtarma kopyaları) kullanan **Depolama ve kota** kartı eklendi (aktif depolama motoru, kullanılan KB/MB, toplam tarayıcı kotası ve doluluk çubuğu).
+- **Gelişmiş yedek hatırlatması (`bkRemind`):** Sezon tamamlandığında (`s.res` kaydedildiğinde ve son yedekten beri yeni veri varsa) veya son yedekten bu yana 10+ maç / 14+ gün (ya da maç girilmese bile 30+ gün) geçtiğinde ana ekranda doğrudan **"Hemen yedek indir"** butonlu hatırlatma kartı gösterilir.
+- `VER` 18.1, `package.json` 18.1.0, `sw.js` önbelleği `fc27-lig-v18-1`.
+
+
+## v18.0 (Aşama 2: IndexedDB Arka Ucu, Doğrulamalı Taşıma ve Yazma Kuyruğu)
+- **IndexedDB arka ucu (`storage.js`):** Veritabanı adı `fc26lig4`, depo (object store) adı `kv` olarak kurgulandı. Ana uygulama verisi tek kayıtta (`main`) tutulur; 5 kurtarma kopyası (`RCV`) da aynı depoya yazılarak `localStorage`'ın 5 MB kota sınırından tamamen çıkarıldı.
+- **Birebir doğrulamalı taşıma protokolü (`fc26lig4_idb=1`):** Açılışta önce IndexedDB'de `main` kaydı aranır; varsa doğrudan kullanılır. Yoksa ve `fc26lig4_idb=1` bayrağı henüz konulmamışsa `localStorage` içindeki `fc26lig4` (veya eski `fc26lig3`) verisi IndexedDB'ye kopyalanır, geri okunarak karakter karakter doğrulanır ve ancak doğrulama başarılı olduğunda `localStorage.setItem("fc26lig4_idb", "1")` bayrağı konulur. Eski `localStorage` ana kopyası güvenlik için silinmez; bayrak varken eski veriyle karışmaması için bir daha okunmaz.
+- **Sıralı yazma kuyruğu (`queueSave` & `flushSaveQueue`):** `save()` bellekteki `store` nesnesini anında günceller ve disk yazımını ~200 ms biriktirmeli (batching) sıralı kuyruğa alır. Yedek dışa aktarma (`exportFile`) ve ilk açılış (`initApp`) gibi kritik anlarda `save(true)` ile beklemesiz anında yazım yapılır. Yazma hataları `setSaveStatusCallback` üzerinden `st.sf` uyarı şeridine (`sfBan`) bağlanır.
+- **Yedek plan (Fallback) ve küçük tercihler:** Tarayıcıda IndexedDB kapalıysa veya açılamazsa (örn. kısıtlı özel sekme) otomatik olarak `localStorage` moduna düşer ve kullanıcıya kısa bir bildirim gösterir. Hata günlüğü (`fc26lig4_log`) ile tema/hareket tercihleri (`fc26lig4_theme`, `fc26lig4_motion`) hızlı erişim için `localStorage`'da tutulmaya devam eder.
+- `VER` 18.0, `package.json` 18.0.0, `sw.js` önbelleği `fc27-lig-v18-0`.
+
+
+## v17.20 (Aşama 1: Asenkron Depolama Katmanı – `storage.js` ve `kv` Soyutlaması)
+- **`storage.js` modülü ve `kv` arayüzü:** IndexedDB geçişinin 1. aşaması olarak `kv.get(k)`, `kv.set(k, v)` ve `kv.del(k)` metodlarını Promise döndüren asenkron bir katman halinde sunan `storage.js` eklendi (arka uçta şimdilik `localStorage` çalışır).
+- **Asenkron başlatma (`async initApp()`):** Üst düzeydeki senkron `localStorage` okuma bloğu `async initApp()` içine taşındı; ana kayıt (`fc26lig4`), eski sürüm geçişi (`fc26lig3`), bozuk kayıt kurtarma (`fc26lig4_bozuk`) ve takım listesi değişimi yedeği (`fc26lig4_liste_oncesi`) tamamen `await kv.*` üzerinden okunup yazıldıktan sonra `render()` çalıştırılır.
+- **Yıkıcı 3 akışta asenkron `snapKeep()` güvencesi:** `snapKeep()` asenkron yapıya geçirildi; yedek birleştirme (`mergeBk`), yedekle tümünü değiştirme (`impr`) ve tüm verileri sıfırlama (`resetAll`) akışları `await snapKeep(...)` sonucunu bekleyecek şekilde güncellendi. Onay pencerelerinin (`a=="yes"`) asenkron geri çağrıları (`await f()`) desteklemesi sağlandı.
+- **Kurtarma kopyaları önbelleği (`rcvCache`, `rcvGet`, `rcvRefresh`):** 5 kurtarma kopyasının (`RCV`) okunması ve silinmesi (`rcvx`, `rcv`) `kv` katmanına bağlandı; `render()` senkron akışının bozulmaması için bellek içi `rcvCache` senkronizasyonu eklendi.
+- **Yükleme sırası ve çevrimdışı önbellek:** `index.html` betik sırası `data.js` → `storage.js` → `app.js` olarak güncellendi; `sw.js` `FILES` listesine `./storage.js` eklendi. Hata günlüğü (`fc26lig4_log`) senkron hata yakalama için `localStorage`'da bırakıldı.
+- `VER` 17.20, `package.json` 17.20.0, `sw.js` önbelleği `fc27-lig-v17-20`.
+
+
 ## v17.19 (Hata Düzeltmesi: Lig → Saf Eleme Geçişi)
 - **`isLg` düzeltmesi:** `q===0` tek başına lig sayılıyordu. Lig modunda `q=0` olduğundan, "Direkt eleme" moduna geçince `gs=0, q=0` kalıyor ve `fixC` ayarı yeniden lige çeviriyordu. Artık lig koşulu `c.lg` veya (`q===0` ve `gs>0`); `gs=0` olan saf eleme kupası lig sayılmaz. Eski (`lg` bayrağı olmayan) lig kayıtları `gs>0 ve q=0` ile hâlâ doğru tanınır.
 - **`gmode` eleme dalı:** Eleme/grup moduna geçerken `q` değeri 0 ise 2'ye çekilir (daha önce yalnızca grup modunda yapılıyordu).

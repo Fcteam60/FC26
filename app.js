@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="17.19",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="18.3",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -189,13 +189,7 @@ function mig(o){
       s.P=(s.G||[]).flat();s.lk=s.P.length>0;if(!s.lk)s.P=null});
     o.v=4}
   remap(o);o.tn=TN;return o}
-let st={tab:0,dr:null,k:0,isGenerating:false},store=null,loadWarn="";
-{let r4=null;try{r4=localStorage.getItem("fc26lig4")}catch(e){}
- if(r4){try{const o=JSON.parse(r4);if(!okS(o))throw 0;store=mig(o)}catch(e){store=null;
-   try{if(localStorage.getItem("fc26lig4_bozuk")!==r4)localStorage.setItem("fc26lig4_bozuk",r4);loadWarn="Kayıtlı veri okunamadı. Ham veri silinmedi, Ayarlar › Kurtarma bölümünde saklanıyor. Şimdilik boş bir sezonla başlandı."}
-   catch(e2){loadWarn="Kayıtlı veri okunamadı ve ham veri saklanamadı (depolama dolu olabilir). Boş bir sezonla başlandı."}}}
- else if(r4===null){try{const r=localStorage.getItem("fc26lig3");if(r){const o=JSON.parse(r);if(okS(o))store=mig(o)}}catch(e){}}}
-if(!store)store={v:4,tn:TN,cur:1,nx:1,seasons:[mk(1,1)]};
+let st={tab:0,dr:null,k:0,isGenerating:false},store={v:4,tn:TN,cur:1,nx:1,seasons:[mk(1,1)]},loadWarn="";
 const K5=["w","d","l","gf","ga"];
 const mres=m=>m.gf>m.ga?"w":m.gf<m.ga?"l":(m.pf!=null&&m.pa!=null&&m.pf!==m.pa?(m.pf>m.pa?"w":"l"):"d");
 const mscTxt=m=>`${m.gf}–${m.ga}${m.pf!=null&&m.pa!=null?` (P ${m.pf}–${m.pa})`:m.et?" (UZ)":""}`;
@@ -275,10 +269,25 @@ const norm=()=>store.seasons.forEach(s=>{
 norm();
 const cur=()=>store.seasons.find(s=>s.id==store.cur)||store.seasons[0];
 const defMst=()=>({myPos:"",oppPos:"",myShots:"",oppShots:"",mySot:"",oppSot:"",myPass:"",oppPass:"",myXg:"",oppXg:""});
-const sync=()=>{st.ti=null;st.sqx=false;st.px=null;st.tsx=false;st.dr=null;st.k=0;st.mg=0;st.mo=0;st.mu=0;st.mp=0;st.mpf=0;st.mpa=0;st.mgls=[];st.msc=nob();st.mas=nob();st.mmom="";st.mop=null;st.mlg=null;st.qs=false;st.trm=null;st.gqm=false;st.med=null;st.mall=false;st.sall=false;st.madv=false;st.isGenerating=false;st.mst=defMst()};
-const save=()=>{
-  if(st.staleTab){ntfReload("Başka bir sekmede değişiklik yapıldı, veri kaybı yaşamamak için sayfayı yenileyin.");return}
-  achScan(true);let ok=true;try{store.v=4;store.tn=TN;localStorage.setItem("fc26lig4",JSON.stringify(store))}catch(e){ok=false}st.sf=!ok};
+const sync=()=>{st.ti=null;st.px=null;st.dr=null;st.k=0;st.mg=0;st.mo=0;st.mu=0;st.mp=0;st.mpf=0;st.mpa=0;st.mgls=[];st.msc=nob();st.mas=nob();st.mmom="";st.mop=null;st.mlg=null;st.qs=false;st.trm=null;st.gqm=false;st.med=null;st.mall=false;st.sall=false;st.madv=false;st.isGenerating=false;st.mst=defMst()};
+function refreshQuota(reRender){
+  if(typeof estimateStorage!=="function")return Promise.resolve(null);
+  return estimateStorage().then(est=>{
+    if(est){st.qest=est;if(reRender&&st.tab==6)render()}
+    return est;
+  }).catch(()=>null);
+}
+if(typeof setSaveStatusCallback==="function"){
+  setSaveStatusCallback(ok=>{const prev=!!st.sf;st.sf=!ok;refreshQuota(false);if(prev!==st.sf)render()});
+}
+const save=(immediate)=>{
+  if(st.readFail)return Promise.resolve(false); // okuma hatasında mevcut kaydı boş veriyle ezme (v18.3)
+  if(st.staleTab){ntfReload("Başka bir sekmede değişiklik yapıldı, veri kaybı yaşamamak için sayfayı yenileyin.");return Promise.resolve(false)}
+  achScan(true);store.v=4;store.tn=TN;
+  const raw=JSON.stringify(store);
+  try{if(store.theme!==undefined)localStorage.setItem("fc26lig4_theme",store.theme);if(store.motion!==undefined)localStorage.setItem("fc26lig4_motion",String(store.motion))}catch(e){}
+  if(typeof queueSave==="function")return queueSave(raw,!!immediate);
+  return kv.set("fc26lig4",raw).then(ok=>{const prev=!!st.sf;st.sf=!ok;if(prev!==st.sf)render();return ok})};
 const nm=i=>(cur().my===i?"★ ":"")+T[i].n;
 const rlb=(r,c,grk)=>{const rk=r.grk||grk;let t=c?stTxt(c,r.st):SN[r.st];if(r.st===0&&c&&!isLg(c)&&rk)t=`Grupta ${rk}. oldun ve elendin`;return t+(r.pts!=null?" · "+r.pts+" puan":"")};
 const ask=(m,fn)=>{st.ask={m,fn}};
@@ -338,7 +347,7 @@ function achScan(noWrite){try{
   if(prev&&store.achv!==2)prev=prev.filter(id=>now.includes(id));
   const all=prev?prev.concat(now.filter(id=>!prev.includes(id))):now.slice(),nw=prev?R.filter(a=>a.done&&!prev.includes(a.id)):[];
   if(nw.length){st.nb=(st.nb||[]).concat(nw.map(a=>a.name));const d=store.achd=toNob(store.achd);nw.forEach(a=>{d[a.id]=today()})}
-  if(store.achv!==2||nw.length||JSON.stringify(all)!=JSON.stringify(store.ach)){store.ach=all;store.achv=2;if(!noWrite)localStorage.setItem("fc26lig4",JSON.stringify(store))}
+  if(store.achv!==2||nw.length||JSON.stringify(all)!=JSON.stringify(store.ach)){store.ach=all;store.achv=2;if(!noWrite){if(typeof queueSave==="function")queueSave(JSON.stringify(store),false);else kv.set("fc26lig4",JSON.stringify(store))}}
 }catch(e){}}
 function achCard(){
   const A=achList(),so=A.slice().sort((x,y)=>(y.done-x.done)||(y.cur/y.goal-x.cur/x.goal));
@@ -633,11 +642,35 @@ function cmpCard(){const S=store.seasons;if(S.length<2)return "";
   const g=x=>[x.ts.w,x.ts.d,x.ts.l].map(v=>v||0).join("-");
   const rows=[["Format",x=>isLg(x.cfg)?x.cfg.N+" takım · puan ligi":x.cfg.N+" takım"+(x.cfg.gs?" · "+x.cfg.gs+"’lü grup":" · eleme")],["Takım",x=>x.my!=null?T[x.my].n:"—"],["Sonuç",x=>x.res?rlb(x.res,x.cfg,x.grk):"Devam"],["Oyun ayarı",x=>oyTxt(x)||"—"],["Gol",x=>sum(x.pl,"g")],["Asist",x=>sum(x.pl,"a")],["G-B-M",g],["Atılan/yenen",x=>(x.ts.gf||0)+"/"+(x.ts.ga||0)]];
   return cd("Sezon karşılaştır",`<div class="cmp"><select id="ca" class="sel">${o(a)}</select><select id="cb" class="sel">${o(b)}</select></div>`+rows.map(([l,f])=>`<div class="row"><span class="lb" style="width:74px">${l}</span><span class="n">${esc(f(a))}</span><span class="n">${esc(f(b))}</span></div>`).join(""))}
-function setView(){const dk=store.theme||"";
+function fmtBytes(b){
+  if(!Number.isFinite(b)||b<=0)return "0 KB";
+  if(b<1024*1024)return Math.max(1,Math.round(b/1024))+" KB";
+  if(b<1024*1024*1024)return (b/(1024*1024)).toFixed(2).replace(".",",")+" MB";
+  return (b/(1024*1024*1024)).toFixed(2).replace(".",",")+" GB";
+}
+function quotaCard(){
+  const q=st.qest,mode=(q&&q.mode)||((typeof kv!=="undefined"&&kv.mode)?kv.mode():"idb");
+  const rawLen=JSON.stringify(store).length*2;
+  const appB=q&&q.appBytes?Math.max(rawLen,q.appBytes):rawLen;
+  const usedB=q&&q.usage?Math.max(appB,q.usage):appB;
+  const quotaB=q&&q.quota?q.quota:(mode==="ls"?5*1024*1024:0);
+  const pctVal=quotaB>0?Math.min(100,(usedB/quotaB)*100):0;
+  const pctStr=quotaB>0?(pctVal<0.1&&usedB>0?"<%0,1":"%"+pctVal.toFixed(pctVal<1?2:1).replace(".",",")):"Sınırsız / Dinamik";
+  const barW=quotaB>0?Math.max(2,Math.round(pctVal)):4;
+  const leg=(typeof legacyLsInfo==="function")?legacyLsInfo():{hasLegacy:false,bytes:0};
+  const legHtml=leg.hasLegacy?`<div class="pc" style="margin-top:8px"><div class="pt"><span class="n">Eski localStorage taşıma yedeği</span><span class="lb">${fmtBytes(leg.bytes)}</span></div><div class="note" style="margin:4px 0 8px">IndexedDB’ye geçiş sırasında güvenlik için saklanan eski <code>localStorage</code> kopyası. Uygulama artık bu kopyayı okumaz; dilersen tarayıcı hafızasından temizleyebilirsin.</div><div class="bar" style="margin:0"><button class="btn" data-a="oldlsx">Eski localStorage kopyasını sil</button></div></div>`:"";
+  return cd(`Depolama ve kota<small>${mode==="idb"?"IndexedDB":"localStorage (Yedek Mod)"}</small>`,
+    R2("Uygulama verisi (sezonlar + kurtarma)",fmtBytes(appB))+
+    R2("Tarayıcı toplam kullanımı",fmtBytes(usedB))+
+    R2("Kullanılabilir tarayıcı kotası",quotaB>0?`${fmtBytes(quotaB)} (${pctStr} dolu)`:"Dinamik disk alanı")+
+    `<div class="bk" style="margin-top:6px" role="progressbar" aria-label="Depolama doluluk oranı" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(pctVal)}"><i style="width:${barW}%"></i></div>`+
+    `<div class="note">${mode==="idb"?"Verilerin yüksek kapasiteli IndexedDB veritabanında saklanıyor; yüzlerce sezon ve binlerce maç kaydedebilirsin.":"IndexedDB açılamadığı için 5 MB sınırlı localStorage kullanılıyor."}</div>`+legHtml);
+}
+function setView(){const dk=store.theme||"";if(!st.qest)refreshQuota(true);
   return cd("Tema",`<div class="bar" style="margin:0">${[["","Otomatik"],["light","Taktik tahtası"],["dark","Gece stadyumu"]].map(([v,l])=>`<button class="btn ${dk==v?"on":""}" data-a="theme" data-v="${v}">${l}</button>`).join("")}</div>`)
   +cd("Hareket",`<div class="note" style="margin:0 0 6px">Sekme geçişi, kart parlaması, kura ve takım seçimi animasyonu, konfeti, galibiyet havai fişeği.</div><div class="bar" style="margin:0">${[[1,"Açık"],[0,"Kapalı"]].map(([v,l])=>`<button class="btn ${(store.motion===0?0:1)==v?"on":""}" data-a="mot" data-v="${v}">${l}</button>`).join("")}</div>`)
   +cd("Yedekleme",`<div class="note" style="margin:0 0 6px">Sezonlar sadece bu tarayıcıda saklanır. ${bkInfo()}${st.pers===false?` <br><span class="wr">⚠ Tarayıcı kalıcı depolama iznini onaylamadı; cihaz hafızası dolarsa tarayıcı verileri temizleyebilir. Düzenli dosya yedeği alman önerilir.</span>`:""}</div><div class="bar"><button class="btn p" data-a="exf">Yedeği dosya olarak kaydet</button><button class="btn" data-a="imfb">Dosyadan yükle</button></div><input type="file" id="imf" accept=".json,application/json,text/plain" hidden>${st.bkadv?`<div class="rt">Yedek kodu (dosya kullanamıyorsan)</div><textarea id="bk" class="f" rows="4" placeholder="Yedek kodu burada görünür ya da buraya yapıştır">${st.bk?esc(st.bk):""}</textarea><div class="bar"><button class="btn" data-a="ex">Yedek oluştur</button><button class="btn" data-a="cpb">Kopyala</button><button class="btn" data-a="im">Geri yükle</button></div><div class="bar" style="margin:0"><button class="chip" data-a="bkadv">Yedek kodunu gizle</button></div>`:`<div class="bar" style="margin:8px 0 0"><button class="chip" data-a="bkadv">Yedek kodu ile (gelişmiş)</button></div>`}`)
-  +rcvCard()+trashCard()+appCard()
+  +quotaCard()+rcvCard()+trashCard()+appCard()
   +cd("Takım havuzu",`<div class="note" style="margin:0">${T.length} takım · ${new Set(T.map(t=>t.c)).size} ülke (EA FC 27 güncel kadroları · Brezilya takımları hariç). <br><small>Yasal Uyarı: Bu uygulama ticari olmayan, reklamsız, açık kaynaklı bağımsız bir topluluk/turnuva takip aracıdır. Electronic Arts Inc. (EA Sports), FIFA, UEFA veya herhangi bir futbol kulübü/federasyonu ile resmi bağlantısı, ortaklığı ya da onayı yoktur. Kulüp armaları telif içermez; renk ve harflerden jenerik SVG olarak üretilir.</small></div>`)
   +resetCard()}
 
@@ -696,8 +729,8 @@ function mergeSeasons(loc,inc){
   if(!out.res&&older.res)out.res=cp(older.res);
   reTs(out);rePl(out);
   return out}
-function mergeBk(o){
-  const snapOk=snapKeep("fc26lig4_birlesme_oncesi");
+async function mergeBk(o){
+  const snapOk=await snapKeep("fc26lig4_birlesme_oncesi");
   DROP=[];mig(o);const dr=[...new Set(DROP)];DROP=[];let add=0,upd=0,same=0,skp=0;
   const delSSet=new Set([...(store.delS||[]),...(o.delS||[])]);
   store.delS=Array.from(delSSet);
@@ -740,7 +773,7 @@ async function exportFile(){
     if(!ok){const u=URL.createObjectURL(f),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);ok=true}
   }catch(e){}
   if(!ok){store.lb=pl;store.lbm=pm;ask("Yedek dosyası oluşturulamadı. Yedek kodunu kopyalamayı dene.");render();return}
-  save();render();ntf("Yedek alındı: "+name)}
+  await save(true);render();ntf("Yedek alındı: "+name)}
 const bkInfo=()=>store.lb?"Son yedek: <b>"+dTR(store.lb)+"</b> · o günden beri <b>"+Math.max(0,nMatch()-(store.lbm||0))+"</b> maç eklendi.":"Henüz yedek almadın.";
 function isIosBrowser(){
   try{
@@ -752,14 +785,15 @@ function isIosBrowser(){
 }
 function iosPwaRemind(){
   if(store.iosok||st.iosWarnDismissed||!isIosBrowser())return "";
-  return `<div class="big" role="alert" style="text-align:left;border:2px solid var(--gold)"><b>📲 Verilerinizin Silinmemesi İçin Uygulamayı Ana Ekranınıza Ekleyin</b><div class="note" style="margin:4px 0 8px">iOS Safari, ana ekrana eklenmeyen sitelerin <code>localStorage</code> verilerini 7 gün sonra otomatik silebilir. Verilerinizin silinmemesi için uygulamayı ana ekranınıza ekleyin: Safari alt çubuğundan <b>Paylaş</b> simgesine ve ardından <b>"Ana Ekrana Ekle"</b> seçeneğine dokunun.</div><button class="chip" data-a="iosok">Anladım, gizle</button></div>`;
+  return `<div class="big" role="alert" style="text-align:left;border:2px solid var(--gold)"><b>📲 Verilerinizin Silinmemesi İçin Uygulamayı Ana Ekranınıza Ekleyin</b><div class="note" style="margin:4px 0 8px">iOS Safari, ana ekrana eklenmeyen sitelerin tarayıcı verilerini (<code>IndexedDB</code> / <code>localStorage</code>) 7 gün sonra otomatik silebilir. Verilerinizin silinmemesi için uygulamayı ana ekranınıza ekleyin: Safari alt çubuğundan <b>Paylaş</b> simgesine ve ardından <b>"Ana Ekrana Ekle"</b> seçeneğine dokunun.</div><button class="chip" data-a="iosok">Anladım, gizle</button></div>`;
 }
 function bkRemind(){
-  const t=nMatch(),nw=t-(store.lbm||0),days=store.lb?(Date.now()-store.lb)/864e5:0;
-  const need=store.lb?(nw>=10||(nw>=1&&days>=14)):t>=5;
+  const s=cur(),t=nMatch(),nw=Math.max(0,t-(store.lbm||0)),days=store.lb?(Date.now()-store.lb)/864e5:0;
+  const sFin=!!(s&&s.res&&(nw>=1||!store.lb||(s.ut&&store.lb&&s.ut>store.lb)));
+  const need=sFin||(store.lb?(nw>=10||(nw>=1&&days>=14)||days>=30):t>=5);
   if(!need)return "";
-  const msg=store.lb?"Son yedekten beri "+nw+" maç girdin (son yedek: "+dTR(store.lb)+").":t+" maç kaydettin ama hiç yedek almadın. Tarayıcı verisi silinirse sezonların kaybolur.";
-  return `<div class="big" style="text-align:left"><b>Yedek zamanı</b><div class="note" style="margin:4px 0 8px">${msg}</div><button class="btn p" data-t="6">Yedek al</button></div>`}
+  const msg=sFin?(store.lb?`${esc(s.name)} tamamlandı ve son yedekten beri ${nw} yeni maç/sonuç kaydedildi (son yedek: ${dTR(store.lb)}).`:`${esc(s.name)} tamamlandı ama henüz hiç yedek almadın. Kariyerini güvenceye almak için şimdi yedek al.`):(store.lb?(nw>0?`Son yedekten beri ${nw} maç girdin (son yedek: ${dTR(store.lb)}).`:`Son yedeğinin üzerinden ${Math.floor(days)} gün geçti (son yedek: ${dTR(store.lb)}).`):`${t} maç kaydettin ama hiç yedek almadın. Tarayıcı verisi silinirse sezonların kaybolur.`);
+  return `<div class="big" style="text-align:left"><b>💾 Yedek zamanı</b><div class="note" style="margin:4px 0 8px">${msg}</div><div class="bar" style="margin:0"><button class="btn p" data-a="exf">Hemen yedek indir</button><button class="btn" data-t="6">Ayarlar › Yedekleme</button></div></div>`}
 const sfBan=()=>`<div class="big" role="alert" style="text-align:left"><b class="wr">Değişiklikler kaydedilemedi.</b><div class="note" style="margin:4px 0 8px">Tarayıcı depolaması dolu ya da kapalı olabilir (özel sekme?). Sekmeyi kapatırsan son girdiğin veriler kaybolur. Şimdi yedek al.</div><button class="btn p" data-t="6">Yedek al</button></div>`;
 function delSeason(id){
   const x=store.seasons.find(q=>q.id==id);if(!x)return;
@@ -786,24 +820,22 @@ function impWarn(o){let h="";
   if(ownDiff(o))h+=`<div class="note wr" role="alert" style="margin:0 0 8px">Bu yedek <b>${esc(o.owner)}</b> adına, bu cihazdaki kayıtlar <b>${esc(store.owner)}</b> adına. “Hepsini değiştir” kendi kayıtlarını siler. Emin değilsen vazgeç.</div>`;
   if(o&&o.app&&verGt(o.app,VER))h+=`<div class="note wr" role="alert" style="margin:0 0 8px">Bu yedek daha yeni bir sürümde (v${esc(o.app)}) alınmış. Önce uygulamayı güncelle.</div>`;
   return h}
-function snapKeep(k){
+async function snapKeep(k){
   const raw=JSON.stringify(store);
-  try{localStorage.setItem(k,raw);return true}catch(e){
-    const others=RCV.map(x=>x[0]).filter(x=>x!==k&&rcvGet(x));
-    for(const ok of others){try{localStorage.removeItem(ok);localStorage.setItem(k,raw);return true}catch(e2){}}
-    return false
-  }}
+  if(await kv.set(k,raw))return true;
+  const others=RCV.map(x=>x[0]).filter(x=>x!==k&&rcvGet(x));
+  for(const ok of others){await kv.del(ok);if(await kv.set(k,raw))return true}
+  return false}
 const ownDlg=()=>`<div class="dlg"><div class="dbox" role="dialog" aria-modal="true"><div class="rs">Bu kimin kayıtları?</div><div class="note" style="margin:0 0 8px">Adın yedek dosyasının adına yazılır; başkasının yedeğini yanlışlıkla yüklemeni engeller.</div><input id="ow" class="f" maxlength="20" value="${esc(store.owner||"")}" aria-label="Ad" autocomplete="off"><div class="bar"><button class="btn p" data-a="owns">Kaydet</button><button class="btn" data-a="owno">Şimdilik atla</button></div></div></div>`;
-function resetAll(){
-  if(!snapKeep("fc26lig4_sifirlanan"))return "Sıfırlanmadı: eski kayıt güvenliğe alınamadı (depolama dolu olabilir). Önce yedek al ya da Kurtarma kayıtlarını sil.";
+async function resetAll(){
+  if(!(await snapKeep("fc26lig4_sifirlanan")))return "Sıfırlanmadı: eski kayıt güvenliğe alınamadı (depolama dolu olabilir). Önce yedek al ya da Kurtarma kayıtlarını sil.";
   const th=store.theme,mo=store.motion,ow=store.owner;
   store={v:4,tn:TN,cur:1,nx:1,seasons:[mk(1,1)]};if(ow)store.owner=ow;
   if(th)store.theme=th;if(mo!==undefined)store.motion=mo;
   norm();sync();st.tab=7;st.bk="";return "Tüm veriler sıfırlandı"}
 function trashCard(){const L=store.trash||[];if(!L.length)return "";
   return cd(`Son silinenler<small>${L.length}/10</small>`,L.map(t=>`<div class="pc"><div class="pt"><span class="n">${esc(t.s.name)}</span><button class="btn" data-a="trs" data-id="${esc(t.s.id)}">Geri getir</button></div><div class="lb">${t.s.my!=null&&T[t.s.my]?esc(T[t.s.my].n)+" · ":""}${(t.s.mt||[]).length} maç · silinme: ${dTR(t.t)}</div></div>`).join("")+`<div class="bar"><button class="btn" data-a="trse">Çöpü boşalt</button></div>`)}
-const RCV=[["fc26lig4_liste_oncesi","Takım listesi değişmeden önceki kayıt"],["fc26lig4_degisim_oncesi","Değiştirmeden önceki kayıt"],["fc26lig4_bozuk","Okunamayan kayıt"],["fc26lig4_sifirlanan","Sıfırlamadan önceki kayıt"],["fc26lig4_birlesme_oncesi","Birleştirmeden önceki kayıt"]];
-const rcvGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+/* RCV ve rcvGet artık storage.js üzerinden yüklenir */
 function rcvCard(){const L=RCV.filter(([k])=>rcvGet(k));if(!L.length)return "";
   return cd("Kurtarma",`<div class="note" style="margin:0 0 6px">Uygulama bu kayıtları silmeden sakladı. Ham veriyi yedek kutusuna alıp “Geri yükle”yi deneyebilirsin.</div>`+L.map(([k,l])=>`<div class="pc"><div class="pt"><span class="n">${l}</span><span class="lb">${Math.max(1,Math.round(rcvGet(k).length/1024))} KB</span></div><div class="bar" style="margin:6px 0 0"><button class="btn" data-a="rcv" data-k="${k}">Yedek kutusuna al</button><button class="btn" data-a="rcvx" data-k="${k}">Sil</button></div></div>`).join(""))}
 const resetCard=()=>`<button class="acbtn dgrbtn ${st.rstopen?"on":""}" data-a="rstopen" aria-expanded="${!!st.rstopen}"><span>⚠️ Veri Sıfırlama (Tehlikeli Bölge)</span><span class="acchev">${st.rstopen?"▴":"▾"}</span></button>`+(st.rstopen?`<div class="acbody"><div class="note" style="margin:0 0 8px">Tüm sezonları ve ayarları siler. Silmeden önce eski kayıt otomatik olarak Kurtarma bölümüne kopyalanır.</div><div class="bar" style="margin:0"><button class="btn" data-a="rst" style="color:var(--wr);border-color:var(--wr)">Tüm verileri sıfırla</button></div></div>`:"");
@@ -998,8 +1030,6 @@ function ensureMgls(gf){
   if(st.mgls.length>gf)st.mgls.length=gf;
   syncGlsToMaps();
 }
-const scTot=()=>{ensureMgls(st.mg||0);return (st.mgls||[]).filter(g=>g&&g.sc).length};
-const asTot=()=>{ensureMgls(st.mg||0);return (st.mgls||[]).filter(g=>g&&g.sc&&!isKK(g.sc)&&g.as).length};
 const lgs=(c,rd)=>rd=="Grup"?c.gl:(rd==RN[2]?c.fl:c.kl);
 function autoStage(s){
   const c=s.cfg,RD=rds(c),ms=s.mt||[];
@@ -1117,7 +1147,6 @@ function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);
 const tx=(c,t,x,y,sz,col,al,wt)=>{c.font=(wt||700)+" "+sz+"px "+NUMF;c.fillStyle=col;c.textAlign=al||"left";c.textBaseline="middle";c.fillText(String(t),x,y)};
 const fit=(c,t,w)=>{if(c.measureText(t).width<=w)return t;while(t.length>2&&c.measureText(t+"…").width>w)t=t.slice(0,-1);return t+"…"};
 const grad=(c,x0,x1,a,b)=>{const g=c.createLinearGradient(x0,0,x1,0);g.addColorStop(0,a);g.addColorStop(1,b);return g};
-function stripes(c,w,h){for(let x=0,i=0;x<w;x+=45,i++){c.fillStyle=i%2?"#36a066":"#2f8f5b";c.fillRect(x,0,45,h)}c.fillStyle="rgba(255,255,255,.85)";c.fillRect(0,h-5,w,5)}
 const mkCv=(w,h)=>{const cv=document.createElement("canvas");cv.width=w;cv.height=h;return cv};
 async function kuraCv(s){
   const G=s.G,gs=G[0].length,n=G.length,cols=n<=1?1:n<=8?2:3,W=1080,P=36,gap=20,cw=(W-2*P-gap*(cols-1))/cols,fs=cols==3?24:30,rh=cols==3?42:50,hh=62,ch=hh+gs*rh+16,rows=Math.ceil(n/cols),HH=210,H=HH+P+rows*ch+(rows-1)*gap+P+64;
@@ -1372,17 +1401,7 @@ function tiDlg(){
   const tag=mine?` · <b>Senin takımın</b>`:riv?` · <b>Grup rakibin</b>`:"";
   const xi=L.filter(p=>p.t=="S"),ag=L.length?L.reduce((a,p)=>a+p.a,0)/L.length:0,xo=xi.length?xi.reduce((a,p)=>a+p.o,0)/xi.length:0;
   return `<div class="dlg ti"><button class="tibk" data-a="no" aria-label="Kapat"></button><div class="dbox tisheet" role="dialog" aria-label="${esc(T[i].n)} kadrosu"><div class="tih">${badge(i,46)}<div class="tim"><b>${esc(T[i].n)}</b><span>${fl(T[i].c)} ${CN[T[i].c][0]}${tag}</span></div><div class="tmo2"><b>${r.g}</b><i>GEN</i></div></div><div class="tix"><span>HÜC<b>${r.a}</b></span><span>ORT<b>${r.o}</b></span><span>DEF<b>${r.d}</b></span></div>${L.length?`<div class="note" style="margin:8px 0 4px">${L.length} oyuncu · yaş ort. ${fx(ag)} · ilk 11 ort. ${fx(xo)}</div>${sqChips("tif",f)}<input id="tiq" class="f" type="search" placeholder="Kadroda oyuncu ara" value="${esc(st.tiq||"")}" autocomplete="off" aria-label="Kadroda oyuncu ara"><div class="sqh"><span class="sqn">No</span><span class="sqm">Oyuncu</span><span class="sqp">Poz</span><span class="sqa">Yaş</span><span class="sqo">GEN</span></div>`:""}<div id="tiL">${tiBody(i)}</div>${L.length?`<div class="note">● ilk 11 · soluk satırlar rezerv. Kaynak: Topluluk kadro veritabanı (FC 27 uyumlu), oyun içi güncellemelerle değişebilir.</div>`:""}<div class="bar"><button class="btn p" data-a="no" style="flex:1">Kapat</button></div></div></div>`}
-function sqCard(s){
-  const L=squadOf(s.my);if(!L.length)return "";
-  const have=new Set(s.pl.map(p=>nz(p.n))),R=L.filter(p=>!have.has(nz(p.n))),f=st.sqf||"A";
-  let h=`<div class="card" style="margin-top:10px"><h3>Kadrodan ekle<small>${esc(T[s.my].n)} · ${R.length} oyuncu</small></h3>`;
-  if(!R.length)return h+`<div class="note">Kadrodaki herkes zaten listende.</div></div>`;
-  const xi=R.filter(p=>p.t=="S"),mn=R.filter(p=>p.t!="R");
-  h+=`<div class="bar" style="margin:0"><button class="btn" data-a="sqxi" ${xi.length?"":"disabled"}>İlk 11’i ekle (${xi.length})</button><button class="btn" data-a="sqall" ${mn.length?"":"disabled"}>Ana kadroyu ekle (${mn.length})</button></div><div class="bar" style="margin:8px 0 0"><button class="chip" data-a="sqx">${st.sqx?"Listeyi gizle":"Tek tek seç"}</button></div>`;
-  if(st.sqx){const ord="FMDK";h+=sqChips("sqf",f)+R.filter(p=>f=="A"||p.g==f).sort((x,y)=>ord.indexOf(x.g)-ord.indexOf(y.g)||y.o-x.o).map(p=>`<div class="row"><span class="sqp">${p.p}</span><span class="n">${esc(p.n)}${p.t=="R"?` <small class="pm">rezerv</small>`:""}</span>${rb(p.o)}<button class="mb" data-a="sqadd" data-n="${esc(p.n)}" aria-label="${esc(p.n)} ekle">+</button></div>`).join("")}
-  return h+`</div>`}
 let ALLDL_DONE=false;
-function allPlayersList(){return ""}
 function ensureAllPlayersDatalist(){
   if(ALLDL_DONE)return;const dl=$("allpl");if(!dl)return;
   const seen=new Set(),out=[];
@@ -1395,7 +1414,7 @@ function trBox(kind,s){
   const pOpts=tL.slice().sort((a,b)=>ord.indexOf(a.g)-ord.indexOf(b.g)||b.o-a.o).map(p=>`<option value="${esc(p.n)}">${esc(p.n)} · ${p.p} (${p.o})</option>`).join("");
   const isSc=kind.startsWith("sc:"),isAs=kind.startsWith("as:"),gIdx=isSc||isAs?(+kind.split(":")[1]+1):0;
   const lbl=isSc?`${gIdx}. gol için golcü`:isAs?`${gIdx}. gol için asistçi`:"Maçın Adamı";
-  return `<div class="gq" style="margin:6px 0 8px"><div class="pt" style="margin-bottom:6px"><b>Başka takımdan / transfer (${lbl})</b><button class="chip" data-a="trclose" style="min-height:30px;padding:2px 8px">Kapat</button></div><div class="lb">1. Oyuncu ara veya adını direkt yaz (tüm FC 27 veritabanı):</div><div class="bar" style="margin:4px 0 8px"><input id="trinp" class="f" style="flex:1;margin:0" maxlength="30" placeholder="Örn: Osimhen, Mbappé, Haaland…" list="allpl" autocomplete="off"><button class="btn p" data-a="tradd" data-k="${kind}">Seç</button></div><div class="lb">2. Veya kulüp seçip kadrosundan bul:</div><div class="rr" style="margin:4px 0 0"><select id="trtm" class="sel" style="flex:1">${tOpts}</select><select id="trpl" class="sel" data-k="${kind}" style="flex:1"><option value="">Oyuncu seç…</option>${pOpts}</select></div>${allPlayersList()}</div>`}
+  return `<div class="gq" style="margin:6px 0 8px"><div class="pt" style="margin-bottom:6px"><b>Başka takımdan / transfer (${lbl})</b><button class="chip" data-a="trclose" style="min-height:30px;padding:2px 8px">Kapat</button></div><div class="lb">1. Oyuncu ara veya adını direkt yaz (tüm FC 27 veritabanı):</div><div class="bar" style="margin:4px 0 8px"><input id="trinp" class="f" style="flex:1;margin:0" maxlength="30" placeholder="Örn: Osimhen, Mbappé, Haaland…" list="allpl" autocomplete="off"><button class="btn p" data-a="tradd" data-k="${kind}">Seç</button></div><div class="lb">2. Veya kulüp seçip kadrosundan bul:</div><div class="rr" style="margin:4px 0 0"><select id="trtm" class="sel" style="flex:1">${tOpts}</select><select id="trpl" class="sel" data-k="${kind}" style="flex:1"><option value="">Oyuncu seç…</option>${pOpts}</select></div></div>`}
 function scorerUI(s,gf,sc){
   ensureMgls(gf);
   const L=squadOf(s.my),gls=st.mgls||[];
@@ -1451,14 +1470,10 @@ function scorerUI(s,gf,sc){
   h+=`<div class="rr" style="margin-top:8px"><span class="lb">Maçın Adamı (MOTM)</span><select id="mmom" class="sel" style="flex:1"><option value="">Seçilmedi</option>${customMom}${momEx}${momOpts}</select><button class="chip ${st.trm=="mom"?"on":""}" data-a="tropen" data-k="mom" style="padding:6px 10px">+ Başka</button></div>`;
   if(st.trm=="mom")h+=trBox("mom",s);
   return h}
-const pnames=()=>{const m=nob();store.seasons.forEach(x=>(x.pl||[]).forEach(p=>{const k=nz(p.n),o=m[k]=m[k]||{n:p.n,c:0};o.c++}));return Object.values(m).sort((a,b)=>b.c-a.c||a.n.localeCompare(b.n,"tr"))};
-const prevSq=s=>{const S=store.seasons,i=S.findIndex(x=>x.id==s.id),have=new Set(s.pl.map(p=>nz(p.n)));for(let j=i-1;j>=0;j--)if(S[j].pl&&S[j].pl.length)return{from:S[j].name,names:S[j].pl.map(p=>p.n).filter(n=>!have.has(nz(n)))};return{from:"",names:[]}};
-const sqBtn=s=>{const q=prevSq(s);return q.names.length?`<div class="bar" style="margin:8px 0 0"><button class="btn" data-a="psq">${esc(q.from)} kadrosunu getir (${q.names.length})</button></div>`:""};
 document.addEventListener("keydown",e=>{
   if(e.key=="Tab"){const modal=document.querySelector("#dlg .dbox, #qs .sheet");if(modal){const f=[...modal.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),a[href]')];if(f.length){const first=f[0],last=f[f.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}return}}
   if(e.key=="Escape"){if(st.qs){st.qs=false;st.med=null;render();return}if(st.ti!=null||st.gs||st.ask||st.sum||st.img||st.ren||st.imp){st.ti=null;st.gs=false;st.ask=null;st.sum=null;clrImg();st.ren=null;st.imp=null;st.tiq="";render();return}}
   if(e.target&&e.target.id=="rn"){if(e.key=="Enter"){e.preventDefault();document.querySelector('[data-a="rens"]').click()}else if(e.key=="Escape"){document.querySelector('[data-a="no"]').click()}return}
-  if(e.key=="Enter"&&e.target&&e.target.id=="pn"){e.preventDefault();const b=document.querySelector('[data-a="padd"]');if(b)b.click()}
   if(e.key=="Enter"&&e.target&&e.target.id=="trinp"){e.preventDefault();const b=document.querySelector('[data-a="tradd"]');if(b)b.click()}
 });
 
@@ -1673,10 +1688,10 @@ function render(){
   const focusEl=aeId?$(aeId):(aePr?document.querySelector(`[data-pr="1"][data-n="${CSS.escape?CSS.escape(aePr):aePr}"]`):null);
   if(focusEl&&document.activeElement!==focusEl){focusEl.focus();if(aeSel!=null&&typeof focusEl.setSelectionRange=="function")try{focusEl.setSelectionRange(aeSel,aeSel)}catch(e){}}}
 
-const UI_ONLY=new Set(["adv","cust","roall","vitall","sall","rstopen","hm","tsx","px","grk","gqm","gogqm","tropen","trclose","bkadv","madv","qs","medit","mall","qx","gofin","mg","mo","mu","mp","mpf","mpa","glsc","glas","glclr","glasclr","glasno","glasopen","tel","tpl","ht","hmod","sfm","sfr","sv","sfd","sfx","ro","dcancel","next","all","no","tinfo","gs","gsgo","tif","sqx","sqf","msn","masn","ren","own","owno","mman","ex","im","rcv","sum"]);
-document.addEventListener("click",e=>{
+const UI_ONLY=new Set(["adv","cust","roall","vitall","sall","rstopen","hm","px","grk","gqm","gogqm","tropen","trclose","bkadv","madv","qs","medit","mall","qx","gofin","mg","mo","mu","mp","mpf","mpa","glsc","glas","glclr","glasclr","glasno","glasopen","tel","tpl","ht","hmod","sfm","sfr","sv","sfd","sfx","ro","dcancel","next","all","no","tinfo","gs","gsgo","tif","ren","own","owno","mman","ex","im","rcv","sum","oldlsx"]);
+document.addEventListener("click",async e=>{
   const b=e.target.closest("button");if(!b)return;
-  if(b.dataset.t!==undefined){hideToast();st.tab=+b.dataset.t;render();scrollTo(0,0);return}
+  if(b.dataset.t!==undefined){hideToast();st.tab=+b.dataset.t;if(st.tab==6)refreshQuota(true);render();scrollTo(0,0);return}
   const a=b.dataset.a;if(!a)return;
   if(a=="reload"){location.reload();return}
   if(a=="tx"){hideToast();return}
@@ -1694,7 +1709,6 @@ document.addEventListener("click",e=>{
   else if(a=="rstopen")st.rstopen=!st.rstopen;
   else if(a=="hm"){st.hm=st.hm||nob();st.hm[dk]=!st.hm[dk]}
   else if(a=="lgchamp"){const pt=grpPts(s);s.res={st:7,pts:pt===""?null:pt,note:"",date:today()};st.cel=1;st.tab=7;un="Lig Şampiyonu olarak kaydedildi 🏆"}
-  else if(a=="tsx")st.tsx=!st.tsx;
   else if(a=="px"){const kn=b.dataset.n;st.px=st.px===kn?null:kn}
   else if(a=="grk")st.grk=+dv;
   else if(a=="gqy"){s.gq=1;s.grk=st.grk||1;st.mrd=autoStage(s);if(s.G&&s.my!=null){const gi=s.G.findIndex(g=>g.includes(s.my));if(gi>=0){s.gqs=s.gqs||nob();const l=(s.gqs[gi]=s.gqs[gi]||[]).filter(x=>x!==s.my);l.splice(Math.min(l.length,(s.grk||1)-1),0,s.my);s.gqs[gi]=l.slice(0,s.cfg.q||2)}}un="Gruptan "+s.grk+". sırada çıktın · eleme turuna geçtin"}
@@ -1758,7 +1772,6 @@ document.addEventListener("click",e=>{
   else if(a=="sfm")st.sfm=dv;
   else if(a=="sfr")st.sfr=dv;
   else if(a=="sv")st.sv=dv;
-  else if(a=="reload"){location.reload();return}
   else if(a=="upchk"){st.uchk="Denetleniyor…";render();(SWR?SWR.update():Promise.reject()).then(()=>new Promise(r=>setTimeout(r,2500))).then(()=>{st.uchk=st.upd?"Yeni sürüm bulundu.":"Güncelsin.";render()}).catch(()=>{st.uchk=SWR?"Denetlenemedi, çevrimdışı olabilirsin.":"Bu tarayıcıda otomatik güncelleme yok.";render()});return}
   else if(a=="errcp"){const t=errReport(),fb=()=>{st.rep=t;render()};try{navigator.clipboard.writeText(t).then(()=>ntf("Hata raporu kopyalandı")).catch(fb)}catch(e){fb()}return}
   else if(a=="elclr"){try{localStorage.removeItem(ELK)}catch(e){}st.rep=null;render();ntf("Hata günlüğü temizlendi");return}
@@ -1778,18 +1791,12 @@ document.addEventListener("click",e=>{
   else if(a=="all"&&st.dr)st.k=st.dr.seq.length;
   else if(a=="use"){if(!st.dr||s.G)return;s.G=st.dr.G.map(g=>g.slice());sync();st.tab=3}
   else if(a=="bal"){if(s.G){ask("Kura onaylandı. Yeniden çekmek için önce kurayı sıfırla.");render();return}const d=withSn(s,()=>genDraw(s,4000,.4,1500));if(d){s.dn=(s.dn||0)+1;s.G=d.G.map(g=>g.slice());sync();st.tab=3;un="Gruplar otomatik kuruldu"}else ask("Bu kurallarla kura üretilemedi. Kurulumda ülke sınırını gevşetip tekrar dene.")}
-  else if(a=="yes"){const f=st.ask&&st.ask.fn;st.ask=null;if(f){const r=f();if(typeof r=="string")un=r}}
+  else if(a=="yes"){const f=st.ask&&st.ask.fn;st.ask=null;if(f){const r=await f();if(typeof r=="string")un=r}}
   else if(a=="no"){st.ask=null;st.sum=null;clrImg();st.ren=null;st.imp=null;st.ti=null;st.gs=false;st.tiq=""}
   else if(a=="tinfo"){st.ti=i;st.tif="A";st.tiq=""}
   else if(a=="gs"){st.gs=true;st.gsq="";setTimeout(()=>{const e=$("gsq");if(e)e.focus()},60)}
   else if(a=="gsgo"){st.gs=false;st.ti=i;st.tif="A";st.tiq=b.dataset.n||""}
   else if(a=="tif")st.tif=dv
-  else if(a=="sqx")st.sqx=!st.sqx
-  else if(a=="sqf")st.sqf=dv
-  else if(a=="msn"){const n=b.dataset.n,d=+b.dataset.d;if(!n)return;st.msc=st.msc||nob();if(d>0&&scTot()>=(st.mg||0))return;st.msc[n]=Math.max(0,(st.msc[n]||0)+d)}
-  else if(a=="masn"){const n=b.dataset.n,d=+b.dataset.d;if(!n)return;st.mas=st.mas||nob();if(d>0&&asTot()>=(st.mg||0))return;st.mas[n]=Math.max(0,(st.mas[n]||0)+d)}
-  else if(a=="sqadd"){const n=b.dataset.n;if(n)getOrAddPl(s,n)}
-  else if(a=="sqxi"||a=="sqall"){const have=new Set(s.pl.map(p=>nz(p.n))),add=squadOf(s.my).filter(p=>!have.has(nz(p.n))&&(a=="sqxi"?p.t=="S":p.t!="R"));add.forEach(p=>getOrAddPl(s,p.n));if(add.length)un=add.length+" oyuncu eklendi"}
   else if(a=="ren"){const x=store.seasons.find(q=>q.id==id);if(!x)return;st.ren={id:x.id,v:x.name};setTimeout(()=>{const e=$("rn");if(e){e.focus();e.select()}},30)}
   else if(a=="own"){st.own=1}
   else if(a=="owno"){st.own=0}
@@ -1800,8 +1807,6 @@ document.addEventListener("click",e=>{
   else if(a=="pick"){if(tmLock(s)||st.dr){ask("Takım kilitli. Değiştirmek için önce Takımı değiştir ya da Kurayı iptal et’i kullan.");render();return}withSn(s,()=>spin(s));return}
   else if(a=="fin"){const c=+$("stg").value,p=$("pts").value,fg=$("fgrk"),was=s.res&&s.res.st==7,lg=isLg(s.cfg),rk=c==0&&!lg&&fg?+fg.value:(s.grk||null);if(c==0&&rk)s.grk=rk;s.res={st:c,grk:c==0&&!lg?rk:null,pts:(c==0||lg)&&p!==""&&Number.isFinite(+p)?+p:null,note:$("note").value.trim().slice(0,200),date:today()};if(c==0){s.gq=null;if(s.G&&s.my!=null){const gi=s.G.findIndex(g=>g.includes(s.my));if(gi>=0&&s.gqs&&s.gqs[gi])s.gqs[gi]=s.gqs[gi].filter(x=>x!==s.my)}}if(c==7&&!was){st.cel=1;st.tab=7}}
   else if(a=="unfin"){s.res=null;un="Sonuç silindi"}
-  else if(a=="padd"){const v=$("pn").value.trim().slice(0,30);if(!v)return;const kn=nz(v),exP=s.pl.find(p=>nz(p.n)==kn);if(exP){st.px=nz(exP.n);render();return}const o=pnames().find(q=>nz(q.n)==kn),qq=s.my!=null?sqFind(s.my,v):null,qa=sqFindAny(v),nm=qq?qq.n:qa?qa.p.n:o?o.n:v;s.pl.unshift({n:nm,g:0,a:0,m:0,mom:0,k:0,b:Object.assign(nob(),{g:0,a:0,m:0,mom:0,k:0})});st.px=nz(nm);un="Oyuncu eklendi (düzenlemek için açık)"}
-  else if(a=="psq"){const q=prevSq(s);if(!q.names.length)return;q.names.forEach(n=>getOrAddPl(s,n));un=q.names.length+" oyuncu "+q.from+" kadrosundan getirildi"}
   else if(a=="skip"){if(st.slot&&st.slot.done)st.slot.done();return}
   else if(a=="pm"){const kn=b.dataset.n,p=s.pl.find(x=>nz(x.n)==kn),f=b.dataset.f;if(!p)return;const d=+b.dataset.d,mv=plMsum(s)[kn]||{g:0,a:0,m:0,mom:0};p.b=p.b?toNob(p.b):Object.assign(nob(),{g:0,a:0,m:0,mom:0,k:0});const nextVal=Math.max(mv[f]||0,(p[f]||0)+d);p.b[f]=nextVal-(mv[f]||0);rePl(s)}
   else if(a=="pdel"){const kn=b.dataset.n,p=s.pl.find(x=>nz(x.n)==kn);if(!p)return;
@@ -1818,13 +1823,13 @@ document.addEventListener("click",e=>{
   else if(a=="im"){const o=parseBk($("bk").value);if(o)st.imp={o,src:"yedek kodu"};else ask("Yedek kodu geçersiz.")}
   else if(a=="exf"){exportFile();return}
   else if(a=="imfb"){const e=$("imf");if(e)e.click();return}
-  else if(a=="impm"&&st.imp){const o=st.imp.o;st.imp=null;un=mergeBk(o)}
-  else if(a=="impr"&&st.imp&&!snapKeep("fc26lig4_degisim_oncesi")){st.imp=null;ask("Yedek yüklenmedi: mevcut kayıtlar güvenliğe alınamadı (depolama dolu olabilir). Önce Kurtarma kayıtlarını sil ya da yedek al.")}
-  else if(a=="impr"&&st.imp){const o=st.imp.o,th=store.theme,mo=store.motion,ow0=store.owner;st.imp=null;DROP=[];store=mig(o);if(!store.owner&&ow0)store.owner=ow0;if(store.theme===undefined&&th!==undefined)store.theme=th;if(store.motion===undefined&&mo!==undefined)store.motion=mo;const dr=[...new Set(DROP)];DROP=[];norm();sync();st.tab=7;un="Yedek yüklendi, mevcut kayıtlar değiştirildi"+(dr.length?" · "+dr.length+" takım güncel listede yok, atlandı":"")}
+  else if(a=="impm"&&st.imp){const o=st.imp.o;st.imp=null;un=await mergeBk(o)}
+  else if(a=="impr"&&st.imp){const o=st.imp.o;if(!(await snapKeep("fc26lig4_degisim_oncesi"))){st.imp=null;ask("Yedek yüklenmedi: mevcut kayıtlar güvenliğe alınamadı (depolama dolu olabilir). Önce Kurtarma kayıtlarını sil ya da yedek al.")}else{const th=store.theme,mo=store.motion,ow0=store.owner;st.imp=null;DROP=[];store=mig(o);if(!store.owner&&ow0)store.owner=ow0;if(store.theme===undefined&&th!==undefined)store.theme=th;if(store.motion===undefined&&mo!==undefined)store.motion=mo;const dr=[...new Set(DROP)];DROP=[];norm();sync();st.tab=7;un="Yedek yüklendi, mevcut kayıtlar değiştirildi"+(dr.length?" · "+dr.length+" takım güncel listede yok, atlandı":"")}}
   else if(a=="trs"){un=restoreSeason(id)}
   else if(a=="trse"){ask("Çöp kutusundaki tüm sezonlar kalıcı olarak silinsin mi?",()=>{store.trash=[]});render();return}
-  else if(a=="rcv"){if(RCV.some(x=>x[0]==dk)){st.bk=rcvGet(dk)||"";st.bkadv=true}}
-  else if(a=="rcvx"){ask("Bu kayıt kalıcı olarak silinsin mi?",()=>{try{localStorage.removeItem(dk)}catch(e){}});render();return}
+  else if(a=="rcv"){if(RCV.some(x=>x[0]==dk)){st.bk=(await kv.get(dk))||rcvGet(dk)||"";st.bkadv=true}}
+  else if(a=="rcvx"){ask("Bu kayıt kalıcı olarak silinsin mi?",async()=>{await kv.del(dk);await refreshQuota(false)});render();return}
+  else if(a=="oldlsx"){const leg=(typeof legacyLsInfo==="function")?legacyLsInfo():{hasLegacy:false,bytes:0};if(!leg.hasLegacy)return;ask("IndexedDB’ye geçiş sırasında güvenlik için tutulan eski localStorage kopyası ("+fmtBytes(leg.bytes)+") kalıcı olarak silinsin mi? Güncel IndexedDB verilerin bundan etkilenmez.",async()=>{const ok=await clearLegacyLs();await refreshQuota(false);return ok?"Eski localStorage kopyası temizlendi":"Temizlenemedi: IndexedDB ana kaydı doğrulanamadı"});render();return}
   else if(a=="rst"){ask("Tüm sezonlar, maçlar ve ayarlar silinecek. Önce yedek almanı öneririm. Devam edilsin mi?",()=>resetAll());render();return}
   else if(a=="sum")st.sum=id;
   else return;
@@ -1856,8 +1861,8 @@ document.addEventListener("change",e=>{
   else if(e.target.id=="imf"){const f=e.target.files&&e.target.files[0];e.target.value="";if(f)readImp(f)}
   else if(e.target.id=="stg")$("ptw").style.display=(e.target.value=="0"||isLg(cur().cfg))?"block":"none";flush()});
 /* ---------- YENİ: SÜRÜM, HATA RAPORU, OYUN AYARLARI, REKABET, MAÇ KARTI, ARAMA ---------- */
-function errReport(){const S=store.seasons,nm=S.reduce((a,x)=>a+(x.mt||[]).length,0),L=elogGet().slice().reverse();let sz="?";try{sz=Math.round((localStorage.getItem("fc26lig4")||"").length/1024)+" KB"}catch(e){}
-  return ["FC 27 Grup Ligi · hata raporu","Sürüm: "+VER,"Tarih: "+new Date().toISOString(),"Tarayıcı: "+navigator.userAgent,"Ekran: "+innerWidth+"x"+innerHeight+(matchMedia("(display-mode: standalone)").matches?" · kurulu uygulama":""),"Sezon: "+S.length+" · maç: "+nm+" · kayıt boyutu: "+sz,"Sekme: "+st.tab+(st.sf?" · kayıt hatası var":"")+(loadWarn?" · açılış uyarısı: "+loadWarn.slice(0,120):""),"","Son hatalar ("+L.length+"):"].concat(L.length?L.map(o=>"- "+new Date(o.t).toISOString().slice(0,19)+" ["+o.k+"] "+o.m+(o.w?" @ "+o.w:"")):["(kayıtlı hata yok)"]).join("\n")}
+function errReport(){const S=store.seasons,nm=S.reduce((a,x)=>a+(x.mt||[]).length,0),L=elogGet().slice().reverse();let sz="?";try{sz=Math.round(JSON.stringify(store).length/1024)+" KB"}catch(e){}const bm=(typeof kv!=="undefined"&&kv.mode)?kv.mode():"?";
+  return ["FC 27 Grup Ligi · hata raporu","Sürüm: "+VER+" ("+bm+")","Tarih: "+new Date().toISOString(),"Tarayıcı: "+navigator.userAgent,"Ekran: "+innerWidth+"x"+innerHeight+(matchMedia("(display-mode: standalone)").matches?" · kurulu uygulama":""),"Sezon: "+S.length+" · maç: "+nm+" · kayıt boyutu: "+sz,"Sekme: "+st.tab+(st.sf?" · kayıt hatası var":"")+(loadWarn?" · açılış uyarısı: "+loadWarn.slice(0,120):""),"","Son hatalar ("+L.length+"):"].concat(L.length?L.map(o=>"- "+new Date(o.t).toISOString().slice(0,19)+" ["+o.k+"] "+o.m+(o.w?" @ "+o.w:"")):["(kayıtlı hata yok)"]).join("\n")}
 const updBan=()=>`<div class="big" role="status" style="text-align:left"><b>Yeni sürüm var</b><div class="note" style="margin:4px 0 8px">Uygulama güncellendi. Yenileyince yeni sürümü kullanırsın, verilerin korunur.</div><button class="btn p" data-a="reload">Yenile</button></div>`;
 const appCard=()=>{const n=elogGet().length;
   return cd("Uygulama",`<div class="note" style="margin:0 0 6px">Sürüm <b>${VER}</b> · Kayıtlar: <b>${esc(store.owner||"belirtilmedi")}</b> <button class="btn" data-a="own">Değiştir</button>. ${st.upd?"Yeni sürüm hazır, yenileyince kullanılır.":esc(st.uchk||"Güncellemeler açılışta kendiliğinden denetlenir.")}</div><div class="bar" style="margin:0"><button class="btn${st.upd?" p":""}" data-a="${st.upd?"reload":"upchk"}">${st.upd?"Yenile":"Güncellemeyi denetle"}</button></div>`)
@@ -2061,7 +2066,6 @@ function cleanStatsW(raw){
     oppXg:oppXg!=null?Math.round(Math.max(0,Math.min(XGMAX,oppXg))*100)/100:null
   },warns};
 }
-const cleanStats=raw=>cleanStatsW(raw).s;
 function matchDeserve(m){
   const st=m&&m.stats;if(!st||st.myXg==null||st.oppXg==null)return null;
   const r=mres(m),mx=+st.myXg,ox=+st.oppXg,diff=mx-ox;
@@ -2259,33 +2263,68 @@ function xgSummaryCard(ML){
 }
 
 
-// --- Başlatma (v17.18): defer ile DOM hazır olduktan sonra çalışır ---
-function initApp(){
+// --- Başlatma (v18.2): IndexedDB arka ucu, taşıma doğrulaması, yazma kuyruğu ve kota ---
+async function initApp(){
+  loadWarn="";store=null;DROP=[];
+  const stInfo=(typeof kv.init==="function")?await kv.init():{mode:"ls",warn:""};
+  await rcvRefresh();
+  const r4=await kv.get("fc26lig4");
+  if(r4){
+    try{const o=JSON.parse(r4);if(!okS(o))throw 0;store=mig(o)}
+    catch(e){
+      store=null;
+      const oldBz=await kv.get("fc26lig4_bozuk");
+      const savedOk=(oldBz===r4)||await kv.set("fc26lig4_bozuk",r4);
+      loadWarn=savedOk?"Kayıtlı veri okunamadı. Ham veri silinmedi, Ayarlar › Kurtarma bölümünde saklanıyor. Şimdilik boş bir sezonla başlandı.":"Kayıtlı veri okunamadı ve ham veri saklanamadı (depolama dolu olabilir). Boş bir sezonla başlandı.";
+    }
+  }else if(r4===null&&typeof hadMainReadFailure==="function"&&hadMainReadFailure()){
+    st.readFail=true; // kayıt var olabilir ama okunamadı: hiçbir şey yazma
+  }else if(r4===null){
+    const r3=await kv.get("fc26lig3");
+    if(r3){try{const o=JSON.parse(r3);if(okS(o))store=mig(o)}catch(e){}}
+  }
+  if(!store){
+    store={v:4,tn:TN,cur:1,nx:1,seasons:[mk(1,1)]};
+    try{const th=localStorage.getItem("fc26lig4_theme"),mo=localStorage.getItem("fc26lig4_motion");if(th)store.theme=th;if(mo!==null&&mo!=="")store.motion=+mo}catch(e){}
+  }
+  norm();sync();
   st.tab=7;
   if(location.hash=="#kura")st.tab=2;else if(location.hash=="#mac"){st.tab=7;st.qs=true}
-  if(DROP.length){try{const raw=localStorage.getItem("fc26lig4");if(raw&&localStorage.getItem("fc26lig4_liste_oncesi")===null)localStorage.setItem("fc26lig4_liste_oncesi",raw)}catch(e){}}
-  if(DROP.length&&!loadWarn)loadWarn="Takım listesi güncellendi. Şu takımlar listede olmadığı için eski sezonlardan çıkarıldı: "+[...new Set(DROP)].join(", ")+".";DROP=[];
+  if(DROP.length){
+    if(r4&&(await kv.get("fc26lig4_liste_oncesi"))===null)await kv.set("fc26lig4_liste_oncesi",r4);
+    if(!loadWarn)loadWarn="Takım listesi güncellendi. Şu takımlar listede olmadığı için eski sezonlardan çıkarıldı: "+[...new Set(DROP)].join(", ")+".";
+    DROP=[];
+  }
   if(!store.owner)st.own=1;
-  save();
+  await save(true);
+  await refreshQuota(false);
+  if(st.readFail){render();ntfReload("Kayıtlı verine şu an erişilemedi. Verilerin silinmedi; hiçbir şey kaydedilmiyor. Sayfayı yenileyip tekrar dene.");return}
   if(loadWarn)ask(loadWarn);
+  else if(stInfo&&stInfo.warn)ntf(stInfo.warn);
   render();
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initApp);
 else initApp();
 
 
-// --- Çoklu sekme Race Condition koruması (storage event) ---
+// --- Çoklu sekme Race Condition koruması (BroadcastChannel + storage event yedekli) ---
+function markStaleTab(){
+  if(st.staleTab)return;
+  st.staleTab=true;
+  ntfReload("Başka bir sekmede değişiklik yapıldı, veri kaybı yaşamamak için sayfayı yenileyin.");
+}
+if(typeof setRemoteUpdateCallback==="function"){
+  setRemoteUpdateCallback(()=>markStaleTab());
+}
 window.addEventListener("storage",e=>{
   if(e.key==="fc26lig4"&&e.newValue&&e.newValue!==e.oldValue){
-    st.staleTab=true;
-    ntf("Başka bir sekmede değişiklik yapıldı, veri kaybı yaşamamak için sayfayı yenileyin.");
-    ntfReload("Başka bir sekmede değişiklik yapıldı, veri kaybı yaşamamak için sayfayı yenileyin.");
+    markStaleTab();
   }
 });
 // --- PWA: service worker kaydı + kalıcı depolama isteği ---
 if("serviceWorker" in navigator){const had=!!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!st.upd){st.upd=true;render()}});
-  navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.type==="SW_UPDATED"&&!st.upd){st.upd=true;render()}});
+  navigator.serviceWorker.addEventListener("message",e=>{if(had&&e.data&&e.data.type==="SW_UPDATED"&&!st.upd){st.upd=true;render()}});
   addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").then(r=>{SWR=r}).catch(e=>elog("sw",e&&e.message))});
   document.addEventListener("visibilitychange",()=>{if(!document.hidden&&SWR)SWR.update().catch(()=>{})})}
 try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().then(ok=>{st.pers=!!ok;if(!ok)render()}).catch(()=>{})}catch(e){}
