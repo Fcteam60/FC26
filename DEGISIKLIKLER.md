@@ -1,5 +1,15 @@
 # Değişiklik listesi
 
+## v18.15 (Fikstür Geliştirmeleri)
+- **Fikstür artık gerçek fikstür:** hafta seçici toplam hafta sayısı kadar sekme gösterir; oynanmamış maçlar «vs» ile listelenir (planlanan eşleşme), oynananlar skorla. Kart başlığında «oynanan/toplam» sayacı.
+- **Takım adlarına dokununca kadro açılır** (`tinfo`).
+- **Eleme ağacı Gruplar'dan Fikstür'e taşındı;** Gruplar'da, ağaç oluştuğunda «Eleme Ağacı ve Maç Girişi › Fikstür» düğmesi çıkar. Önceki sürümdeki tekrarlanan eleme sonuç kartları kaldırıldı.
+- **Grup kartına «Hafta sonuçları ve fikstür ›» bağlantısı** eklendi.
+- **Hafta çipleri tek satır, yatay kaydırmalı;** seçili hafta görünür alana kaydırılır. Uzun takım adları kesilir (ellipsis).
+- **Alt menü «Kura» → «Turnuva»** (yeni simge); üst alt-sekme çubuğuna `aria-current` eklendi.
+- Kullanılmayan CSS (`.wkbtn`, `.wkpop`, `.simwk`) temizlendi.
+- `VER` 18.15, `package.json` 18.15.0, `sw.js` önbelleği `fc27-lig-v18-15`.
+
 ## v18.14 (Arayüz: Fikstür Sekmesi)
 - **Kura › Gruplar üst çubuğuna üçüncü sekme eklendi: «Fikstür».** Çubuk artık Kura | Gruplar | Fikstür. Maç sonuçları buradan takip edilir: hafta seçiciyle (1. Hafta … Tümü) tüm grupların sonuçları, senin maçın ★ ile vurgulu, ayrıca oynanan eleme turu sonuçları.
 - **Grup kartından «Hafta Sonuçları» bloğu kaldırıldı;** kartta yalnızca puan durumu tablosu kalır.
