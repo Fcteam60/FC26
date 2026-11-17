@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="18.11",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="18.12",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -781,7 +781,7 @@ function grpCard(g,gi){
       (wOpen?`<div class="wkpop">${wkTabs}${allWeeksBody||`<div class="note">Bu hafta için sonuç bulunamadı.</div>`}</div>`:`<div class="wkcur">${curItems}</div>`)+
       `</div>`;
   }
-  return `<div class="card${mn?" mine":""}${dd?" dead":""}"><h3>${gname(s,gi)}<small>Gen ${fx(ravg("g"))}${wk?` · ${wk}. Hafta`:""}</small></h3><i class="gb"><u style="width:${pc}%"></u></i>`+
+  return `<div class="card${mn?" mine":""}${dd?" dead":""}"><h3>${gname(s,gi)}<small>Gen ${fx(ravg("g"))}${maxW?` · ${maxW}. Hafta`:""}</small></h3><i class="gb"><u style="width:${pc}%"></u></i>`+
   `<div class="gtbl hd"><span class="grk2">#</span><span class="gnm">Takım</span><span title="Oynanan">O</span><span title="Galibiyet">G</span><span title="Beraberlik">B</span><span title="Mağlubiyet">M</span><span title="Attığı Gol">AG</span><span title="Yediği Gol">YG</span><span title="Averaj">AV</span><span class="gpts" title="Puan">P</span></div>`+
   rows.map((r,idx)=>{
     const i=r.ti,ti=RT(s,i),isQ=!lg&&idx<qMax,qr=qL.indexOf(i);

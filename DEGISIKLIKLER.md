@@ -1,5 +1,10 @@
 # Değişiklik listesi
 
+## v18.12 (Hata Düzeltmesi: Grup Kartı `wk is not defined`)
+- **Grup/lig kartı çökmesi giderildi (`grpCard`):** Puan tablosu başlığında tanımsız `wk` değişkeni kullanılıyordu (`ReferenceError: wk is not defined`); bu yüzden maç girildikten sonra Gruplar ekranı render edilemiyordu. Başlıktaki hafta bilgisi artık gerçekten hesaplanan `maxW` (oynanan hafta sayısı) değerinden gelir.
+- `VER` 18.12, `package.json` 18.12.0, `sw.js` önbelleği `fc27-lig-v18-12`.
+
+
 ## v18.11 (Düzeltme & Performans Aşama 3: Çift `JSON.stringify` İptali, İndis Tabanlı Golcü Sıkıştırması ve Budama)
 - **Çift `JSON.stringify(store)` yükü kaldırıldı (`lastSavedRaw`):** Her tıklamada geri alma (`undo`) için tüm `store` nesnesini baştan serileştirmek yerine bir önceki kayıtta üretilen `lastSavedRaw` önbelleği kullanılır; `quotaCard` da aynı önbellekten boyut okur. Tıklama başına CPU yükü yarıya indirildi.
 - **Kadro sıra indisiyle golcü sıkıştırması ve sezon sonu budama (`pickSimScorer`, `pruneSimDetails`):** Simüle edilen maçlarda gol atan oyuncular uzun metin dizileri yerine kadrodaki sıra indisiyle (`0, 1, 2...`) saklanır; turnuva tamamlandığında (`finishTournament`) gol krallığı özeti (`s.sim.sc`) korunarak alt maçlardaki geçici golcü dizileri budanır (~%70 boyut tasarrufu).
