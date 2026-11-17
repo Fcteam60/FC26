@@ -1,5 +1,10 @@
 # Değişiklik listesi
 
+## v18.16 (Hata Düzeltmesi: Fikstür Rakip Tutarlılığı)
+- **Fikstürde oynanmamış hafta maçlarında senin rakibin artık maç giriş ekranıyla aynı sırayla belirlenir** (sıradaki, lig/grup tur sayısını henüz doldurmamış grup rakibi). Önceden Fikstür dairesel çizelgeden farklı bir rakip gösteriyordu (örn. 5. hafta).
+- Gruptaki diğer maçlar bu rakibe göre yeniden eşleştirilir; bir takım aynı haftada iki kez görünmez.
+- `VER` 18.16, `package.json` 18.16.0, `sw.js` önbelleği `fc27-lig-v18-16`.
+
 ## v18.15 (Fikstür Geliştirmeleri)
 - **Fikstür artık gerçek fikstür:** hafta seçici toplam hafta sayısı kadar sekme gösterir; oynanmamış maçlar «vs» ile listelenir (planlanan eşleşme), oynananlar skorla. Kart başlığında «oynanan/toplam» sayacı.
 - **Takım adlarına dokununca kadro açılır** (`tinfo`).

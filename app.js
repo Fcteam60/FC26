@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="18.15",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="18.16",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -1932,22 +1932,29 @@ function fixtureView(s){
   const selW=(st.fxw===999||(st.fxw>=1&&st.fxw<=totW))?st.fxw:(maxW||1);
   const tm=i=>`<button class="tl" data-a="tinfo" data-i="${i}" aria-label="${esc(T[i].n)} kadrosunu incele">${esc(T[i].n)}</button>`;
   const row=(t1,t2,done,g1,g2,mine)=>`<div class="simm${mine?" mine":""}">${tm(t1)}<b${done?"":' class="vs"'}>${done?`${g1}–${g2}`:"vs"}</b>${tm(t2)}</div>`;
-  const myNext=(gi,w)=>{
-    const g=s.G[gi],half=g.length-1;if(half<1)return null;
-    const base=circleRounds([s.my,...g.filter(x=>x!==s.my)],false);
-    const pr=(base[(w-1)%half]||[]).find(([a,b])=>a===s.my||b===s.my);if(!pr)return null;
-    const opp=pr[0]===s.my?pr[1]:pr[0],home=(pr[0]===s.my)!==(w>half);
-    return home?[s.my,opp]:[opp,s.my]};
+  const seqC=nob();
+  const nextOpp=(gi,w)=>{
+    if(!seqC[gi]){
+      const riv=s.G[gi].filter(x=>x!==s.my),cnt=nob(),sq=[];
+      myGm.forEach(m=>{if(m.opp!=null)cnt[m.opp]=(cnt[m.opp]||0)+1});
+      for(let k=myGm.length;k<totW;k++){const o=riv.find(i=>(cnt[i]||0)<gl);sq.push(o===undefined?null:o);if(o!==undefined)cnt[o]=(cnt[o]||0)+1}
+      seqC[gi]=sq}
+    const o=seqC[gi][w-myGm.length-1];return o==null?null:o};
+  const othersPairs=(gi,w,opp)=>{
+    const g=s.G[gi],half=g.length-1;if(half<1)return [];
+    const base=circleRounds([s.my,...g.filter(x=>x!==s.my)],false),isSec=w>half;
+    const fnd=opp==null?null:base.find(r=>r.some(([a,b])=>(a===s.my&&b===opp)||(b===s.my&&a===opp)));
+    return (fnd||base[(w-1)%half]||[]).filter(([a,b])=>a!==s.my&&b!==s.my).map(([a,b])=>isSec?[b,a]:[a,b])};
   const wkData=(gi,w)=>{
-    const g=s.G[gi],mn=s.my!=null&&g.includes(s.my),its=[];let played=0,total=0;
+    const g=s.G[gi],mn=s.my!=null&&g.includes(s.my),its=[];let played=0,total=0,myOpp=null;
     if(mn){
       const m=myGm[w-1];total++;
-      if(m&&m.opp!=null&&T[m.opp]){played++;its.push(row(s.my,m.opp,true,m.gf,m.ga,true))}
-      else{const pr=myNext(gi,w);if(pr&&T[pr[0]]&&T[pr[1]])its.push(row(pr[0],pr[1],false,0,0,true))}
+      if(m&&m.opp!=null&&T[m.opp]){played++;myOpp=m.opp;its.push(row(s.my,m.opp,true,m.gf,m.ga,true))}
+      else if(w>myGm.length){myOpp=nextOpp(gi,w);if(myOpp!=null&&T[myOpp])its.push(row(s.my,myOpp,false,0,0,true))}
     }
     const wkM=sim.gm[gi]&&sim.gm[gi][w-1];
     if(wkM&&wkM.length){wkM.forEach(([t1,t2,g1,g2])=>{if(T[t1]&&T[t2]){played++;total++;its.push(row(t1,t2,true,g1,g2,false))}})}
-    else simWeekPairs(s,gi,w).forEach(([t1,t2])=>{if(T[t1]&&T[t2]){total++;its.push(row(t1,t2,false,0,0,false))}});
+    else (mn?othersPairs(gi,w,myOpp):simWeekPairs(s,gi,w)).forEach(([t1,t2])=>{if(T[t1]&&T[t2]){total++;its.push(row(t1,t2,false,0,0,false))}});
     return {h:its.join(""),played,total}};
   const wkTabs=`<div class="wktabs" role="group" aria-label="Hafta seç">${rg(totW).map(i=>`<button class="chip ${selW===i+1?"on":""}${i+1>maxW?" up":""}" data-a="fxw" data-v="${i+1}" ${selW===i+1?'aria-current="true"':""}>${i+1}. Hafta</button>`).join("")}${totW>1?`<button class="chip ${selW===999?"on":""}" data-a="fxw" data-v="999">Tümü</button>`:""}</div>`;
   const weeks=selW===999?rg(totW).map(i=>i+1):[selW];
@@ -1956,7 +1963,7 @@ function fixtureView(s){
     let pl=0,tt=0;
     const blks=order.map(gi=>{const d=wkData(gi,w);pl+=d.played;tt+=d.total;return d.h?`<div class="wkblk"><div class="lb" style="font-weight:700;margin:6px 0 2px">${gname(s,gi)}</div>${d.h}</div>`:""}).join("");
     return `<div class="card"><h3>📅 ${w}. Hafta<small>${tt?`${pl}/${tt} maç oynandı`:""}</small></h3>${blks||`<div class="note">Bu hafta için maç yok.</div>`}</div>`}).join("");
-  const unp=weeks.some(w=>w>maxW)?`<div class="note" style="margin:0 0 8px">Oynanmamış maçlar planlanan fikstürdür; kendi maçında rakibi girerken seçtiğin takım sıralamayı değiştirebilir.</div>`:"";
+  const unp=weeks.some(w=>w>maxW)?`<div class="note" style="margin:0 0 8px">Oynanmamış maçlarda senin rakibin, maç giriş ekranındaki sırayla aynıdır (sıradaki oynanmamış grup rakibi). Rakibi giriş ekranında değiştirirsen fikstür de ona göre güncellenir.</div>`:"";
   return koHtml+wkTabs+body+unp}
 const emp=t=>`<div class="emp">${PITCH}${t}</div>`;
 const qOk=s=>!!(s.lk&&s.my!=null&&s.G&&s.P);
