@@ -1,5 +1,31 @@
 # Değişiklik listesi
 
+## v18.11 (Düzeltme & Performans Aşama 3: Çift `JSON.stringify` İptali, İndis Tabanlı Golcü Sıkıştırması ve Budama)
+- **Çift `JSON.stringify(store)` yükü kaldırıldı (`lastSavedRaw`):** Her tıklamada geri alma (`undo`) için tüm `store` nesnesini baştan serileştirmek yerine bir önceki kayıtta üretilen `lastSavedRaw` önbelleği kullanılır; `quotaCard` da aynı önbellekten boyut okur. Tıklama başına CPU yükü yarıya indirildi.
+- **Kadro sıra indisiyle golcü sıkıştırması ve sezon sonu budama (`pickSimScorer`, `pruneSimDetails`):** Simüle edilen maçlarda gol atan oyuncular uzun metin dizileri yerine kadrodaki sıra indisiyle (`0, 1, 2...`) saklanır; turnuva tamamlandığında (`finishTournament`) gol krallığı özeti (`s.sim.sc`) korunarak alt maçlardaki geçici golcü dizileri budanır (~%70 boyut tasarrufu).
+- **Gereksiz `withSn` sarmalayıcıları temizlendi:** Doğrudan `RT(s, i)` ve `simPowerOf(s, i)` kullanan `simNextWeek` ve `simKoStage` fonksiyonlarındaki global `T` değiştiren `withSn` sarmalayıcıları kaldırıldı.
+- `VER` 18.11, `package.json` 18.11.0, `sw.js` önbelleği `fc27-lig-v18-11`.
+
+
+## v18.10 (Düzeltme & Arayüz Aşama 2: Yeni Nesil Gerçekçi Simülasyon Motoru ve 4 Çeyrekli Çapraz Eşleşme)
+- **İlk 11, Yıldız Hücumcu ve Kaleci Etkili Güç Profili (`squadMetricsOf`, `simPowerOf`):** Simülasyon artık yalnızca takımın kaba genel gücüne değil; `data.js` kadrosundaki **İlk 11 (`t="S"`) ortalamasına**, **en iyi 3 hücum/orta saha yıldızının (`star`) bitiriciliğine** ve **as kalecinin (`gk`) kurtarış gücüne** göre hesaplanır.
+- **Doğrusal Olmayan (Non-Linear) Güç Baskınlığı ve Seri Başı Avantajı (`simMatchScore`, `simOneKoTie`):** İki takım arasındaki efektif güç farkı 2.5 puanı aştığında güçlü takımın oyun üstünlüğü üstel olarak artar ve zayıf takımın gol beklentisi ($\lambda$) bastırılır. Uzatma (`UZ`) ve seri penaltılarda (`P`) kaleci ve yıldız oyuncu kalitesi sonucu doğrudan etkiler.
+- **4 Çeyrekli Çapraz Eleme Ağacı (`buildInitialKoPairs`):** Gruplardan 4'er takımın çıktığı (`q=4`) turnuvalarda aynı gruptan çıkan 4 takım 4 ayrı çeyreğe dağıtılır ve *1. vs 4.* galibi çeyrek finalde başka bir *1. vs 4.* galibi yerine *2. vs 3.* galibiyle eşleşir.
+- `VER` 18.10, `package.json` 18.10.0, `sw.js` önbelleği `fc27-lig-v18-10`.
+
+
+## v18.9 (Düzeltme & Arayüz Aşama 1: Puan Tablosu Hizalaması, Açılır Hafta Sonuçları ve Denetim Düzeltmeleri)
+- **Puan tablosu Averaj (`AV`) ve Puan (`P`) sütun ayrımı:** Çift haneli averajlarda (`+11` vb.) sağdaki Puan (`15`) sütunuyla bitişik görünme sorunu giderildi; `AV` sütunu genişletildi (`32px`) ve `P` sütununa rozet/boşluk ayrımı eklendi.
+- **Geçmiş hafta sonuçları için açılır pencere / hafta seçici (`wktog`, `wksel`):** Grup ve lig kartlarının altındaki hafta sonuçları açılır pencereye dönüştürüldü; tıklanarak **1. Hafta, 2. Hafta...** veya **Tümü** arasında geçiş yapılabilir.
+- **Gereksiz "Çıkanları seç" butonları kaldırıldı:** Simülasyon sonunda gruptan çıkanlar otomatik belirlendiği için `Sezon` ve `Kura › Gruplar` ekranlarındaki manuel çıkan seçme butonları kaldırıldı.
+- **Kod denetimi düzeltmeleri (Madde 1, 3, 4, 5):**
+  1. `simUndoWeek`: Son grup haftası geri alındığında `s.gqs`, `s.gq` ve `s.grk` otomatik temizlenir.
+  2. `tourneyTopScorers`: `render()` sırasında `s.sim.sc` değiştiren yan etki kaldırıldı (`render` saf tutuldu).
+  3. `syncUserMatchesToBracket`: Eleme eşleşmesi filtresi `m.opp === opp` olarak kesinleştirildi.
+  4. `calcGroupTable` & `msave`: Aynı grup rakibiyle `c.gl` sınırından fazla maç girilmesi ve tablonun şişmesi engellendi.
+- `VER` 18.9, `package.json` 18.9.0, `sw.js` önbelleği `fc27-lig-v18-9`.
+
+
 ## v18.8 (Simülasyon Aşama 2 & 3: Otomatik Eleme Ağacı, Kadrolardan Gol Krallığı ve Turnuvayı Sonlandır)
 - **Grup sıralamasından otomatik Eleme Ağacı (`buildInitialKoPairs`, `initKoBracket`, `koBracketCard`):** Grup aşaması tamamlandığında çıkan takımlar gerçek Dünya Kupası / Şampiyonlar Ligi çapraz eşleşme mantığıyla (*A1–B2, C1–D2 | B1–A2, D1–C2*) eleme ağacına (`s.sim.ko`) yerleştirilir; aynı gruptan çıkan iki takım finale kadar karşılaşmaz.
 - **Eleme rakibinin bracket'tan otomatik gelmesi (`getAutoKoOpponent`):** Eleme turlarında maç sonucu girerken rakip seçimi bracket'taki eşleşmene göre otomatik gelir.
