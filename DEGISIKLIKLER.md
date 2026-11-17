@@ -1,5 +1,22 @@
 # Değişiklik listesi
 
+## v18.8 (Simülasyon Aşama 2 & 3: Otomatik Eleme Ağacı, Kadrolardan Gol Krallığı ve Turnuvayı Sonlandır)
+- **Grup sıralamasından otomatik Eleme Ağacı (`buildInitialKoPairs`, `initKoBracket`, `koBracketCard`):** Grup aşaması tamamlandığında çıkan takımlar gerçek Dünya Kupası / Şampiyonlar Ligi çapraz eşleşme mantığıyla (*A1–B2, C1–D2 | B1–A2, D1–C2*) eleme ağacına (`s.sim.ko`) yerleştirilir; aynı gruptan çıkan iki takım finale kadar karşılaşmaz.
+- **Eleme rakibinin bracket'tan otomatik gelmesi (`getAutoKoOpponent`):** Eleme turlarında maç sonucu girerken rakip seçimi bracket'taki eşleşmene göre otomatik gelir.
+- **Elensen bile finale kadar tur simülasyonu (`simKoStage`, `simOneKoTie`):** Grupta veya ara turlarda elensen bile **"⚡ Turu Simüle Et"** ve **"⏩ Finale Kadar Simüle Et"** butonlarıyla tek/çift maç, uzatma (`UZ`) ve seri penaltı (`P`) kurallarıyla turnuvayı sonuna kadar simüle edebilirsin. Yapay zeka maçları senin kişisel maç geçmişini (`s.mt`) kirletmez.
+- **Kadrolardan Turnuva Gol Krallığı (`pickSimScorer`, `tourneyTopScorers`, `topScorersCard`):** Simüle edilen maçlardaki goller `data.js` kadrolarındaki oyunculara mevki (*Forvet > Orta Saha > Defans*), ilk 11 durumu ve genel güç ağırlıklarına göre dağıtılır; senin oyuncularınla diğer takımların yıldızları tek **Turnuva Gol Krallığı** listesinde yarışır.
+- **Turnuvayı Sonlandır (`finishTournament`, `getTourneyOutcome`):** Tüm maçlar tamamlandığında çıkan **"🏆 Turnuvayı Sonlandır ve Kaydet"** butonu şampiyonu, finalisti, gol kralını ve ulaştığın dereceyi otomatik olarak sezon sonucuna (`s.res`), Kupa Dolabına ve Geçmiş'e kaydeder.
+- `VER` 18.8, `package.json` 18.8.0, `sw.js` önbelleği `fc27-lig-v18-8`.
+
+
+## v18.6 (Simülasyon Aşama 1: Grup/Lig Haftalık Simülasyon ve Canlı Puan Tabloları)
+- **Haftalık turnuva simülasyonu (`s.sim`, `simNextWeek`, `simUndoWeek`):** Sen grup veya lig maçını girdikten sonra **"⚡ X. Hafta Maçlarını Simüle Et"** butonu aktifleşir; kendi grubundaki diğer eşleşmeler ve diğer tüm grupların o haftaki maçları tek tıkla oynatılır. İstenirse **"↩ Geri Al"** ile son simüle edilen hafta geri alınabilir.
+- **Gerçekçi Poisson skor motoru (`simMatchScore`):** Takımların anlık Genel, Hücum, Orta Saha ve Defans güçlerine (`RT(s, i)`) ve seçilen moda (*Gerçekçi / Dengeli / Sürprizli*) göre skor üretir. *Gerçekçi* modda 1-0, 2-1, 2-0, 1-1 gibi gerçek futbol skor dağılımları ağırlıklıdır (~2,68 maç başı gol).
+- **Tam sütunlu canlı puan tablosu (`calcGroupTable`):** Grup ve lig kartlarında ilk maçtan itibaren **O (Oynanan), G (Galibiyet), B (Beraberlik), M (Mağlubiyet), AG (Attığı Gol), YG (Yediği Gol), AV (Averaj) ve P (Puan)** sütunları ile o haftanın toplu maç sonuçları gösterilir.
+- **Otomatik grup çıkanları ve sıra tespiti:** Son grup haftası simüle edildiğinde tüm gruplarda ilk `q` sırayı alan takımlar otomatik olarak `s.gqs` içine işaretlenir; senin takımının grup sırası (`s.grk`) da sezon onay kutusuna hazır gelir.
+- `VER` 18.6, `package.json` 18.6.0, `sw.js` önbelleği `fc27-lig-v18-6`.
+
+
 ## v18.5 (Görsel hiyerarşi ve sadeleştirme)
 - **Yedek hatırlatması kompakt şerit oldu:** Büyük yeşil blok yerine, altın sol kenarlıklı tek satırlık şerit (`.bks`). Ana kart tek odak olarak kalır. Düğme metni "Yedek indir"; "Ayarlar › Yedekleme" bağlantısı metnin sonunda.
 - **Sıfır değerli satırlar sönük ve ince:** Geçmiş > Toplu istatistik ve dağılım satırlarında değeri 0 olan satırlar soluk gösterilir. Hiç biten sezon yokken "Sonuç dağılımı / Lig sıralama dağılımı" kartı gizlenir. Boş durum çizimi küçültüldü.
