@@ -468,3 +468,34 @@ body{font-variant-numeric:tabular-nums}
 .boot i:first-child{height:150px}
 @keyframes bootp{from{opacity:.35}to{opacity:.8}}
 @media(prefers-reduced-motion:reduce){.boot i{animation:none}}
+
+/* ===== v18.5: hiyerarşi ve sadeleştirme ===== */
+/* Yükseklik katmanları: birincil kartlar (hero) belirgin, ikincil satırlar sakin */
+:root{--gsh-lo:0 1px 2px rgba(20,32,27,.06);--gsh-hi:0 10px 26px rgba(15,100,70,.15),inset 0 1px 0 rgba(255,255,255,.5)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--gsh-lo:inset 0 1px 0 rgba(255,255,255,.06);--gsh-hi:0 8px 24px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.08)}}
+:root[data-theme="dark"]{--gsh-lo:inset 0 1px 0 rgba(255,255,255,.06);--gsh-hi:0 8px 24px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.08)}
+.hero{box-shadow:var(--gsh-hi)}
+.kord,.sbcard{box-shadow:var(--gsh-lo)}
+
+/* Yedek hatırlatması: tek odak için kompakt şerit */
+.bks{display:flex;align-items:center;gap:10px;margin:0 0 10px;padding:10px 12px;border-radius:14px;background:var(--card);border:1px solid var(--bd);border-left:4px solid var(--gold);box-shadow:var(--gsh-lo);text-align:left}
+.bks .bkt{flex:1;min-width:0;font-size:12.5px;line-height:1.4;color:var(--mut)}
+.bks .bkt b{display:block;margin-bottom:1px;font-size:14px;color:var(--tx)}
+.bks .btn{flex:0 0 auto;min-height:40px;padding:0 14px;font-size:14px;white-space:nowrap}
+.bkl{all:unset;cursor:pointer;color:var(--tx);font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.bkl:focus-visible{outline:2px solid var(--ac);outline-offset:2px;border-radius:3px}
+
+/* Sıfır değerli satırlar sönük ve ince; boş durum çizimi daha kompakt */
+.row.z{opacity:.42;padding:3px 0}
+.emp svg{width:72px;height:48px;margin-bottom:4px}
+
+/* Eleme yolu: dikey hat ve durum düğümleri */
+.kobr{position:relative;padding-left:22px}
+.kobr::before{content:"";position:absolute;left:7px;top:14px;bottom:14px;width:2px;border-radius:2px;background:var(--bd)}
+.kobr .kord{position:relative}
+.kobr .kord::before{content:"";position:absolute;left:-20px;top:50%;width:12px;height:12px;margin-top:-6px;box-sizing:border-box;border-radius:50%;background:var(--card);border:2px solid var(--bd)}
+.kobr .kord.win::before{background:var(--gold);border-color:var(--gold)}
+.kobr .kord.cur::before{background:var(--ac);border-color:var(--ac)}
+.kobr .kord.lose::before{background:var(--wr);border-color:var(--wr)}
+.kobr .kord.lose{border-color:var(--wr)}
+.kobr .kord.np{opacity:.7}

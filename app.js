@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="18.4",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="18.5",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -793,7 +793,7 @@ function bkRemind(){
   const need=sFin||(store.lb?(nw>=10||(nw>=1&&days>=14)||days>=30):t>=5);
   if(!need)return "";
   const msg=sFin?(store.lb?`${esc(s.name)} tamamlandı ve son yedekten beri ${nw} yeni maç/sonuç kaydedildi (son yedek: ${dTR(store.lb)}).`:`${esc(s.name)} tamamlandı ama henüz hiç yedek almadın. Kariyerini güvenceye almak için şimdi yedek al.`):(store.lb?(nw>0?`Son yedekten beri ${nw} maç girdin (son yedek: ${dTR(store.lb)}).`:`Son yedeğinin üzerinden ${Math.floor(days)} gün geçti (son yedek: ${dTR(store.lb)}).`):`${t} maç kaydettin ama hiç yedek almadın. Tarayıcı verisi silinirse sezonların kaybolur.`);
-  return `<div class="big" style="text-align:left"><b>💾 Yedek zamanı</b><div class="note" style="margin:4px 0 8px">${msg}</div><div class="bar" style="margin:0"><button class="btn p" data-a="exf">Hemen yedek indir</button><button class="btn" data-t="6">Ayarlar › Yedekleme</button></div></div>`}
+  return `<div class="bks" role="status"><div class="bkt"><b>💾 Yedek zamanı</b>${msg} <button class="bkl" data-t="6">Ayarlar › Yedekleme</button></div><button class="btn p" data-a="exf">Yedek indir</button></div>`}
 const sfBan=()=>`<div class="big" role="alert" style="text-align:left"><b class="wr">Değişiklikler kaydedilemedi.</b><div class="note" style="margin:4px 0 8px">Tarayıcı depolaması dolu ya da kapalı olabilir (özel sekme?). Sekmeyi kapatırsan son girdiğin veriler kaybolur. Şimdi yedek al.</div><button class="btn p" data-t="6">Yedek al</button></div>`;
 function delSeason(id){
   const x=store.seasons.find(q=>q.id==id);if(!x)return;
@@ -1114,7 +1114,7 @@ function histView(){
   const topBoth=ds.both.slice(0,5).map((b,i)=>`<div class="row"><span class="lb" style="width:18px">${i+1}</span><span class="n">${esc(b.n)} <small class="pm">toplam ${b.g}G + ${b.a}A</small></span><span class="g">${b.c} maç</span></div>`).join("")||`<div class="note">Aynı maçta hem gol hem asist yapan oyuncu henüz yok</div>`;
   const TM=nob();ss.filter(x=>x.res).forEach(x=>{if(x.my==null)return;const o=TM[x.my]=TM[x.my]||{n:T[x.my].n,k:0,b:-1,lg:isLg(x.cfg)};o.k++;if(x.res.st>=o.b){o.b=x.res.st;o.lg=isLg(x.cfg)}});
   const card=(t,b)=>`<div class="card" style="margin-top:10px"><h3>${t}</h3>${b}</div>`;
-  const R=(a,b)=>`<div class="row"><span class="n">${a}</span><b>${b}</b></div>`;
+  const R=(a,b)=>`<div class="row${b===0?" z":""}"><span class="n">${a}</span><b>${b}</b></div>`;
   const isL=hmod=="lg",isC=hmod=="cup";
   const A1=card(isL?"Lig toplu istatistik":isC?"Kupa toplu istatistik":"Toplu istatistik",
     R("Sezon / biten",filtS.length+" / "+n)+
@@ -1122,7 +1122,7 @@ function histView(){
     (isL?R("İkincilik",cnt[6])+R("İlk 3 (podyum)",cnt[5]+cnt[6]+cnt[7]):R("Finale kalma",cnt[6]+cnt[7])+R("Yarı final ve üstü",cnt[5]+cnt[6]+cnt[7]))+
     (best>=0?R("En iyi sonuç",isL?(SNL[best]||SN[best]):SN[best]):""));
   const distKeys=isL?[0,4,5,6,7]:SN.map((_,i)=>i).filter(i=>i==0||i>=2||cnt[i]>0);
-  const A2=card(isL?"Lig sıralama dağılımı":"Sonuç dağılımı",distKeys.map(i=>`<div class="row"><span class="n" style="flex:0 0 150px">${isL?(SNL[i]||SN[i]):SN[i]}</span><div class="bk"><i style="width:${cnt[i]/mx*100}%"></i></div><b>${cnt[i]}</b></div>`).join(""));
+  const A2=distKeys.some(i=>cnt[i]>0)?card(isL?"Lig sıralama dağılımı":"Sonuç dağılımı",distKeys.map(i=>`<div class="row${cnt[i]?"":" z"}"><span class="n" style="flex:0 0 150px">${isL?(SNL[i]||SN[i]):SN[i]}</span><div class="bk"><i style="width:${cnt[i]/mx*100}%"></i></div><b>${cnt[i]}</b></div>`).join("")):"";
   const A3=(!isL&&gp.length?card("Grupta elenme puanları",R("Ortalama",fx(gp.reduce((a,b)=>a+b,0)/gp.length))+R("En düşük / en yüksek",Math.min(...gp)+" / "+Math.max(...gp))):"")+
            ((isL||hmod=="all")&&lgp.length?card("Lig puan istatistikleri",R("Ortalama lig puanı",fx(lgp.reduce((a,b)=>a+b,0)/lgp.length))+R("En düşük / en yüksek puan",Math.min(...lgp)+" / "+Math.max(...lgp))):"");
   const A4=card("Gol, asist ve yıldızlar",R("Toplam gol / asist / MOTM",sum(pl,"g")+" / "+sum(pl,"a")+" / "+sum(pl,"mom"))+`<div class="rt">🔥 Clutch (Eleme & Final maçları) yıldızları</div>${topClutch}<div class="rt">Toplam skor katkısı krallığı (G + A)</div>${topGA}<div class="rt">Maç başına skor katkısı (G+A / Maç · en az 2 maç)</div>${topGAPM}<div class="rt">Altın ikililer (aynı maçta gol + asist işbirliği)</div>${topDuos}<div class="rt">En çok skora etki eden yıldızlar (aynı maçta hem gol hem asist)</div>${topBoth}<div class="rt">Gol krallığı</div>${top("g")}<div class="rt">Asist krallığı</div>${top("a")}<div class="rt">Maçın Adamı (MOTM) krallığı</div>${top("mom")}<div class="rt">Maç başı gol (en az 3 maç)</div>${topGpm}`);
@@ -1341,12 +1341,12 @@ function koBox(s){
   const R=rds(s.cfg).filter(r=>r!="Grup");if(!R.length)return "";
   const rows=R.map(rd=>{
     const ms=koM.filter(m=>m.rd==rd);
-    if(!ms.length)return `<div class="kord"><div class="koht"><span>${rd}</span><small>Oynanmadı</small></div></div>`;
+    if(!ms.length)return `<div class="kord np"><div class="koht"><span>${rd}</span><small>Oynanmadı</small></div></div>`;
     const op=ms[0].on,sc=ms.map(mscTxt).join(" , "),gf=ms.reduce((a,m)=>a+m.gf,0),ga=ms.reduce((a,m)=>a+m.ga,0),last=ms[ms.length-1];
     const needL=lgs(s.cfg,rd),doneL=ms.length>=needL;
     const pWin=last.pf!=null&&last.pa!=null&&last.pf!==last.pa?(last.pf>last.pa?1:-1):0;
     const w=!doneL?"cur":(gf>ga||pWin>0?"win":gf<ga||pWin<0?"":"cur");
-    return `<div class="kord ${w}"><div class="koht"><span>${rd} · ${esc(op)}</span><b>${sc}</b></div><div class="lb">Toplam: ${gf}–${ga}${last.pf!=null&&last.pa!=null?` · Penaltı: ${last.pf}–${last.pa}`:last.et?" · Uzatma":""}</div></div>`;
+    return `<div class="kord ${w||"lose"}"><div class="koht"><span>${rd} · ${esc(op)}</span><b>${sc}</b></div><div class="lb">Toplam: ${gf}–${ga}${last.pf!=null&&last.pa!=null?` · Penaltı: ${last.pf}–${last.pa}`:last.et?" · Uzatma":""}</div></div>`;
   }).join("");
   return cd("Eleme yolu",`<div class="kobr">${rows}</div>`)}
 function tmini(s){const t=T[s.my],tr=t.g>=85?1:t.g>=80?2:t.g>=75?3:0,gi=s.G?s.G.findIndex(g=>g.includes(s.my)):-1;

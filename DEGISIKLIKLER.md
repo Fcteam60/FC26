@@ -1,5 +1,12 @@
 # Değişiklik listesi
 
+## v18.5 (Görsel hiyerarşi ve sadeleştirme)
+- **Yedek hatırlatması kompakt şerit oldu:** Büyük yeşil blok yerine, altın sol kenarlıklı tek satırlık şerit (`.bks`). Ana kart tek odak olarak kalır. Düğme metni "Yedek indir"; "Ayarlar › Yedekleme" bağlantısı metnin sonunda.
+- **Sıfır değerli satırlar sönük ve ince:** Geçmiş > Toplu istatistik ve dağılım satırlarında değeri 0 olan satırlar soluk gösterilir. Hiç biten sezon yokken "Sonuç dağılımı / Lig sıralama dağılımı" kartı gizlenir. Boş durum çizimi küçültüldü.
+- **Eleme yolu çizgisi:** Turlar dikey bir hat ve durum düğümleriyle bağlandı (altın: geçildi, yeşil: sürüyor, kırmızı: elendi, gri: oynanmadı). `koBox` artık `np` (oynanmadı) ve `lose` (elendi) sınıfları üretir.
+- **Kart yüksekliği hiyerarşisi:** Ana kart (hero) daha belirgin gölge, ikincil satırlar (`.kord`, `.sbcard`) sakin gölge alır (`--gsh-hi`, `--gsh-lo`, her iki temada).
+- `VER` 18.5, `package.json` 18.5.0, `sw.js` önbelleği `fc27-lig-v18-5`.
+
 ## v18.4 (Görsel iyileştirmeler ve önbellek düzeltmesi)
 - **Önbellek sürümü düzeltildi (`sw.js`):** v18.3 paketinde `CACHE` adı güncellenmemişti; `sw.js` baytları değişmediği için mevcut kullanıcılar güncellemeyi alamazdı. Ad `fc27-lig-v18-4` yapıldı. Bundan sonra her sürümde `VER` ve `CACHE` birlikte artırılmalı.
 - **İlk kurulum ekranı:** Boş alanı dolduran, temaya uyumlu çim sahası çizimi ve kısa açıklama (yalnızca kurulum yapılmamışken görünür).
