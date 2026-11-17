@@ -47,8 +47,8 @@ Takım ve oyuncu veritabanı `app.js` kodundan bağımsız olarak **`data.js`** 
 
 ## Yeni Sürüm Yayınlama
 
-1. `app.js` içindeki `VER` değerini artır (örn. `"18.3"`).
-2. `sw.js` içindeki `CACHE` adını artır (örn. `"fc27-lig-v18-3"`).
+1. `app.js` içindeki `VER` değerini artır (örn. `"18.4"`).
+2. `sw.js` içindeki `CACHE` adını artır (örn. `"fc27-lig-v18-4"`).
 3. Yeni bir dosya eklediysen `sw.js` içindeki `FILES` listesine ve `index.html` içerisine ekle (aksi halde çevrimdışı modda eksik kalır).
 4. Değişiklikleri GitHub'a (`git push`) gönder. Kullanıcılar uygulamayı açtığında **"Yeni sürüm var — Yenile"** bildirimi alır ve verileri korunarak güncellenir.
 

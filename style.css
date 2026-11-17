@@ -448,3 +448,23 @@ button{transition:transform .08s}button:active{transform:scale(.96)}
 .glbox.og .glnum{background:var(--wr);color:#fff}
 body.qo *{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ac,#2f8f5b);outline-offset:2px}
+
+/* ===== v18.4: görsel iyileştirmeler ===== */
+/* Rakamlar tabloda ve skorlarda hizalı kalsın */
+body{font-variant-numeric:tabular-nums}
+/* İlk kurulum ekranı: çim çizgisi çizimi (boş alanı doldurur) */
+.pitchart{margin:18px auto 6px;max-width:340px;text-align:center;color:var(--ac)}
+.pitchart svg{display:block;width:100%;height:auto;opacity:.26}
+.pitchart p{margin:12px 12px 0;font-size:13px;line-height:1.45;color:var(--mut)}
+/* Form noktaları: renk körlüğü için G/B/M harfi */
+.fd{width:17px;height:17px;vertical-align:-3px;position:relative}
+.fd::after{display:block;text-align:center;font:700 10px/17px system-ui,sans-serif;font-style:normal}
+.fd.w::after{content:"G";color:var(--acx)}
+.fd.d::after{content:"B";color:var(--bg)}
+.fd.l::after{content:"M";color:var(--bg)}
+/* Açılış iskeleti: veri yüklenene kadar boş ekran yerine */
+.boot{display:grid;gap:12px;padding:14px 0}
+.boot i{display:block;height:96px;border-radius:16px;background:var(--card);border:1px solid var(--bd);opacity:.7;animation:bootp 1.1s ease-in-out infinite alternate}
+.boot i:first-child{height:150px}
+@keyframes bootp{from{opacity:.35}to{opacity:.8}}
+@media(prefers-reduced-motion:reduce){.boot i{animation:none}}

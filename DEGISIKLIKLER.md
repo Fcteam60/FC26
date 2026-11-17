@@ -1,5 +1,12 @@
 # Değişiklik listesi
 
+## v18.4 (Görsel iyileştirmeler ve önbellek düzeltmesi)
+- **Önbellek sürümü düzeltildi (`sw.js`):** v18.3 paketinde `CACHE` adı güncellenmemişti; `sw.js` baytları değişmediği için mevcut kullanıcılar güncellemeyi alamazdı. Ad `fc27-lig-v18-4` yapıldı. Bundan sonra her sürümde `VER` ve `CACHE` birlikte artırılmalı.
+- **İlk kurulum ekranı:** Boş alanı dolduran, temaya uyumlu çim sahası çizimi ve kısa açıklama (yalnızca kurulum yapılmamışken görünür).
+- **Form noktalarında G/B/M harfi:** Renk körlüğü olan kullanıcılar için sonuç artık renkle birlikte harfle de gösterilir.
+- **Sabit genişlikli rakamlar:** Tablo ve skorlarda sütunlar hizalı kalır (`font-variant-numeric: tabular-nums`).
+- **Açılış iskeleti:** Veri yüklenirken boş ekran yerine hafif yer tutucu kartlar (hareket azaltma tercihine uyar).
+
 ## v18.3 (Hata düzeltmeleri: veri ezilmesi koruması ve ilk açılış bildirimi)
 - **IndexedDB okuma hatasında veri ezilmesi engellendi (`storage.js` & `app.js`):** Ana kayıt okunurken geçici bir IndexedDB hatası olursa `kv.get` bunu "kayıt yok" gibi `null` döndürüp uygulamanın boş sezonla mevcut kaydı ezmesine yol açabiliyordu. Artık okuma hatası ayrı bayrakla (`hadMainReadFailure`) izlenir; bu durumda `st.readFail` kilidi devreye girer, hiçbir şey kaydedilmez ve kullanıcıya "Sayfayı Yenile" uyarısı gösterilir.
 - **İlk açılışta yanlış "Yeni sürüm var" bildirimi giderildi (`app.js`):** Service worker ilk kurulumda `SW_UPDATED` mesajı gönderiyordu; mesaj dinleyicisi artık yalnızca sayfa zaten bir SW tarafından kontrol ediliyorsa (`had`) bildirimi gösterir.

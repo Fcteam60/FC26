@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="18.3",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="18.4",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -1351,6 +1351,7 @@ function koBox(s){
   return cd("Eleme yolu",`<div class="kobr">${rows}</div>`)}
 function tmini(s){const t=T[s.my],tr=t.g>=85?1:t.g>=80?2:t.g>=75?3:0,gi=s.G?s.G.findIndex(g=>g.includes(s.my)):-1;
   return `<button class="tmini t${tr}" data-t="1" aria-label="Takım kartını aç"><div class="tt1">${badge(s.my,38)}<span class="tmi"><b class="tmn">★ ${esc(t.n)}</b><span class="tms">${fl(t.c)} ${CN[t.c][0]}${gi>=0?" · "+gname(s,gi):""}</span></span><span class="tmo"><b>${t.g}</b><i>GEN</i></span></div><div class="tmx"><span>HÜC<b>${t.a}</b></span><span>ORT<b>${t.o}</b></span><span>DEF<b>${t.d}</b></span></div></button>`}
+const PITCH_ART=`<div class="pitchart" aria-hidden="true"><svg viewBox="0 0 320 190" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="308" height="178" rx="10"/><path d="M160 6V184"/><circle cx="160" cy="95" r="28"/><circle cx="160" cy="95" r="2.5" fill="currentColor"/><path d="M6 52H52V138H6M314 52H268V138H314"/><path d="M6 76H24V114H6M314 76H296V114H314"/></svg><p>Maçları girdikçe istatistikler ve rozetler kendiliğinden oluşur.</p></div>`;
 function homeView(s){
   const ms=s.mt||[],has=s.my!=null,fin=!!s.res;
   const S=[["Kurulum",s.lk,"t",0],["Takım",has,"t",1],["Kura",!!s.G,"t",2],["Oyna",ms.length>0||fin,"a","qs"],["Bitir",fin,"a","gofin"]];
@@ -1367,7 +1368,7 @@ function homeView(s){
     main=`<button class="btn p cta" data-a="qs">+ Maç sonucunu gir</button>`;sec=`<button class="btn" data-a="gofin">Sezonu bitir</button>`;{const gz=grpState(s);if(gz&&gz.pend&&!isLg(s.cfg))txt="Grup maçların bitti. Aşağıdan gruptan çıkıp çıkmadığını işaretle."}}
   else{ttl=rlb(s.res,s.cfg,s.grk);txt="Sezon kaydedildi.";main=`<button class="btn p cta" data-a="ns">Yeni sezon başlat</button>`;sec=`<button class="btn" data-a="karne" data-id="${s.id}">Karneyi paylaş</button>`}
   h+=`<div class="big hero${fin&&s.res.st==7?" gold":""}"><div class="rs">${esc(ttl)}</div><div class="hn">${esc(txt)}</div>${stkPill()}${main}${sec?`<div class="bar" style="margin:8px 0 0">${sec}</div>`:""}</div>`;
-  h+=iosPwaRemind()+bkRemind();
+  if(!s.lk)h+=PITCH_ART;h+=iosPwaRemind()+bkRemind();
   const fold=(id,ttl,sub,bodyFn)=>{const op=!!(st.hm&&st.hm[id]);return `<button class="acbtn ${op?"on":""}" data-a="hm" data-k="${id}" aria-expanded="${op}"><span>${ttl}${sub?`<small>${sub}</small>`:""}</span><span class="acchev">${op?"▴":"▾"}</span></button>${op?`<div class="acbody">${bodyFn()}</div>`:""}`};
   if(has){
     h+=grpBox(s)+koBox(s)+tmini(s);
