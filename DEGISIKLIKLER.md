@@ -1,5 +1,10 @@
 # Değişiklik listesi
 
+## v18.14 (Arayüz: Fikstür Sekmesi)
+- **Kura › Gruplar üst çubuğuna üçüncü sekme eklendi: «Fikstür».** Çubuk artık Kura | Gruplar | Fikstür. Maç sonuçları buradan takip edilir: hafta seçiciyle (1. Hafta … Tümü) tüm grupların sonuçları, senin maçın ★ ile vurgulu, ayrıca oynanan eleme turu sonuçları.
+- **Grup kartından «Hafta Sonuçları» bloğu kaldırıldı;** kartta yalnızca puan durumu tablosu kalır.
+- `VER` 18.14, `package.json` 18.14.0, `sw.js` önbelleği `fc27-lig-v18-14`. Depolama anahtarları değişmedi.
+
 ## v18.13 (Arayüz: Maç Girişi Tek Noktada Toplandı)
 - **Maç sonucu girişi yalnızca Kura › Gruplar ekranındaki Turnuva Simülasyon Merkezi'nde (ve eleme ağacı kartındaki rakip düğmesinde) kaldı.** Sıra sendeyken düğme altın renkli, daha büyük ve hafif parlayan (`.qgo`) bir düğmeye dönüştü; kart da altın çerçeveyle vurgulanır (`.needme`).
 - **Kaldırılan giriş noktaları:** sağ alttaki yüzen **«+ Maç»** düğmesi (`#fab`), **İstat. › Maç günlüğü** içindeki «+ Maç sonucunu gir» düğmesi.
