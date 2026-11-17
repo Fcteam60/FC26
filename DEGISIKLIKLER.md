@@ -1,5 +1,13 @@
 # Değişiklik listesi
 
+## v18.13 (Arayüz: Maç Girişi Tek Noktada Toplandı)
+- **Maç sonucu girişi yalnızca Kura › Gruplar ekranındaki Turnuva Simülasyon Merkezi'nde (ve eleme ağacı kartındaki rakip düğmesinde) kaldı.** Sıra sendeyken düğme altın renkli, daha büyük ve hafif parlayan (`.qgo`) bir düğmeye dönüştü; kart da altın çerçeveyle vurgulanır (`.needme`).
+- **Kaldırılan giriş noktaları:** sağ alttaki yüzen **«+ Maç»** düğmesi (`#fab`), **İstat. › Maç günlüğü** içindeki «+ Maç sonucunu gir» düğmesi.
+- **Sezon sekmesi:** ana düğme, «Eleme yolu» kartındaki giriş düğmeleri ve üstteki adım çubuğundaki **«4 Oyna»** adımı artık maç formunu açmak yerine **Kura › Gruplar** ekranına yönlendirir.
+- Mevcut maçları düzenleme (✎) aynen çalışır.
+- `VER` 18.13, `package.json` 18.13.0, `sw.js` önbelleği `fc27-lig-v18-13`.
+
+
 ## v18.12 (Hata Düzeltmesi: Grup Kartı `wk is not defined`)
 - **Grup/lig kartı çökmesi giderildi (`grpCard`):** Puan tablosu başlığında tanımsız `wk` değişkeni kullanılıyordu (`ReferenceError: wk is not defined`); bu yüzden maç girildikten sonra Gruplar ekranı render edilemiyordu. Başlıktaki hafta bilgisi artık gerçekten hesaplanan `maxW` (oynanan hafta sayısı) değerinden gelir.
 - `VER` 18.12, `package.json` 18.12.0, `sw.js` önbelleği `fc27-lig-v18-12`.

@@ -154,8 +154,6 @@ h1{font-size:26px}.card h3{font-size:20px}.g{font-size:19px}.tcn{font-size:28px}
 .sheet .sc2{min-width:34px}
 @keyframes sup{from{transform:translateY(100%)}}@keyframes fadein{from{opacity:0}}
 body.qo{overflow:hidden}
-.fab{position:fixed;right:14px;bottom:calc(72px + env(safe-area-inset-bottom,0px));z-index:8;min-height:52px;padding:0 20px;border-radius:26px;border:0;background:var(--ac);color:var(--acx);font:700 20px var(--num);box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer}
-.fab[hidden]{display:none}
 
 /* ===== 5: estetik katmanı ===== */
 :root{--bg2:#ebf1ed;--gold:#d4a017;--goldx:#2b2000;--beam:transparent}
@@ -188,7 +186,10 @@ header .btn{min-height:40px;width:40px;padding:0;background:rgba(255,255,255,.16
 .gb u{display:block;height:100%;background:var(--ac);text-decoration:none}
 .card.dead .gb u{background:var(--wr)}.card.mine .gb u{background:var(--gold)}
 /* altın vurgu */
-.fab,.sheet .btn.p[data-a="msave"]{background:linear-gradient(135deg,#f8e08a,#d4a017);color:#2b2000}
+.sheet .btn.p[data-a="msave"],.btn.p.qgo{background:linear-gradient(135deg,#f8e08a,#d4a017);color:#2b2000;border-color:#d4a017}
+.btn.p.qgo{min-height:56px;font-family:var(--num);font-size:20px;letter-spacing:.02em;font-weight:700;box-shadow:0 4px 14px rgba(212,160,23,.35);animation:qgop 2.4s ease-in-out infinite}
+@keyframes qgop{0%,100%{box-shadow:0 4px 14px rgba(212,160,23,.35)}50%{box-shadow:0 4px 22px rgba(212,160,23,.75)}}
+.simbar.needme{border-color:#d4a017!important;box-shadow:0 0 0 1px rgba(212,160,23,.45),0 6px 20px rgba(212,160,23,.2)!important}
 /* boş ekran */
 .emp{text-align:center;color:var(--mut);padding:14px 0}.emp svg{width:96px;height:64px;display:block;margin:0 auto 6px;fill:none;stroke:currentColor;stroke-width:1.5;opacity:.7}
 /* dokunma geri bildirimi */
