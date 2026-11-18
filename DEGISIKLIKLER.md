@@ -1,5 +1,15 @@
 # Değişiklik listesi
 
+## v18.25 (Açıklayıcı İstatistikler: Oyun Tarzın ve xG/xPts Analizi Yeniden Tasarımı)
+- **xG, xPts & Verimlilik Analizi kartı** bölümlere ayrıldı: Gol Beklentisi, Puan Beklentisi, Şut Kalitesi, Savunma & Kaleci, Oyun Kontrolü, Hak Ediş Dağılımı ve xG Trendi. Her kutu artık değerin altında düz Türkçe bir yorum gösterir (ör. "Beklentinin üstünde gol attın: bitiricilik çok iyi") ve yoruma göre renklenir.
+- **Koç notları:** Veriden otomatik üretilen 5 maddeye kadar özet (bitiricilik, puan şansı, savunma, şut kalitesi, şut üstünlüğü, kaleci).
+- **Yeni istatistikler:** Yenen xG, xG Farkı (maç başı), Pozisyon Payı (+ karşılaştırma çubuğu), Maç Başı Puan, Maç Başı Şut ve isabetli şut, Rakip Şutu, Önlenen Gol (yenen xG − yenen gol), Temiz Kasa, Pas Üstünlüğü, beklenen şut dönüşümü kıyası, hak ediş dağılım çubuğu ve maç maç xG çubuk grafiği (son 10 maç, G/B/M işaretli).
+- **Oyun Tarzın kartı:** Her eksen için seviye etiketi (Geliştirilmeli / Orta / İyi / Çok iyi / Elit), ham değerler, "bu ne demek" yorumu ve "nasıl yükselir" ipucu. En güçlü ve geliştirilecek eksen özeti, veri güven düzeyi (maç sayısına göre) ve girilmeyen veriler için uyarı eklendi. "Puanlar nasıl hesaplanıyor?" bölümü ağırlıkları açıkça gösterir.
+- **Hak ediş kutuları** yeniden adlandırıldı: Hak Edilmiş Galibiyet, Şanslı Sonuç, Şanssız Sonuç; her birinin ne anlama geldiği açıklandı.
+- **Terimler sözlüğü:** xG, Yenen xG, xG Farkı, xPts, Şut Dönüşümü, Kaleci Kurtarış, Önlenen Gol, Top Verimi ve Hak Ediş açıklamaları (katlanır).
+- **Maç günlüğü satırları:** "Sen – Rakip" göstergesi, Kurtarış rozeti, "Gol − xG" etiketi ve her maç için hak ediş gerekçesi cümlesi (ör. "Rakipten 0,70 xG fazla pozisyon bulmana rağmen kaybettin (beklenen 1,6 puan, alınan 0)").
+- Hesap formülleri ve veri yapısı değişmedi; mevcut kayıtlar olduğu gibi çalışır.
+
 ## v18.24 (Fikstür Ekranı Yeniden Tasarımı: Okunurluk ve Premium Görünüm)
 - **Maç kartları:** Her maç artık ayrı bir kart. Üstte takım armaları ve adları, ortada skor tabelası; kazanan takım kalın, kaybeden soluk gösterilir. Senin maçın tabelası vurgu renginde, kart kenarı sonuca göre (galibiyet yeşil, beraberlik altın, mağlubiyet kırmızı) renklenir.
 - **Gol ve asist dökümü:** Tek satırda `·` ile birleşen metin kaldırıldı. Goller iki sütunda, her takım kendi tarafında; asist oyuncusu soluk renkte parantez içinde. Kendi kalesine goller kırmızı işaretle ayrılır.
