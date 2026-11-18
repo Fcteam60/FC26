@@ -542,3 +542,97 @@ body{font-variant-numeric:tabular-nums}
 .bksd{font-family:var(--num);font-size:11px;padding:1px 5px;border-radius:4px;background:var(--hi);color:var(--mut);flex:0 0 auto}
 .bksc{font-family:var(--num);font-size:15px;padding:2px 8px;border-radius:6px;background:var(--hi);color:var(--tx);min-width:44px;text-align:center}
 .bksc small{display:block;font-size:10px;font-weight:600;color:var(--mut)}
+
+/* ==========================================================================
+   v18.23 — Görsel cila: kulüp ambiyansı, hedef şeritleri, podyum, broadcast
+   skor tabelası, eleme ağacı kupa atmosferi ve müze vitrini
+   ========================================================================== */
+
+/* 1) Ambient Club Glow (--club1 / --club2 render() içinde seçili takımdan gelir) */
+html[data-club] header::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 60% 150% at 8% -45%,var(--club1),transparent 68%),radial-gradient(ellipse 60% 150% at 94% -45%,var(--club2),transparent 68%);opacity:.5}
+html[data-club] header>*{position:relative;z-index:1}
+.hero{position:relative;overflow:hidden}
+html[data-club] .hero:not(.gold)::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 75% 130% at 0% 0%,var(--club1),transparent 62%),radial-gradient(ellipse 75% 130% at 100% 0%,var(--club2),transparent 62%);opacity:.26}
+html[data-club] .hero:not(.gold)>*{position:relative;z-index:1}
+html[data-club] .hero:not(.gold){border-color:rgba(128,128,128,.28)}
+html[data-club] .sheet{background-image:linear-gradient(90deg,var(--club1),var(--club2));background-size:100% 3px;background-repeat:no-repeat;background-position:top left}
+html[data-club] .sheet::after{content:"";position:absolute;z-index:-1;left:0;right:0;top:0;height:110px;pointer-events:none;border-radius:18px 18px 0 0;background:radial-gradient(ellipse 70% 100% at 0% 0%,var(--club1),transparent 70%),radial-gradient(ellipse 70% 100% at 100% 0%,var(--club2),transparent 70%);opacity:.2}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hero:not(.gold)::before{opacity:.34}}
+:root[data-theme="dark"] .hero:not(.gold)::before{opacity:.34}
+
+/* 2) Puan tablosu: sol kenar hedef şeritleri */
+.gtbl.row{position:relative}
+.gtbl.row::before{content:"";position:absolute;left:-2px;top:4px;bottom:4px;width:3px;border-radius:3px;background:transparent}
+.gtbl.row.t1{background:linear-gradient(90deg,rgba(240,194,75,.18),transparent 55%)}
+.gtbl.row.t1::before{background:linear-gradient(180deg,#f8e08a,#d4a017);box-shadow:0 0 8px rgba(212,160,23,.55)}
+.gtbl.row.t2{background:linear-gradient(90deg,rgba(15,157,107,.13),transparent 55%)}
+.gtbl.row.t2::before{background:linear-gradient(180deg,#34d399,#0f9d6b)}
+.gtbl.row.t1 .gpts{background:rgba(240,194,75,.28)}
+.gtbl.row.t2 .gpts{background:rgba(15,157,107,.2)}
+.gtbl .grk2.q1{background:linear-gradient(135deg,#f8e08a,#d4a017);color:#3b2a00;box-shadow:0 0 0 1px rgba(212,160,23,.5)}
+.gtbl.row.myrow{background:linear-gradient(90deg,rgba(240,194,75,.22),transparent 70%)}
+.gtbl.row.myrow::before{top:2px;bottom:2px;width:4px;background:linear-gradient(180deg,var(--club1,#d4a017),var(--club2,#f0c24b));box-shadow:0 0 0 1px rgba(128,128,128,.4),0 0 10px var(--club2,#f0c24b)}
+html[data-club] .gtbl.row.myrow{background:none}
+html[data-club] .gtbl.row.myrow::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:6px;background:linear-gradient(90deg,var(--club2),transparent 62%);opacity:.18}
+.gleg{display:flex;flex-wrap:wrap;gap:4px 12px;margin:6px 0 0;font-size:11.5px;color:var(--mut)}
+.gleg i{display:inline-block;width:3px;height:11px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.gleg .lg1{background:linear-gradient(180deg,#f8e08a,#d4a017)}
+.gleg .lg2{background:linear-gradient(180deg,#34d399,#0f9d6b)}
+.gleg .lgm{background:linear-gradient(180deg,var(--club1,#d4a017),var(--club2,#f0c24b));box-shadow:0 0 0 1px rgba(128,128,128,.4)}
+
+/* 3) Turnuva istatistikleri: altın / gümüş / bronz podyum */
+.mdl{display:inline-flex;align-items:center;justify-content:center;flex:0 0 20px;width:20px;height:20px;border-radius:50%;font-family:var(--num);font-size:13px;font-weight:700;line-height:1;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 1px 2px rgba(0,0,0,.18)}
+.mdl.m1{background:linear-gradient(135deg,#f8e08a,#d4a017);color:#3b2a00}
+.mdl.m2{background:linear-gradient(135deg,#f3f6f8,#aab5be);color:#1d252b}
+.mdl.m3{background:linear-gradient(135deg,#eab98a,#b0703a);color:#2a1500}
+.lead{position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;width:100%;min-height:80px;margin:2px 0 8px;padding:12px;text-align:left;font:inherit;color:#2b2000;cursor:pointer;border:1px solid #c99a1c;border-radius:14px;background:linear-gradient(150deg,#fbeaa8,#e0b43a);box-shadow:0 6px 18px rgba(212,160,23,.28),inset 0 1px 0 rgba(255,255,255,.6)}
+.lead::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 88% 15%,rgba(255,255,255,.6),transparent 52%),linear-gradient(115deg,transparent 35%,rgba(255,255,255,.45) 50%,transparent 65%);background-size:100% 100%,250% 100%;background-position:0 0,130% 0;animation:shine 2.6s ease-in-out 1 .2s both}
+.lead>*{position:relative}
+.lbd{display:flex;flex-direction:column;align-items:center;gap:1px;flex:0 0 auto}
+.lcr{width:24px;height:19px;fill:#8a5a00;filter:drop-shadow(0 1px 0 rgba(255,255,255,.55))}
+.lead .ln{flex:1;min-width:0;display:flex;flex-direction:column}
+.lead .ln b{font-family:var(--num);font-size:20px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lead .ln small{font-size:12.5px;color:rgba(43,32,0,.72);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lead .ln .lsub{font-weight:600;color:rgba(43,32,0,.85)}
+.lead .lnum{display:flex;flex-direction:column;align-items:center;line-height:.9;flex:0 0 auto}
+.lead .lnum b{font-family:var(--num);font-size:46px;font-weight:700;text-shadow:0 1px 0 rgba(255,255,255,.55),0 0 14px rgba(255,255,255,.5)}
+.lead .lnum i{font-style:normal;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.75;margin-top:3px}
+
+/* 4) Dev Maç / Broadcast skor tabelası */
+.msc.scb{position:relative;isolation:isolate;overflow:hidden;padding:10px 6px;border-radius:14px}
+.msc.scb::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(90deg,var(--t1),transparent 38%,transparent 62%,var(--t2));opacity:.3}
+.msc.scb::after{content:"";position:absolute;left:50%;top:12%;bottom:12%;width:1px;pointer-events:none;background:linear-gradient(transparent,rgba(128,128,128,.45),transparent)}
+.msc.scb .vsx{font-family:var(--num);font-size:20px;letter-spacing:.14em;color:var(--mut);font-weight:700}
+.msc.scb .bd{filter:drop-shadow(0 3px 6px rgba(0,0,0,.28))}
+.sc2.bump.up{position:relative}
+.sc2.bump.up::after{content:"";position:absolute;inset:-4px -8px;border-radius:14px;border:2px solid #f0c24b;box-shadow:0 0 18px rgba(240,194,75,.85),inset 0 0 12px rgba(240,194,75,.45);pointer-events:none;animation:goalring .75s ease-out both}
+@keyframes goalring{0%{opacity:1;transform:scale(.8)}60%{opacity:.9}100%{opacity:0;transform:scale(1.4)}}
+
+/* 5) Eleme ağacı: tur atlama ikonu, soluklaşan elenen, altın Final şeridi */
+.bkck{font-style:normal;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;font-size:10px;font-weight:700;line-height:1;background:linear-gradient(135deg,#f8e08a,#d4a017);color:#3b2a00;box-shadow:0 0 0 1px rgba(184,134,11,.5)}
+.bktie.dn .bktm:not(.w){opacity:.6}
+.bksc small.bkleg{display:inline-block;margin-top:2px;padding:0 5px;border-radius:4px;font-size:9px;letter-spacing:.05em;background:rgba(240,194,75,.28);color:#8a5a00}
+:root[data-theme="dark"] .bksc small.bkleg{color:#f0c24b}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .bksc small.bkleg{color:#f0c24b}}
+.bkrd.fin{margin-top:12px;padding:0 8px 8px;border:1px solid #d4a017;border-radius:14px;background:linear-gradient(180deg,rgba(240,194,75,.14),transparent 65%);box-shadow:0 4px 14px rgba(212,160,23,.16)}
+.bkfh{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 -8px 8px;padding:7px 12px;border-radius:13px 13px 0 0;color:#2b2000;background:linear-gradient(90deg,#d4a017,#f8e08a 50%,#d4a017)}
+.bkfh b{font-family:var(--num);font-size:16px;letter-spacing:.14em}
+.bkfh small{font-size:12px;font-weight:600;opacity:.75}
+.bkrd.fin .bktie{border-color:rgba(212,160,23,.55)}
+
+/* 6) Kupa dolabı: koyu cam / metalik müze vitrini */
+.shelf{position:relative;overflow:hidden;padding:14px 6px 18px;border:1px solid rgba(255,255,255,.12);border-bottom:0;border-radius:12px 12px 0 0;background:linear-gradient(180deg,#16222e,#0a1118);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),inset 0 -24px 30px rgba(0,0,0,.35),0 3px 8px rgba(0,0,0,.25)}
+.shelf::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.07) 0,rgba(255,255,255,.02) 30%,transparent 31%,transparent 62%,rgba(255,255,255,.05) 63%,transparent 80%)}
+.shelf::after{content:"";position:absolute;left:0;right:0;bottom:0;height:10px;background:linear-gradient(180deg,#dfe3e6,#8f989f 45%,#454c53);box-shadow:0 -1px 0 rgba(255,255,255,.4)}
+.shelf .it{position:relative}
+.shelf .it>*{position:relative;z-index:1}
+.shelf .it:not(.gh)::before{content:"";position:absolute;left:-4px;right:-4px;top:-14px;bottom:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 62% 80% at 50% 0%,rgba(255,226,130,.42),transparent 72%)}
+.shelf .it b{color:#f6ecd0}
+.shelf .it span{color:#a9b6c0}
+.cupw{position:relative;display:block;width:54px;height:62px;margin:0 auto}
+.cupw svg{display:block;width:54px;height:62px;filter:drop-shadow(0 2px 6px rgba(240,194,75,.45))}
+.cupw::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.9) 50%,transparent 62%);background-size:250% 100%;background-position:130% 0;animation:foil 5s ease-in-out infinite;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 56'%3E%3Cpath d='M13 4h22v14c0 8-5 13-11 13S13 26 13 18z'/%3E%3Crect x='21' y='31' width='6' height='9'/%3E%3Crect x='14' y='40' width='20' height='5' rx='1'/%3E%3Crect x='10' y='45' width='28' height='7' rx='1'/%3E%3Cpath d='M13 8H6c0 8 4 12 8 13M35 8h7c0 8-4 12-8 13' fill='none' stroke='%23000' stroke-width='3'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 56'%3E%3Cpath d='M13 4h22v14c0 8-5 13-11 13S13 26 13 18z'/%3E%3Crect x='21' y='31' width='6' height='9'/%3E%3Crect x='14' y='40' width='20' height='5' rx='1'/%3E%3Crect x='10' y='45' width='28' height='7' rx='1'/%3E%3Cpath d='M13 8H6c0 8 4 12 8 13M35 8h7c0 8-4 12-8 13' fill='none' stroke='%23000' stroke-width='3'/%3E%3C/svg%3E") center/contain no-repeat}
+@keyframes foil{0%,55%{background-position:130% 0}100%{background-position:-30% 0}}
+@media(prefers-reduced-motion:reduce){.cupw::after,.lead::before,.sc2.bump.up::after{animation:none!important}.cupw::after{opacity:0}}
+:root[data-motion="off"] .cupw::after,:root[data-motion="off"] .lead::before,:root[data-motion="off"] .sc2.bump.up::after{animation:none!important}
+:root[data-motion="off"] .cupw::after{opacity:0}

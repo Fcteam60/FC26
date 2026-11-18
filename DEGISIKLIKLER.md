@@ -1,5 +1,14 @@
 # Değişiklik listesi
 
+## v18.23 (Görsel Cila: Kulüp Ambiyansı, Hedef Şeritleri, Podyum, Broadcast Skor Tabelası, Eleme Ağacı ve Müze Vitrini)
+- **Kulüp renklerine duyarlı dinamik stadyum ışıklandırması (Ambient Club Glow):** `render()` seçili takımın `bspec(s.my)` renklerini (`c1`, `c2`) kök elemana `--club1` / `--club2` CSS değişkenleri ve `data-club` özniteliği olarak aktarır. Üst bar, ana ekran durum kartı (`.hero`) ve hızlı skor paneli (`.sheet`) bu renklerle hafif spot ışığı alır (Beşiktaş siyah-beyaz, Galatasaray kırmızı-sarı, Real Madrid beyaz-altın). Takım seçilmediyse efekt kapalıdır; altın şampiyonluk kartı değişmeden kalır.
+- **Puan tablosunda sol kenar hedef şeritleri (`.gtbl`):** 1. sıra altın, gruptan çıkan diğer sıralar zümrüt yeşili 3px dikey şerit ve hafif gradyan alır; 1. sıra rank kutusu altın olur. Senin takımının satırı kulüp renklerinden parlak 4px şerit ve gradyan geçişi alır. Tablonun altına renk açıklaması (`.gleg`) eklendi.
+- **Turnuva İstatistik › Podyum tasarımı:** Turnuva MVP'si, Gol Krallığı ve Asist Krallığı listelerinde lider oyuncu altın taç rozetli, kulüp armalı, sağda büyük parlak rakamlı "Lider Kartı" olarak gösterilir; 2. ve 3. sıralar gümüş ve bronz madalya rozeti alır (`.lead`, `.mdl`).
+- **Hızlı skor panelinde Broadcast skor tabelası:** Armalar 36px'ten 48px'e çıktı, iki takımın renkleri ortada buluşan VS stadyum gradyanı ve "VS" etiketi eklendi. Skor artırıldığında skor kutusunun etrafında kısa bir altın "Gol Parlaması" halkası çalışır (azaltılmış hareket tercihine saygı gösterir).
+- **Eleme ağacı:** Turu geçen takımın yanına altın ✓ rozeti, elenen takıma `opacity:.6` soluklaştırma, çift maçlı eşleşmelere "RÖVANŞLI" rozeti ve Final turuna altın çerçeveli "🏆 FİNAL" başlık şeridi eklendi.
+- **Kupa dolabı müze vitrini:** Raf koyu cam/metalik vitrine çevrildi (metal raf çıtası), her kupanın arkasına yukarıdan vuran altın spot ışığı ve kupa silüeti üzerinde yavaşça kayan parlama (foil) efekti eklendi.
+- Yeni dosya eklenmedi; `VER` 18.23, `package.json` 18.23.0, `sw.js` önbelleği `fc27-lig-v18-23`.
+
 ## v18.22 (Fikstür & Eleme Ağacı Maç Detayları, Özel FUT Kartlarının Temel Güce Çekilmesi, Maç Kartı Rakip MOTM ve Ölü Kod/CSS Temizliği)
 - **Fikstür ve Eleme Ağacında simüle edilen maçların golcü, asist ve Maçın Adamı detayları (`simMetaLine`, `userMetaLine`, `.simdet`):**
   - `Turnuva › Fikstür` sekmesindeki tüm grup/lig maçlarının ve `Eleme Ağacı (Bracket)` eşleşmelerinin altında o maçta gol atan oyuncular, parantez içinde asist yapanlar, çift ayaklı turlarda 1. ve 2. maç skorları (`1.M / 2.M`) ve o maçın **Maçın Adamı (`★`)** kompakt bir bilgi satırı olarak gösterilir.
