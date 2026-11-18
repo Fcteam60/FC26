@@ -1,5 +1,24 @@
 # Değişiklik listesi
 
+## v18.20 (Aşama 3: Güvenli Yedek/Simülasyon Birleştirme, `remap` Asist Korunumu, Hızlı Skor Paneli DOM ve `Intl.Collator` Optimizasyonu)
+- **`mergeSeasons` simülasyon (`s.sim`) ve manuel oyuncu baz puanları (`p.b`) birleştirmesi:** İki yedek birleştirilirken artık yalnızca son zaman damgalı sezonun simülasyonu veya oyuncu kaydı ezilmez; her iki yedekteki oynanmış grup haftaları (`sim.gm`), tamamlanmış eleme eşleşmeleri (`sim.ko`), budanmış gol/asist özetleri (`sim.sc`, `sim.as`), gruptan çıkanlar (`gqs`) ve oyunculara elle eklenen baz istatistikler (`p.b`) ile oyuncu puanları (`p.r`) kayıpsız birleştirilir, ardından `syncUserMatchesToBracket` ve `rebuildSimScorers` ile tam tutarlılık sağlanır.
+- **`remap` asist verisi (`m[6], m[7]`) ve özet haritası korunumu:** Takım listesi geçişlerinde (`remap`) 8 elemanlı grup maç dizilerindeki asist indeksleri (`a[6], a[7]`) ile budanmış sezonlardaki `sim.sc` ve `sim.as` takım indisleri (`"Oyuncu|takımİndisi"`) korunarak yeni takım indislerine aktarılır.
+- **Hızlı skor paneli (`#qs`) açıkken arka plan (`#app`) DOM çiziminin atlanması (`qsOnly`):** Maç giriş/düzenleme panelinde skor (`+`/`−`), golcü, asistçi, uzatma/penaltı veya gelişmiş istatistik girilirken arka plandaki ana görünümün (`#app`) gereksiz yere `innerHTML` ile baştan çizilmesi önlendi; yalnızca açık olan `#qs` paneli ve diyalog katmanı güncellenir.
+- **`Intl.Collator("tr")` (`TR_CMP`) sıralama optimizasyonu:** Turnuva istatistikleri, gol krallığı, rakipler ve takım/ülke filtrelerindeki tekrarlı `localeCompare(..., "tr")` çağrıları tek bir önbellekli `Intl.Collator("tr").compare` (`TR_CMP`) fonksiyonuna geçirildi.
+- `VER` 18.20, `package.json` 18.20.0, `sw.js` önbelleği `fc27-lig-v18-20`.
+
+## v18.19 (Aşama 2: Çift Maçlı Eleme İstatistikleri, Asist/Golcü Senkronizasyonu ve Gol Krallığı Eşitlemesi)
+- **Çift maçlı (2 ayaklı) eleme turlarında ayak bazlı golcü ve asist üretimi (`simOneKoTie`):** Çift maçlı eleme turlarında 1. ayak (`p.leg1`), 2. ayak (`p.leg2`) ve uzatma (`et`) golleri ile asistleri her ayak için ayrı ayrı üretilip birleştirilir; uzatmada atılan goller 2. ayak skoruna (`p.leg2`) da yansıtılır.
+- **Kullanıcı eleme maçlarının eleme ağacına tam senkronizasyonu (`syncUserMatchesToBracket`):** Kullanıcının oynadığı tek veya çift ayaklı eleme maçlarındaki golcüler (`m.gls` / `m.sc`), asistçiler (`m.as`), rakip golcü/asistçileri (`m.og`) ile 1. ve 2. ayak skorları (`p.leg1`, `p.leg2`) eleme ağacı düğümüne (`p.s1, p.s2, p.a1, p.a2`) eksiksiz aktarılır.
+- **`tourneyStats` içinde çift maçlı eleme turlarının 2 ayrı maç sayılması:** Yapay zekâ eleme eşleşmelerinde `p.leg1` ve `p.leg2` mevcutsa toplam skoru tek maç saymak yerine 1. Maç ve 2. Maç olarak ayrı ayrı işlenir. Böylece oynanan maç sayısı (`o`), maç başına yenilen gol ("En Az Gol Yiyen Takımlar"), galibiyet/mağlubiyet sayıları, en gollü/en farklı maç rekorları ve ayak bazlı hat-trick sayımları doğru hesaplanır.
+- **`tourneyTopScorers` rakip golcü (`m.og`) eşitlemesi:** Kullanıcının maçlarında rakip takımın attığı goller (`m.og`) `İstat. › Turnuva Gol Krallığı` ve sezon sonu Gol Kralı (`topG`) hesabına da dahil edilerek `Turnuva › İstatistik` sekmesiyle birebir eşitlendi.
+- `VER` 18.19, `package.json` 18.19.0, `sw.js` önbelleği `fc27-lig-v18-19`.
+
+## v18.18 (Aşama 1: Kadro Veritabanı Klon/Transfer Temizliği)
+- **Çift takımda unutulmuş 146 klon oyuncu temizlendi (`data.js`):** Transfer sonrası hem eski hem yeni kulübünde kayıtlı kalan 146 oyuncu (`fc27_players_database.csv` güncel EA ID referans alınarak) yalnızca güncel kulüplerinde bırakıldı ve eski kulüplerinden çıkarıldı (farklı kısa adla kalan *G. Martinelli / G. Silva*, *M. Casadó / M. Torras*, *N. González / N. Iglesias* vb. 14 oyuncu dahil).
+- **Genç ve rezerv kadro derinliği korundu:** CSV dosyasında yer almayan düşük OVR'li genç ve rezerv (`R`) oyunculara dokunulmadı; eski kulübünden ayrılan İlk 11 (`S`) oyuncularının yerine aynı mevkiden en yüksek güçlü yedek oyuncular otomatik İlk 11'e (`S`) yükseltilerek 108 takımın tamamında 11 as oyuncu (1 GK + 10 saha oyuncusu) bütünlüğü korundu.
+- `VER` 18.18, `package.json` 18.18.0, `sw.js` önbelleği `fc27-lig-v18-18`.
+
 ## v18.17 (Turnuva İstatistikleri + Rakip Golcü/Asistçileri)
 - **Yeni sekme: Turnuva › İstatistik** (üst çubuk: Kura | Gruplar | Fikstür | İstatistik). İçerik: Turnuva MVP'si (puan = 3×gol + 2×asist + 2×maçın adamı), Gol Krallığı, **Asist Krallığı**, hat-trick yapanlar, en golcü / en az gol yiyen / en çok kazanan takımlar, turnuva özeti (maç, gol, ortalama, en farklı skor, en gollü maç). Gol Krallığı kartı Gruplar'dan buraya taşındı.
 - **Simülasyona asist eklendi:** yapay zekâ maçlarında her gol için (≈%78 olasılıkla) golü atandan farklı, orta saha/forvet ağırlıklı bir asistçi seçilir. Eski haftalarda asist verisi yoktur; sayım bu sürümden sonraki maçlarla başlar.

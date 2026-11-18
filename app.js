@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="18.17",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="18.20",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -13,6 +13,7 @@ const SQC=nob();
 function squadOf(i){const t=T[i];if(!t)return [];if(SQC[t.n])return SQC[t.n];const raw=SQ[t.n];
   return SQC[t.n]=raw?raw.split(";").map(x=>{const q=x.split(",");return{n:q[0],p:q[1],o:+q[2],a:+q[3],j:+q[4],t:q[5],g:SQP[q[1]]||"M"}}):[]}
 const nz=t=>String(t||"").toLocaleLowerCase("tr").replace(/ı/g,"i").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ø/g,"o").replace(/ł/g,"l").replace(/đ/g,"d");
+const TR_CMP=(typeof Intl!=="undefined"&&Intl.Collator)?new Intl.Collator("tr").compare:(a,b)=>String(a||"").localeCompare(String(b||""),"tr");
 const sqFind=(i,n)=>i==null?null:(squadOf(i).find(p=>nz(p.n)==nz(n))||null);
 let SQ_MAP=null;
 const sqFindAny=n=>{const k=nz(n);if(!k)return null;if(!SQ_MAP){SQ_MAP=new Map();for(let i=0;i<T.length;i++)squadOf(i).forEach(p=>{const pk=nz(p.n);if(!SQ_MAP.has(pk))SQ_MAP.set(pk,{p,i})})}return SQ_MAP.get(k)||null};
@@ -319,7 +320,20 @@ function tourneyTopScorers(s,limit){
     const sp=key.lastIndexOf("|"),n=sp>0?key.slice(0,sp):key,ti=sp>0?+key.slice(sp+1):-1;
     if(ti===s.my||!T[ti])return;
     const k=nz(n)+"|"+ti;
-    map[k]={n,ti,g:+g,mine:false};
+    map[k]={n,ti,g:+g,a:0,mine:false};
+  });
+  (s.mt||[]).forEach(m=>{
+    if(m.opp==null||!T[m.opp]||!Array.isArray(m.og))return;
+    m.og.forEach(o=>{
+      if(!o||!o.sc||isKK(o.sc))return;
+      const k=nz(o.sc)+"|"+m.opp;
+      if(!map[k])map[k]={n:o.sc,ti:m.opp,g:0,a:0,mine:false};
+      map[k].g+=1;
+      if(o.as&&!isKK(o.as)){
+        const ak=nz(o.as)+"|"+m.opp;
+        if(map[ak])map[ak].a=(map[ak].a||0)+1;
+      }
+    });
   });
   if(s.my!=null&&T[s.my]){
     (s.pl||[]).forEach(p=>{
@@ -328,7 +342,7 @@ function tourneyTopScorers(s,limit){
       map[k]={n:p.n,ti:s.my,g:+p.g,a:+(p.a||0),mine:true};
     });
   }
-  const list=Object.values(map).sort((a,b)=>b.g-a.g||(b.mine?1:0)-(a.mine?1:0)||(b.a||0)-(a.a||0)||a.n.localeCompare(b.n,"tr"));
+  const list=Object.values(map).sort((a,b)=>b.g-a.g||(b.mine?1:0)-(a.mine?1:0)||(b.a||0)-(a.a||0)||TR_CMP(a.n,b.n));
   return limit?list.slice(0,limit):list}
 
 
@@ -352,11 +366,22 @@ function tourneyStats(s){
     if(!Array.isArray(m))return;addM(m[0],m[1],m[2],m[3],"Grup");
     if(m.length>=6){hat(nmOf(m[0],m[4]),m[0]);hat(nmOf(m[1],m[5]),m[1])}})));
   Object.entries(sim.ko||{}).forEach(([rd,pairs])=>Array.isArray(pairs)&&pairs.forEach(p=>{
-    if(!p||p.w==null||p.t1===s.my||p.t2===s.my)return;addM(p.t1,p.t2,p.g1,p.g2,rd);
-    hat(nmOf(p.t1,p.s1),p.t1);hat(nmOf(p.t2,p.s2),p.t2)}));
+    if(!p||p.w==null||p.t1===s.my||p.t2===s.my)return;
+    const n1=nmOf(p.t1,p.s1),n2=nmOf(p.t2,p.s2);
+    if(Array.isArray(p.leg1)&&Array.isArray(p.leg2)&&p.leg1.length>=2&&p.leg2.length>=2){
+      const l1a=+p.leg1[0]||0,l1b=+p.leg1[1]||0;
+      addM(p.t1,p.t2,l1a,l1b,rd+" (1. Maç)");
+      addM(p.t1,p.t2,+p.leg2[0]||0,+p.leg2[1]||0,rd+" (2. Maç)");
+      hat(n1.slice(0,l1a),p.t1);hat(n1.slice(l1a),p.t1);
+      hat(n2.slice(0,l1b),p.t2);hat(n2.slice(l1b),p.t2);
+    }else{
+      addM(p.t1,p.t2,p.g1,p.g2,rd);
+      hat(n1,p.t1);hat(n2,p.t2);
+    }}));
   (s.mt||[]).forEach(m=>{
-    if(s.my==null||m.opp==null)return;addM(s.my,m.opp,m.gf,m.ga,m.rd);
-    hat((m.gls||[]).map(g=>g.sc),s.my);
+    if(s.my==null||m.opp==null)return;addM(s.my,m.opp,m.gf,m.ga,m.rd+(m.lg?" ("+m.lg+". Maç)":""));
+    const mSc=Array.isArray(m.gls)&&m.gls.length?m.gls.map(g=>g.sc):Object.entries(m.sc||{}).flatMap(([n,c])=>Array.from({length:+c||0},()=>n));
+    hat(mSc,s.my);
     const og=m.og||[];hat(og.map(o=>o.sc),m.opp);
     og.forEach(o=>{const e=ent(o.sc,m.opp);if(e)e.g++;if(o.as){const a=ent(o.as,m.opp);if(a)a.a++}})});
   const players=Object.values(P);players.forEach(e=>{e.mvp=3*e.g+2*e.a+2*e.mom});
@@ -457,7 +482,7 @@ function simUndoWeek(s){
 /* ---------- AŞAMA 2: ELEME AĞACI (BRACKET) VE TUR SİMÜLASYONU ---------- */
 function buildInitialKoPairs(s){
   if(isLg(s.cfg)||!s.G)return [];
-  const mkP=(t1,t2,l1,l2,sa)=>({t1,t2,l1,l2,sa:sa||0,g1:null,g2:null,et:0,pf:null,pa:null,w:null,s1:[],s2:[]});
+  const mkP=(t1,t2,l1,l2,sa)=>({t1,t2,l1,l2,sa:sa||0,g1:null,g2:null,et:0,pf:null,pa:null,w:null,s1:[],s2:[],a1:[],a2:[]});
   if(!s.cfg.gs){
     return s.G.filter(g=>g.length>=2).map((g,idx)=>mkP(g[0],g[1],`E${idx+1}`,`E${idx+1}`,0));
   }
@@ -527,18 +552,38 @@ function syncUserMatchesToBracket(s){
     const needLegs=lgs(s.cfg,rd);
     pairs.forEach(p=>{
       if(p.t1===s.my||p.t2===s.my){
-        const opp=p.t1===s.my?p.t2:p.t1;
+        const opp=p.t1===s.my?p.t2:p.t1,isT1=p.t1===s.my;
         const myMs=(s.mt||[]).filter(m=>m.rd===rd&&m.opp===opp);
+        const uSc=[],uAs=[],oSc=[],oAs=[];
+        myMs.forEach(m=>{
+          if(Array.isArray(m.gls)&&m.gls.length){
+            m.gls.forEach(g=>{if(g&&g.sc&&!isKK(g.sc)){uSc.push(g.sc);uAs.push(g.as&&!isKK(g.as)?g.as:"")}});
+          }else{
+            const asL=Object.entries(m.as||{}).flatMap(([n,c])=>!isKK(n)?Array.from({length:+c||0},()=>n):[]);
+            Object.entries(m.sc||{}).forEach(([n,c])=>{
+              if(isKK(n))return;
+              for(let k=0;k<(+c||0);k++){uSc.push(n);uAs.push(asL.length?asL.shift():"")}
+            });
+          }
+          (m.og||[]).forEach(o=>{if(o&&o.sc&&!isKK(o.sc)){oSc.push(o.sc);oAs.push(o.as&&!isKK(o.as)?o.as:"")}});
+        });
+        p.s1=isT1?uSc:oSc;p.s2=isT1?oSc:uSc;
+        p.a1=isT1?uAs:oAs;p.a2=isT1?oAs:uAs;
+        if(needLegs===2){
+          const m1=myMs[0],m2=myMs[1];
+          p.leg1=m1?(isT1?[+m1.gf||0,+m1.ga||0]:[+m1.ga||0,+m1.gf||0]):null;
+          p.leg2=m2?(isT1?[+m2.gf||0,+m2.ga||0]:[+m2.ga||0,+m2.gf||0]):null;
+        }
         if(myMs.length>=needLegs){
           const myGf=myMs.reduce((a,m)=>a+(+m.gf||0),0);
           const myGa=myMs.reduce((a,m)=>a+(+m.ga||0),0);
           const last=myMs[myMs.length-1];
-          p.g1=p.t1===s.my?myGf:myGa;
-          p.g2=p.t1===s.my?myGa:myGf;
+          p.g1=isT1?myGf:myGa;
+          p.g2=isT1?myGa:myGf;
           p.et=last.et?1:0;
           if(last.pf!=null&&last.pa!=null&&last.pf!==last.pa){
-            p.pf=p.t1===s.my?last.pf:last.pa;
-            p.pa=p.t1===s.my?last.pa:last.pf;
+            p.pf=isT1?last.pf:last.pa;
+            p.pa=isT1?last.pa:last.pf;
             p.w=last.pf>last.pa?s.my:opp;
           }else if(myGf!==myGa){
             p.pf=null;p.pa=null;
@@ -553,7 +598,7 @@ function syncUserMatchesToBracket(s){
         const nextP=[];
         for(let i=0;i<pairs.length;i+=2){
           if(pairs[i+1]){
-            nextP.push({t1:pairs[i].w,t2:pairs[i+1].w,l1:"",l2:"",g1:null,g2:null,et:0,pf:null,pa:null,w:null,s1:[],s2:[]});
+            nextP.push({t1:pairs[i].w,t2:pairs[i+1].w,l1:"",l2:"",g1:null,g2:null,et:0,pf:null,pa:null,w:null,s1:[],s2:[],a1:[],a2:[]});
           }
         }
         if(nextP.length)ko[nextRd]=nextP;
@@ -581,17 +626,23 @@ function getAutoKoOpponent(s,rdName){
 
 function simOneKoTie(s,p,rd){
   const sim=ensureSim(s),legs=lgs(s.cfg,rd),sa=p.sa||0;
-  let g1=0,g2=0,s1=[],s2=[],et=0,pf=null,pa=null;
+  let g1=0,g2=0,s1=[],s2=[],a1=[],a2=[],et=0,pf=null,pa=null;
   if(legs===2){
-    const [a1,b1]=simMatchScore(s,p.t1,p.t2,sim.m,0.35);
-    const [b2,a2]=simMatchScore(s,p.t2,p.t1,sim.m,0.35-sa*0.5);
-    g1=a1+a2;g2=b1+b2;
-    p.leg1=[a1,b1];p.leg2=[a2,b2];
-    s1=simGoalAssign(p.t1,g1);s2=simGoalAssign(p.t2,g2);
+    const [l1a,l1b]=simMatchScore(s,p.t1,p.t2,sim.m,0.35);
+    const [l2b,l2a]=simMatchScore(s,p.t2,p.t1,sim.m,0.35-sa*0.5);
+    g1=l1a+l2a;g2=l1b+l2b;
+    p.leg1=[l1a,l1b];p.leg2=[l2a,l2b];
+    const s1_1=simGoalAssign(p.t1,l1a),a1_1=simAssistsFor(p.t1,s1_1);
+    const s2_1=simGoalAssign(p.t2,l1b),a2_1=simAssistsFor(p.t2,s2_1);
+    const s1_2=simGoalAssign(p.t1,l2a),a1_2=simAssistsFor(p.t1,s1_2);
+    const s2_2=simGoalAssign(p.t2,l2b),a2_2=simAssistsFor(p.t2,s2_2);
+    s1=s1_1.concat(s1_2);a1=a1_1.concat(a1_2);
+    s2=s2_1.concat(s2_2);a2=a2_1.concat(a2_2);
   }else{
-    const [a1,b1]=simMatchScore(s,p.t1,p.t2,sim.m,sa);
-    g1=a1;g2=b1;
-    s1=simGoalAssign(p.t1,g1);s2=simGoalAssign(p.t2,g2);
+    const [l1a,l1b]=simMatchScore(s,p.t1,p.t2,sim.m,sa);
+    g1=l1a;g2=l1b;
+    s1=simGoalAssign(p.t1,g1);a1=simAssistsFor(p.t1,s1);
+    s2=simGoalAssign(p.t2,g2);a2=simAssistsFor(p.t2,s2);
   }
   if(g1===g2){
     et=1;
@@ -601,8 +652,14 @@ function simOneKoTie(s,p,rd){
     const p1=Math.min(0.55,0.25*Math.exp(diff*0.055*scale));
     const p2=Math.min(0.55,0.25*Math.exp(-diff*0.055*scale));
     const eg1=Math.random()<p1?1:0,eg2=Math.random()<p2?1:0;
-    if(eg1){g1+=eg1;s1.push(...simGoalAssign(p.t1,eg1))}
-    if(eg2){g2+=eg2;s2.push(...simGoalAssign(p.t2,eg2))}
+    if(eg1){
+      g1+=eg1;if(legs===2&&Array.isArray(p.leg2))p.leg2[0]+=eg1;
+      const es1=simGoalAssign(p.t1,eg1);s1.push(...es1);a1.push(...simAssistsFor(p.t1,es1));
+    }
+    if(eg2){
+      g2+=eg2;if(legs===2&&Array.isArray(p.leg2))p.leg2[1]+=eg2;
+      const es2=simGoalAssign(p.t2,eg2);s2.push(...es2);a2.push(...simAssistsFor(p.t2,es2));
+    }
     if(g1===g2){
       let k1=0,k2=0;
       const pkAdv=((pw1.gk-pw2.gk)*0.008+(pw1.g-pw2.g)*0.006)*scale;
@@ -615,7 +672,7 @@ function simOneKoTie(s,p,rd){
       pf=k1;pa=k2;
     }
   }
-  p.g1=g1;p.g2=g2;p.et=et;p.pf=pf;p.pa=pa;p.s1=s1;p.s2=s2;p.a1=simAssistsFor(p.t1,s1);p.a2=simAssistsFor(p.t2,s2);
+  p.g1=g1;p.g2=g2;p.et=et;p.pf=pf;p.pa=pa;p.s1=s1;p.s2=s2;p.a1=a1;p.a2=a2;
   p.w=g1>g2?p.t1:g2>g1?p.t2:(pf>pa?p.t1:p.t2)}
 
 function isUserEliminated(s){
@@ -832,14 +889,24 @@ let DROP=[];
 function remap(o){
   const tn=o.tn;
   if(!tn||(tn.length==T.length&&tn.every((n,i)=>n==TN[i])))return o;
-  const m2=i=>{const j=IX[tn[i]];return j===undefined?null:j};
+  const m2=i=>{const nk=ALIAS[tn[i]]||tn[i];const j=IX[nk];return j===undefined?null:j};
   const m=i=>{const j=m2(i);if(j===null&&tn[i]!==undefined)DROP.push(tn[i]);return j};
+  const rmMap=mp=>{
+    if(!mp||typeof mp!=="object")return nob();
+    const out=nob();
+    Object.entries(mp).forEach(([k,v])=>{
+      const sp=k.lastIndexOf("|");
+      if(sp>0){const ti=m2(+k.slice(sp+1));if(ti!=null)out[k.slice(0,sp)+"|"+ti]=(out[k.slice(0,sp)+"|"+ti]||0)+(+v||0)}
+    });
+    return out};
   const rmS=s=>{
     if(s.G)s.G=s.G.map(g=>g.map(m).filter(x=>x!==null));
     if(s.gqs&&typeof s.gqs=="object")Object.keys(s.gqs).forEach(k=>{if(Array.isArray(s.gqs[k]))s.gqs[k]=s.gqs[k].map(m).filter(x=>x!==null)});
     if(s.sim&&typeof s.sim=="object"){
-      if(s.sim.gm&&typeof s.sim.gm=="object")Object.keys(s.sim.gm).forEach(k=>{if(Array.isArray(s.sim.gm[k]))s.sim.gm[k]=s.sim.gm[k].map(wk=>Array.isArray(wk)?wk.map(a=>{if(!Array.isArray(a)||a.length<4)return null;const t1=m2(a[0]),t2=m2(a[1]);return t1!=null&&t2!=null?(a.length>4?[t1,t2,+a[2]||0,+a[3]||0,Array.isArray(a[4])?a[4]:[],Array.isArray(a[5])?a[5]:[]]:[t1,t2,+a[2]||0,+a[3]||0]):null}).filter(Boolean):[])});
+      if(s.sim.gm&&typeof s.sim.gm=="object")Object.keys(s.sim.gm).forEach(k=>{if(Array.isArray(s.sim.gm[k]))s.sim.gm[k]=s.sim.gm[k].map(wk=>Array.isArray(wk)?wk.map(a=>{if(!Array.isArray(a)||a.length<4)return null;const t1=m2(a[0]),t2=m2(a[1]);if(t1==null||t2==null)return null;if(a.length>=8)return [t1,t2,+a[2]||0,+a[3]||0,Array.isArray(a[4])?a[4]:[],Array.isArray(a[5])?a[5]:[],Array.isArray(a[6])?a[6]:[],Array.isArray(a[7])?a[7]:[]];return a.length>4?[t1,t2,+a[2]||0,+a[3]||0,Array.isArray(a[4])?a[4]:[],Array.isArray(a[5])?a[5]:[]]:[t1,t2,+a[2]||0,+a[3]||0]}).filter(Boolean):[])});
       if(s.sim.ko&&typeof s.sim.ko=="object")Object.keys(s.sim.ko).forEach(rd=>{if(Array.isArray(s.sim.ko[rd]))s.sim.ko[rd]=s.sim.ko[rd].map(p=>{if(!p||typeof p!="object")return null;const t1=m2(p.t1),t2=m2(p.t2),w=p.w!=null?m2(p.w):null;return t1!=null&&t2!=null?Object.assign({},p,{t1,t2,w}):null}).filter(Boolean)});
+      if(s.sim.sc)s.sim.sc=rmMap(s.sim.sc);
+      if(s.sim.as)s.sim.as=rmMap(s.sim.as);
       rebuildSimScorers(s);
     }
     if(s.res&&typeof s.res=="object"){if(s.res.ch!=null)s.res.ch=m2(s.res.ch);if(s.res.ru!=null)s.res.ru=m2(s.res.ru);if(s.res.topG&&s.res.topG.ti!=null)s.res.topG.ti=m2(s.res.topG.ti)}
@@ -1028,7 +1095,7 @@ const RS=["Grup","S64","S32","S16","ÇF","YF","Final","Şamp."];
 /* ---------- RAKİPLER ---------- */
 function oppData(){const M=nob();
   store.seasons.forEach(x=>(x.mt||[]).forEach(m=>{const k=m.on;if(!k)return;const o=M[k]=M[k]||{n:k,m:[],w:0,d:0,l:0,gf:0,ga:0};o.m.push({m,s:x.name});o[mres(m)]++;o.gf+=m.gf;o.ga+=m.ga}));
-  return Object.values(M).sort((a,b)=>b.m.length-a.m.length||b.w-a.w||a.n.localeCompare(b.n,"tr"))}
+  return Object.values(M).sort((a,b)=>b.m.length-a.m.length||b.w-a.w||TR_CMP(a.n,b.n))}
 function oppCard(){
   const L=oppData(),tot=L.reduce((a,o)=>a+o.m.length,0);
   if(!L.length)return cd("Rakiplerim",emp("Maç sonuçları girildikçe karşılaştığın takımlar burada listelenir."));
@@ -1078,7 +1145,7 @@ function pathSvg(x){if(!x.res||!x.cfg)return "";const rk=resRanks(x.cfg),n=rk.le
 const SFR=[["all","Tümü"],["champ","Şampiyonluk"],["fin","Finalist / İlk 2"],["semi","Yarı final+ / İlk 3"],["grp","Grupta elendi"],["live","Devam eden"]];
 const SFM=[["all","Tümü"],["cup","🏆 Kupa sezonları"],["lg","📋 Lig sezonları"]];
 function seasonsView(ss,card){const m=st.sfm||"all",r=st.sfr||"all",t=st.sft||"",c=st.sfc||"",v=st.sv||"l";
-  const my=ss.filter(x=>x.my!=null&&T[x.my]),tm=[...new Set(my.map(x=>x.my))].sort((a,b)=>T[a].n.localeCompare(T[b].n,"tr")),cs=[...new Set(my.map(x=>String(T[x.my].c)))].sort((a,b)=>CN[a][0].localeCompare(CN[b][0],"tr"));
+  const my=ss.filter(x=>x.my!=null&&T[x.my]),tm=[...new Set(my.map(x=>x.my))].sort((a,b)=>TR_CMP(T[a].n,T[b].n)),cs=[...new Set(my.map(x=>String(T[x.my].c)))].sort((a,b)=>TR_CMP(CN[a][0],CN[b][0]));
   const ok=x=>{const q=x.res?x.res.st:-1,lg=isLg(x.cfg);
     if(m=="cup"&&lg)return false;if(m=="lg"&&!lg)return false;
     if(r=="champ"&&q!=7)return false;if(r=="fin"&&q<6)return false;if(r=="semi"&&q<5)return false;if(r=="grp"&&!(x.res&&q==0&&!lg&&x.cfg&&x.cfg.gs))return false;if(r=="live"&&x.res)return false;
@@ -1389,18 +1456,63 @@ function parseBk(t){t=(t||"").trim();if(!t)return null;let o;
   return vBk(o)}
 function mergeSeasons(loc,inc){
   const newer=(inc.ut||0)>(loc.ut||0)?inc:loc,older=newer===inc?loc:inc;
-  const out=cp(newer),delSet=new Set([...(loc.delM||[]),...(inc.delM||[])]);
+  const sOld=cp(older),sNew=cp(newer);
+  rePl(sOld);rePl(sNew);
+  const out=cp(sNew),delSet=new Set([...(sOld.delM||[]),...(sNew.delM||[])]);
   out.delM=Array.from(delSet);
   const mMap=new Map();
-  (older.mt||[]).forEach(m=>{if(m&&m.id!=null&&!delSet.has(m.id))mMap.set(m.id,cp(m))});
-  (newer.mt||[]).forEach(m=>{if(m&&m.id!=null&&!delSet.has(m.id))mMap.set(m.id,cp(m))});
+  (sOld.mt||[]).forEach(m=>{if(m&&m.id!=null&&!delSet.has(m.id))mMap.set(m.id,cp(m))});
+  (sNew.mt||[]).forEach(m=>{if(m&&m.id!=null&&!delSet.has(m.id))mMap.set(m.id,cp(m))});
   out.mt=Array.from(mMap.values()).sort((a,b)=>(a.id||0)-(b.id||0));
   const pMap=new Map();
-  (older.pl||[]).forEach(p=>{if(p&&p.n)pMap.set(nz(p.n),cp(p))});
-  (newer.pl||[]).forEach(p=>{if(p&&p.n)pMap.set(nz(p.n),cp(p))});
+  (sOld.pl||[]).forEach(p=>{if(p&&p.n)pMap.set(nz(p.n),cp(p))});
+  (sNew.pl||[]).forEach(p=>{
+    if(!p||!p.n)return;
+    const k=nz(p.n),prev=pMap.get(k),np=cp(p);
+    if(prev){
+      const ob=prev.b||{},nb=np.b||{};
+      np.b=Object.assign(nob(),{
+        g:Math.max(+ob.g||0,+nb.g||0),
+        a:Math.max(+ob.a||0,+nb.a||0),
+        m:Math.max(+ob.m||0,+nb.m||0),
+        mom:Math.max(+ob.mom||0,+nb.mom||0),
+        k:Math.max(+ob.k||0,+nb.k||0)
+      });
+      if(!np.r&&prev.r)np.r=prev.r;
+    }
+    pMap.set(k,np);
+  });
   out.pl=Array.from(pMap.values());
-  if(!out.res&&older.res)out.res=cp(older.res);
+  if(sOld.tb&&typeof sOld.tb==="object"){
+    out.tb=toNob(out.tb);
+    K5.forEach(k=>{if(!out.tb[k]&&sOld.tb[k])out.tb[k]=sOld.tb[k]});
+  }
+  const simO=ensureSim(sOld),simN=ensureSim(out);
+  if(simO.w>simN.w)simN.w=simO.w;
+  Object.keys(simO.gm||{}).forEach(gi=>{
+    const wO=simO.gm[gi],wN=simN.gm[gi];
+    if(!Array.isArray(wO))return;
+    if(!Array.isArray(wN)){simN.gm[gi]=cp(wO);return}
+    wO.forEach((wk,idx)=>{if(Array.isArray(wk)&&wk.length&&(!Array.isArray(wN[idx])||!wN[idx].length))wN[idx]=cp(wk)});
+  });
+  Object.keys(simO.ko||{}).forEach(rd=>{
+    const pO=simO.ko[rd],pN=simN.ko[rd];
+    if(!Array.isArray(pO)||!pO.length)return;
+    if(!Array.isArray(pN)||!pN.length){simN.ko[rd]=cp(pO);return}
+    pO.forEach((tie,idx)=>{if(tie&&tie.w!=null&&pN[idx]&&pN[idx].w==null)pN[idx]=cp(tie)});
+  });
+  Object.entries(simO.sc||{}).forEach(([k,v])=>{if((+v||0)>(simN.sc[k]||0))simN.sc[k]=+v});
+  Object.entries(simO.as||{}).forEach(([k,v])=>{if((+v||0)>(simN.as[k]||0))simN.as[k]=+v});
+  if(sOld.gqs&&typeof sOld.gqs==="object"){
+    out.gqs=toNob(out.gqs);
+    Object.keys(sOld.gqs).forEach(gi=>{if((!Array.isArray(out.gqs[gi])||!out.gqs[gi].length)&&Array.isArray(sOld.gqs[gi]))out.gqs[gi]=sOld.gqs[gi].slice()});
+  }
+  if(!out.gq&&sOld.gq)out.gq=sOld.gq;
+  if(!out.grk&&sOld.grk)out.grk=sOld.grk;
+  if(!out.res&&sOld.res)out.res=cp(sOld.res);
   reTs(out);rePl(out);
+  if(out.G&&!isLg(out.cfg))syncUserMatchesToBracket(out);
+  rebuildSimScorers(out);
   return out}
 async function mergeBk(o){
   const snapOk=await snapKeep("fc26lig4_birlesme_oncesi");
@@ -1549,7 +1661,7 @@ function setupView(s){
   if(s.lk)return lockedView(s);
   const c=s.cfg,r=s.rl,M=elig(r).length,A=avail(s),okp=A>=c.N;
   const cc=nob();T.forEach(t=>{if(rgOk(r,t))cc[t.c]=(cc[t.c]||0)+1});
-  const cs=Object.keys(cc).sort((a,b)=>cc[b]-cc[a]||CN[a][0].localeCompare(CN[b][0],"tr"));
+  const cs=Object.keys(cc).sort((a,b)=>cc[b]-cc[a]||TR_CMP(CN[a][0],CN[b][0]));
   const gsO=gsOpts(c.N),qO=c.gs?qOpts(c.N,c.gs):[];
   const sc=[[0,"Yok"],70,72,74,75,76,77,78,80,82,84,86,88].map(v=>Array.isArray(v)?v:[v,v+"+"]);
   const gmn=[[0,"Yok"]].concat(rg(15).map(i=>[71+i,71+i])),gmx=[[99,"Yok"]].concat(rg(15).map(i=>[85-i,85-i]));
@@ -1979,7 +2091,7 @@ function tstatView(s){
   const P=st2.players,TMS=st2.teams;
   const prow=(o,i,val)=>`<button class="row tb${o.mine?" myrow":""}" data-a="tinfo" data-i="${o.ti}"><span class="lb" style="width:20px;font-weight:700">${i+1}</span>${badge(o.ti,20)}<span class="n"><b>${o.mine?"★ ":""}${esc(o.n)}</b> <small class="pm">${esc(T[o.ti].n)}</small></span><span class="g">${val}</span></button>`;
   const trow=(o,i,val)=>`<button class="row tb${o.ti===s.my?" myrow":""}" data-a="tinfo" data-i="${o.ti}"><span class="lb" style="width:20px;font-weight:700">${i+1}</span>${badge(o.ti,20)}<span class="n"><b>${o.ti===s.my?"★ ":""}${esc(T[o.ti].n)}</b></span><span class="g">${val}</span></button>`;
-  const by=(f,tie)=>(a,b)=>(b[f]-a[f])||(tie?tie(a,b):0)||a.n.localeCompare(b.n,"tr");
+  const by=(f,tie)=>(a,b)=>(b[f]-a[f])||(tie?tie(a,b):0)||TR_CMP(a.n,b.n);
   const mvp=P.filter(o=>o.mvp>0).sort(by("mvp",(a,b)=>b.g-a.g||b.a-a.a)).slice(0,5);
   const gol=P.filter(o=>o.g>0).sort(by("g",(a,b)=>b.a-a.a)).slice(0,10);
   const asi=P.filter(o=>o.a>0).sort(by("a",(a,b)=>b.g-a.g)).slice(0,10);
@@ -2203,7 +2315,7 @@ function ensureAllPlayersDatalist(){
 document.addEventListener("focusin",e=>{if(e.target&&e.target.getAttribute&&e.target.getAttribute("list")=="allpl")ensureAllPlayersDatalist()});
 function trBox(kind,s){
   const ti=st.trtm!=null?st.trtm:(st.mop!=null&&st.mop!==s.my?st.mop:(s.my===0?1:0)),tL=squadOf(ti),ord="FMDK";
-  const tOpts=T.map((t,idx)=>({t,idx})).filter(o=>o.idx!==s.my).sort((a,b)=>a.t.n.localeCompare(b.t.n,"tr")).map(({t,idx})=>`<option value="${idx}" ${idx===ti?"selected":""}>${esc(t.n)} (${t.c} · ${t.g})</option>`).join("");
+  const tOpts=T.map((t,idx)=>({t,idx})).filter(o=>o.idx!==s.my).sort((a,b)=>TR_CMP(a.t.n,b.t.n)).map(({t,idx})=>`<option value="${idx}" ${idx===ti?"selected":""}>${esc(t.n)} (${t.c} · ${t.g})</option>`).join("");
   const pOpts=tL.slice().sort((a,b)=>ord.indexOf(a.g)-ord.indexOf(b.g)||b.o-a.o).map(p=>`<option value="${esc(p.n)}">${esc(p.n)} · ${p.p} (${p.o})</option>`).join("");
   const isSc=kind.startsWith("sc:"),isAs=kind.startsWith("as:"),gIdx=isSc||isAs?(+kind.split(":")[1]+1):0;
   const lbl=isSc?`${gIdx}. gol için golcü`:isAs?`${gIdx}. gol için asistçi`:"Maçın Adamı";
@@ -2459,10 +2571,13 @@ function render(){
   const sx=st.sum&&store.seasons.find(x=>x.id==st.sum);
   $("dlg").innerHTML=st.slot?slotDlg():st.own?ownDlg():st.gs?gsDlg():st.img?imgDlg():st.ren?`<div class="dlg"><div class="dbox" role="dialog" aria-modal="true"><div class="rs">Sezon adını değiştir</div><input id="rn" class="f" maxlength="24" value="${esc(st.ren.v)}" aria-label="Sezon adı" autocomplete="off"><div class="bar"><button class="btn p" data-a="rens">Kaydet</button><button class="btn" data-a="no">Vazgeç</button></div></div></div>`:st.imp?impDlg():sx?`<div class="dlg"><div class="dbox" role="dialog" aria-modal="true"><div class="rs">${esc(sx.name)} özeti</div><textarea id="sx" class="f" rows="6" readonly>${esc(sumText(sx))}</textarea><div class="bar"><button class="btn p" data-a="cp">Kopyala</button><button class="btn" data-a="no">Kapat</button></div></div></div>`:st.ask?`<div class="dlg"><div class="dbox" role="dialog" aria-modal="true"><div>${esc(st.ask.m)}</div><div class="bar">${st.ask.fn?`<button class="btn p" data-a="yes">Evet</button><button class="btn" data-a="no">Vazgeç</button>`:`<button class="btn p" data-a="no">Tamam</button>`}</div></div></div>`:st.ti!=null?withSn(cur(),tiDlg):"";
   const s0=cur();const chg=st.lt!==st.tab;st.lt=st.tab;if(st.qs&&!qOk(s0))st.qs=false;
-  let viewHtml="";try{viewHtml=withSn(s0,()=>([setupView,teamView,drawView,groupsView,statView,histView,setView,homeView,fixtureView,tstatView][st.tab]||homeView)(s0))}catch(err){elog("render",err&&err.message,err&&err.stack);viewHtml=`<div class="big"><b class="wr">Görünüm yüklenirken hata oluştu</b><div class="note" style="margin:6px 0">${esc(err&&err.message?err.message:String(err))}</div><button class="btn p" data-t="7">Ana ekrana dön</button></div>`}
-  $("app").innerHTML=(st.upd?updBan():"")+(st.sf?sfBan():"")+tabPre(st.tab)+viewHtml;
-  {const ap=$("app");if(chg||st.lht!==st.ht){ap.classList.remove("sw");void ap.offsetWidth;ap.classList.add("sw");clearTimeout(st.swt);st.swt=setTimeout(()=>ap.classList.remove("sw"),800)}st.lht=st.ht}
-  const fresh=st.qs&&!$("qs").firstChild;$("qs").innerHTML=st.qs?withSn(s0,()=>sheetHtml(s0,fresh)):"";st.bump=null;
+  const fresh=st.qs&&!$("qs").firstChild,qsOnly=!!(st.qs&&!fresh&&!chg&&$("app").firstChild);
+  if(!qsOnly){
+    let viewHtml="";try{viewHtml=withSn(s0,()=>([setupView,teamView,drawView,groupsView,statView,histView,setView,homeView,fixtureView,tstatView][st.tab]||homeView)(s0))}catch(err){elog("render",err&&err.message,err&&err.stack);viewHtml=`<div class="big"><b class="wr">Görünüm yüklenirken hata oluştu</b><div class="note" style="margin:6px 0">${esc(err&&err.message?err.message:String(err))}</div><button class="btn p" data-t="7">Ana ekrana dön</button></div>`}
+    $("app").innerHTML=(st.upd?updBan():"")+(st.sf?sfBan():"")+tabPre(st.tab)+viewHtml;
+    const ap=$("app");if(chg||st.lht!==st.ht){ap.classList.remove("sw");void ap.offsetWidth;ap.classList.add("sw");clearTimeout(st.swt);st.swt=setTimeout(()=>ap.classList.remove("sw"),800)}st.lht=st.ht;
+  }
+  $("qs").innerHTML=st.qs?withSn(s0,()=>sheetHtml(s0,fresh)):"";st.bump=null;
   document.body.classList.toggle("qo",!!st.qs);
   if(chg&&!rm())document.querySelectorAll("[data-cu]").forEach(e=>{const v=+e.textContent,t0=performance.now();const f=n=>{const p=Math.min(1,(n-t0)/600);e.textContent=Math.round(v*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f)};requestAnimationFrame(f)});
   {const wc=st.tab==8&&document.querySelector(".wktabs .chip.on");if(wc&&wc.scrollIntoView)try{wc.scrollIntoView({inline:"center",block:"nearest"})}catch(e){}}
