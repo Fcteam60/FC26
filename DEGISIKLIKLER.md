@@ -1,5 +1,20 @@
 # Değişiklik listesi
 
+## v18.22 (Fikstür & Eleme Ağacı Maç Detayları, Özel FUT Kartlarının Temel Güce Çekilmesi, Maç Kartı Rakip MOTM ve Ölü Kod/CSS Temizliği)
+- **Fikstür ve Eleme Ağacında simüle edilen maçların golcü, asist ve Maçın Adamı detayları (`simMetaLine`, `userMetaLine`, `.simdet`):**
+  - `Turnuva › Fikstür` sekmesindeki tüm grup/lig maçlarının ve `Eleme Ağacı (Bracket)` eşleşmelerinin altında o maçta gol atan oyuncular, parantez içinde asist yapanlar, çift ayaklı turlarda 1. ve 2. maç skorları (`1.M / 2.M`) ve o maçın **Maçın Adamı (`★`)** kompakt bir bilgi satırı olarak gösterilir.
+- **Paylaşılan Maç Kartı görselinde (`macCv`) rakip Maçın Adamı (`m.omom`) gösterimi:**
+  - Kullanıcı kendi takımından MOTM seçmediğinde otomatik olarak rakipten seçilen Maçın Adamı (`m.omom`), artık paylaşılan PNG maç kartı görselinde de `★ Maçın Adamı (MOTM): Oyuncu (Rakip)` şeklinde yer alır.
+- **Kadro veritabanında (`data.js`) şişirilmiş 4 özel FUT (Future Stars / TOTW) kartı gerçek temel gücüne çekildi:**
+  - *Beşiktaş:* `I. Fakili` (84 Future Stars → 64 temel güç, Rezerv; yerine `F. Miretti` İlk 11'e alındı),
+  - *Lombardia FC (Inter):* `Y. Bisseck` (85 Destined for Glory → 79 temel güç, Yedek; yerine `B. Pavard` İlk 11'e alındı),
+  - *Sporting:* `F. Gonçalves` (84 Future Stars → 65 temel güç, Rezerv; yerine `Altimira` İlk 11'e alındı),
+  - *Latium (Lazio):* `O. Provstgaard` (80 TOTW → 72 temel güç, Rezerv; yerine `J. Šutalo` İlk 11'e alındı).
+- **Gruplar ekranına puan eşitliği (tie-breaker) bilgi notu eklendi:** Canlı puan tablosu aktifken üst bilgi satırında puan eşitliğinde sırasıyla genel averaj (`AV`), atılan gol (`AG`) ve takım gücünün baz alındığı belirtilir.
+- **Ölü kod ve mükerrer CSS temizliği (`app.js`, `style.css`):**
+  - Otomatik simülasyondan sonra atıl kalan manuel gruptan çıkan seçme (`st.gqm`, `gqm`, `gogqm`, `gqt`, `gqclr`), `matchCard` içindeki kullanılmayan sayfa içi (`sheet===false`) dalı, `statView` içindeki mükerrer `topScorersCard`, atıl `iosdismiss` ve `d.ts` dalları ile `style.css` içindeki mükerrer `.simm`, `.ball` ve `.qbdg.off` kuralları temizlendi.
+- `VER` 18.22, `package.json` 18.22.0, `sw.js` önbelleği `fc27-lig-v18-22`.
+
 ## v18.21 (Turnuva MVP / Otomatik Maçın Adamı Seçimi ve Çift Devreli Rakip Sırası Düzeltmesi)
 - **Simüle edilen maçlarda ve rakip takımlarda otomatik Maçın Adamı (`MA` / `MOTM`) seçimi (`pickSimMom`, `pickOppMom`):**
   - Simüle edilen tüm grup, lig ve eleme maçlarında maç içi skora en çok katkı veren (`3×gol + 2×asist`, eşitlikte galip takım / gol sayısı / oyuncu gücü; golsüz maçlarda kaleci) oyuncu otomatik olarak o maçın **Maçın Adamı (`MA`)** seçilir ve `Turnuva › İstatistik › Turnuva MVP'si` puanına (`+2p`) eklenir.
