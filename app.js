@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="18.23",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="18.24",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -336,6 +336,35 @@ function simMetaLine(t1,t2,g1,g2,s1,s2,a1,a2,leg1,leg2){
     if(mk){const sp=mk.lastIndexOf("|");parts.push(`★ ${esc(sp>0?mk.slice(0,sp):mk)}`)}
   }
   return parts.join(" · ")}
+
+// v18.24: Fikstür maç detaylarını yapılandırılmış (sütunlu) olarak üretir
+function fxGoalItems(ti,sL,aL){
+  if(!Array.isArray(sL)||!sL.length)return [];
+  const sq=squadOf(ti),out=[];
+  sL.forEach((v,idx)=>{
+    const sc=typeof v==="number"?(sq[v]&&sq[v].n):v;
+    if(!sc)return;
+    const av=Array.isArray(aL)?aL[idx]:null;
+    const as=typeof av==="number"?(av>=0&&sq[av]?sq[av].n:""):(typeof av==="string"?av:"");
+    const kk=isKK(sc);
+    out.push({n:sc,as:as&&!isKK(as)?as:"",kk});
+  });
+  return out}
+const fxCol=(items,side)=>`<ul class="fxg ${side}">${items.map(g=>`<li><i class="fxb${g.kk?" kk":""}" aria-hidden="true"></i><span class="fxt"><span class="fxn">${g.kk?"Kendi kalesine":esc(g.n)}</span>${g.as?` <span class="fxa">${esc(g.as)}</span>`:""}</span></li>`).join("")}</ul>`;
+function fxDet(hi,ai,mom){
+  if(!hi.length&&!ai.length&&!mom)return "";
+  return `<div class="fdet">${hi.length||ai.length?`<div class="fgl">${fxCol(hi,"h")}${fxCol(ai,"a")}</div>`:""}${mom?`<div class="fmom"><span class="st" aria-hidden="true">★</span><span>Maçın adamı</span><b>${esc(mom)}</b></div>`:""}</div>`}
+function fxSimDet(t1,t2,g1,g2,s1,s2,a1,a2){
+  let mom="";
+  if((Array.isArray(s1)&&s1.length)||(Array.isArray(s2)&&s2.length)){
+    const mk=pickSimMom(t1,t2,g1,g2,s1,s2,a1,a2);
+    if(mk){const sp=mk.lastIndexOf("|");mom=sp>0?mk.slice(0,sp):mk}
+  }
+  return fxDet(fxGoalItems(t1,s1,a1),fxGoalItems(t2,s2,a2),mom)}
+function fxUserDet(s,m){
+  const conv=l=>(Array.isArray(l)?l:[]).filter(g=>g&&g.sc).map(g=>({n:g.sc,as:g.as||"",kk:isKK(g.sc)}));
+  const mom=m.mom||(m.omom||(m.opp!=null?pickOppMom(m.opp,m.og,m.gf,m.ga):""));
+  return fxDet(conv(m.gls),conv(m.og),mom)}
 
 function userMetaLine(s,m){
   const parts=[];
@@ -2246,8 +2275,13 @@ function fixtureView(s){
   const koHtml=koBracketCard(s);
   if(!totW)return koHtml||emp("Bu turnuvada oynanacak grup/lig maçı bulunamadı.");
   const selW=(st.fxw===999||(st.fxw>=1&&st.fxw<=totW))?st.fxw:(maxW||1);
-  const tm=i=>`<button class="tl" data-a="tinfo" data-i="${i}" aria-label="${esc(T[i].n)} kadrosunu incele">${esc(T[i].n)}</button>`;
-  const row=(t1,t2,done,g1,g2,mine,det)=>`<div class="simm${mine?" mine":""}">${tm(t1)}<b${done?"":' class="vs"'}>${done?`${g1}–${g2}`:"vs"}</b>${tm(t2)}${det?`<div class="simdet">${det}</div>`:""}</div>`;
+  const fxSide=(i,cls,st2)=>`<button class="ftm ${cls}${st2?" "+st2:""}" data-a="tinfo" data-i="${i}" aria-label="${esc(T[i].n)} kadrosunu incele">${badge(i,34)}<span class="nm">${esc(T[i].n)}</span></button>`;
+  const row=(t1,t2,done,g1,g2,mine,det)=>{
+    const w1=done&&g1>g2,w2=done&&g2>g1,res=mine&&done?(g1>g2?" w":g1<g2?" l":" d"):"";
+    const sc=done
+      ?`<div class="fsc" role="img" aria-label="${esc(T[t1].n)} ${g1}, ${esc(T[t2].n)} ${g2}"><span${w2?' class="lose"':""}>${g1}</span><i></i><span${w1?' class="lose"':""}>${g2}</span></div>`
+      :`<div class="fsc vs"><span>vs</span></div>`;
+    return `<div class="fxm${mine?" mine":""}${res}"><div class="fmt">${fxSide(t1,"h",w1?"win":w2?"lose":"")}${sc}${fxSide(t2,"a",w2?"win":w1?"lose":"")}</div>${det||""}</div>`};
   const seqC=nob();
   const nextOpp=(gi,w)=>{
     if(!seqC[gi]){
@@ -2265,11 +2299,11 @@ function fixtureView(s){
     const g=s.G[gi],mn=s.my!=null&&g.includes(s.my),its=[];let played=0,total=0,myOpp=null;
     if(mn){
       const m=myGm[w-1];total++;
-      if(m&&m.opp!=null&&T[m.opp]){played++;myOpp=m.opp;its.push(row(s.my,m.opp,true,m.gf,m.ga,true,userMetaLine(s,m)))}
+      if(m&&m.opp!=null&&T[m.opp]){played++;myOpp=m.opp;its.push(row(s.my,m.opp,true,m.gf,m.ga,true,fxUserDet(s,m)))}
       else if(w>myGm.length){myOpp=nextOpp(gi,w);if(myOpp!=null&&T[myOpp])its.push(row(s.my,myOpp,false,0,0,true,""))}
     }
     const wkM=sim.gm[gi]&&sim.gm[gi][w-1];
-    if(wkM&&wkM.length){wkM.forEach(m=>{const[t1,t2,g1,g2,s1,s2,a1,a2]=m;if(T[t1]&&T[t2]){played++;total++;its.push(row(t1,t2,true,g1,g2,false,simMetaLine(t1,t2,g1,g2,s1,s2,a1,a2)))}})}
+    if(wkM&&wkM.length){wkM.forEach(m=>{const[t1,t2,g1,g2,s1,s2,a1,a2]=m;if(T[t1]&&T[t2]){played++;total++;its.push(row(t1,t2,true,g1,g2,false,fxSimDet(t1,t2,g1,g2,s1,s2,a1,a2)))}})}
     else (mn?othersPairs(gi,w,myOpp):simWeekPairs(s,gi,w)).forEach(([t1,t2])=>{if(T[t1]&&T[t2]){total++;its.push(row(t1,t2,false,0,0,false,""))}});
     return {h:its.join(""),played,total}};
   const wkTabs=`<div class="wktabs" role="group" aria-label="Hafta seç">${rg(totW).map(i=>`<button class="chip ${selW===i+1?"on":""}${i+1>maxW?" up":""}" data-a="fxw" data-v="${i+1}" ${selW===i+1?'aria-current="true"':""}>${i+1}. Hafta</button>`).join("")}${totW>1?`<button class="chip ${selW===999?"on":""}" data-a="fxw" data-v="999">Tümü</button>`:""}</div>`;
@@ -2277,8 +2311,9 @@ function fixtureView(s){
   const order=s.G.map((g,gi)=>gi).sort((a,b)=>(s.G[b].includes(s.my)?1:0)-(s.G[a].includes(s.my)?1:0));
   const body=weeks.map(w=>{
     let pl=0,tt=0;
-    const blks=order.map(gi=>{const d=wkData(gi,w);pl+=d.played;tt+=d.total;return d.h?`<div class="wkblk"><div class="lb" style="font-weight:700;margin:6px 0 2px">${gname(s,gi)}</div>${d.h}</div>`:""}).join("");
-    return `<div class="card"><h3>📅 ${w}. Hafta<small>${tt?`${pl}/${tt} maç oynandı`:""}</small></h3>${blks||`<div class="note">Bu hafta için maç yok.</div>`}</div>`}).join("");
+    const blks=order.map(gi=>{const d=wkData(gi,w);pl+=d.played;tt+=d.total;return d.h?`<div class="wkblk">${s.G.length>1?`<div class="fgh"><span>${gname(s,gi)}</span></div>`:""}<div class="fml">${d.h}</div></div>`:""}).join("");
+    const pct=tt?Math.round(pl/tt*100):0;
+    return `<section class="fxw"><div class="fwh"><h3>${w}. Hafta</h3>${tt?`<span class="fwp"><b>${pl}/${tt}</b> maç oynandı</span>`:""}</div>${tt?`<div class="fwbar" role="progressbar" aria-label="Oynanan maç" aria-valuemin="0" aria-valuemax="${tt}" aria-valuenow="${pl}"><i style="width:${pct}%"></i></div>`:""}${blks||`<div class="note">Bu hafta için maç yok.</div>`}</section>`}).join("");
   const unp=weeks.some(w=>w>maxW)?`<div class="note" style="margin:0 0 8px">Oynanmamış maçlarda senin rakibin, maç giriş ekranındaki sırayla aynıdır (sıradaki oynanmamış grup rakibi). Rakibi giriş ekranında değiştirirsen fikstür de ona göre güncellenir.</div>`:"";
   return koHtml+wkTabs+body+unp}
 const emp=t=>`<div class="emp">${PITCH}${t}</div>`;

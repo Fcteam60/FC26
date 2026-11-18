@@ -1,5 +1,14 @@
 # Değişiklik listesi
 
+## v18.24 (Fikstür Ekranı Yeniden Tasarımı: Okunurluk ve Premium Görünüm)
+- **Maç kartları:** Her maç artık ayrı bir kart. Üstte takım armaları ve adları, ortada skor tabelası; kazanan takım kalın, kaybeden soluk gösterilir. Senin maçın tabelası vurgu renginde, kart kenarı sonuca göre (galibiyet yeşil, beraberlik altın, mağlubiyet kırmızı) renklenir.
+- **Gol ve asist dökümü:** Tek satırda `·` ile birleşen metin kaldırıldı. Goller iki sütunda, her takım kendi tarafında; asist oyuncusu soluk renkte parantez içinde. Kendi kalesine goller kırmızı işaretle ayrılır.
+- **Maçın adamı:** Ayrı, ortalanmış bir satırda (★ Maçın adamı · isim).
+- **Hafta başlığı:** Emoji takvim simgesi kaldırıldı; büyük hafta başlığı, `oynanan/toplam` sayacı ve ilerleme çubuğu eklendi.
+- **Grup başlıkları:** İnce çizgili ayraçla; tek gruplu turnuvalarda başlık gizlenir.
+- **Hafta sekmeleri:** Hap biçiminde, daha büyük dokunma alanı; oynanmamış haftalar kesik çizgili.
+- Tüm renkler tema değişkenlerinden gelir (açık/koyu tema ve kulüp renkleri uyumlu). `simMetaLine` / `userMetaLine` eleme ağacı için korundu.
+
 ## v18.23 (Görsel Cila: Kulüp Ambiyansı, Hedef Şeritleri, Podyum, Broadcast Skor Tabelası, Eleme Ağacı ve Müze Vitrini)
 - **Kulüp renklerine duyarlı dinamik stadyum ışıklandırması (Ambient Club Glow):** `render()` seçili takımın `bspec(s.my)` renklerini (`c1`, `c2`) kök elemana `--club1` / `--club2` CSS değişkenleri ve `data-club` özniteliği olarak aktarır. Üst bar, ana ekran durum kartı (`.hero`) ve hızlı skor paneli (`.sheet`) bu renklerle hafif spot ışığı alır (Beşiktaş siyah-beyaz, Galatasaray kırmızı-sarı, Real Madrid beyaz-altın). Takım seçilmediyse efekt kapalıdır; altın şampiyonluk kartı değişmeden kalır.
 - **Puan tablosunda sol kenar hedef şeritleri (`.gtbl`):** 1. sıra altın, gruptan çıkan diğer sıralar zümrüt yeşili 3px dikey şerit ve hafif gradyan alır; 1. sıra rank kutusu altın olur. Senin takımının satırı kulüp renklerinden parlak 4px şerit ve gradyan geçişi alır. Tablonun altına renk açıklaması (`.gleg`) eklendi.
