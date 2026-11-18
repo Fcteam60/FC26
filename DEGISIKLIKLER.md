@@ -1,5 +1,13 @@
 # Değişiklik listesi
 
+## v18.26 (Premium Alt Gezinme Çubuğu)
+- **Yüzen cam dock:** Alt çubuk kenarlara yapışık düz şeritten, ekrandan ayrılmış yuvarlak köşeli (26 px) cam efektli bir dock'a dönüştü: bulanık arka plan, ince kenarlık, yumuşak gölge ve üst kenar ışığı. Geniş ekranlarda en fazla 520 px genişlikte ortalanır.
+- **Aktif sekme:** Üstteki ince çizgi kaldırıldı; seçili sekme vurgu renginde degrade dolgulu, ince halkalı bir hap içinde gösterilir. Simge hafifçe büyür ve kalınlaşır, geçişler animasyonludur (hareket kapalıyken animasyon yok).
+- **Okunurluk:** Simgeler 24 px, etiketler başlıklarla uyumlu yoğun yazı tipinde ve tek satır. Soldaki "Sezon" ile sağdaki "Ayarlar" yazılarının kenarlardan kesilmesi giderildi; çok dar ekranda (≤339 px) boşluklar küçülür.
+- **Dokunma geri bildirimi:** Basılınca hafif küçülme, klavye ile gezinmede odak halkası, fare olan cihazlarda üzerine gelince renk değişimi.
+- **Tema:** Açık ve koyu tema için ayrı renk değişkenleri (`--nvBg`, `--nvA`, `--nvRing` vb.).
+- Sayfa alt boşluğu ve bildirim (toast) konumu yeni yüksekliğe göre ayarlandı. Sekme etiketleri artık `<span>` içinde; kayıtlı veri etkilenmez.
+
 ## v18.25 (Açıklayıcı İstatistikler: Oyun Tarzın ve xG/xPts Analizi Yeniden Tasarımı)
 - **xG, xPts & Verimlilik Analizi kartı** bölümlere ayrıldı: Gol Beklentisi, Puan Beklentisi, Şut Kalitesi, Savunma & Kaleci, Oyun Kontrolü, Hak Ediş Dağılımı ve xG Trendi. Her kutu artık değerin altında düz Türkçe bir yorum gösterir (ör. "Beklentinin üstünde gol attın: bitiricilik çok iyi") ve yoruma göre renklenir.
 - **Koç notları:** Veriden otomatik üretilen 5 maddeye kadar özet (bitiricilik, puan şansı, savunma, şut kalitesi, şut üstünlüğü, kaleci).
