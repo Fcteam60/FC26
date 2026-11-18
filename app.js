@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="18.20",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="18.21",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -149,13 +149,14 @@ function genDraw(s,tries,tight,ms){ms=ms||900;tight=tight||1;const t0=Date.now()
 /* ---------- AŞAMA 1, 2 & 3: HAFTALIK SİMÜLASYON, ELEME AĞACI (BRACKET), GOL KRALLIĞI VE TURNUVA BİTİŞİ ---------- */
 const SIM_MODES=[[0,"Gerçekçi","Güç farkı ve gerçek futbol skorları (1-0, 2-1, 1-1 ağırlıklı)"],[1,"Dengeli","Standart güç ve günlük form dengesi"],[2,"Sürprizli","Yüksek şans faktörü, kupa sürprizlerine açık"]];
 function ensureSim(s){
-  if(!s.sim||typeof s.sim!=="object")s.sim={m:0,w:0,gm:nob(),ko:nob(),sc:nob()};
+  if(!s.sim||typeof s.sim!=="object")s.sim={m:0,w:0,gm:nob(),ko:nob(),sc:nob(),as:nob(),mom:nob()};
   if(![0,1,2].includes(s.sim.m))s.sim.m=0;
   if(!Number.isInteger(s.sim.w)||s.sim.w<0)s.sim.w=0;
   s.sim.gm=toNob(s.sim.gm);
   s.sim.ko=toNob(s.sim.ko);
   s.sim.sc=toNob(s.sim.sc);
   s.sim.as=toNob(s.sim.as);
+  s.sim.mom=toNob(s.sim.mom);
   return s.sim}
 function poissonSample(lam){const L=Math.exp(-lam);let k=0,p=1;do{k++;p*=Math.random()}while(p>L&&k<12);return k-1}
 // Takımın İlk 11 ortalaması, en iyi 3 hücum yıldızı ve kaleci gücünü birleştiren gerçekçi güç profili
@@ -250,15 +251,73 @@ function simGoalAssign(ti,goals){
   }
   return out}
 
-// Tüm simüle edilen maçlardan (grup + eleme) Turnuva Gol Krallığını hesaplar (hem tam sayı kadro indisini hem de eski metin kayıtlarını destekler)
+// Simüle edilen bir maçta en çok katkı veren (3×gol + 2×asist, eşitlikte galip takım / gol sayısı / OVR) oyuncuyu Maçın Adamı (MA) seçer
+function pickSimMom(t1,t2,g1,g2,s1,s2,a1,a2){
+  if(t1==null||t2==null||!T[t1]||!T[t2])return null;
+  const cand=nob(),win=g1>g2?t1:g2>g1?t2:-1;
+  const addP=(ti,v,pts,isG)=>{
+    const sq=squadOf(ti);
+    const p=typeof v==="number"?(v>=0?sq[v]:null):(v?sq.find(x=>x.n===v)||{n:v,o:75}:null);
+    if(!p||!p.n||isKK(p.n))return;
+    const k=p.n+"|"+ti;
+    if(!cand[k])cand[k]={k,ti,g:0,a:0,pts:0,ovr:p.o||75,w:ti===win?1:0};
+    cand[k].pts+=pts;if(isG)cand[k].g++;else cand[k].a++;
+  };
+  (Array.isArray(s1)?s1:[]).forEach(v=>addP(t1,v,3,true));
+  (Array.isArray(s2)?s2:[]).forEach(v=>addP(t2,v,3,true));
+  (Array.isArray(a1)?a1:[]).forEach(v=>addP(t1,v,2,false));
+  (Array.isArray(a2)?a2:[]).forEach(v=>addP(t2,v,2,false));
+  const list=Object.values(cand);
+  if(list.length){
+    list.sort((a,b)=>(b.pts+b.w*0.5)-(a.pts+a.w*0.5)||b.g-a.g||b.w-a.w||b.ovr-a.ovr);
+    return list[0].k;
+  }
+  const ti=win>=0?win:t2,sq=squadOf(ti);
+  if(!sq.length)return null;
+  const gk=sq.find(p=>p.g==="K"&&p.t==="S")||sq[0];
+  return gk&&gk.n?gk.n+"|"+ti:null}
+
+// Kullanıcının maçında kullanıcı kendi takımından Maçın Adamı seçmediyse rakipten en çok katkı veren oyuncuyu seçer
+function pickOppMom(opp,og,gf,ga){
+  if(opp==null||!T[opp])return "";
+  const sq=squadOf(opp);
+  if(Array.isArray(og)&&og.length){
+    const cand=nob();
+    og.forEach(o=>{
+      if(!o||!o.sc||isKK(o.sc))return;
+      const p=sq.find(x=>nz(x.n)===nz(o.sc));
+      const n=p?p.n:o.sc;
+      if(!cand[n])cand[n]={n,g:0,a:0,pts:0,ovr:p?p.o:75};
+      cand[n].g++;cand[n].pts+=3;
+      if(o.as&&!isKK(o.as)){
+        const pa=sq.find(x=>nz(x.n)===nz(o.as));
+        const na=pa?pa.n:o.as;
+        if(!cand[na])cand[na]={n:na,g:0,a:0,pts:0,ovr:pa?pa.o:75};
+        cand[na].a++;cand[na].pts+=2;
+      }
+    });
+    const list=Object.values(cand);
+    if(list.length){
+      list.sort((a,b)=>b.pts-a.pts||b.g-a.g||b.ovr-a.ovr);
+      return list[0].n;
+    }
+  }
+  if(!sq.length)return "";
+  if((+gf||0)===0||(+ga||0)===0){
+    const gk=sq.find(p=>p.g==="K"&&p.t==="S")||sq.find(p=>p.g==="K");
+    if(gk)return gk.n;
+  }
+  const stL=sq.filter(p=>p.t==="S").sort((a,b)=>b.o-a.o);
+  return (stL[0]||sq[0]).n}
+
+// Tüm simüle edilen maçlardan (grup + eleme) Turnuva Gol/Asist/MOTM Krallığını hesaplar
 function rebuildSimScorers(s){
-  const sim=ensureSim(s),sc=nob();
+  const sim=ensureSim(s),sc=nob(),as=nob(),mom=nob();
   let hasMatchScorers=false;
-  const as=nob();
   const addA=(ti,list)=>{
     if(ti==null||!T[ti]||!Array.isArray(list))return;
     const sq=squadOf(ti);
-    list.forEach(v=>{const n=typeof v==="number"&&v>=0&&sq[v]?sq[v].n:null;if(!n||isKK(n))return;const key=n+"|"+ti;as[key]=(as[key]||0)+1});
+    list.forEach(v=>{const n=typeof v==="number"&&v>=0&&sq[v]?sq[v].n:(typeof v==="string"&&v?v:null);if(!n||isKK(n))return;const key=n+"|"+ti;as[key]=(as[key]||0)+1});
   };
   const add=(ti,list)=>{
     if(ti==null||!T[ti]||!Array.isArray(list)||!list.length)return;
@@ -271,6 +330,10 @@ function rebuildSimScorers(s){
       sc[key]=(sc[key]||0)+1;
     });
   };
+  const addM=(t1,t2,g1,g2,s1,s2,a1,a2)=>{
+    const mk=pickSimMom(t1,t2,g1,g2,s1,s2,a1,a2);
+    if(mk)mom[mk]=(mom[mk]||0)+1;
+  };
   Object.values(sim.gm||{}).forEach(wkList=>{
     if(!Array.isArray(wkList))return;
     wkList.forEach(matches=>{
@@ -278,6 +341,7 @@ function rebuildSimScorers(s){
       matches.forEach(m=>{
         if(Array.isArray(m)&&m.length>=6){
           add(m[0],m[4]);add(m[1],m[5]);addA(m[0],m[6]);addA(m[1],m[7]);
+          addM(m[0],m[1],+m[2]||0,+m[3]||0,m[4],m[5],m[6],m[7]);
         }
       });
     });
@@ -285,13 +349,22 @@ function rebuildSimScorers(s){
   Object.values(sim.ko||{}).forEach(pairs=>{
     if(!Array.isArray(pairs))return;
     pairs.forEach(p=>{
-      if(p&&p.t1!==s.my&&p.t2!==s.my){
+      if(p&&p.w!=null&&p.t1!==s.my&&p.t2!==s.my){
         add(p.t1,p.s1);add(p.t2,p.s2);addA(p.t1,p.a1);addA(p.t2,p.a2);
+        if(Array.isArray(p.s1)&&Array.isArray(p.s2)){
+          if(Array.isArray(p.leg1)&&Array.isArray(p.leg2)&&p.leg1.length>=2&&p.leg2.length>=2){
+            const l1a=+p.leg1[0]||0,l1b=+p.leg1[1]||0;
+            addM(p.t1,p.t2,l1a,l1b,p.s1.slice(0,l1a),p.s2.slice(0,l1b),(p.a1||[]).slice(0,l1a),(p.a2||[]).slice(0,l1b));
+            addM(p.t1,p.t2,+p.leg2[0]||0,+p.leg2[1]||0,p.s1.slice(l1a),p.s2.slice(l1b),(p.a1||[]).slice(l1a),(p.a2||[]).slice(l1b));
+          }else{
+            addM(p.t1,p.t2,+p.g1||0,+p.g2||0,p.s1,p.s2,p.a1,p.a2);
+          }
+        }
       }
     });
   });
-  // Eğer sezon bitip maç bazlı golcü dizileri budandıysa mevcut özet sc haritasını koru
-  if(hasMatchScorers||!Object.keys(sim.sc||{}).length||sim.w===0){sim.sc=sc;sim.as=as}
+  // Eğer sezon bitip maç bazlı golcü dizileri budandıysa mevcut özet haritalarını koru
+  if(hasMatchScorers||!Object.keys(sim.sc||{}).length||sim.w===0){sim.sc=sc;sim.as=as;sim.mom=mom}
   return sim.sc}
 
 // Bitmiş sezonlarda s.sim.sc özeti oluştuktan sonra alt maçlardaki golcü dizilerini budayarak JSON/IndexedDB boyutunu ~%70 küçültür
@@ -349,10 +422,12 @@ function tourneyTopScorers(s,limit){
 // Turnuva geneli istatistikler: simüle maçlar + senin maçların (rakip golcüleri otomatik üretilmiş m.og)
 function tourneyStats(s){
   const sim=ensureSim(s),P=nob(),TM=nob(),matches=[];
+  if(!Object.keys(sim.mom||{}).length&&(sim.w>0||Object.keys(sim.ko||{}).length))rebuildSimScorers(s);
   const ent=(n,ti)=>{if(!n||isKK(n)||ti==null||!T[ti])return null;const k=nz(n)+"|"+ti;return P[k]=P[k]||{n,ti,g:0,a:0,mom:0,ht:0,mine:ti===s.my}};
   const pk=key=>{const sp=key.lastIndexOf("|");return sp>0?[key.slice(0,sp),+key.slice(sp+1)]:[key,-1]};
   Object.entries(sim.sc||{}).forEach(([k,v])=>{const[n,ti]=pk(k);if(ti===s.my)return;const e=ent(n,ti);if(e)e.g+=+v||0});
   Object.entries(sim.as||{}).forEach(([k,v])=>{const[n,ti]=pk(k);if(ti===s.my)return;const e=ent(n,ti);if(e)e.a+=+v||0});
+  Object.entries(sim.mom||{}).forEach(([k,v])=>{const[n,ti]=pk(k);if(ti===s.my)return;const e=ent(n,ti);if(e)e.mom+=+v||0});
   if(s.my!=null)(s.pl||[]).forEach(p=>{if(!p||!p.n||isKK(p.n))return;const e=ent(p.n,s.my);if(e){e.g+=+p.g||0;e.a+=+p.a||0;e.mom+=+p.mom||0}});
   const hat=(names,ti)=>{const c=nob();names.forEach(n=>{if(n&&!isKK(n))c[n]=(c[n]||0)+1});Object.entries(c).forEach(([n,v])=>{if(v>=3){const e=ent(n,ti);if(e)e.ht++}})};
   const tm=ti=>TM[ti]=TM[ti]||{ti,o:0,w:0,d:0,l:0,gf:0,ga:0};
@@ -383,7 +458,11 @@ function tourneyStats(s){
     const mSc=Array.isArray(m.gls)&&m.gls.length?m.gls.map(g=>g.sc):Object.entries(m.sc||{}).flatMap(([n,c])=>Array.from({length:+c||0},()=>n));
     hat(mSc,s.my);
     const og=m.og||[];hat(og.map(o=>o.sc),m.opp);
-    og.forEach(o=>{const e=ent(o.sc,m.opp);if(e)e.g++;if(o.as){const a=ent(o.as,m.opp);if(a)a.a++}})});
+    og.forEach(o=>{const e=ent(o.sc,m.opp);if(e)e.g++;if(o.as){const a=ent(o.as,m.opp);if(a)a.a++}});
+    if(!m.mom){
+      const om=m.omom||pickOppMom(m.opp,og,m.gf,m.ga);
+      if(om){const em=ent(om,m.opp);if(em)em.mom++}
+    }});
   const players=Object.values(P);players.forEach(e=>{e.mvp=3*e.g+2*e.a+2*e.mom});
   return{players,teams:Object.values(TM),matches}}
 
@@ -907,6 +986,7 @@ function remap(o){
       if(s.sim.ko&&typeof s.sim.ko=="object")Object.keys(s.sim.ko).forEach(rd=>{if(Array.isArray(s.sim.ko[rd]))s.sim.ko[rd]=s.sim.ko[rd].map(p=>{if(!p||typeof p!="object")return null;const t1=m2(p.t1),t2=m2(p.t2),w=p.w!=null?m2(p.w):null;return t1!=null&&t2!=null?Object.assign({},p,{t1,t2,w}):null}).filter(Boolean)});
       if(s.sim.sc)s.sim.sc=rmMap(s.sim.sc);
       if(s.sim.as)s.sim.as=rmMap(s.sim.as);
+      if(s.sim.mom)s.sim.mom=rmMap(s.sim.mom);
       rebuildSimScorers(s);
     }
     if(s.res&&typeof s.res=="object"){if(s.res.ch!=null)s.res.ch=m2(s.res.ch);if(s.res.ru!=null)s.res.ru=m2(s.res.ru);if(s.res.topG&&s.res.topG.ti!=null)s.res.topG.ti=m2(s.res.topG.ti)}
@@ -1503,6 +1583,7 @@ function mergeSeasons(loc,inc){
   });
   Object.entries(simO.sc||{}).forEach(([k,v])=>{if((+v||0)>(simN.sc[k]||0))simN.sc[k]=+v});
   Object.entries(simO.as||{}).forEach(([k,v])=>{if((+v||0)>(simN.as[k]||0))simN.as[k]=+v});
+  Object.entries(simO.mom||{}).forEach(([k,v])=>{if((+v||0)>(simN.mom[k]||0))simN.mom[k]=+v});
   if(sOld.gqs&&typeof sOld.gqs==="object"){
     out.gqs=toNob(out.gqs);
     Object.keys(sOld.gqs).forEach(gi=>{if((!Array.isArray(out.gqs[gi])||!out.gqs[gi].length)&&Array.isArray(sOld.gqs[gi]))out.gqs[gi]=sOld.gqs[gi].slice()});
@@ -1843,6 +1924,13 @@ function ensureMgls(gf){
   syncGlsToMaps();
 }
 const lgs=(c,rd)=>rd=="Grup"?c.gl:(rd==RN[2]?c.fl:c.kl);
+function nextGrpOpp(riv,gpFn,gl){
+  const maxL=gl||1;
+  for(let l=1;l<=maxL;l++){
+    const f=riv.find(i=>gpFn(i)<l);
+    if(f!==undefined)return f;
+  }
+  return undefined}
 function autoStage(s){
   const c=s.cfg,RD=rds(c),ms=s.mt||[];
   if(c.gs){const need=(c.gs-1)*c.gl,gm=ms.filter(m=>m.rd=="Grup").length;if(gm<need&&!s.gq&&!ms.some(m=>m.rd!="Grup"))return "Grup"}
@@ -1862,7 +1950,7 @@ function matchCard(s,sheet){
   const allOth=qList.concat(oth);
   if(st.mop==null||(!riv.includes(st.mop)&&!allOth.includes(st.mop))){
     const koFirst=st.mrd!="Grup"?ms.find(m=>m.id!==st.med&&m.rd==st.mrd&&m.opp!=null):null;
-    const nx=st.mrd=="Grup"?riv.find(i=>gp(i)<c.gl):(koFirst?koFirst.opp:qList[0]);
+    const nx=st.mrd=="Grup"?nextGrpOpp(riv,gp,c.gl):(koFirst?koFirst.opp:qList[0]);
     st.mop=nx!==undefined?nx:(riv.length?riv[0]:allOth[0])}
   const LG=legInfo(s),pv=ms.filter(m=>m.id!==st.med&&m.opp===st.mop&&m.rd==st.mrd&&m.lg!==LG.lg),gf=st.mg||0,ga=st.mo||0,sc=st.msc||{};
   const opt=i=>`<option value="${i}" ${st.mop===i?"selected":""}>${esc(T[i].n)}${qSet.has(i)?" (Çıktı ✓)":""}${riv.includes(i)&&gp(i)?(gp(i)>=c.gl?" ✓":" "+gp(i)+"/"+c.gl):""}</option>`;
@@ -2105,7 +2193,7 @@ function tstatView(s){
   const hi=M.slice().sort((a,b)=>(b.g1+b.g2)-(a.g1+a.g2))[0];
   const mline=m=>`<div class="simm"><button class="tl" data-a="tinfo" data-i="${m.t1}">${esc(T[m.t1].n)}</button><b>${m.g1}–${m.g2}</b><button class="tl" data-a="tinfo" data-i="${m.t2}">${esc(T[m.t2].n)}</button></div>`;
   let h="";
-  if(mvp.length)h+=cd(`🏅 Turnuva MVP'si <small>puan = 3×gol + 2×asist + 2×maçın adamı</small>`,mvp.map((o,i)=>prow(o,i,`${o.mvp} p <small>${o.g}G ${o.a}A${o.mom?` ${o.mom}MA`:""}</small>`)).join(""));
+  if(mvp.length)h+=cd(`🏅 Turnuva MVP'si <small>puan = 3×gol + 2×asist + 2×maçın adamı</small>`,mvp.map((o,i)=>prow(o,i,`${o.mvp} p <small>${o.g}G ${o.a}A ${o.mom}MA</small>`)).join(""));
   if(gol.length)h+=cd(`👟 Gol Krallığı <small>ilk ${gol.length}</small>`,gol.map((o,i)=>prow(o,i,`${o.g}G`)).join(""));
   h+=cd(`🎯 Asist Krallığı${asi.length?` <small>ilk ${asi.length}</small>`:""}`,asi.length?asi.map((o,i)=>prow(o,i,`${o.a}A`)).join(""):`<div class="note">Asist verisi bu sürümden sonra oynanan maçlardan toplanır; henüz asist kaydı yok.</div>`);
   if(ht.length)h+=cd(`🎩 Hat-trick Yapanlar`,ht.map((o,i)=>prow(o,i,`${o.ht}×`)).join(""));
@@ -2129,7 +2217,7 @@ function fixtureView(s){
     if(!seqC[gi]){
       const riv=s.G[gi].filter(x=>x!==s.my),cnt=nob(),sq=[];
       myGm.forEach(m=>{if(m.opp!=null)cnt[m.opp]=(cnt[m.opp]||0)+1});
-      for(let k=myGm.length;k<totW;k++){const o=riv.find(i=>(cnt[i]||0)<gl);sq.push(o===undefined?null:o);if(o!==undefined)cnt[o]=(cnt[o]||0)+1}
+      for(let k=myGm.length;k<totW;k++){const o=nextGrpOpp(riv,i=>cnt[i]||0,gl);sq.push(o===undefined?null:o);if(o!==undefined)cnt[o]=(cnt[o]||0)+1}
       seqC[gi]=sq}
     const o=seqC[gi][w-myGm.length-1];return o==null?null:o};
   const othersPairs=(gi,w,opp)=>{
@@ -2174,7 +2262,7 @@ function sbRow(s,m){
     const asL=Object.entries(m.as||{}).filter(e=>e[1]>0).map(([n,a])=>esc(n)+(a>1?" ×"+a:"")).join(", ");
     goalMeta=[scL?"⚽ "+scL:"",asL?"👟 "+asL:""].filter(Boolean).join(" · ");
   }
-  const meta=[goalMeta,m.mom?"★ "+esc(m.mom):""].filter(Boolean).join(" · ");
+  const oppMom=!m.mom&&(m.omom||(m.opp!=null?pickOppMom(m.opp,m.og,m.gf,m.ga):""));const meta=[goalMeta,m.mom?"★ "+esc(m.mom):(oppMom?`★ ${esc(oppMom)} (${esc(m.on)})`:"")].filter(Boolean).join(" · ");
   const des=matchDeserve(m),eff=xgEffInfo(m),stObj=m.stats;
   const desHtml=des?`<span class="desbdg ${des.k}" title="${esc(des.t)}">${des.ic} ${esc(des.t)}</span>`:"";
   const effHtml=eff?`<span class="xgeff ${eff.cls}" title="${esc(eff.t)}">xG Verim: ${eff.s}</span>`:"";
@@ -2267,7 +2355,7 @@ function homeView(s){
   else if(!s.G){ttl="Kura zamanı";txt=T[s.my].n+" hazır. Gruplar kuradan çıkacak.";main=`<button class="btn p cta" data-t="2">Kurayı çek</button>`}
   else if(!fin){
     const gi=s.G.findIndex(g=>g.includes(s.my)),riv=gi>=0?s.G[gi].filter(i=>i!==s.my):[];
-    const nx=s.cfg.gs?riv.find(i=>ms.filter(m=>m.opp===i&&m.rd=="Grup").length<s.cfg.gl):(ms.length?undefined:riv[0]);
+    const nx=s.cfg.gs?nextGrpOpp(riv,i=>ms.filter(m=>m.opp===i&&m.rd=="Grup").length,s.cfg.gl):(ms.length?undefined:riv[0]);
     ttl="Sahaya çık";txt=nx!==undefined?"Sıradaki rakip: "+T[nx].n+" ("+T[nx].g+")":(isLg(s.cfg)?"Lig maçların tamamlandı! Aşağıdan lig dereceni kaydedip sezonu bitirebilirsin.":(ms.length?"Sıradaki eleme maçını gir ya da sezonu bitir.":"Maç biter bitmez skoru gir."));
     main=`<button class="btn p cta" data-t="3">⚽ Maçı Kura › Gruplar’dan gir</button>`;sec=`<button class="btn" data-a="gofin">Sezonu bitir</button>`;{const gz=grpState(s);if(gz&&gz.pend&&!isLg(s.cfg))txt="Grup maçların bitti. Aşağıdan gruptan çıkıp çıkmadığını işaretle."}}
   else{ttl=rlb(s.res,s.cfg,s.grk);txt="Sezon kaydedildi.";main=`<button class="btn p cta" data-a="ns">Yeni sezon başlat</button>`;sec=`<button class="btn" data-a="karne" data-id="${s.id}">Karneyi paylaş</button>`}
@@ -2372,7 +2460,7 @@ function scorerUI(s,gf,sc){
   const customMom=mom&&!allMomNames.has(mom)?`<option value="${esc(mom)}" selected>${esc(mom)} (Transfer)</option>`:"";
   const momOpts=["F","M","D","K"].map(g=>{const G=L.filter(p=>p.g==g);return G.length?`<optgroup label="${SQL[g]}">${G.map(p=>`<option value="${esc(p.n)}" ${mom===p.n?"selected":""}>${esc(p.n)} · ${p.p} ${p.o}</option>`).join("")}</optgroup>`:""}).join("");
   const momEx=ex.length?`<optgroup label="Transferler / Eklenenler">${ex.map(p=>`<option value="${esc(p.n)}" ${mom===p.n?"selected":""}>${esc(p.n)}</option>`).join("")}</optgroup>`:"";
-  h+=`<div class="rr" style="margin-top:8px"><span class="lb">Maçın Adamı (MOTM)</span><select id="mmom" class="sel" style="flex:1"><option value="">Seçilmedi</option>${customMom}${momEx}${momOpts}</select><button class="chip ${st.trm=="mom"?"on":""}" data-a="tropen" data-k="mom" style="padding:6px 10px">+ Başka</button></div>`;
+  h+=`<div class="rr" style="margin-top:8px"><span class="lb">Maçın Adamı (MOTM)</span><select id="mmom" class="sel" style="flex:1"><option value="">Seçilmedi (Otomatik rakipten seçilir)</option>${customMom}${momEx}${momOpts}</select><button class="chip ${st.trm=="mom"?"on":""}" data-a="tropen" data-k="mom" style="padding:6px 10px">+ Başka</button></div>`;
   if(st.trm=="mom")h+=trBox("mom",s);
   return h}
 document.addEventListener("keydown",e=>{
@@ -2672,7 +2760,8 @@ document.addEventListener("click",async e=>{
     {const sqO=squadOf(op),nO=m.ga||0,old=oldM&&oldM.opp===op&&Array.isArray(oldM.og)?oldM.og.slice(0,nO):[];
       const need=nO-old.length;
       if(need>0&&sqO.length){const ix=simGoalAssign(op,need),as=simAssistsFor(op,ix);ix.forEach((v,k)=>old.push({sc:sqO[v].n,as:as[k]>=0&&sqO[as[k]]?sqO[as[k]].n:""}))}
-      m.og=old}
+      m.og=old;
+      m.omom=m.mom?"":(pickOppMom(op,old,m.gf,m.ga)||"")}
     if(oldM)s.mt[s.mt.indexOf(oldM)]=m;else s.mt.push(m);
     const des=matchDeserve(m);
     mApply(s);syncUserMatchesToBracket(s);st.med=null;st.mg=0;st.mo=0;st.mu=0;st.mp=undefined;st.mpf=0;st.mpa=0;st.mgls=[];st.msc=nob();st.mas=nob();st.mmom="";st.mop=null;st.mlg=null;st.qs=false;st.madv=false;st.mst=defMst();un=(oldM?"Güncellendi · ":"Kaydedildi · ")+m.on+" "+mscTxt(m)+(des&&des.k!="fair"?" · "+des.t:"")+(st.stwarn?" ("+st.stwarn+")":"");st.stwarn=null;if(!oldM){const df=m.gf-m.ga,pw=pf!=null&&pa!=null&&pf>pa;st.fw=df>0?(df>=3?3:df==2?2:1):(pw?2:0)}}

@@ -1,5 +1,13 @@
 # Değişiklik listesi
 
+## v18.21 (Turnuva MVP / Otomatik Maçın Adamı Seçimi ve Çift Devreli Rakip Sırası Düzeltmesi)
+- **Simüle edilen maçlarda ve rakip takımlarda otomatik Maçın Adamı (`MA` / `MOTM`) seçimi (`pickSimMom`, `pickOppMom`):**
+  - Simüle edilen tüm grup, lig ve eleme maçlarında maç içi skora en çok katkı veren (`3×gol + 2×asist`, eşitlikte galip takım / gol sayısı / oyuncu gücü; golsüz maçlarda kaleci) oyuncu otomatik olarak o maçın **Maçın Adamı (`MA`)** seçilir ve `Turnuva › İstatistik › Turnuva MVP'si` puanına (`+2p`) eklenir.
+  - Kullanıcının kendi maçlarında, kullanıcı kendi takımından bir Maçın Adamı seçmezse (`Seçilmedi (Otomatik rakipten seçilir)`), rakip takımdan o maçta en çok katkı veren oyuncu (`m.omom`) otomatik olarak Maçın Adamı seçilir. Mevcut devam eden sezonlardaki geçmiş maçlar için de geriye dönük otomatik hesaplanır.
+- **Çift maçlı (2 devreli) grup ve liglerde devre bazlı rakip sırası (`nextGrpOpp`):**
+  - Çift maçlı (`c.gl === 2`) grup veya lig modunda bir takımla 1. maçı oynadıktan sonra hemen aynı takımla 2. maça geçmesi hatası düzeltildi. Artık önce gruptaki/ligdeki tüm takımlarla 1. devre maçları sırayla tamamlanır, ardından tekrar başa dönülerek 2. devre (rövanş) maçlarına geçilir (`matchCard`, `homeView` ve `fixtureView` birebir uyumlu).
+- `VER` 18.21, `package.json` 18.21.0, `sw.js` önbelleği `fc27-lig-v18-21`.
+
 ## v18.20 (Aşama 3: Güvenli Yedek/Simülasyon Birleştirme, `remap` Asist Korunumu, Hızlı Skor Paneli DOM ve `Intl.Collator` Optimizasyonu)
 - **`mergeSeasons` simülasyon (`s.sim`) ve manuel oyuncu baz puanları (`p.b`) birleştirmesi:** İki yedek birleştirilirken artık yalnızca son zaman damgalı sezonun simülasyonu veya oyuncu kaydı ezilmez; her iki yedekteki oynanmış grup haftaları (`sim.gm`), tamamlanmış eleme eşleşmeleri (`sim.ko`), budanmış gol/asist özetleri (`sim.sc`, `sim.as`), gruptan çıkanlar (`gqs`) ve oyunculara elle eklenen baz istatistikler (`p.b`) ile oyuncu puanları (`p.r`) kayıpsız birleştirilir, ardından `syncUserMatchesToBracket` ve `rebuildSimScorers` ile tam tutarlılık sağlanır.
 - **`remap` asist verisi (`m[6], m[7]`) ve özet haritası korunumu:** Takım listesi geçişlerinde (`remap`) 8 elemanlı grup maç dizilerindeki asist indeksleri (`a[6], a[7]`) ile budanmış sezonlardaki `sim.sc` ve `sim.as` takım indisleri (`"Oyuncu|takımİndisi"`) korunarak yeni takım indislerine aktarılır.
