@@ -1,5 +1,12 @@
 # Değişiklik listesi
 
+## v18.17 (Turnuva İstatistikleri + Rakip Golcü/Asistçileri)
+- **Yeni sekme: Turnuva › İstatistik** (üst çubuk: Kura | Gruplar | Fikstür | İstatistik). İçerik: Turnuva MVP'si (puan = 3×gol + 2×asist + 2×maçın adamı), Gol Krallığı, **Asist Krallığı**, hat-trick yapanlar, en golcü / en az gol yiyen / en çok kazanan takımlar, turnuva özeti (maç, gol, ortalama, en farklı skor, en gollü maç). Gol Krallığı kartı Gruplar'dan buraya taşındı.
+- **Simülasyona asist eklendi:** yapay zekâ maçlarında her gol için (≈%78 olasılıkla) golü atandan farklı, orta saha/forvet ağırlıklı bir asistçi seçilir. Eski haftalarda asist verisi yoktur; sayım bu sürümden sonraki maçlarla başlar.
+- **Rakip golleri otomatik:** maç kaydederken rakip skoru girilince rakibin golcüleri ve asistçileri kadro gücü/mevkiine göre otomatik belirlenir (`m.og`). Rakip skoru sonradan değiştirilirse yalnızca fark kadar gol eklenir/çıkarılır. Eski kayıtlar etkilenmez.
+- Geçmiş sezon budaması ve özet (`sim.sc`, yeni `sim.as`) asisti de kapsar. Depolama anahtarları değişmedi.
+- `VER` 18.17, `package.json` 18.17.0, `sw.js` önbelleği `fc27-lig-v18-17`.
+
 ## v18.16 (Hata Düzeltmesi: Fikstür Rakip Tutarlılığı)
 - **Fikstürde oynanmamış hafta maçlarında senin rakibin artık maç giriş ekranıyla aynı sırayla belirlenir** (sıradaki, lig/grup tur sayısını henüz doldurmamış grup rakibi). Önceden Fikstür dairesel çizelgeden farklı bir rakip gösteriyordu (örn. 5. hafta).
 - Gruptaki diğer maçlar bu rakibe göre yeniden eşleştirilir; bir takım aynı haftada iki kez görünmez.
