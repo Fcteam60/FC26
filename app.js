@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="18.37",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="18.38",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -1834,24 +1834,51 @@ const chp=(a,k,v,l,on)=>`<button class="chip ${on?"on":""}" data-a="${a}" data-k
 const sel=(at,k,opts,c)=>`<select class="sel" data-${at}="${k}">${opts.map(([v,l])=>`<option value="${v}" ${v==c?"selected":""}>${l}</option>`).join("")}</select>`;
 const rrow=(l,h)=>`<div class="rr"><span class="lb">${l}</span>${h}</div>`;
 const R3=(a,b)=>`<div class="row" style="align-items:flex-start"><span style="flex:0 0 auto">${a}</span><b style="flex:1;text-align:right">${b}</b></div>`;
-function setupLines(s){
-  const c=s.cfg,mi=matchInfo(c);
-  let h=R3("Takım sayısı",c.N);
-  if(isLg(c)){
-    h+=R3("Format","Puan usulü tek lig ("+c.N+" takım)")+R3("Lig maçları",leg(c.gl)+" (takım başı "+mi.pt+" maç)")+R3("Şampiyonluk","Eleme yok · maçlar bitince puanla şampiyon olunur")+R3("Toplam lig maçı",mi.tot);
-    return h}
-  if(c.gs){h+=R3("Gruplar",nG(c)+" grup × "+c.gs+" takım")+R3("Gruptan çıkan",c.q+" takım ("+adv(c)+" takım eleme turuna)")+R3("Grup maçları",leg(c.gl)+" (takım başı "+mi.pt+" maç)")}
-  else h+=R3("Format","Grup yok, direkt eleme");
-  h+=R3("Eleme yolu",koPath(c));
-  if(hasKO(c))h+=R3("Eleme turları",leg(c.kl));
-  h+=R3("Final",leg(c.fl))+R3("Toplam maç sayısı",mi.tot);
-  return h}
+const TPLI=[
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.8 12h16.4M12 3.5a12 12 0 0 1 0 17M12 3.5a12 12 0 0 0 0 17"/></svg>',
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>',
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5v1.5A3 3 0 0 0 8 10.5M16 6h3v1.5a3 3 0 0 1-3 3M12 13v4M8.5 20h7"/></svg>',
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h5v5H4M4 13h5v5H4M9 8.5h4v7H9M13 12h7"/></svg>',
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="7" cy="6" r="1.3" fill="currentColor"/><circle cx="7" cy="12" r="1.3" fill="currentColor"/><circle cx="7" cy="18" r="1.3" fill="currentColor"/></svg>'
+];
+function setupBlueprint(s){
+  const c=s.cfg,mi=matchInfo(c),lg=isLg(c);
+  const kpi2=lg?["Tek Lig","Puan Usulü"]:c.gs?[`${nG(c)}×${c.gs}`,"Grup Yapısı"]:["Eleme","Grup Yok"];
+  const kpis=`<div class="pset-kpi">`+
+    `<div class="pk2 emr"><b>${c.N}</b><span>Takım</span></div>`+
+    `<div class="pk2 sky"><b>${kpi2[0]}</b><span>${kpi2[1]}</span></div>`+
+    `<div class="pk2 gold"><b>${mi.tot}</b><span>Toplam Maç</span></div>`+
+    `</div>`;
+  let specs=[];
+  if(lg){
+    specs=[["Lig Maçları",`${leg(c.gl)} (${mi.pt} maç/takım)`],["Format","Eleme yok · puanla şampiyonluk"]];
+  }else{
+    if(c.gs){
+      specs.push(["Gruptan Çıkan",`${c.q} takım (${adv(c)} takım elemeye)`]);
+      specs.push(["Grup Maçları",`${leg(c.gl)} (${mi.pt} maç/takım)`]);
+    }
+    if(hasKO(c))specs.push(["Eleme Turları",leg(c.kl)]);
+    specs.push(["Final Maçı",leg(c.fl)]);
+  }
+  const specHtml=`<div class="su-specs">${specs.map(([l,v])=>`<div class="su-sp"><span>${l}</span><b>${v}</b></div>`).join("")}</div>`;
+  let pathHtml="";
+  if(!lg){
+    const rdsList=[];for(let t=adv(c);t>=2;t/=2)rdsList.push(RN[t]);
+    pathHtml=`<div class="su-path"><span class="pset-lbl" style="margin:0 0 6px">Eleme Yolu</span><div class="su-chain">${rdsList.map((rn,idx)=>`<span class="su-node${idx===rdsList.length-1?" fin":""}">${idx===rdsList.length-1?"🏆 ":""}${rn}</span>`).join('<span class="su-arr">›</span>')}</div></div>`;
+  }
+  return kpis+specHtml+pathHtml}
+function suTeamGrid(list){
+  return `<div class="su-tgrid">${list.map(i=>`<button class="su-trow" data-a="tinfo" data-i="${i}" aria-label="${esc(T[i].n)} kadrosunu incele">${fl(T[i].c)}<span class="n">${nm(i)}</span>${rb(T[i].g)}</button>`).join("")}</div>`}
 function lockedView(s){
   const PS=s.P.slice().sort((x,y)=>V(T[y])-V(T[x]));
-  return cd(`Kurulum tamam <small>${esc(s.name)}</small>`,setupLines(s))
-  +cd("Kurallar",ruleLines(s).map(x=>`<div class="row"><span class="n" style="white-space:normal">${esc(x)}</span></div>`).join(""))
-  +`<div class="bar" style="margin-top:10px"><button class="btn p" data-t="1">Takım seçimine geç</button><button class="btn" data-a="tpl">${st.tp?"Katılımcıları gizle":"Katılımcıları göster ("+s.P.length+")"}</button><button class="btn" data-a="unlock">Kurulumu değiştir</button></div>`
-  +(st.tp?cd("Katılımcılar <small>güce göre</small>",`<div class="pg">${PS.map(i=>`<div class="row"><span class="cc">${fl(T[i].c)}</span><span class="n">${nm(i)}</span>${rb(T[i].g)}</div>`).join("")}</div>`):"")}
+  const rulesPills=`<div class="dnamets" style="margin:10px 0 0">${ruleLines(s).map(x=>`<span class="dnam"><em>${esc(x)}</em></span>`).join("")}</div>`;
+  const mainCard=psetCard("app","emr","Kurulum Tamamlandı",esc(s.name)+" · kurallar kilitlendi","Hazır",
+    setupBlueprint(s)+rulesPills+
+    `<div class="su-acts" style="margin-top:12px"><button class="btn p pset-pri" data-t="1" style="flex:1.4">Takım Seçimine Geç ›</button><button class="btn pset-sec" data-a="tpl" style="flex:1">${st.tp?"Gizle":"Katılımcılar ("+s.P.length+")"}</button></div>`+
+    `<button class="pset-link" data-a="unlock"><span>Kurulumu düzenle / kilidi aç</span><span>›</span></button>`
+  );
+  const partCard=st.tp?psetCard("shield","sky","Turnuva Katılımcıları","Güce göre sıralı",`${PS.length} takım`,suTeamGrid(PS)):"";
+  return mainCard+partCard}
 function setupView(s){
   if(s.lk)return lockedView(s);
   const c=s.cfg,r=s.rl,M=elig(r).length,A=avail(s),okp=A>=c.N;
@@ -1862,44 +1889,70 @@ function setupView(s){
   const gmn=[[0,"Yok"]].concat(rg(15).map(i=>[71+i,71+i])),gmx=[[99,"Yok"]].concat(rg(15).map(i=>[85-i,85-i]));
   const capO=[[0,"Sınırsız"]].concat([1,2,3,4,5,6,8,10,12].map(v=>[v,"En fazla "+v]));
   const gcO=c.gs?[[0,"Sınırsız"],[1,"En fazla 1"],[2,"En fazla 2"],[3,"En fazla 3"],[4,"En fazla 4"],[5,"En fazla 5"]]:[[0,"Sınırsız"],[1,"Aynı ülke eşleşmesin"]];
-  const mi=matchInfo(c);
-  let h=`<div class="note" style="margin:0 0 8px">Hazır bir şablon seç, istersen ayrıntıları değiştir, sonra kurulumu onayla. Ardından takımını seçip kurayı çekeceksin.</div>`;
-  const rk=`<div class="card" style="margin-top:10px"><h3><span>Gelişmiş kurallar</span><button class="chip" data-a="adv">Gizle</button></h3>
-  <div class="sh">Takım bölgesi</div><div class="cw">${Object.keys(RGN).map(k=>chp("rl","rg",k,RGN[k].replace(" takımları","").replace(" takımlar",""),r.rg==k)).join("")}</div>
-  <div class="sh">Ülkeler <span class="lb">(dokunarak çıkar / ekle)</span></div><div class="cw">${cs.map(k=>chp("xc","",k,fl(k)+" "+CN[k][0]+" "+cc[k],!r.xc.includes(k))).join("")}${r.xc.length?`<button class="chip" data-a="xcall">Hepsini seç</button>`:""}</div>
-  <div class="sh">Takım gücü</div>
-  ${rrow("Genel güç en az",sel("rs","gmin",gmn,r.gmin))}${rrow("Genel güç en çok",sel("rs","gmax",gmx,r.gmax))}
-  ${rrow("Hücum",sel("rs","amin",sc,r.amin))}${rrow("Orta saha",sel("rs","mmin",sc,r.mmin))}${rrow("Defans",sel("rs","dmin",sc,r.dmin))}
-  <div class="sh">Aynı ülke kısıtlaması</div>
-  ${rrow("Turnuvada ülke başına takım",sel("rs","cap",capO,r.cap))}${rrow(c.gs?"Aynı grupta aynı ülkeden":"İlk turda aynı ülke",sel("rs","gcap",gcO,r.gcap))}
-  <div class="sh">Katılımcı seçimi <span class="lb">(uygun takım gerekenden fazlaysa)</span></div><div class="cw">${chp("rl","pick","top","En güçlü takımlar",r.pick=="top")}${chp("rl","pick","rnd","Rastgele",r.pick=="rnd")}</div>
-  <div class="sh">Kura yöntemi</div><div class="cw">${chp("rl","dm","pot","Torbalı (güç dengeli)",r.dm=="pot")}${chp("rl","dm","rnd","Tamamen rastgele",r.dm=="rnd")}</div>
-  </div>`;
-  h+=`<div class="card"><h3><span><span class="step">1</span>Turnuva formatı</span><small>${esc(s.name)}</small></h3><div class="sh">Hazır şablon</div><div class="tpl">${TPL.map((p,i)=>`<button class="chip ${tplOn(c,p)?"on":""}" data-a="tmpl" data-v="${i}">${p[0]}<small>${p[1]}</small></button>`).join("")}</div>`;
-  const lgMode=isLg(c);
-  let dt=`<div class="sh">Aşamalar / Mod</div><div class="cw">${chp("gmode","",1,"Gruplu + eleme",!lgMode&&!!c.gs)}${chp("gmode","",0,"Direkt eleme",!lgMode&&!c.gs)}${chp("gmode","",2,"Puan Ligi (eleme yok)",lgMode)}</div>`;
-  if(lgMode){
-    dt+=`<div class="sh">Lig kaç takımlı olsun? <span class="lb">(en fazla 24)</span></div><div class="cw">${LGN.map(n=>chp("cfg","N",n,n+" takım",c.N==n)).join("")}</div>
-    <div class="sh">Lig maçları</div><div class="cw">${chp("cfg","gl",1,"Tek maç (1 devre)",c.gl==1)}${chp("cfg","gl",2,"Çift maç (rövanşlı 2 devre)",c.gl==2)}</div>`;
-  }else{
-    dt+=`<div class="sh">Kaç takım katılacak?</div><div class="cw">${[4,8,16,32,64].map(n=>chp("cfg","N",n,n,c.N==n)).join("")}</div>`;
-    if(c.gs){
-      dt+=`<div class="sh">Grup büyüklüğü</div><div class="cw">${gsO.map(n=>chp("cfg","gs",n,n+" takımlı",c.gs==n)).join("")}</div>
-      <div class="sh">Gruptan kaç takım çıksın?</div><div class="cw">${qO.map(n=>chp("cfg","q",n,n+" takım",c.q==n)).join("")}</div>
-      <div class="sh">Grup maçları</div><div class="cw">${chp("cfg","gl",1,"Tek maç",c.gl==1)}${chp("cfg","gl",2,"Çift maç",c.gl==2)}</div>`}
-    if(hasKO(c))dt+=`<div class="sh">Eleme maçları <span class="lb">(final hariç)</span></div><div class="cw">${chp("cfg","kl",1,"Tek maç",c.kl==1)}${chp("cfg","kl",2,"Çift maç (iç-dış)",c.kl==2)}</div>`;
-    dt+=`<div class="sh">Final maçı</div><div class="cw">${chp("cfg","fl",1,"Tek maç",c.fl==1)}${chp("cfg","fl",2,"Çift maç (iç-dış)",c.fl==2)}</div>`;
-  }
-  {const tm=TPL.some(p=>tplOn(c,p)),dflt=tm&&!lgMode&&c.gl==1&&c.kl==1&&c.fl==1,open=!dflt||st.cust||lgMode;
-   h+=(open?dt:"")+(dflt?`<div class="bar" style="margin:10px 0 0"><button class="chip" data-a="cust">${st.cust?"Ayrıntıları gizle":"Özelleştir"}</button></div>`:"")+"</div>"}
-  h+=st.adv?rk:`<div class="card" style="margin-top:10px"><button class="btn" data-a="adv" style="width:100%;text-align:left"><b>Gelişmiş kurallar</b><br><span class="lb">${JSON.stringify(r)==JSON.stringify(DEFR)?"Varsayılan kurallar (tüm bölgeler, güce göre seçim, torbalı kura)":"Özel kurallar uygulanıyor"} · değiştirmek için dokun</span></button></div>`;
-  h+=`<div class="card" style="margin-top:10px"><h3><span><span class="step">2</span>Özet</span></h3>${setupLines(s)}
-  <div class="rt">Kurallar</div><div class="note" style="margin:0">${esc(ruleLines(s).join(" · "))}</div>
-  <div class="rt">Takım havuzu</div><div class="${okp?"gd":"wr"}">${M} takım kurallara uyuyor${A<M?" · ülke sınırından sonra "+A:""} · gerekli ${c.N}${okp?" ✓":" – yeterli takım yok, kuralları gevşet veya takım sayısını azalt"}</div>
-  <div class="bar" style="margin:12px 0 0"><button class="btn p" data-a="lock" ${okp?"":"disabled"}>Kurulumu onayla</button><button class="btn" data-a="tel">${st.te?"Uygun takımları gizle":"Uygun takımları göster"}</button></div>
-  ${st.te?`<div class="pg" style="margin-top:8px">${elig(r).sort((a,b)=>V(T[b])-V(T[a])).map(i=>`<div class="row"><span class="cc">${fl(T[i].c)}</span><span class="n">${T[i].n}</span>${rb(T[i].g)}</div>`).join("")}</div>`:""}</div>`;
-  return h}
+  const lgMode=isLg(c),isDefRl=JSON.stringify(r)==JSON.stringify(DEFR);
+  const hero=`<div class="su-hero"><div class="su-htop"><span class="ph-ey"><i class="ph-dot"></i>TURNUVA MİMARI</span><span class="xfpill emr">${esc(s.name)}</span></div><h2>Turnuvanı Tasarla</h2><p>Hazır bir şablon seç veya formatı ve havuz kurallarını dilediğin gibi özelleştir.</p></div>`;
 
+  // 1) Turnuva Formatı Kartı
+  const tplGrid=`<div class="su-tpl">${TPL.map((p,i)=>`<button class="su-tcard${tplOn(c,p)?" on":""}" data-a="tmpl" data-v="${i}"><span class="su-tic">${TPLI[i]}</span><span class="su-tm"><b>${p[0]}</b><small>${p[1]}</small></span></button>`).join("")}</div>`;
+  const segBtn=(a,k,v,l,on)=>`<button class="chip ${on?"on":""}" data-a="${a}" data-k="${k}" data-v="${v}">${l}</button>`;
+  let dt=`<div class="su-div"></div>`;
+  dt+=`<div class="pset-lbl">Aşamalar / Mod</div><div class="stabs seg3" style="margin-bottom:11px">${segBtn("gmode","",1,"Gruplu",!lgMode&&!!c.gs)}${segBtn("gmode","",0,"Direkt Eleme",!lgMode&&!c.gs)}${segBtn("gmode","",2,"Puan Ligi",lgMode)}</div>`;
+  if(lgMode){
+    dt+=`<div class="pset-lbl">Lig Takım Sayısı <small style="text-transform:none;font-weight:400">(en fazla 24)</small></div><div class="su-nums">${LGN.map(n=>`<button class="su-nbtn${c.N==n?" on":""}" data-a="cfg" data-k="N" data-v="${n}">${n}</button>`).join("")}</div>`;
+    dt+=`<div class="su-mgrid"><div class="su-mrow"><span>Lig Maçları</span><div class="stabs seg2">${segBtn("cfg","gl",1,"1 Devre",c.gl==1)}${segBtn("cfg","gl",2,"2 Devre",c.gl==2)}</div></div></div>`;
+  }else{
+    dt+=`<div class="pset-lbl">Katılacak Takım Sayısı</div><div class="stabs su-s5" style="margin-bottom:11px">${[4,8,16,32,64].map(n=>segBtn("cfg","N",n,n,c.N==n)).join("")}</div>`;
+    if(c.gs){
+      dt+=`<div class="pset-lbl">Grup Büyüklüğü</div><div class="stabs" style="grid-template-columns:repeat(${gsO.length},1fr);margin-bottom:11px">${gsO.map(n=>segBtn("cfg","gs",n,n+"’lü",c.gs==n)).join("")}</div>`;
+      dt+=`<div class="pset-lbl">Gruptan Çıkacak Takım</div><div class="stabs" style="grid-template-columns:repeat(${qO.length},1fr);margin-bottom:11px">${qO.map(n=>segBtn("cfg","q",n,n+" takım",c.q==n)).join("")}</div>`;
+    }
+    const mrows=[];
+    if(c.gs)mrows.push(`<div class="su-mrow"><span>Grup Maçları</span><div class="stabs seg2">${segBtn("cfg","gl",1,"Tek maç",c.gl==1)}${segBtn("cfg","gl",2,"Çift maç",c.gl==2)}</div></div>`);
+    if(hasKO(c))mrows.push(`<div class="su-mrow"><span>Eleme Turları</span><div class="stabs seg2">${segBtn("cfg","kl",1,"Tek maç",c.kl==1)}${segBtn("cfg","kl",2,"Çift maç",c.kl==2)}</div></div>`);
+    mrows.push(`<div class="su-mrow"><span>Final Maçı</span><div class="stabs seg2">${segBtn("cfg","fl",1,"Tek maç",c.fl==1)}${segBtn("cfg","fl",2,"Çift maç",c.fl==2)}</div></div>`);
+    dt+=`<div class="su-mgrid">${mrows.join("")}</div>`;
+  }
+  const tmMatch=TPL.some(p=>tplOn(c,p)),dflt=tmMatch&&!lgMode&&c.gl==1&&c.kl==1&&c.fl==1,openDt=!dflt||st.cust||lgMode;
+  const custToggle=dflt?`<button class="pset-link" data-a="cust"><span>${st.cust?"Ayrıntılı ayarları gizle":"Takım, grup ve maç sayısını özelleştir"}</span><span>${st.cust?"▴":"▾"}</span></button>`:"";
+  const card1=psetCard("trophy","emr","1 · Turnuva Formatı","Şablon ve maç düzeni",`${c.N} takım`,tplGrid+(openDt?dt:"")+custToggle);
+
+  // 2) Gelişmiş Kurallar Katlanır Panel (.pfold)
+  const advBody=`<div class="pset-lbl">Takım Bölgesi</div>`+
+    `<div class="stabs seg3" style="margin-bottom:11px">${Object.keys(RGN).map(k=>segBtn("rl","rg",k,k=="all"?"Tümü":k=="eu"?"Avrupa":"Avrupa Dışı",r.rg==k)).join("")}</div>`+
+    `<div class="su-cthd"><span class="pset-lbl" style="margin:0">Ülkeler <small style="text-transform:none;font-weight:400">(dokunarak çıkar / ekle)</small></span>${r.xc.length?`<button class="sf-clr" data-a="xcall">Hepsini seç</button>`:""}</div>`+
+    `<div class="su-cgrid">${cs.map(k=>`<button class="su-cchip${!r.xc.includes(k)?" on":""}" data-a="xc" data-v="${k}">${fl(k)}<span>${CN[k][0]}</span><em>${cc[k]}</em></button>`).join("")}</div>`+
+    `<div class="pset-lbl" style="margin-top:12px">Takım Gücü ve Ülke Sınırları</div>`+
+    `<div class="su-fgrid">`+
+      `<div class="su-fld"><label>Genel En Az</label>${sel("rs","gmin",gmn,r.gmin)}</div>`+
+      `<div class="su-fld"><label>Genel En Çok</label>${sel("rs","gmax",gmx,r.gmax)}</div>`+
+      `<div class="su-fld"><label>Hücum</label>${sel("rs","amin",sc,r.amin)}</div>`+
+      `<div class="su-fld"><label>Orta Saha</label>${sel("rs","mmin",sc,r.mmin)}</div>`+
+      `<div class="su-fld"><label>Defans</label>${sel("rs","dmin",sc,r.dmin)}</div>`+
+      `<div class="su-fld"><label>Ülke Limiti (Turnuva)</label>${sel("rs","cap",capO,r.cap)}</div>`+
+      `<div class="su-fld full"><label>${c.gs?"Aynı Grupta Aynı Ülkeden":"İlk Turda Aynı Ülke"}</label>${sel("rs","gcap",gcO,r.gcap)}</div>`+
+    `</div>`+
+    `<div class="su-mgrid" style="margin-top:11px">`+
+      `<div class="su-mrow"><span>Katılımcı Seçimi</span><div class="stabs seg2">${segBtn("rl","pick","top","En Güçlü",r.pick=="top")}${segBtn("rl","pick","rnd","Rastgele",r.pick=="rnd")}</div></div>`+
+      `<div class="su-mrow"><span>Kura Yöntemi</span><div class="stabs seg2">${segBtn("rl","dm","pot","Torbalı",r.dm=="pot")}${segBtn("rl","dm","rnd","Rastgele",r.dm=="rnd")}</div></div>`+
+    `</div>`;
+  const card2=`<div class="pfold ${isDefRl?"sky":"gold"}${st.adv?" open":""}"><button class="acbtn${st.adv?" open":""}" data-a="adv" aria-expanded="${!!st.adv}"><span class="aci">${UICO.sliders}</span><span class="act"><b>Gelişmiş Kurallar</b><small>${isDefRl?"Varsayılan havuz ve torbalı kura":"Özel güç, bölge veya ülke kuralları aktif"}</small></span><span class="acr"><span class="xfpill ${isDefRl?"sky":"gold"}">${isDefRl?"Varsayılan":"Özel"}</span><span class="acc" aria-hidden="true">${UICO.chev}</span></span></button>${st.adv?`<div class="acbody">${advBody}</div>`:""}</div>`;
+
+  // 3) Özet & Takım Havuzu Onay Kartı
+  const poolPct=Math.min(100,Math.round((A/Math.max(1,c.N))*100));
+  const poolBox=`<div class="su-pool ${okp?"ok":"bad"}">`+
+    `<div class="su-ph"><span>Takım Havuzu Durumu</span><b>${A} / ${c.N} ${okp?"✓":"✗"}</b></div>`+
+    `<div class="su-pbar"><i style="width:${poolPct}%"></i></div>`+
+    `<div class="su-ptx">${M} takım kurallara uyuyor${A<M?` · ülke sınırından sonra <b>${A}</b>`:""}${okp?" · turnuva başlatılabilir.":" — yeterli takım yok, kuralları gevşet veya takım sayısını azalt."}</div>`+
+  `</div>`;
+  const rlPills=`<div class="dnamets" style="margin:10px 0 0">${ruleLines(s).map(x=>`<span class="dnam"><em>${esc(x)}</em></span>`).join("")}</div>`;
+  const elList=st.te?`<div class="su-elw"><div class="pset-lbl" style="margin:12px 0 7px">Kurallara Uyan Takımlar (${M})</div>${suTeamGrid(elig(r).sort((a,b)=>V(T[b])-V(T[a])))}</div>`:"";
+  const card3=psetCard("shield",okp?"emr":"org","2 · Kurulum Özeti","Onay öncesi son kontrol",okp?"Hazır":"Yetersiz",
+    setupBlueprint(s)+rlPills+poolBox+
+    `<div class="su-acts"><button class="btn p pset-pri su-go" data-a="lock" ${okp?"":"disabled"}>✓ Kurulumu Onayla</button><button class="btn pset-sec" data-a="tel">${st.te?"Takımları Gizle":`Uygun Takımlar (${M})`}</button></div>`+
+    elList
+  );
+
+  return hero+card1+card2+card3}
 /* ---------- DİĞER SEKMELER ---------- */
 function qualSummary(s){
   if(!s.cfg.gs||isLg(s.cfg)||!s.G)return "";

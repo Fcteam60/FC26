@@ -1,5 +1,15 @@
 # Değişiklik listesi
 
+## v18.38 (Premium Kurulum Sayfası — Turnuva Mimarı)
+- **Kurulum sayfası baştan tasarlandı (`setupView`, `lockedView`, `setupBlueprint`, `suTeamGrid`):**
+  - **Turnuva Mimarı Başlık Kartı (`.su-hero`):** Üstte radyal ışıklı cam başlık ve canlı sezon rozeti eklendi.
+  - **İkonlu Hazır Şablonlar (`.su-tpl` / `.su-tcard`):** 5 şablonun her biri özel çizgi SVG ikonlu cam karta dönüştürüldü; 5. şablon (*Lig*) tam genişliğe yayılarak boşluk sorunu giderildi.
+  - **Segmentli Kontroller:** *Aşamalar/Mod*, *Takım Sayısı*, *Grup Büyüklüğü*, *Gruptan Çıkacak Takım* ve *Grup / Eleme / Final Maçları* göz yoran parlak yeşil kutular yerine zarif segmentli kontrollere (`.stabs`, `.su-mrow`) geçirildi.
+  - **Gelişmiş Kurallar Katlanır Paneli (`.pfold`):** *Varsayılan / Özel* durum hapı, 3'lü bölge segmenti, bayraklı ülke çipleri ve 2 sütunlu güç/sınır seçicileriyle (`.su-fgrid`) derli toplu hale getirildi.
+  - **Kurulum Özeti Blueprint & Havuz Göstergesi:** 8 satırlık düz liste yerine 3'lü KPI kutuları (*Takım / Grup / Toplam Maç*), görsel **Eleme Yolu** zinciri (`.su-chain`), aktif kural hapları ve renkli **Takım Havuzu Doluluk Çubuğu** (`.su-pool`) eklendi.
+  - **Uygun Takımlar Taşma Düzeltmesi (`.su-tgrid`):** Mobil ekranlarda 2. sütundaki GEN rozetlerinin sağ kenardan kesilmesine yol açan grid taşması `repeat(2, minmax(0, 1fr))` ile giderildi; her takım satırına dokunarak kadro inceleme (`tinfo`) eklendi.
+- Sürüm `18.38` (`VER`, `package.json` 18.38.0, `sw.js` `fc27-lig-v18-38`).
+
 ## v18.37 (Premium Sezon Ana Ekranı — Broadcast Matchday Hub & Anında Güncelleme)
 - **Sezon ana ekranı baştan tasarlandı (`homeView`, `stkPill`, `bkRemind`, `.pprog`, `.phero`, `.ph-vs`, `.pbks`):**
   - **Cam İlerleme Çubuğu (`.prog.pprog`):** Üstteki 5 adımlı akış (*Kurulum → Takım → Kura → Oyna → Bitir*), cam kapsül içine alındı; tamamlanan adımlar zümrüt gradyanlı, aktif adım halkalı vurguyla gösterilir.
