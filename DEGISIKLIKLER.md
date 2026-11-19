@@ -1,5 +1,10 @@
 # Değişiklik listesi
 
+## v19.2 (Gruptan Çıkanlar Mobil Taşma Düzeltmesi & TOTS PNG Posteri)
+- **Gruptan Çıkanlar (`.pg`, `qualSummary`) mobil taşma düzeltmesi:** Sağ sütundaki takım adlarının ve GEN rozetlerinin ekran kenarından kesilmesine yol açan `grid-template-columns: 1fr 1fr` hatası `repeat(2, minmax(0, 1fr))` ile düzeltildi; her çıkan takım taşmasız, kompakt cam kart olarak dizilir ve senin takımın altın çerçeveyle vurgulanır.
+- **Turnuvanın En İyi 11'i (TOTS) PNG Posteri (`totsCv`, `totsg`):** `Turnuva › İstatistik › Turnuvanın En İyi 11'i` kartına **En İyi 11'i Görsel Olarak Paylaş** düğmesi eklendi. 1080×1460 yüksek çözünürlüklü gece stadyumu ışıklı yeşil saha üzerinde 4-3-3 dizilişi, kulüp armaları, renkli mevki etiketleri ve performans haplarıyla indirilebilir/paylaşılabilir PNG poster üretir.
+- Sürüm `19.2` (`VER`, `package.json` 19.2.0, `sw.js` `fc27-lig-v19-2`).
+
 ## v19.1 (Broadcast Saha Dizilişi TOTS, Bağlantı Çizgili Eleme Ağacı, Oyuncu Profili Işığı/Grafiği & Mevki Rozetleri)
 - **Turnuvanın En İyi 11'i — Broadcast Saha Dizilişi (`tourneyTots`, `totsPitchCard`, `.tots-pitch`):** `Turnuva › İstatistik` sekmesinin en üstüne, gece stadyumu ışıklı perspektif yeşil saha üzerinde otomatik **4-3-3** dizilişi eklendi. Gol, asist, MOTM ve temiz kasa performansına göre seçilen 11 oyuncu kulüp arması, mevki rozeti ve stat hapıyla gösterilir; kendi oyuncularına dokununca Oyuncu Profili, rakip oyunculara dokununca Kadro penceresi açılır.
 - **Gerçek Bağlantı Çizgili Eleme Ağacı (`koTreeHtml`, `koBracketCard`, `bkv`):** 2+ turlu eleme aşamalarında yatay kaydırmalı, eşleşmeleri üst tura altın/zümrüt kollarla bağlayan gerçek turnuva ağacı (**🌳 Ağaç Görünümü**) varsayılan oldu; gol/asist dökümü için **📋 Detaylı Liste** görünümüne tek dokunuşla geçilebilir.

@@ -2459,3 +2459,19 @@ button.hof-r.tap:active{background:var(--hi)}
   .tots-st{font-size:10.5px;padding:1px 4px}
   .bkt-col{width:176px;flex:0 0 176px}
 }
+/* ===== v19.2: Gruptan Çıkanlar (.pg) Mobil Taşma Düzeltmesi & Cam Kart Grid ===== */
+.pg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.pg .row.tb{
+  width:100%;min-width:0;min-height:40px;margin:0;padding:5px 7px;gap:5px;
+  border:1px solid var(--gbd);border-radius:11px;background:rgba(127,150,140,.07);
+  overflow:hidden;
+}
+.pg .row.tb.kme{
+  border-color:color-mix(in srgb,var(--gold) 55%,var(--gbd));
+  background:linear-gradient(90deg,rgba(240,194,75,.16),rgba(240,194,75,.04));
+}
+.pg .row.tb .qbdg{font-size:11.5px;padding:1px 5px;min-width:24px;text-align:center;flex:0 0 auto}
+.pg .row.tb .bd{flex:0 0 auto;margin-right:0}
+.pg .row.tb .n{font-size:12.5px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg .row.tb .g{flex:0 0 auto;min-width:28px;font-size:14.5px;padding:0 5px;border-radius:6px}
+@media(max-width:349px){.pg{grid-template-columns:1fr}}

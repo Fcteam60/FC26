@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="19.1",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="19.2",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -2284,7 +2284,7 @@ function qualSummary(s){
   const gqs=s.gqs||{},qMax=s.cfg.q||2,totNeed=s.G.length*qMax;
   const allQ=[];s.G.forEach((g,gi)=>{((gqs[gi])||[]).forEach((ti,idx)=>allQ.push({ti,gi,rk:idx+1}))});
   if(!allQ.length)return "";
-  return `<div class="card pglass" style="margin:0 0 10px"><h3>Gruptan çıkanlar <small>${allQ.length}/${totNeed} takım</small></h3><div class="pg">${allQ.map(o=>`<button class="row tb" data-a="tinfo" data-i="${o.ti}"><span class="qbdg">${GL(o.gi)}${o.rk}</span>${badge(o.ti,20)}<span class="n">${nm(o.ti)}</span>${rb(T[o.ti].g)}</button>`).join("")}</div></div>`}
+  return `<div class="card pglass" style="margin:0 0 10px"><h3>Gruptan çıkanlar <small>${allQ.length}/${totNeed} takım</small></h3><div class="pg">${allQ.map(o=>`<button class="row tb${o.ti===s.my?" kme":""}" data-a="tinfo" data-i="${o.ti}" aria-label="${esc(T[o.ti].n)} kadrosunu incele"><span class="qbdg">${GL(o.gi)}${o.rk}</span>${badge(o.ti,18)}<span class="n">${nm(o.ti)}</span>${rb(T[o.ti].g)}</button>`).join("")}</div></div>`}
 function simBarHtml(s){
   if(!s.G)return "";
   const sim=ensureSim(s),lg=isLg(s.cfg),hasGrp=!!s.cfg.gs||lg;
@@ -2921,6 +2921,89 @@ async function karneCv(x,p){p=p==null?1:p;const cu=n=>Math.round(n*p);
   }
   drawPosterFooter(c,W,H,x.name.toUpperCase()+" · "+t.n.toUpperCase());
   return cv}
+async function totsCv(s){
+  const st2=tourneyStats(s),xi=tourneyTots(s,st2);
+  if(!xi)throw new Error("TOTS için yeterli veri yok");
+  const W=1080,H=1460,cv=mkCv(W,H),c=cv.getContext("2d");
+  const cb=s.my!=null&&T[s.my]?bspec(s.my):null,champ=!!(s.res&&s.res.st===7);
+  dkBg(c,W,H,cb?cb.c1:"#3ee6a8",cb?cb.c2:"#f0c24b",champ);
+
+  // Header
+  drawPill(c,"TURNUVANIN EN İYİ 11'İ",48,42,272,38,"rgba(240,194,75,.18)","rgba(240,194,75,.06)","rgba(240,194,75,.52)","#fbeaa8",20);
+  tx(c,s.name.toUpperCase()+" · TOTS",48,114,52,"#f8fafc","left",700);
+  tx(c,s.date||today(),W-48,70,25,"#94a3b8","right",600);
+  drawPill(c,"4-3-3 DİZİLİŞ",W-206,94,158,34,"rgba(62,230,168,.16)",null,"rgba(62,230,168,.42)","#3ee6a8",19);
+
+  // Pitch Canvas Stage
+  const px=44,py=178,pw=992,ph=1174;
+  c.save();
+  rr(c,px,py,pw,ph,28);c.clip();
+  const pg=c.createLinearGradient(0,py,0,py+ph);
+  pg.addColorStop(0,"#073522");pg.addColorStop(.5,"#0b4d32");pg.addColorStop(1,"#052819");
+  c.fillStyle=pg;c.fillRect(px,py,pw,ph);
+  // Mowed grass stripes
+  for(let sy=py;sy<py+ph;sy+=146){
+    c.fillStyle="rgba(255,255,255,.032)";
+    c.fillRect(px,sy,pw,73);
+  }
+  // Top stadium spotlight glow on pitch
+  c.globalAlpha=.20;
+  const sp1=c.createRadialGradient(px+pw*.2,py,10,px+pw*.2,py,480);sp1.addColorStop(0,"#f0c24b");sp1.addColorStop(1,"transparent");
+  c.fillStyle=sp1;c.fillRect(px,py,pw,520);
+  const sp2=c.createRadialGradient(px+pw*.8,py,10,px+pw*.8,py,480);sp2.addColorStop(0,"#3ee6a8");sp2.addColorStop(1,"transparent");
+  c.fillStyle=sp2;c.fillRect(px,py,pw,520);
+  c.globalAlpha=1;
+  // Pitch lines
+  c.strokeStyle="rgba(255,255,255,.18)";c.lineWidth=3;
+  rr(c,px+26,py+26,pw-52,ph-52,12);c.stroke();
+  c.beginPath();c.moveTo(px+26,py+ph/2);c.lineTo(px+pw-26,py+ph/2);c.stroke();
+  c.beginPath();c.arc(px+pw/2,py+ph/2,122,0,Math.PI*2);c.stroke();
+  c.fillStyle="rgba(255,255,255,.25)";c.beginPath();c.arc(px+pw/2,py+ph/2,6,0,Math.PI*2);c.fill();
+  c.strokeRect(px+pw/2-230,py+26,460,156);c.strokeRect(px+pw/2-116,py+26,232,62);
+  c.strokeRect(px+pw/2-230,py+ph-182,460,156);c.strokeRect(px+pw/2-116,py+ph-88,232,62);
+  c.restore();
+  c.save();c.lineWidth=2;c.strokeStyle="rgba(62,230,168,.38)";rr(c,px,py,pw,ph,28);c.stroke();c.restore();
+
+  const posCol={K:"#d97706",D:"#4f46e5",M:"#0284c7",F:"#0f9d6b"};
+  const drawPlayer=(p,cx,cy,cw)=>{
+    const ch=236,x=Math.round(cx-cw/2),y=Math.round(cy-ch/2);
+    c.save();
+    const bg=c.createLinearGradient(0,y,0,y+ch);
+    if(p.mine){bg.addColorStop(0,"rgba(240,194,75,.30)");bg.addColorStop(1,"rgba(9,18,28,.88)")}
+    else{bg.addColorStop(0,"rgba(14,27,42,.84)");bg.addColorStop(1,"rgba(7,14,23,.90)")}
+    c.fillStyle=bg;rr(c,x,y,cw,ch,20);c.fill();
+    c.lineWidth=p.mine?2.4:1.6;
+    c.strokeStyle=p.mine?"rgba(240,194,75,.85)":"rgba(255,255,255,.16)";
+    rr(c,x,y,cw,ch,20);c.stroke();
+    // Crest with shadow
+    c.save();c.shadowColor="rgba(0,0,0,.55)";c.shadowBlur=16;c.shadowOffsetY=6;
+    drawBadge(c,p.ti,cx-34,y+18,68);
+    c.restore();
+    // Position badge
+    drawPill(c,p.pos,cx+14,y+66,46,24,posCol[p.grp]||"#0f9d6b",null,"rgba(255,255,255,.35)","#fff",15);
+    // Player Name
+    c.font="700 28px "+NUMF;
+    const dispNm=(p.mine?"★ ":"")+p.n;
+    tx(c,fit(c,dispNm,cw-18),cx,y+124,28,p.mine?"#fbeaa8":"#ffffff","center",700);
+    // Club Name
+    c.font="600 18px "+NUMF;
+    tx(c,fit(c,T[p.ti].n,cw-18),cx,y+154,18,"#94a3b8","center",600);
+    // Stat Pill
+    const statBase=p.g||p.a?`${p.g?p.g+"G":""}${p.g&&p.a?" ":""}${p.a?p.a+"A":""}`:(p.mom?`${p.mom}★`:(p.cs?`${p.cs} TEMİZ KASA`:`${p.ovr} GEN`));
+    const statStr=statBase+(p.mom&&(p.g||p.a)?` · ${p.mom}★`:"");
+    drawPill(c,statStr,x+14,y+182,cw-28,36,p.mine?"rgba(240,194,75,.22)":"rgba(62,230,168,.16)",null,p.mine?"rgba(240,194,75,.52)":"rgba(62,230,168,.38)",p.mine?"#fbeaa8":"#3ee6a8",20);
+    c.restore();
+  };
+
+  // 4-3-3 Coordinates
+  const xs3=[246,540,834],xs4=[178,419,661,902];
+  xi.F.forEach((p,i)=>drawPlayer(p,xs3[i],344,234));
+  xi.M.forEach((p,i)=>drawPlayer(p,xs3[i],628,234));
+  xi.D.forEach((p,i)=>drawPlayer(p,xs4[i],912,216));
+  xi.K.forEach(p=>drawPlayer(p,540,1194,244));
+
+  drawPosterFooter(c,W,H,s.name.toUpperCase()+" · TURNUVANIN EN İYİ 11'İ (4-3-3)");
+  return cv}
 function clrImg(){if(st.img&&st.img.url&&st.img.url.startsWith("blob:")){try{URL.revokeObjectURL(st.img.url)}catch(e){}}st.img=null}
 async function mkImg(kind,x){
   if(st.isGenerating)return;
@@ -2931,11 +3014,11 @@ async function mkImg(kind,x){
   await new Promise(r=>{if(typeof requestAnimationFrame=="function")requestAnimationFrame(()=>setTimeout(r,16));else setTimeout(r,16)});
   try{
     try{await document.fonts.load('700 30px "FC Sayi"')}catch(e){}
-    const cv=kind=="kura"?await kuraCv(x):kind=="kariyer"?await kariyerCv():kind=="mac"?await macCv(x):await karneCv(x);
+    const cv=kind=="kura"?await kuraCv(x):kind=="tots"?await totsCv(x):kind=="kariyer"?await kariyerCv():kind=="mac"?await macCv(x):await karneCv(x);
     const blob=await new Promise(r=>cv.toBlob(r,"image/png"));
     const url=blob&&typeof URL!="undefined"&&URL.createObjectURL?URL.createObjectURL(blob):cv.toDataURL("image/png");
     clrImg();hideToast();
-    st.img={title:kind=="kariyer"?"Kariyer özeti":kind=="mac"?"Maç kartı":x.name+(kind=="kura"?" kurası":" karnesi"),name:"fc27-"+kind+"-"+x.name.replace(/[^\wÀ-ɏ]+/g,"-").replace(/^-+|-+$/g,"").toLowerCase()+".png",url,blob,msg:"",x,w:cv.width,h:cv.height,anim:kind=="karne"&&!rm()};
+    st.img={title:kind=="kariyer"?"Kariyer özeti":kind=="mac"?"Maç kartı":kind=="tots"?x.name+" · En İyi 11 (TOTS)":x.name+(kind=="kura"?" kurası":" karnesi"),name:"fc27-"+kind+"-"+x.name.replace(/[^\wÀ-ɏ]+/g,"-").replace(/^-+|-+$/g,"").toLowerCase()+".png",url,blob,msg:"",x,w:cv.width,h:cv.height,anim:kind=="karne"&&!rm()};
   }catch(e){hideToast();ask("Görsel oluşturulamadı.")}
   finally{st.isGenerating=false;st.genId=null;render()}
   if(st.img&&st.img.anim)playKarne(st.img)}
@@ -3009,7 +3092,7 @@ function totsPitchCard(s,st2){
       `<div class="tots-row r4">${xi.D.map(node).join("")}</div>`+
       `<div class="tots-row r1">${xi.K.map(node).join("")}</div>`+
     `</div>`+
-  `</div><div class="note" style="margin:8px 0 0">Gol, asist, MOTM ve temiz kasa performansına göre otomatik 4-3-3 seçilir. Oyuncuya dokunarak profil/kadro inceleyebilirsin.</div>`;
+  `</div><div class="bar" style="margin:10px 0 0"><button class="btn pset-sec" data-a="totsg" style="width:100%"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg><span>En İyi 11’i Görsel Olarak Paylaş</span></button></div><div class="note" style="margin:8px 0 0">Gol, asist, MOTM ve temiz kasa performansına göre otomatik 4-3-3 seçilir. Oyuncuya dokunarak profil/kadro inceleyebilirsin.</div>`;
   return psetCard("trophy","gold","Turnuvanın En İyi 11’i","Canlı performans seçkisi · 4-3-3","TOTS",pitch);
 }
 function tstatView(s){
@@ -3755,8 +3838,8 @@ function render(){
   const qsAfter=document.querySelector("#qs .sheet");if(qsAfter&&qsTop)qsAfter.scrollTop=qsTop;
   const tiAfter=document.querySelector("#dlg .tisheet");if(tiAfter&&tiTop)tiAfter.scrollTop=tiTop;
   if(st.isGenerating){
-    const actMap={kura:"kurag",karne:"karne",mac:"mkart",kariyer:"kariyer"},targetAct=actMap[st.isGenerating];
-    document.querySelectorAll('[data-a="kurag"],[data-a="karne"],[data-a="mkart"],[data-a="kariyer"]').forEach(btn=>{
+    const actMap={kura:"kurag",karne:"karne",mac:"mkart",kariyer:"kariyer",tots:"totsg"},targetAct=actMap[st.isGenerating];
+    document.querySelectorAll('[data-a="kurag"],[data-a="karne"],[data-a="mkart"],[data-a="kariyer"],[data-a="totsg"]').forEach(btn=>{
       btn.disabled=true;
       const bid=btn.dataset.id!=null?+btn.dataset.id:null;
       if(btn.dataset.a===targetAct&&(st.genId==null||bid==null||bid===st.genId)){
@@ -3850,6 +3933,7 @@ document.addEventListener("click",async e=>{
     mApply(s);syncUserMatchesToBracket(s);st.med=null;st.mg=0;st.mo=0;st.mu=0;st.mp=undefined;st.mpf=0;st.mpa=0;st.mgls=[];st.msc=nob();st.mas=nob();st.mmom="";st.mop=null;st.mlg=null;st.qs=false;st.madv=false;st.mst=defMst();un=(oldM?"Güncellendi · ":"Kaydedildi · ")+m.on+" "+mscTxt(m)+(des&&des.k!="fair"?" · "+des.t:"")+(st.stwarn?" ("+st.stwarn+")":"");st.stwarn=null;if(!oldM){const df=m.gf-m.ga,pw=pf!=null&&pa!=null&&pf>pa;st.fw=df>0?(df>=3?3:df==2?2:1):(pw?2:0)}}
   else if(a=="mdel"){const m=s.mt.find(x=>x.id==id);if(m){s.delM=Array.from(new Set([...(s.delM||[]),m.id]));s.mt=s.mt.filter(x=>x.id!=id);mApply(s);un="Maç silindi"}}
   else if(a=="kurag"){mkImg("kura",s);return}
+  else if(a=="totsg"){mkImg("tots",s);return}
   else if(a=="karne"){mkImg("karne",store.seasons.find(y=>y.id==id)||s);return}
   else if(a=="mkart"){const q=findM(id);if(!q)return;mkImg("mac",q);return}
   else if(a=="kariyer"){mkImg("kariyer",{name:"ozet"});return}
