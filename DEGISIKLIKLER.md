@@ -1,5 +1,15 @@
 # Değişiklik listesi
 
+## v18.32 (Premium Oyun Tarzın / Taktiksel DNA & 3'lü Hak Ediş Dashboard)
+- **Taktiksel DNA eksen kartları yeniden tasarlandı (`tacticalDnaCard`, `.dnaitem`):**
+  - Numaralandırma (`1., 2., 3., 4.`) kaldırıldı; her eksene özel çizgi SVG ikon (`DNAI`) eklendi.
+  - **Seviye bazlı renk sistemi (`l1`–`l5`):** Geliştirilmeli (mercan), Orta (kehribar), İyi (mavi-yeşil), Çok iyi (zümrüt), Elit (altın-zümrüt gradyan + hafif altın parıltı) olarak tüm kart, ikon, puan ve çubuk renklendirildi.
+  - **Büyük puan ve mikro metrik hapları:** Sağda `31px` vurgulu puan (`/100` etiketli), başlık altında ham istatistikler için sarmalanan mikro haplar (`.dnamets`), `35 / 50 / 65 / 80` eşik çentikli gradyan çubuk (`.dnabar`) eklendi.
+  - **Aşamalı bilgi (Progressive Disclosure):** "Yükseltmek için..." metni her kartın altında katlanabilir `"Nasıl yükselir?"` (`<details class="dnatip">`) alanına, 0–100 puan ölçeği açıklaması ise alttaki `"Puanlar nasıl hesaplanıyor?"` bölümüne taşındı.
+- **"Maç sonuçların hak edildi mi?" 3'lü dashboard oldu (`.dhkbox`, `.dhk3`):**
+  - Üç uzun yatay satır yerine üstte orantılı 3 renkli şerit (`.dhkbar`), altında yan yana 3 ikonlu KPI kutusu (*Hak Edilmiş*, *Şanslı*, *Şanssız*) yerleştirildi; değeri `0` olan kutu soluklaşır.
+- Sürüm `18.32` (`VER`, `package.json` 18.32.0; `sw.js` önbelleği `fc27-lig-v18-32` olarak güncellenmelidir).
+
 ## v18.31 (İstatistik Sekmesi Sadeleştirmesi: 3 Alt Sekme & Mevki Dağılımı Taşınması)
 - **Kadro / Manuel Oyuncu Düzenleme alanı kaldırıldı (`statView`):** Maç girişlerinden otomatik hesaplanan oyuncu istatistikleri için manuel giriş/düzenleme kartı ve `Kadro` alt sekmesi kaldırıldı.
 - **Mevki dağılımı `Analiz` sekmesine taşındı:** `posDistCard([s])` artık `İstat. › Analiz` altında, *Oyun Tarzın* ve *xG, xPts & Verimlilik Analizi* kartlarının devamında gösterilir.

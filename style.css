@@ -995,3 +995,118 @@ details.xfold .xfc{color:var(--mut);font-size:14px;flex:none;transition:transfor
 details.xfold[open] .xfc{transform:rotate(180deg)}
 details.xfold .xfb{margin-top:10px}
 @media(max-width:359px){.psbot{grid-template-columns:1fr}.stabs .chip{font-size:11.5px;padding:6px 2px}.ptm-nm{font-size:20px}}
+/* ===== v18.32: Premium Oyun Tarzın (Taktiksel DNA) & Hak Ediş Dashboard ===== */
+.dnalist{display:grid;gap:10px}
+.dnaitem{
+  --dc:var(--ac);--dc2:#3ee6a8;
+  position:relative;overflow:hidden;
+  padding:12px 13px;border-radius:16px;
+  border:1px solid color-mix(in srgb,var(--dc) 26%,var(--gbd));
+  background:radial-gradient(95% 90% at 0% 0%,color-mix(in srgb,var(--dc) 14%,transparent) 0%,transparent 62%),rgba(127,150,140,.06);
+  box-shadow:var(--gsh-lo),inset 0 1px 0 rgba(255,255,255,.07);
+}
+.dnaitem.l1{--dc:#f97316;--dc2:#ef4444}
+.dnaitem.l2{--dc:#d97706;--dc2:#f59e0b}
+.dnaitem.l3{--dc:#0ea5e9;--dc2:var(--ac)}
+.dnaitem.l4{--dc:var(--ac);--dc2:#3ee6a8}
+.dnaitem.l5{
+  --dc:#d4a017;--dc2:#0f9d6b;
+  border-color:color-mix(in srgb,var(--gold) 52%,var(--gbd));
+  box-shadow:0 6px 18px rgba(212,160,23,.14),inset 0 1px 0 rgba(255,255,255,.16);
+}
+:root[data-theme="dark"] .dnaitem.l2{--dc:#f59e0b;--dc2:#fbbf24}
+:root[data-theme="dark"] .dnaitem.l3{--dc:#38bdf8;--dc2:#3ee6a8}
+:root[data-theme="dark"] .dnaitem.l5{--dc:#f0c24b;--dc2:#3ee6a8}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .dnaitem.l2{--dc:#f59e0b;--dc2:#fbbf24}
+  :root:not([data-theme="light"]) .dnaitem.l3{--dc:#38bdf8;--dc2:#3ee6a8}
+  :root:not([data-theme="light"]) .dnaitem.l5{--dc:#f0c24b;--dc2:#3ee6a8}
+}
+
+.dnai-hd{display:flex;align-items:center;gap:10px}
+.dnai-ic{
+  flex:0 0 auto;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;
+  color:var(--dc);background:color-mix(in srgb,var(--dc) 14%,transparent);
+  border:1px solid color-mix(in srgb,var(--dc) 32%,transparent);
+}
+.dnai-ic svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.dnai-tt{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.dnai-tt b{font-size:14.5px;line-height:1.15;color:var(--tx)}
+.dnasc{flex:0 0 auto;display:flex;align-items:baseline;gap:2px;line-height:1}
+.dnasc b{font-family:var(--num);font-size:31px;font-weight:700;color:var(--dc);font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.dnasc small{font-family:var(--num);font-size:13px;font-weight:600;color:var(--mut);opacity:.75}
+
+.dnamets{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 9px}
+.dnam{
+  display:inline-flex;align-items:baseline;gap:5px;padding:3px 9px;border-radius:8px;
+  background:rgba(127,150,140,.10);border:1px solid var(--gbd);font-size:12px;line-height:1.2;
+}
+.dnam b{font-family:var(--num);font-size:15px;font-weight:700;color:var(--tx);font-variant-numeric:tabular-nums}
+.dnam em{font-style:normal;font-size:11px;color:var(--mut);font-weight:500}
+.dnam.pos{background:rgba(18,184,134,.14);border-color:rgba(18,184,134,.32)}
+.dnam.pos b{color:var(--ac)}
+.dnam.neg{background:rgba(249,115,22,.14);border-color:rgba(249,115,22,.32)}
+.dnam.neg b{color:#f97316}
+
+.dnabar{
+  position:relative;height:7px;border-radius:99px;overflow:hidden;
+  background:rgba(127,150,140,.2);margin-bottom:9px;
+}
+.dnabar i{
+  display:block;height:100%;border-radius:99px;
+  background:linear-gradient(90deg,var(--dc),var(--dc2));
+  box-shadow:0 0 10px color-mix(in srgb,var(--dc) 45%,transparent);
+}
+.dnabar s{
+  position:absolute;top:0;bottom:0;width:1px;text-decoration:none;
+  background:rgba(255,255,255,.22);pointer-events:none;
+}
+
+.dnaitem .dnx{font-size:13px;line-height:1.42;color:var(--tx);opacity:.9;margin:0}
+.dnatip{margin-top:7px;padding-top:6px;border-top:1px dashed var(--bd)}
+.dnatip summary{
+  list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;
+  font-size:12px;font-weight:600;color:var(--mut);-webkit-tap-highlight-color:transparent;
+}
+.dnatip summary::-webkit-details-marker{display:none}
+.dnatip summary::after{content:"▾";font-size:11px;transition:transform .16s ease}
+.dnatip[open] summary{color:var(--dc)}
+.dnatip[open] summary::after{transform:rotate(180deg)}
+.dnatip p{margin:5px 0 0;font-size:12px;line-height:1.4;color:var(--mut)}
+
+.dlv.l2{background:rgba(245,158,11,.16);color:#d97706}
+.dlv.l3{background:rgba(14,165,233,.16);color:#0284c7}
+:root[data-theme="dark"] .dlv.l2{color:#fbbf24}
+:root[data-theme="dark"] .dlv.l3{color:#38bdf8}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .dlv.l2{color:#fbbf24}
+  :root:not([data-theme="light"]) .dlv.l3{color:#38bdf8}
+}
+
+/* Maç Sonuçları Hak Edildi mi? — 3'lü Dashboard (.dhkbox) */
+.dhkbox{margin-top:14px;padding-top:12px;border-top:1px solid var(--bd)}
+.dhkh{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px}
+.dhkh b{font-family:var(--num);font-size:18px;letter-spacing:.01em}
+.dhkbar{display:flex;height:7px;border-radius:99px;overflow:hidden;gap:2px;background:rgba(127,150,140,.18);margin-bottom:10px}
+.dhkbar i{display:block;min-width:4px;border-radius:99px}
+.dhkbar i.ok{background:var(--ac)}
+.dhkbar i.st{background:#3b82f6}
+.dhkbar i.un{background:#f97316}
+.dhk3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dhkc{
+  --hk:var(--ac);
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;
+  padding:10px 6px 9px;border-radius:14px;
+  border:1px solid color-mix(in srgb,var(--hk) 30%,var(--gbd));
+  background:radial-gradient(90% 80% at 50% 0%,color-mix(in srgb,var(--hk) 15%,transparent),transparent 70%),rgba(127,150,140,.06);
+  box-shadow:var(--gsh-lo);
+}
+.dhkc.ok{--hk:var(--ac)}
+.dhkc.st{--hk:#3b82f6}
+.dhkc.un{--hk:#f97316}
+.dhkc.z{opacity:.48;filter:saturate(.5)}
+.dhki{width:24px;height:24px;display:grid;place-items:center;color:var(--hk)}
+.dhki svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.dhkc b{font-family:var(--num);font-size:30px;line-height:1;color:var(--hk);font-variant-numeric:tabular-nums}
+.dhkc>span:last-child{font-size:11.5px;font-weight:700;color:var(--tx);line-height:1.15}
+@media(max-width:359px){.dnasc b{font-size:27px}.dhkc b{font-size:26px}.dhkc>span:last-child{font-size:11px}}

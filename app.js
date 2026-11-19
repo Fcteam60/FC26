@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="18.31",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="18.32",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -3412,6 +3412,17 @@ const DNAX={
   eff:{n:"Bitiricilik Verimi",hi:"Pozisyonları gole çevirmede çok iyisin: beklenenden fazla gol atıyorsun.",mid:"Bitiriciliğin pozisyonlarınla uyumlu; ne şanslı ne şanssızsın.",lo:"Pozisyonlar gole dönüşmüyor, beklenenden az gol atıyorsun. Sakin ve köşeye vuruş denemeye değer.",tip:"Yükseltmek için: gol / xG oranı ve gol / şut oranı yüksek olmalı."}
 };
 const DNASH={atk:"Hücum",ctrl:"Kontrol",aggr:"Direnç",eff:"Bitiricilik"};
+const DNAI={
+  atk:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>',
+  ctrl:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="18" r="2.5"/><circle cx="12" cy="6" r="2.5"/><path d="M7.5 15.8L10.8 8.3M16.5 15.8L13.2 8.3M8.5 18h7"/></svg>',
+  aggr:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5.5c0 4.5-3 8.2-7 9.5-4-1.3-7-5-7-9.5V6z"/><path d="M9.5 12.2l1.8 1.8 3.6-3.8"/></svg>',
+  eff:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L4.5 13.5h6L9.5 22 19.5 10.5h-6z"/></svg>'
+};
+const DHKI={
+  ok:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.3l2.3 2.4 4.8-5"/></svg>',
+  st:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5.5c0 4.5-3 8.2-7 9.5-4-1.3-7-5-7-9.5V6z"/></svg>',
+  un:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4L3.5 19h17z"/><path d="M12 10v4M12 16.8v.4"/></svg>'
+};
 function tacticalDnaCard(s){
   const dna=calcTacticalDNA(s);
   if(!dna){
@@ -3419,20 +3430,36 @@ function tacticalDnaCard(s){
   }
   const xd=xgS2(dna.xgDiff),effCol=dna.xgDiff>=0?"pos":"neg";
   const ax=[
-    {k:"atk",v:dna.atk,sub:`Maç başı <b>${xgN1(dna.mShots)}</b> şut (<b>${xgN1(dna.mSot)}</b> isabetli) · <b>${xgN2(dna.mXg)}</b> xG`},
-    {k:"ctrl",v:dna.ctrl,sub:`Ort. <b>%${Math.round(dna.mPos)}</b> top · <b>%${Math.round(dna.mPass)}</b> pas isabeti`},
-    {k:"aggr",v:dna.aggr,sub:`Rakip maç başı <b>${xgN1(dna.oShots)}</b> şut (<b>${xgN1(dna.oSot)}</b> isabetli) · <b>${xgN2(dna.oXg)}</b> xG`},
-    {k:"eff",v:dna.eff,sub:`Gol − xG: <span class="xgeff ${effCol}">${xd}</span> · şut dönüşümü <b>%${Math.round(dna.conv*100)}</b>`}
+    {k:"atk",v:dna.atk,pills:[[xgN1(dna.mShots),"Şut/M"],[xgN1(dna.mSot),"İsabet"],[xgN2(dna.mXg),"xG/M"]]},
+    {k:"ctrl",v:dna.ctrl,pills:[["%"+Math.round(dna.mPos),"Topla Oynama"],["%"+Math.round(dna.mPass),"Pas İsabeti"]]},
+    {k:"aggr",v:dna.aggr,pills:[[xgN1(dna.oShots),"Rakip Şut"],[xgN1(dna.oSot),"İsabet"],[xgN2(dna.oXg),"Rakip xG"]]},
+    {k:"eff",v:dna.eff,pills:[[xd,"Gol − xG",effCol],["%"+Math.round(dna.conv*100),"Şut Dönüşümü"]]}
   ];
   const srt=ax.slice().sort((a,b)=>b.v-a.v),best=srt[0],worst=srt[srt.length-1];
-  const items=ax.map((a,i)=>{
+  const items=ax.map(a=>{
     const d=DNAX[a.k],lv=xgLvl(a.v),tier=a.v>=65?"hi":a.v>=45?"mid":"lo";
-    return `<div class="dnaitem"><div class="pt"><span>${i+1}. ${d.n}</span><span class="dlv ${lv[1]}">${lv[0]}</span><b>${a.v}</b></div><div class="pm2">${a.sub}</div><div class="bk"><i style="width:${a.v}%"></i></div><div class="dnx">${d[tier]}</div><div class="dnt">${d.tip}</div></div>`;
+    const pills=a.pills.map(([val,lbl,cls])=>`<span class="dnam${cls?" "+cls:""}"><b>${val}</b><em>${lbl}</em></span>`).join("");
+    return `<div class="dnaitem ${lv[1]}">
+      <div class="dnai-hd">
+        <span class="dnai-ic">${DNAI[a.k]}</span>
+        <div class="dnai-tt"><b>${d.n}</b><span class="dlv ${lv[1]}">${lv[0]}</span></div>
+        <div class="dnasc"><b>${a.v}</b><small>/100</small></div>
+      </div>
+      <div class="dnamets">${pills}</div>
+      <div class="dnabar" role="progressbar" aria-label="${d.n}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${a.v}">
+        <i style="width:${a.v}%"></i>
+        <s style="left:35%"></s><s style="left:50%"></s><s style="left:65%"></s><s style="left:80%"></s>
+      </div>
+      <div class="dnx">${d[tier]}</div>
+      <details class="dnatip"><summary>Nasıl yükselir?</summary><p>${d.tip}</p></details>
+    </div>`;
   }).join("");
   const cf=dna.n>=8?["Yüksek güven","l4"]:dna.n>=4?["Orta güven","l3"]:["Düşük güven","l1"];
   const notes=[];
   if(dna.n<4)notes.push(`Yalnızca ${dna.n} maçlık veri var; maç sayısı arttıkça puanlar daha güvenilir olur.`);
   if(dna.miss&&dna.miss.length)notes.push(`Hiç girilmeyen veriler (${dna.miss.join(", ")}) için nötr varsayılan değer kullanıldı.`);
+  const totDes=dna.deservedCnt+dna.stealCnt+dna.unluckyCnt;
+  const dhkBar=totDes>0?`<div class="dhkbar" role="img" aria-label="Hak ediş dağılımı: ${dna.deservedCnt} hak edilmiş, ${dna.stealCnt} şanslı, ${dna.unluckyCnt} şanssız">${dna.deservedCnt?`<i class="ok" style="flex:${dna.deservedCnt}"></i>`:""}${dna.stealCnt?`<i class="st" style="flex:${dna.stealCnt}"></i>`:""}${dna.unluckyCnt?`<i class="un" style="flex:${dna.unluckyCnt}"></i>`:""}</div>`:"";
   return `<div class="dnacard">
     <div class="dnahd"><div><div class="lb" style="text-transform:uppercase;letter-spacing:.05em;font-weight:700">Oyun Tarzın · ${esc(dna.scope)}</div><div class="dnabdg" style="margin-top:4px"><span>${dna.icon}</span><span>${esc(dna.title)}</span></div></div><span class="dlv ${cf[1]}" title="Puanların kaç maça dayandığına göre güven düzeyi">${cf[0]} · ${dna.n} maç</span></div>
     <div class="note" style="margin:0 0 10px">${esc(dna.desc)}</div>
@@ -3441,16 +3468,19 @@ function tacticalDnaCard(s){
       <div class="dnaradar">${radarSvg(dna)}</div>
       <div class="dnalist">${items}</div>
     </div>
-    <div class="note" style="margin:8px 0 0">Puanlar 0–100 arasıdır: <b>35 altı</b> geliştirilmeli · <b>35–49</b> orta · <b>50–64</b> iyi · <b>65–79</b> çok iyi · <b>80+</b> elit.</div>
-    <div class="rt" style="margin-top:12px">Maç sonuçların hak edildi mi?</div>
-    <div class="xhr3">
-      <div><b>${dna.deservedCnt}</b><div><span>Hak Edilmiş Galibiyet</span><small>Pozisyon üstünlüğüyle kazandığın maçlar.</small></div></div>
-      <div><b style="color:#3b82f6">${dna.stealCnt}</b><div><span>Şanslı Sonuç</span><small>Rakip daha tehlikeliyken aldığın galibiyet ya da puan.</small></div></div>
-      <div><b style="color:#f97316">${dna.unluckyCnt}</b><div><span>Şanssız Sonuç</span><small>Daha çok pozisyon bulup puan kaybettiğin maçlar.</small></div></div>
+    <div class="dhkbox">
+      <div class="dhkh"><b>Maç sonuçların hak edildi mi?</b>${totDes?`<span class="lb">${totDes} xG maçı</span>`:""}</div>
+      ${dhkBar}
+      <div class="dhk3">
+        <div class="dhkc ok${dna.deservedCnt?"":" z"}"><span class="dhki">${DHKI.ok}</span><b>${dna.deservedCnt}</b><span>Hak Edilmiş</span></div>
+        <div class="dhkc st${dna.stealCnt?"":" z"}"><span class="dhki">${DHKI.st}</span><b>${dna.stealCnt}</b><span>Şanslı</span></div>
+        <div class="dhkc un${dna.unluckyCnt?"":" z"}"><span class="dhki">${DHKI.un}</span><b>${dna.unluckyCnt}</b><span>Şanssız</span></div>
+      </div>
+      <div class="note" style="margin:6px 0 0">Her maçta iki tarafın xG (gol beklentisi) farkına göre hesaplanır; ayrıntı için aşağıdaki xG analizine bak.</div>
     </div>
-    <div class="note" style="margin:0">Kıyas, her maçta iki tarafın xG değerine (gol beklentisi) bakılarak yapılır; ayrıntı için aşağıdaki xG analizine bak.</div>
     ${notes.length?`<div class="note dnawarn">${notes.map(esc).join(" ")}</div>`:""}
     <details class="xgl"><summary>Puanlar nasıl hesaplanıyor?</summary><dl>
+      <div><dt>Puan Ölçeği (0–100)</dt><dd><b>35 altı</b> Geliştirilmeli · <b>35–49</b> Orta · <b>50–64</b> İyi · <b>65–79</b> Çok iyi · <b>80+</b> Elit.</dd></div>
       <div><dt>Hücum Tehdidi</dt><dd>Maç başı şut sayısı (%40; 16 şut = tam puan) + xG (%45; 3,0 xG = tam puan) + isabetli şut (%15; 9 isabetli şut = tam puan).</dd></div>
       <div><dt>Top & Pas Kontrolü</dt><dd>Topla oynama (%55; %30 = 0 puan, %70 = tam puan) + pas isabeti (%45; %65 = 0 puan, %93 = tam puan).</dd></div>
       <div><dt>Savunma Direnci & Pres</dt><dd>Düşük topla oynama / savunma ağırlıklı oyun (%50) + rakip şutlarının isabetsiz kalma oranı (%30) + rakibin az şut çekmesi (%20).</dd></div>
