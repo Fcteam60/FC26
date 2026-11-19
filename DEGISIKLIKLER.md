@@ -1,5 +1,19 @@
 # Değişiklik listesi
 
+## v20.0 (Final Sürüm — Native PWA Cilası, Eleme Ağacı PNG Posteri, Sezon TOTS/MVP Arşivi & Modüler Mimari)
+- **Modüler Mimari (`sim.js`, `analytics.js`, `posters.js`, `app.js`):** 399 KB'lık tek parça `app.js`, sıfır kütüphane ve sıfır derleyici (`<script defer>`) korunarak 4 temiz modüle ayrıldı:
+  - `sim.js`: Poisson simülasyon motoru, canlı puan tablosu, eleme ağacı ve turnuva bitişi.
+  - `analytics.js`: Maç istatistikleri, rakipler, tahminler, xG/xPts, Taktiksel DNA, derin analitik kartları ve kariyer özeti.
+  - `posters.js`: Kura, Maç Kartı, Sezon Karnesi, Kariyer Özeti, TOTS ve yeni Eleme Ağacı Canvas PNG poster motoru.
+  - `app.js`: Çekirdek veri/durum yönetimi, görünümler, olay dinleyicileri ve PWA yaşam döngüsü.
+- **Eleme Ağacı (Bracket) PNG Posteri (`koCv`, `kog`):** `Turnuva › Fikstür › Eleme Ağacı` kartına **Eleme Ağacını Görsel Olarak Paylaş** düğmesi eklendi. Tüm eleme turlarını bağlantı çizgileri, kulüp armaları, skorlar ve uzatma/penaltı rozetleriyle yüksek çözünürlüklü gece stadyumu PNG posterine dönüştürür.
+- **Sezon Arşivinde TOTS & Turnuva MVP'si (`finishTournament`, `totsDlg`, `totsv`):** Turnuva sonlandırıldığında o sezonun **Turnuva MVP'si** (`s.res.mvp`) ve **4-3-3 En İyi 11'i** (`s.res.tots`) sezon kaydına kalıcı olarak arşivlenir (`remap` uyumlu). `Geçmiş › Sezonlar` kartlarında MVP rozeti ve eski sezonun En İyi 11'ini açıp paylaşmaya yarayan **En İyi 11** düğmesi yer alır.
+- **Tam Yerel Uygulama (Native PWA) Cilası:**
+  - **Dinamik `theme-color` (`syncThemeColor`):** Tema değiştiğinde veya sistem açık/koyu moda geçtiğinde tarayıcı üst durum çubuğu rengi anında `#2f8f5b` / `#0b1622` olarak güncellenir.
+  - **Metin seçimi & esneme kilidi (`style.css`):** Form alanları hariç basılı tutunca metin seçimi kapatıldı ve `overscroll-behavior-y: none` ile web esneme etkisi giderildi.
+  - **Ana Ekran Kısayolları (`manifest.webmanifest` & `initApp`):** Uygulama ikonuna uzun basıldığında açılan *Maç Merkezi* (`#gruplar`), *İstatistikler* (`#istat`) ve *Yeni Sezon* (`#yenisezon`) kısayolları eklendi.
+- Sürüm `20.0` (`VER`, `package.json` 20.0.0, `sw.js` `fc27-lig-v20-0`).
+
 ## v19.3 (Mobil Yakınlaştırma Engeli — Çift Dokunuş, İki Parmak & iOS Form Odak Koruması)
 - **Viewport sabitlendi (`index.html`):** `maximum-scale=1, minimum-scale=1, user-scalable=no` eklenerek yerel uygulama ölçeği sabitlendi.
 - **Çift dokunuş & form odak yakınlaştırması kapatıldı (`style.css`):** Tüm sayfa ve etkileşimli öğelere `touch-action: pan-x pan-y` ve `-webkit-text-size-adjust: 100%` uygulandı; iOS Safari'nin form alanına dokununca otomatik yakınlaştırmasını önlemek için tüm `input`, `select` ve `textarea` yazı boyutları en az `16px` yapıldı.

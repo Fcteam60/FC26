@@ -28,5 +28,46 @@
       "type": "image/png",
       "purpose": "maskable"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "Maç Merkezi",
+      "short_name": "Maçlar",
+      "description": "Grup puan tablosu ve sıradaki maç girişi",
+      "url": "./index.html#gruplar",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "İstatistikler",
+      "short_name": "İstat.",
+      "description": "Maç günlüğü, xG ve Taktiksel DNA",
+      "url": "./index.html#istat",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Yeni Sezon",
+      "short_name": "Yeni Sezon",
+      "description": "Yeni bir turnuva veya lig sezonu başlat",
+      "url": "./index.html#yenisezon",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
   ]
 }
