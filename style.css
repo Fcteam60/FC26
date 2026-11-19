@@ -2486,3 +2486,9 @@ input,textarea,select,[contenteditable]{-webkit-user-select:text;user-select:tex
 .tots-dlg-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
 .tots-dlg-hd b{font-family:var(--num);font-size:22px;line-height:1.1;color:var(--tx)}
 .tots-dlg-hd small{display:block;font-size:12px;color:var(--mut);margin-top:2px}
+/* ===== v20.1: Uygulama İçi Kullanım Kılavuzu (.gsec, .glist) ===== */
+.xgl.gsec{margin-top:8px;padding:0 12px;border-radius:14px;border-color:var(--gbd);background:rgba(127,150,140,.07)}
+.xgl.gsec summary{padding:11px 0;font-size:14px;color:var(--tx)}
+.gbody{padding:0 0 11px;border-top:1px dashed var(--bd)}
+.glist{margin:8px 0 0;padding-left:18px;display:grid;gap:6px;font-size:12.5px;line-height:1.45;color:var(--mut)}
+.glist b{color:var(--tx)}

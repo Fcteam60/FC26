@@ -1,5 +1,11 @@
 # Değişiklik listesi
 
+## v20.1 (Final Kapanış — Uygulama İçi Kullanım Kılavuzu & TOTS/Özet Cila)
+- **Uygulama İçi Kullanım Kılavuzu (`Ayarlar › Kullanım Kılavuzu`, `guideDlg`):** Arayüzü kalabalıklaştırmadan `Ayarlar` sekmesine eklenen 6 bölümlük çevrimdışı rehber modalı (Hızlı Başlangıç, Simülasyon & Eleme Ağacı, Maç Girişi & xG Analizi, 6 PNG Poster, Kadro/Oyuncu Profili, Yedekleme & PWA Kurulumu) ve GitHub deposu için `KILAVUZ.md`.
+- **Manuel Sezon Bitirişinde TOTS & MVP Arşivi (`snapshotSeasonAwards`, `a=="fin"`):** Yalnızca otomatik turnuva bitişinde değil, `Takımım › Sezonu Bitir` üzerinden manuel kayıt yapıldığında da o sezonun Turnuva MVP'si (`s.res.mvp`) ve 4-3-3 En İyi 11'i (`s.res.tots`) otomatik arşivlenir.
+- **`Geçmiş › Sezonlar` kartında Özet + En İyi 11 erişimi:** Arşivli TOTS verisi olan sezon kartlarında **En İyi 11** düğmesinin yanında metin özetini kopyalamak için kompakt **Özet** ikon düğmesi de korunur.
+- Sürüm `20.1` (`VER`, `package.json` 20.1.0, `sw.js` `fc27-lig-v20-1`).
+
 ## v20.0 (Final Sürüm — Native PWA Cilası, Eleme Ağacı PNG Posteri, Sezon TOTS/MVP Arşivi & Modüler Mimari)
 - **Modüler Mimari (`sim.js`, `analytics.js`, `posters.js`, `app.js`):** 399 KB'lık tek parça `app.js`, sıfır kütüphane ve sıfır derleyici (`<script defer>`) korunarak 4 temiz modüle ayrıldı:
   - `sim.js`: Poisson simülasyon motoru, canlı puan tablosu, eleme ağacı ve turnuva bitişi.

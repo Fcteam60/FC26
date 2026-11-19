@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — Simülasyon, Canlı Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v20.0) */
+/* FC 27 Grup Ligi — Simülasyon, Canlı Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v20.1) */
 /* ---------- AŞAMA 1, 2 & 3: HAFTALIK SİMÜLASYON, ELEME AĞACI (BRACKET), GOL KRALLIĞI VE TURNUVA BİTİŞİ ---------- */
 const SIM_MODES=[[0,"Gerçekçi","Güç farkı ve gerçek futbol skorları (1-0, 2-1, 1-1 ağırlıklı)"],[1,"Dengeli","Standart güç ve günlük form dengesi"],[2,"Sürprizli","Yüksek şans faktörü, kupa sürprizlerine açık"]];
 function ensureSim(s){
@@ -768,16 +768,25 @@ function getTourneyOutcome(s){
   }
   return{done:true,lg:false,ch,ru,myRk,pts,st:stVal}}
 
-function finishTournament(s){
-  const out=getTourneyOutcome(s);
-  if(!out)return "Turnuvayı sonlandırmak için önce tüm turları/haftaları tamamla";
-  const wasChamp=s.res&&s.res.st===7;
+function snapshotSeasonAwards(s){
+  if(!s||!s.G)return{topG:null,mvp:null,tots:null};
   const st2=tourneyStats(s);
+  if(!st2.matches.length)return{topG:null,mvp:null,tots:null};
   const topS=tourneyTopScorers(s,1)[0]||null;
   const mvpP=st2.players.filter(o=>o.mvp>0).sort((a,b)=>b.mvp-a.mvp||b.g-a.g||b.a-a.a||TR_CMP(a.n,b.n))[0]||null;
   const xiRaw=tourneyTots(s,st2);
   const slim=p=>({n:p.n,ti:p.ti,pos:p.pos,grp:p.grp,ovr:p.ovr,g:p.g||0,a:p.a||0,mom:p.mom||0,cs:p.cs||0,mine:!!p.mine});
-  const totsSnap=xiRaw?{F:xiRaw.F.map(slim),M:xiRaw.M.map(slim),D:xiRaw.D.map(slim),K:xiRaw.K.map(slim)}:null;
+  return{
+    topG:topS?{n:topS.n,ti:topS.ti,g:topS.g}:null,
+    mvp:mvpP?{n:mvpP.n,ti:mvpP.ti,g:mvpP.g,a:mvpP.a,mom:mvpP.mom,mvp:mvpP.mvp}:null,
+    tots:xiRaw?{F:xiRaw.F.map(slim),M:xiRaw.M.map(slim),D:xiRaw.D.map(slim),K:xiRaw.K.map(slim)}:null
+  };
+}
+function finishTournament(s){
+  const out=getTourneyOutcome(s);
+  if(!out)return "Turnuvayı sonlandırmak için önce tüm turları/haftaları tamamla";
+  const wasChamp=s.res&&s.res.st===7;
+  const snap=snapshotSeasonAwards(s),topS=snap.topG,mvpP=snap.mvp,totsSnap=snap.tots;
   if(out.myRk)s.grk=out.myRk;
   let autoNote="";
   if(out.ch===s.my){
