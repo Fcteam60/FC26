@@ -1,5 +1,16 @@
 # Değişiklik listesi
 
+## v18.34 (Katlanabilir Analiz Panelleri Hizalama Düzeltmesi & Premium Rekorlar / Hall of Fame)
+- **Katlanabilir analiz panelleri (`.xfold`) düzeltildi ve yükseltildi (`xgSec`, `xgSummaryCard`, `style.css`):**
+  - Eski `v18.30` kuralının (`details.xfold>summary.xsh span:first-child`) ikon kutusunu başlığın üstüne iten CSS çakışması giderildi.
+  - Her katlanabilir başlık artık solda `36px` cam ikon rozeti, ortada başlık + tek satır alt başlık, sağda ise açmadan canlı özet gösteren metrik hapı (`.xfpill`, ör. `%50`, `%52 top`, `5 maç`) ve dairesel ok düğmesiyle (`.xfc`) hizalanır.
+- **Geçmiş › Rekorlar sayfası baştan tasarlandı (`recCard`, `histView`, `posDistCard`, `cmpCard`):**
+  - **Üst alt-sekme çubuğu (`.stabs.htabs`):** `Özet | Rekorlar | Sezonlar | Rakipler | Maçlar` çubuğu, `İstat.` sekmesindeki segmentli cam dock tasarımına geçirildi.
+  - **Rekorlar (`.card.prec`):** Düz metin listesi yerine ikonlu ve skor kapsüllü maç rekoru kartları (`.rec-tile`), 3'lü seri/kilometre taşı KPI şeridi (`.rec-kpi`: Galibiyet Serisi, Yenilmezlik, Temiz Kasa) ve altın vurgulu *En İyi Sezon* bandı eklendi.
+  - **Kariyer Yıldızları / Hall of Fame (`.card.phof`):** Üstte 3'lü kariyer toplamı KPI kutuları (Gol / Asist / MOTM), altın/gümüş/bronz madalyalı (`.mdl`) liderlik tabloları ve ikincil listeler (Clutch, Altın İkililer, Çift Yönlü Yıldızlar, MOTM, Maç Başı Verimlilik) için önizleme haplı katlanabilir paneller eklendi.
+  - **Mevki Dağılımı (`.card.ppos`) & Oynanan Takımlar (`.card.ptms`):** Mevkiye özel renkli etiket ve gradyan çubuklar; oynanan takımlarda kulüp arması (`badge`) ve sezon rozeti eklendi.
+- Sürüm `18.34` (`VER`, `package.json` 18.34.0; `sw.js` önbelleği `fc27-lig-v18-34` olarak güncellenmelidir).
+
 ## v18.33 (Premium xG, xPts & Verimlilik Analizi)
 - **xG, xPts & Verimlilik Analizi yeniden tasarlandı (`xgSummaryCard`, `.pxvd`, `.xinsbox`, `.xt`, `.xbarbox`):**
   - Üst durum bandı (`.xvd.pxvd`) soluk uyarı kutusundan çıkarılıp ikonlu, hafif radyal ışıklı ve `xG / xPts / Gol−xG` kapsam haplı hero karta dönüştürüldü.

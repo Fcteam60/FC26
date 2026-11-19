@@ -990,7 +990,6 @@ main{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
 details.xfold{margin-top:10px;padding:10px 12px;border-radius:13px;border:1px solid var(--gbd);background:rgba(127,150,140,.06)}
 details.xfold>summary.xsh{list-style:none;cursor:pointer;display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:8px;margin:0}
 details.xfold>summary.xsh::-webkit-details-marker{display:none}
-details.xfold>summary.xsh span:first-child{display:flex;flex-direction:column}
 details.xfold .xfc{color:var(--mut);font-size:14px;flex:none;transition:transform .16s ease}
 details.xfold[open] .xfc{transform:rotate(180deg)}
 details.xfold .xfb{margin-top:10px}
@@ -1224,3 +1223,178 @@ details.xfold[open]{border-color:color-mix(in srgb,var(--ac) 34%,var(--gbd))}
 .xbarbox .xbar{margin:0;height:8px;border-radius:99px}
 .xbarbox .xbar i{border-radius:99px}
 @media(max-width:359px){.xt b{font-size:29px}.xvdm>b{font-size:19px}}
+/* ===== v18.34: Katlanabilir Analiz Panelleri (.xfold) & Premium Geçmiş/Rekorlar ===== */
+/* 1) Katlanabilir Analiz Panelleri (details.xfold) — Yatay & Dengeli Premium Düzen */
+details.xfold{
+  margin-top:10px;padding:12px 13px;border-radius:16px;
+  border:1px solid var(--gbd);
+  background:radial-gradient(85% 120% at 0% 50%,color-mix(in srgb,var(--ac) 10%,transparent) 0%,transparent 60%),rgba(127,150,140,.06);
+  box-shadow:var(--gsh-lo),inset 0 1px 0 rgba(255,255,255,.07);
+  transition:border-color .18s ease,background .18s ease;
+}
+details.xfold>summary.xsh{
+  display:flex;flex-direction:row;align-items:center;justify-content:space-between;
+  gap:10px;margin:0;cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent;
+}
+details.xfold>summary.xsh::-webkit-details-marker{display:none}
+.xshl{display:flex;flex-direction:row;align-items:center;gap:11px;flex:1;min-width:0}
+.xshi{
+  flex:0 0 auto;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;
+  color:var(--ac);
+  background:linear-gradient(145deg,color-mix(in srgb,var(--ac) 18%,transparent),color-mix(in srgb,var(--ac) 7%,transparent));
+  border:1px solid color-mix(in srgb,var(--ac) 34%,transparent);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
+}
+.xshi svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.xsht{display:flex;flex-direction:column;min-width:0;gap:1px}
+.xsht b{font-family:var(--num);font-size:18px;line-height:1.1;letter-spacing:.015em;color:var(--tx)}
+.xsht small{font-size:12px;line-height:1.25;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.xshr{display:flex;align-items:center;gap:7px;flex:0 0 auto}
+.xfpill{
+  display:inline-flex;align-items:center;padding:3px 9px;border-radius:99px;
+  background:rgba(127,150,140,.13);border:1px solid var(--gbd);
+  font-family:var(--num);font-size:13.5px;font-weight:700;color:var(--tx);
+  white-space:nowrap;font-variant-numeric:tabular-nums;
+}
+details.xfold .xfc{
+  width:28px;height:28px;border-radius:99px;display:grid;place-items:center;flex:none;
+  background:rgba(127,150,140,.12);border:1px solid var(--gbd);color:var(--mut);
+  transition:transform .2s ease,background .18s ease,color .18s ease;
+}
+details.xfold .xfc svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+details.xfold[open]{border-color:color-mix(in srgb,var(--ac) 40%,var(--gbd))}
+details.xfold[open] .xfc{transform:rotate(180deg);color:var(--ac);background:color-mix(in srgb,var(--ac) 16%,transparent);border-color:color-mix(in srgb,var(--ac) 38%,transparent)}
+details.xfold .xfb{margin-top:12px;padding-top:10px;border-top:1px dashed var(--bd)}
+
+/* 2) Geçmiş 5'li Segmentli Sekme Çubuğu (.stabs.htabs) */
+.stabs.htabs{grid-template-columns:repeat(5,1fr);margin:12px 0 12px}
+.stabs.htabs .chip{font-size:12px;padding:7px 2px}
+
+/* 3) Ortak Premium Cam Kart Yüzeyi (.card.pglass) */
+.card.pglass{
+  margin-top:10px;padding:14px;border-radius:18px;
+  border:1px solid var(--gbd);background:var(--gcard);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  box-shadow:var(--gsh-lo),inset 0 1px 0 rgba(255,255,255,.07);
+}
+.card.pglass>h3{margin:0 0 12px}
+
+/* 4) Rekorlar Hall of Fame (.card.prec) */
+.rec-list{display:grid;gap:8px}
+.rec-tile{
+  --rc:var(--ac);
+  display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:14px;
+  border:1px solid color-mix(in srgb,var(--rc) 28%,var(--gbd));
+  background:radial-gradient(90% 100% at 0% 50%,color-mix(in srgb,var(--rc) 14%,transparent),transparent 65%),rgba(127,150,140,.06);
+}
+.rec-tile.gold{--rc:var(--gold)}
+.rec-tile.sky{--rc:#38bdf8}
+.rec-tile.emr{--rc:var(--ac)}
+.reci{
+  flex:0 0 auto;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;
+  color:var(--rc);background:color-mix(in srgb,var(--rc) 15%,transparent);
+  border:1px solid color-mix(in srgb,var(--rc) 34%,transparent);
+}
+.reci svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.recm{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.recl{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
+.recm b{font-size:15px;line-height:1.15;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recm small{font-size:12px;color:var(--mut)}
+.rec-sc{
+  flex:0 0 auto;font-family:var(--num);font-size:21px;font-weight:700;line-height:1;
+  padding:6px 11px;border-radius:10px;min-width:54px;text-align:center;color:#fff;
+  font-variant-numeric:tabular-nums;box-shadow:0 3px 10px rgba(0,0,0,.2);
+}
+.rec-sc.w{background:linear-gradient(135deg,#12b886,#0b7a53)}
+.rec-sc.d{background:linear-gradient(135deg,#64748b,#475569)}
+.rec-sc.l{background:linear-gradient(135deg,#e03131,#a61e1e)}
+.rec-kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.rkpi{
+  --rc:var(--ac);
+  padding:10px 6px 9px;border-radius:14px;text-align:center;
+  border:1px solid color-mix(in srgb,var(--rc) 26%,var(--gbd));
+  background:radial-gradient(90% 80% at 50% 0%,color-mix(in srgb,var(--rc) 14%,transparent),transparent 70%),rgba(127,150,140,.06);
+}
+.rkpi.emr{--rc:var(--ac)}.rkpi.sky{--rc:#38bdf8}.rkpi.gold{--rc:var(--gold)}
+.rkpi.z{opacity:.48}
+.rkpi b{display:block;font-family:var(--num);font-size:30px;line-height:1;color:var(--rc);font-variant-numeric:tabular-nums}
+.rkpi span{display:block;font-size:11px;font-weight:700;color:var(--tx);margin-top:4px;line-height:1.15}
+.rec-best{
+  --rc:var(--gold);
+  display:flex;align-items:center;gap:11px;margin-top:10px;padding:10px 12px;border-radius:14px;
+  border:1px solid color-mix(in srgb,var(--gold) 45%,var(--gbd));
+  background:linear-gradient(135deg,rgba(240,194,75,.16),rgba(15,157,107,.06));
+}
+.rec-best b{display:block;font-size:14.5px;color:var(--tx);line-height:1.2;margin-top:1px}
+
+/* 5) Kariyer Yıldızları / Hall of Fame (.card.phof) */
+.hof-kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.hk{
+  --hc:var(--ac);
+  padding:10px 6px 9px;border-radius:14px;text-align:center;
+  border:1px solid color-mix(in srgb,var(--hc) 26%,var(--gbd));
+  background:radial-gradient(90% 80% at 50% 0%,color-mix(in srgb,var(--hc) 14%,transparent),transparent 70%),rgba(127,150,140,.06);
+}
+.hk.g{--hc:var(--ac)}.hk.a{--hc:#38bdf8}.hk.m{--hc:var(--gold)}.hk.z{opacity:.48}
+.hk b{display:block;font-family:var(--num);font-size:30px;line-height:1;color:var(--hc);font-variant-numeric:tabular-nums}
+.hk span{display:block;font-size:11px;font-weight:700;color:var(--mut);margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
+.hof-sec{
+  margin-top:10px;padding:11px 12px;border-radius:15px;
+  border:1px solid var(--gbd);background:rgba(127,150,140,.05);
+}
+.hof-sh{display:flex;align-items:center;gap:10px;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--bd)}
+.hof-sh b{display:block;font-family:var(--num);font-size:17px;line-height:1.1;color:var(--tx)}
+.hof-sh small{display:block;font-size:11.5px;color:var(--mut);margin-top:1px}
+.hof-r{
+  display:flex;align-items:center;gap:9px;padding:7px 6px;border-radius:10px;
+  border-top:1px solid var(--bd);
+}
+.hof-r:first-of-type{border-top:0}
+.hof-r.r1{
+  background:linear-gradient(90deg,rgba(240,194,75,.16),transparent 75%);
+  box-shadow:inset 3px 0 0 var(--gold);margin-bottom:2px;
+}
+.hof-rk{width:20px;text-align:center;font-family:var(--num);font-size:14px;font-weight:700;color:var(--mut);flex:0 0 20px}
+.hof-nm{flex:1;min-width:0;display:flex;flex-direction:column}
+.hof-nm b{font-size:14.5px;line-height:1.15;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hof-nm small{font-size:11.5px;color:var(--mut);margin-top:1px}
+.hof-v{
+  flex:0 0 auto;font-family:var(--num);font-size:17px;font-weight:700;
+  min-width:38px;text-align:center;padding:2px 9px;border-radius:8px;
+  background:var(--hi);color:var(--tx);border:1px solid var(--gbd);font-variant-numeric:tabular-nums;
+}
+.hof-r.r1 .hof-v{background:linear-gradient(135deg,#f8e08a,#d4a017);color:#2b2000;border-color:#c99a1c}
+.hof-sub{font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);margin:0 0 5px}
+
+/* 6) Premium Mevki Dağılımı (.card.ppos) */
+.ppos-r{--pc:var(--ac);--pc2:#3ee6a8;margin-bottom:10px}
+.ppos-r:last-of-type{margin-bottom:0}
+.ppos-r.p-F{--pc:#0f9d6b;--pc2:#f0c24b}
+.ppos-r.p-M{--pc:#0ea5e9;--pc2:#3ee6a8}
+.ppos-r.p-D{--pc:#6366f1;--pc2:#38bdf8}
+.ppos-r.p-K{--pc:#f59e0b;--pc2:#fbbf24}
+.ppos-r.p-U{--pc:#64748b;--pc2:#94a3b8}
+.ppos-top{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.ppos-tag{
+  font-family:var(--num);font-size:12px;font-weight:700;letter-spacing:.05em;
+  padding:2px 7px;border-radius:7px;color:var(--pc);
+  background:color-mix(in srgb,var(--pc) 16%,transparent);
+  border:1px solid color-mix(in srgb,var(--pc) 34%,transparent);
+}
+.ppos-nm{flex:1;min-width:0;font-size:14px;font-weight:600;color:var(--tx)}
+.ppos-vals{display:inline-flex;align-items:baseline;gap:6px;font-variant-numeric:tabular-nums}
+.ppos-vals b{font-family:var(--num);font-size:18px;color:var(--tx)}
+.ppos-a{font-style:normal;font-size:12px;color:var(--mut);font-weight:600}
+.ppos-pct{
+  font-family:var(--num);font-size:13px;font-weight:700;padding:1px 7px;border-radius:99px;
+  background:rgba(127,150,140,.13);color:var(--pc);
+}
+.ppos-bar{height:7px;border-radius:99px;background:rgba(127,150,140,.18);overflow:hidden}
+.ppos-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--pc),var(--pc2))}
+
+/* 7) Oynanan Takımlar (.card.ptms) */
+.ptms-r{gap:10px;padding:8px 4px;border-radius:10px}
+.ptms-r .n{display:flex;flex-direction:column}
+.ptms-r .n b{font-size:14.5px;line-height:1.15}
+.ptms-r .n small{margin-top:2px}
+@media(max-width:359px){.stabs.htabs .chip{font-size:11px}.xsht b{font-size:16px}.xfpill{font-size:12px;padding:2px 7px}.rec-sc{font-size:18px;padding:5px 8px}}
