@@ -1,5 +1,18 @@
 # Değişiklik listesi
 
+## v18.30 (Premium Sezon Ekranı & Kompakt İstatistik Sekmesi)
+- **Sezon ekranı yeniden tasarımı (`tmini`, `grpBox`, `seasonStatBox`, `homeView`):**
+  - **Kulüp kartı (`tmini`):** Koyu temada parlayan düz açık zemin kaldırıldı; kulübün kendi renklerinden (`--club1`/`--club2`) hafif ışık alan cam kart tasarımına geçildi. Sağda seviyeye göre (altın/gümüş/bronz) `GEN` rozeti, altta `HÜC / ORT / DEF` güç çubukları yer alır. Kart sezon akışında en üste alındı.
+  - **Grubum / Lig kartı (`grpBox`):** Grup harfi rozeti, canlı sıralama rozeti (`calcGroupTable` üzerinden `1. Sıra` vb.), oynanan maç ilerleme çubuğu, renk kodlu KPI kutuları (Oynanan / Puan / Averaj) ve kadrosu tek dokunuşla açılabilen armalı kalan rakip hapları eklendi.
+  - **Sezon Performansı (`seasonStatBox`):** Düz 4 satırlık "Sezon durumu" listesi yerine orantılı `G-B-M` çubuğu, galibiyet yüzdesi rozeti, renkli `G / B / M` sayaçları, `Atılan / Yenen Gol` (averajlı) ve `Son Form` kutuları eklendi.
+- **İstatistik (`İstat.`) sekmesi uzunluk çözümü (`statView`, `sbRow`, `xgSummaryCard`):**
+  - Sayfa üstten 4 alt sekmeye bölündü: **Maçlar**, **Analiz**, **Kadro**, **Ödüller** (`st.stab`).
+  - Maç günlüğündeki 5 barlık istatistik paneli yalnızca en son maçta varsayılan açık, önceki maçlarda kompakt özet şeridiyle (`xG · top · şut`) tek dokunuşla açılır (`st.mexp`) hale getirildi.
+  - `xG, xPts & Verimlilik Analizi` kartında *Gol Beklentisi* ve *Puan Beklentisi* açık kalırken *Şut Kalitesi*, *Savunma & Kaleci*, *Oyun Kontrolü*, *Hak Ediş Dağılımı* ve *xG Trendi* katlanabilir `<details>` bloklarına alındı.
+  - `stab` ve `mexp` etkileşimleri `UI_ONLY` kümesine eklendi (sıfır disk yazımı).
+- **CSS temizliği (`style.css`):** Eski `.tmini` kuralları temizlenip yeni `v18.30` stilleri açık/koyu tema ve 320 px ekran uyumlu olarak eklendi.
+- Sürüm `18.30` (`VER`, `package.json` 18.30.0; `sw.js` önbelleği `fc27-lig-v18-30` olarak güncellenmelidir).
+
 ## v18.29 (Temizlik)
 - **Kullanılmayan kod kaldırıldı:** `app.js` içindeki hiçbir yerden çağrılmayan `userMetaLine` ve `storage.js` içindeki `hasPendingSave` silindi. Davranış değişmedi.
 - **Ölü kulüp renk verisi:** Takım havuzunda bulunmayan dört kulübün (Rangers, Inter Miami, Shakhtar Donetsk, Anderlecht) `CLBC` kayıtları silindi.
