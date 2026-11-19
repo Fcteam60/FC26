@@ -2129,3 +2129,171 @@ html[data-club] .ptbl .gtbl.row.tb.pt-r.myrow::after{display:none}
 .pimg-nt{font-size:12px;color:var(--mut);text-align:center;margin:9px 0 11px}
 .pimg-acts{display:grid;grid-template-columns:1.3fr 1fr;gap:8px}
 .pimg-acts a.btn{text-decoration:none}
+/* ===== v18.41: Görsel Bütünlük Kapanışı (Global Glass Kartlar, Turnuva Dock & KPI) ===== */
+.stabs.ttabs{grid-template-columns:repeat(4,1fr);margin:0 0 12px}
+.stabs.ttabs .chip{font-size:12.5px;padding:7px 3px}
+.chip.backpill{
+  display:inline-flex;align-items:center;gap:4px;min-height:36px;padding:5px 13px;
+  border-radius:99px;font-size:13px;font-weight:700;
+  background:var(--gcard);border:1px solid var(--gbd);box-shadow:var(--gsh-lo);
+}
+/* Akordeon içindeki (.acbody) kartlarda çift çerçeveyi önle */
+.acbody>.card.pglass{
+  margin-top:0;padding:0;border:0;border-radius:0;background:transparent;
+  box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;
+}
+.acbody>.card.pglass>h3{margin:0 0 8px;font-size:18px}
+/* Ortak .mtl KPI kutularını cam yüzey diline eşitle */
+.mtl>div{
+  background:rgba(127,150,140,.09);border:1px solid var(--gbd);
+  border-radius:14px;padding:10px 7px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+}
+.mtl b{font-size:28px;color:var(--tx)}
+.card.pglass.simbar{background:var(--gcard)!important;border-radius:18px!important;padding:13px 14px!important}
+.card.pglass.simbar .pset-h{margin-bottom:10px;padding-bottom:9px}
+@media(max-width:359px){.stabs.ttabs .chip{font-size:11.5px;padding:6px 2px}}
+/* ===== v18.42 (Paket 2): Hızlı Skor Paneli (Kompakt Goller & Steppers) + Canlı Kadro Rozetleri ===== */
+/* 1) Kompakt tamamlanan gol şeridi (.glbox.compact) */
+.glbox.compact{
+  display:flex;align-items:center;gap:8px;padding:7px 10px;margin:5px 0;
+  border-radius:12px;
+}
+.glbox.compact .glnum{font-size:13px;padding:2px 8px;flex:0 0 auto}
+.glc-m{
+  flex:1;min-width:0;display:flex;align-items:center;flex-wrap:wrap;gap:4px 7px;
+  font-size:13.5px;line-height:1.25;
+}
+.glc-m b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.glc-as{
+  font-size:12px;font-weight:600;color:var(--ac);
+  padding:1px 7px;border-radius:99px;background:rgba(15,157,107,.14);
+  border:1px solid rgba(15,157,107,.32);white-space:nowrap;
+}
+.glc-na{font-size:11.5px;color:var(--mut)}
+.glc-acts{display:flex;align-items:center;gap:4px;flex:0 0 auto}
+.chip.glc-btn{
+  min-height:28px;padding:2px 8px;font-size:11.5px;font-weight:700;border-radius:8px;
+  background:var(--card);border:1px solid var(--gbd);
+}
+
+/* 2) Gelişmiş İstatistik: Hızlı topla oynama çipleri & Şut stepper düğmeleri */
+.advq{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:2px 0 7px}
+.advq .chip{
+  min-height:30px;padding:3px 2px;font-family:var(--num);font-size:14px;font-weight:700;
+  border-radius:8px;text-align:center;background:rgba(127,150,140,.10);border:1px solid var(--gbd);
+}
+.advinp.stp{gap:3px}
+.advinp.stp .tin{width:42px;height:36px;font-size:17px;padding:2px 0}
+.advst{
+  width:28px;height:36px;min-height:36px;padding:0;border-radius:9px;
+  border:1px solid var(--gbd);background:rgba(127,150,140,.12);color:var(--tx);
+  font:700 18px/1 system-ui,sans-serif;cursor:pointer;display:grid;place-items:center;
+  flex:0 0 auto;-webkit-tap-highlight-color:transparent;
+}
+.advst:active{background:var(--hi);border-color:var(--ac)}
+@media(max-width:359px){
+  .advrow{grid-template-columns:1fr 94px 1fr;gap:4px}
+  .advinp.stp .tin{width:36px;font-size:16px}
+  .advst{width:24px;height:34px;min-height:34px;font-size:16px}
+}
+
+/* 3) Kadro İnceleme Modalı: Canlı Sezon Rozetleri (.sqst, .ti-sn) */
+.sqm{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.sqnm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.sqst{display:inline-flex;align-items:center;gap:3px;flex:0 0 auto}
+.sqst i{
+  font-style:normal;font-family:var(--num);font-size:12px;font-weight:700;
+  padding:1px 6px;border-radius:6px;line-height:1.25;letter-spacing:.02em;
+}
+.sqst i.sg{background:rgba(15,157,107,.16);color:var(--ac);border:1px solid rgba(15,157,107,.34)}
+.sqst i.sa{background:rgba(56,189,248,.16);color:#0284c7;border:1px solid rgba(56,189,248,.34)}
+.sqst i.sm{background:rgba(240,194,75,.20);color:#b8860b;border:1px solid rgba(240,194,75,.45)}
+:root[data-theme="dark"] .sqst i.sa{color:#38bdf8}
+:root[data-theme="dark"] .sqst i.sm{color:#f0c24b}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .sqst i.sa{color:#38bdf8}
+  :root:not([data-theme="light"]) .sqst i.sm{color:#f0c24b}
+}
+.sqr.hasst{background:rgba(15,157,107,.05);margin:0 -6px;padding:5px 6px;border-radius:8px}
+.ti-sn{
+  display:flex;align-items:center;flex-wrap:wrap;gap:6px;
+  margin:8px 0 2px;padding:7px 10px;border-radius:11px;
+  background:rgba(127,150,140,.08);border:1px solid var(--gbd);
+}
+.ti-snl{
+  font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--mut);margin-right:auto;
+}
+/* ===== v18.43 (Paket 3): Derin Analitik Kartları, Canlı Grup Matematiği & Oyuncu Profili ===== */
+/* 1) Rakip Güç Katmanı (.tier-list / .tier-r) */
+.tier-list{display:grid;gap:8px}
+.tier-r{
+  --tc:var(--ac);
+  padding:9px 11px;border-radius:13px;
+  border:1px solid color-mix(in srgb,var(--tc) 28%,var(--gbd));
+  background:radial-gradient(90% 100% at 0% 50%,color-mix(in srgb,var(--tc) 12%,transparent),transparent 65%),rgba(127,150,140,.06);
+}
+.tier-r.gold{--tc:var(--gold)}.tier-r.sky{--tc:#38bdf8}.tier-r.emr{--tc:var(--ac)}.tier-r.mut{--tc:#94a3b8}
+.tier-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.tier-tag{
+  font-family:var(--num);font-size:13px;font-weight:700;letter-spacing:.03em;
+  padding:2px 8px;border-radius:7px;color:var(--tc);
+  background:color-mix(in srgb,var(--tc) 16%,transparent);
+  border:1px solid color-mix(in srgb,var(--tc) 34%,transparent);
+}
+.tier-cnt{flex:1;min-width:0;font-size:12px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tier-wr{font-family:var(--num);font-size:20px;color:var(--tx);font-variant-numeric:tabular-nums}
+.tier-sub{display:flex;justify-content:space-between;gap:8px;margin-top:6px;font-size:12px;color:var(--mut)}
+.tier-sub b{color:var(--tx)}
+
+/* 2) Yakın Maç & Skor Farkı (.mrg-det) */
+.mrg-det{
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;
+  margin-top:8px;padding-top:7px;border-top:1px dashed var(--bd);font-size:12px;color:var(--mut);
+}
+.mrg-det b{color:var(--tx)}
+
+/* 3) Tıklanabilir Oyuncu Kartları (.awd.tap, .hof-r.tap) & Oyuncu Profili (.pl-sec) */
+button.awd.tap{font:inherit;color:inherit;text-align:left;cursor:pointer;width:100%;-webkit-tap-highlight-color:transparent}
+button.awd.tap:active{transform:scale(.98)}
+button.hof-r.tap{width:100%;background:none;border:0;border-top:1px solid var(--bd);font:inherit;color:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button.hof-r.tap:first-of-type{border-top:0}
+button.hof-r.tap:active{background:var(--hi)}
+.pl-sec{margin-top:12px;padding-top:10px;border-top:1px dashed var(--bd)}
+
+/* 4) Canlı Gruptan Çıkış Matematiği (.pgmath) */
+.pgmath{
+  margin:0 0 11px;padding:8px 11px;border-radius:11px;font-size:12.5px;font-weight:700;line-height:1.35;
+  border:1px solid var(--gbd);background:rgba(127,150,140,.10);color:var(--tx);
+}
+.pgmath.ok{background:rgba(15,157,107,.16);border-color:rgba(15,157,107,.42);color:var(--ac)}
+.pgmath.dead{background:rgba(224,49,49,.14);border-color:rgba(224,49,49,.40);color:var(--wr)}
+.pgmath.info{background:rgba(56,189,248,.14);border-color:rgba(56,189,248,.38);color:#0284c7}
+.pgmath.warn{background:rgba(240,194,75,.16);border-color:rgba(240,194,75,.45);color:#b8860b}
+:root[data-theme="dark"] .pgmath.info{color:#38bdf8}
+:root[data-theme="dark"] .pgmath.warn{color:#f0c24b}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .pgmath.info{color:#38bdf8}
+  :root:not([data-theme="light"]) .pgmath.warn{color:#f0c24b}
+}
+
+/* 5) Sezonlar Arası Taktiksel Gelişim (.tdel-box) */
+.tdel-box{
+  margin-top:14px;padding:11px 12px;border-radius:14px;
+  border:1px solid var(--gbd);background:rgba(127,150,140,.06);
+}
+.tdel-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px}
+.tdel-h b{font-family:var(--num);font-size:17px;color:var(--tx)}
+.tdel-h small{font-size:11.5px;color:var(--mut)}
+.tdel-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.tdel-c{
+  padding:8px 9px;border-radius:11px;background:var(--gcard);border:1px solid var(--gbd);
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;
+}
+.tdel-c span{font-size:11px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+.tdel-c b{font-family:var(--num);font-size:22px;line-height:1.1;color:var(--tx);font-variant-numeric:tabular-nums}
+.tdel-c em{font-style:normal;font-family:var(--num);font-size:13px;font-weight:700;padding:1px 7px;border-radius:99px}
+.tdel-c em.pos{background:rgba(15,157,107,.16);color:var(--ac)}
+.tdel-c em.neg{background:rgba(249,115,22,.16);color:#f97316}
+.tdel-c em.neu{background:rgba(127,150,140,.14);color:var(--mut)}

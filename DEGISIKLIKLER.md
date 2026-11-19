@@ -1,5 +1,29 @@
 # Değişiklik listesi
 
+## v18.43 (Paket 3: Derin Analitik Motoru — Rakip Katmanı, Yakın Maç/Clutch, Oyuncu Profili & Canlı Grup Matematiği)
+- **Rakip Güç Katmanı Performansı (`oppTierCard`):** Oynanan maçları rakibin `GEN` gücüne göre 4 katmana (**85+ Elit**, **80–84 Güçlü**, **75–79 Orta**, **<75 Zayıf**) ayırıp her katmandaki G-B-M, galibiyet %, gol ortalaması ve xG farkını gösterir (`İstat. › Analiz` & `Geçmiş › Maçlar`).
+- **Soğukkanlılık & Skor Farkı Analizi (`marginCard`):** 1 gol farklı / penaltılı yakın maçlardaki kazanma oranını (Clutch Endeksi), 2+ farklı rahat galibiyetleri ve ağır yenilgileri orantılı çubuk ve yorumla özetler.
+- **Çift Maçlı Rövanş Karnesi (`twoLegCard`):** 2 ayaklı eleme turlarında ilk maçı kaybedip rövanşta turu çevirdiğin *Geri Dönüşler*, ilk maçı kazanıp elendiğin *Elden Kaçan* seriler ve toplam tur geçme oranı eklendi (`Geçmiş › Maçlar`).
+- **Tıklanabilir Oyuncu Profili Modalı (`plDlg`, `plProfileData`, `pinfo`):** `Sezon Ödülleri` ve `Geçmiş › Rekorlar › Kariyer Yıldızları` içindeki oyunculara dokununca kariyer toplamları (G/A/MOTM/G+A-Maç), eleme katkısı, en çok gol attığı rakipler, en uyumlu asist partnerleri ve sezon bazlı döküm açılır.
+- **Canlı Gruptan Çıkış Matematiği (`grpBox`, `.pgmath`):** Grup aşamasında matematiksel olarak garantilenen çıkış, matematiksel elenme veya son 1–2 haftada gereken puan durumu canlı şerit olarak gösterilir.
+- **Sezonlar Arası Taktiksel Gelişim (`tacticalDeltaHtml`):** `Oyun Tarzın` kartında mevcut sezon ile önceki istatistikli sezonun *Topla Oynama*, *Pas İsabeti*, *xG/Şut* ve *Bitiricilik* farkları `↑`/`↓` oklarıyla kıyaslanır.
+- **Turnuva İstatistikleri Klasikleri (`tourneyStats`, `tstatView`):** **En Çok Temiz Kasa** ve **En İyi Averaj** liderlik kartları eklendi.
+- Sürüm `18.43` (`VER`, `package.json` 18.43.0, `sw.js` `fc27-lig-v18-43`).
+
+## v18.42 (Paket 2: Hızlı Skor Paneli, Canlı Kadro Rozetleri & Eleme/Fikstür Geçişi)
+- **Kompakt tamamlanan gol şeritleri (`scorerUI`, `.glbox.compact`):** Maç girişinde golcüsü ve asist durumu belirlenen (veya Kendi Kalesine seçilen) goller tek satırlık kompakt özet şeridine daralır; 4–5 gollü maçlarda form dikeyde uzamaz. Tek dokunuşla `+ Asist`, `👟✕` veya `✎` ile yeniden düzenlenebilir.
+- **Hızlı Gelişmiş İstatistik Girişi (`advFormUI`, `mstp`, `mstd`):** Topla oynama için tek dokunuşlu `%40–%65` hızlı çipler (rakip yüzdesini otomatik tamamlar) ve Toplam Şut / İsabetli Şut alanlarına akıllı `−/+` adım düğmeleri eklendi (isabetli şut toplam şutu geçtiğinde toplam şutu otomatik yükseltir).
+- **Canlı Kadro Sezon Rozetleri (`tiSeasonStats`, `tiBody`, `tiDlg`):** Kadro inceleme modalında kendi takımının (ve turnuvadaki rakip takımların) oyuncularının yanında bu sezondaki **Gol (`G`), Asist (`A`) ve MOTM (`★`)** sayıları renkli rozetler halinde gösterilir; üstte kulübün sezon gol/asist lideri şeridi yer alır.
+- **Fikstür › Eleme Ağacı | Grup Fikstürü geçişi (`fixtureView`, `fxv`):** Eleme turları başladığında uzun kaydırmayı önlemek için üstte segmentli `Eleme Ağacı | Grup Fikstürü` geçiş anahtarı eklendi. Tüm yeni etkileşimler (`fxv`, `mstp`, `mstd`) sıfır disk yazımlı `UI_ONLY` kümesine eklendi.
+- Sürüm `18.42` (`VER`, `package.json` 18.42.0, `sw.js` `fc27-lig-v18-42`).
+
+## v18.41 (Paket 1: Görsel Bütünlük Kapanışı — Tüm Ekranlar & Posterler)
+- **Global cam kart eşitliği (`cd`, `histView`, `qualSummary`, `koBracketCard`, `matchLog`, `.mtl`):** `Geçmiş › Özet`, `Geçmiş › Maçlar`, `İstat. › Analiz` ve `Turnuva` ekranlarında kalan tüm eski kutusuz/çizgili kartlar `.card.pglass` cam kart tasarımına geçirildi; akordeon içindeki (`.acbody`) kartlarda çift çerçeve oluşumu engellendi.
+- **Turnuva alt-sekme çubuğu (`tabPre`, `.stabs.ttabs`) & Geçmiş mod seçicisi:** `Kura | Gruplar | Fikstür | İstatistik` ve `Tümü | Kupa | Lig` çubukları modern segmentli cam dock tasarımına geçirildi; `‹ Sezon` geri dönüşü hap stile (`.backpill`) alındı.
+- **Turnuva Simülasyon Merkezi (`simBarHtml`) & Turnuva İstatistikleri (`tstatView`):** Simülasyon merkezi SVG ikonlu cam karta ve segmentli mod seçiciye (`Gerçekçi | Dengeli | Sürprizli`), `Turnuva › İstatistik` sekmesindeki tüm liderlik kartları özel SVG ikonlu `psetCard` yapısına ve 3'lü KPI özetine kavuşturuldu.
+- **Kura & Kariyer Özeti Posterleri (`kuraCv`, `kariyerCv`):** `v18.40` Broadcast Poster motoruna (`dkBg`, `glassBox`, `drawPill`, `drawPosterFooter`) taşındı; başlık ayırıcı çizgisi çakışması giderildi, grup harfi rozetleri ve 2 sütunlu kariyer liderleri cam ızgarası eklendi.
+- Sürüm `18.41` (`VER`, `package.json` 18.41.0, `sw.js` `fc27-lig-v18-41`).
+
 ## v18.40 (Premium Broadcast Maç Kartı, Sezon Karnesi & Poster Önizleme Modalı)
 - **Sezon Karnesi (`karneCv`) baştan tasarlandı:**
   - **Kulüp renkli stadyum ışığı (`dkBg`, `glassBox`):** Senin kulübünün renklerinden (`c1`/`c2`) veya şampiyonlukta metalik altından beslenen çift taraflı stadyum ışığı, hafif saha geometrisi filigranı ve cam paneller eklendi.
