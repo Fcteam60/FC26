@@ -387,10 +387,6 @@ function hadMainReadFailure() {
   return mainReadFailed;
 }
 
-function hasPendingSave() {
-  return qPendingRaw !== null || qWriting;
-}
-
 // Sekme arka plana giderken veya kapanırken bekleyen yazmayı derhal başlat
 if (typeof addEventListener === "function") {
   addEventListener("pagehide", () => { flushSaveQueue(); });

@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="18.28",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="18.29",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -365,20 +365,6 @@ function fxUserDet(s,m){
   const conv=l=>(Array.isArray(l)?l:[]).filter(g=>g&&g.sc).map(g=>({n:g.sc,as:g.as||"",kk:isKK(g.sc)}));
   const mom=m.mom||(m.omom||(m.opp!=null?pickOppMom(m.opp,m.og,m.gf,m.ga):""));
   return fxDet(conv(m.gls),conv(m.og),mom)}
-
-function userMetaLine(s,m){
-  const parts=[];
-  if(Array.isArray(m.gls)&&m.gls.some(g=>g&&g.sc)){
-    const uG=m.gls.filter(g=>g&&g.sc).map(g=>isKK(g.sc)?"KK":`${esc(g.sc)}${g.as?` (${esc(g.as)})`:""}`).join(", ");
-    if(uG)parts.push(`⚽ ${esc(T[s.my].n)}: ${uG}`);
-  }
-  if(Array.isArray(m.og)&&m.og.some(o=>o&&o.sc)){
-    const oG=m.og.filter(o=>o&&o.sc).map(o=>`${esc(o.sc)}${o.as?` (${esc(o.as)})`:""}`).join(", ");
-    if(oG)parts.push(`⚽ ${esc(m.on)}: ${oG}`);
-  }
-  const mom=m.mom||(m.omom||(m.opp!=null?pickOppMom(m.opp,m.og,m.gf,m.ga):""));
-  if(mom)parts.push(`★ ${esc(mom)}`);
-  return parts.join(" · ")}
 
 // Tüm simüle edilen maçlardan (grup + eleme) Turnuva Gol/Asist/MOTM Krallığını hesaplar
 function rebuildSimScorers(s){
@@ -2661,10 +2647,10 @@ const CLBC={
 "Real Betis":["#0bb363","#ffffff",3,"BET"],"Real Sociedad":["#0067b1","#ffffff",3,"RSO"],"Sevilla":["#ffffff","#d41920",2,"SEV"],
 "Valencia":["#ffffff","#111111",1,"VAL"],"Bergamo Calcio":["#1e71b8","#111111",3,"ATA"],"Latium":["#87d8f7","#ffffff",0,"LAZ"],
 "Fiorentina":["#482e92","#ffffff",4,"FIO"],"Bologna":["#1a2f48","#a21c26",3,"BOL"],"Celtic":["#018749","#ffffff",0,"CEL"],
-"Rangers":["#1b458f","#d40026",2,"RAN"],"Boca Juniors":["#003399","#ffcc00",0,"BOC"],"River Plate":["#ffffff","#e41b17",2,"RIV"],
-"Inter Miami":["#f7b5cd","#111111",1,"MIA"],"Olympiacos":["#d00027","#ffffff",3,"OLY"],"Panathinaikos":["#00793a","#ffffff",0,"PAO"],
-"AEK":["#f7c600","#111111",2,"AEK"],"PAOK":["#111111","#ffffff",3,"PAOK"],"Shakhtar Donetsk":["#f36c21","#111111",3,"SHA"],
-"Club Brugge":["#00559b","#111111",3,"CLU"],"Anderlecht":["#4f2d7f","#ffffff",1,"AND"],"West Ham":["#7a263a","#1bb1e7",4,"WHU"],
+"Boca Juniors":["#003399","#ffcc00",0,"BOC"],"River Plate":["#ffffff","#e41b17",2,"RIV"],
+"Olympiacos":["#d00027","#ffffff",3,"OLY"],"Panathinaikos":["#00793a","#ffffff",0,"PAO"],
+"AEK":["#f7c600","#111111",2,"AEK"],"PAOK":["#111111","#ffffff",3,"PAOK"],
+"Club Brugge":["#00559b","#111111",3,"CLU"],"West Ham":["#7a263a","#1bb1e7",4,"WHU"],
 "Everton":["#003399","#ffffff",2,"EVE"],"Brighton":["#0057b8","#ffffff",3,"BHA"],"Crystal Palace":["#1b458f","#c4122e",3,"CRY"],
 "Nottingham Forest":["#dd0000","#ffffff",1,"NFO"],"Frankfurt":["#e1000f","#111111",3,"SGE"],"Stuttgart":["#ffffff","#e32219",0,"VFB"],
 "Wolfsburg":["#65b32e","#ffffff",4,"WOB"],

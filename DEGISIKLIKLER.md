@@ -1,5 +1,11 @@
 # Değişiklik listesi
 
+## v18.29 (Temizlik)
+- **Kullanılmayan kod kaldırıldı:** `app.js` içindeki hiçbir yerden çağrılmayan `userMetaLine` ve `storage.js` içindeki `hasPendingSave` silindi. Davranış değişmedi.
+- **Ölü kulüp renk verisi:** Takım havuzunda bulunmayan dört kulübün (Rangers, Inter Miami, Shakhtar Donetsk, Anderlecht) `CLBC` kayıtları silindi.
+- **Depo temizliği:** Noktasız yinelenen `gitignore` dosyası kaldırıldı (geçerli olan `.gitignore` duruyor).
+- Sürüm `18.29` (`VER`, `package.json` 18.29.0, `sw.js` önbelleği `fc27-lig-v18-29`).
+
 ## v18.28 (Premium Kura Sayfası)
 - **"Kura onaylandı" bandı:** Düz not ve buton yerine kilit simgeli, yeşil tonlu durum kartı. Kaçıncı denemede kesinleştiği altında yazar; "Kurayı ve takımı sıfırla" tam genişlikte, kırmızı tonlu ve simgeli bir buton oldu (işlevi aynı).
 - **Kura bilgi kartı:** Eski düz metin kutusu, "Torbalı kura / Rastgele kura" başlıklı karta dönüştü; takım, grup, torba sayısı ve aynı ülke kuralı rozet olarak gösterilir.
