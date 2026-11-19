@@ -1,5 +1,12 @@
 # Değişiklik listesi
 
+## v20.2 (Simülasyon Gol & Asist Kalibrasyonu)
+- **Mevkiye özel gerçekçi gol & asist ağırlıkları (`sim.js` — `SIM_GW`, `SIM_AW`, `pickSimScorer`, `simAssistsFor`):**
+  - Genel `F / M / D` katsayıları yerine her mevki ayrı ağırlıklandırıldı: golde `ST/CF (6.5) > Kanat (4.6–4.8) > CAM (3.4) > LM/RM (2.6) > CM (1.5) > CDM (0.55) > Defans (0.30–0.42)`; asistte `CAM (5.0) > Kanat (4.0–4.2) > CM (3.0) > ST/CF (2.4–2.8) > Bek (1.7–2.0) > CDM (1.1) > CB (0.25)`.
+  - **İlk 11 / Yedek dengesi:** İlk 11 (`1.00`) ve yedek (`0.22`) oranı gerçek futbola uyarlandı (gollerin ~%82–85'i İlk 11'den, ~%15–18'i sonradan giren yedeklerden gelir).
+  - **Yıldız etkisi (`OVR`):** Güç çarpanı `1.06` yerine `1.10` tabanına yükseltildi; yüksek reytingli yıldız forvet ve 10 numaralar gol/asist krallığında ağırlığını hissettirir.
+- Sürüm `20.2` (`VER`, `package.json` 20.2.0, `sw.js` `fc27-lig-v20-2`).
+
 ## v20.1 (Final Kapanış — Uygulama İçi Kullanım Kılavuzu & TOTS/Özet Cila)
 - **Uygulama İçi Kullanım Kılavuzu (`Ayarlar › Kullanım Kılavuzu`, `guideDlg`):** Arayüzü kalabalıklaştırmadan `Ayarlar` sekmesine eklenen 6 bölümlük çevrimdışı rehber modalı (Hızlı Başlangıç, Simülasyon & Eleme Ağacı, Maç Girişi & xG Analizi, 6 PNG Poster, Kadro/Oyuncu Profili, Yedekleme & PWA Kurulumu) ve GitHub deposu için `KILAVUZ.md`.
 - **Manuel Sezon Bitirişinde TOTS & MVP Arşivi (`snapshotSeasonAwards`, `a=="fin"`):** Yalnızca otomatik turnuva bitişinde değil, `Takımım › Sezonu Bitir` üzerinden manuel kayıt yapıldığında da o sezonun Turnuva MVP'si (`s.res.mvp`) ve 4-3-3 En İyi 11'i (`s.res.tots`) otomatik arşivlenir.

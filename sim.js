@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — Simülasyon, Canlı Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v20.1) */
+/* FC 27 Grup Ligi — Simülasyon, Canlı Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v20.2) */
 /* ---------- AŞAMA 1, 2 & 3: HAFTALIK SİMÜLASYON, ELEME AĞACI (BRACKET), GOL KRALLIĞI VE TURNUVA BİTİŞİ ---------- */
 const SIM_MODES=[[0,"Gerçekçi","Güç farkı ve gerçek futbol skorları (1-0, 2-1, 1-1 ağırlıklı)"],[1,"Dengeli","Standart güç ve günlük form dengesi"],[2,"Sürprizli","Yüksek şans faktörü, kupa sürprizlerine açık"]];
 function ensureSim(s){
@@ -64,6 +64,9 @@ function simMatchScore(s,i1,i2,mode,seedAdv){
   l2=Math.max(0.15,Math.min(3.6,l2));
   return [Math.min(6,poissonSample(l1)),Math.min(6,poissonSample(l2))]}
 
+// Mevkiye özel gerçekçi gol & asist ağırlıkları (ST/CF > Kanat > CAM > CM > CDM > Defans)
+const SIM_GW={ST:6.5,CF:6.2,LF:4.8,RF:4.8,LW:4.6,RW:4.6,CAM:3.4,LM:2.6,RM:2.6,CM:1.5,CDM:0.55,LWB:0.42,RWB:0.42,LB:0.35,RB:0.35,CB:0.30};
+const SIM_AW={CAM:5.0,LW:4.2,RW:4.2,LM:4.0,RM:4.0,LF:3.6,RF:3.6,CM:3.0,CF:2.8,ST:2.4,LWB:2.0,RWB:2.0,LB:1.7,RB:1.7,CDM:1.1,CB:0.25};
 // Yapay zeka maçlarında atılan golleri kadrodaki oyunculara gerçekçi ağırlıklarla dağıtır (hafıza tasarrufu için kadro sıra indisi döndürür)
 function pickSimScorer(ti){
   const sq=squadOf(ti);if(!sq||!sq.length)return null;
@@ -72,9 +75,9 @@ function pickSimScorer(ti){
   if(!cands.length)sq.forEach((p,idx)=>{if(p.g!=="K")cands.push([p,idx])});
   if(!cands.length)return null;
   const weights=cands.map(([p])=>{
-    const posW=p.g==="F"?5.2:p.g==="M"?2.1:0.45;
-    const stW=p.t==="S"?1.65:p.t==="B"?0.85:0.35;
-    const ovrW=Math.pow(1.06,Math.max(0,(p.o||75)-72));
+    const posW=SIM_GW[p.p]||(p.g==="F"?4.8:p.g==="M"?1.8:0.32);
+    const stW=p.t==="S"?1.0:p.t==="B"?0.22:0.06;
+    const ovrW=Math.pow(1.10,Math.max(-6,(p.o||75)-75));
     return posW*stW*ovrW;
   });
   const tot=weights.reduce((a,b)=>a+b,0);
@@ -85,14 +88,19 @@ function pickSimScorer(ti){
   }
   return cands[0][1]}
 
-// Her gol için asist yapan oyuncunun kadro indisini (veya -1: asistsiz) seçer; golü atan hariç, orta saha/forvet ağırlıklı
+// Her gol için asist yapan oyuncunun kadro indisini (veya -1: asistsiz) seçer; golü atan hariç, CAM/kanat/CM ağırlıklı
 function simAssistsFor(ti,scorers){
   const sq=squadOf(ti);if(!sq||!sq.length||!Array.isArray(scorers))return [];
   return scorers.map(sc=>{
     if(Math.random()>0.78)return -1;
     const cands=[];sq.forEach((p,idx)=>{if(idx!==sc&&p.g!=="K"&&p.t!=="R")cands.push([p,idx])});
     if(!cands.length)return -1;
-    const w=cands.map(([p])=>(p.g==="M"?3.4:p.g==="F"?2.6:1.0)*(p.t==="S"?1.65:0.85)*Math.pow(1.06,Math.max(0,(p.o||75)-72)));
+    const w=cands.map(([p])=>{
+      const posW=SIM_AW[p.p]||(p.g==="M"?3.0:p.g==="F"?2.6:0.8);
+      const stW=p.t==="S"?1.0:p.t==="B"?0.22:0.06;
+      const ovrW=Math.pow(1.10,Math.max(-6,(p.o||75)-75));
+      return posW*stW*ovrW;
+    });
     let r=Math.random()*w.reduce((a,b)=>a+b,0);
     for(let i=0;i<cands.length;i++){r-=w[i];if(r<=0)return cands[i][1]}
     return cands[0][1]})}
