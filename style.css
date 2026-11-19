@@ -2177,27 +2177,6 @@ html[data-club] .ptbl .gtbl.row.tb.pt-r.myrow::after{display:none}
   background:var(--card);border:1px solid var(--gbd);
 }
 
-/* 2) Gelişmiş İstatistik: Hızlı topla oynama çipleri & Şut stepper düğmeleri */
-.advq{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:2px 0 7px}
-.advq .chip{
-  min-height:30px;padding:3px 2px;font-family:var(--num);font-size:14px;font-weight:700;
-  border-radius:8px;text-align:center;background:rgba(127,150,140,.10);border:1px solid var(--gbd);
-}
-.advinp.stp{gap:3px}
-.advinp.stp .tin{width:42px;height:36px;font-size:17px;padding:2px 0}
-.advst{
-  width:28px;height:36px;min-height:36px;padding:0;border-radius:9px;
-  border:1px solid var(--gbd);background:rgba(127,150,140,.12);color:var(--tx);
-  font:700 18px/1 system-ui,sans-serif;cursor:pointer;display:grid;place-items:center;
-  flex:0 0 auto;-webkit-tap-highlight-color:transparent;
-}
-.advst:active{background:var(--hi);border-color:var(--ac)}
-@media(max-width:359px){
-  .advrow{grid-template-columns:1fr 94px 1fr;gap:4px}
-  .advinp.stp .tin{width:36px;font-size:16px}
-  .advst{width:24px;height:34px;min-height:34px;font-size:16px}
-}
-
 /* 3) Kadro İnceleme Modalı: Canlı Sezon Rozetleri (.sqst, .ti-sn) */
 .sqm{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .sqnm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}

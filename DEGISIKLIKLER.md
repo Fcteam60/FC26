@@ -1,5 +1,11 @@
 # Değişiklik listesi
 
+## v19.0 (Gelişmiş İstatistik Formu Sadeleştirmesi & Büyük Sürüm)
+- **Gelişmiş İstatistik formundaki hızlı çipler ve şut stepper düğmeleri kaldırıldı (`advFormUI`, `mstp`, `mstd`):**
+  - *Topla Oynama* altındaki `%40–%65` hızlı çipleri ve *Toplam Şut / İsabetli Şut* yanındaki `−/+` adım düğmeleri çıkarıldı; 5 Altın Veri alanı sade, doğrudan sayısal giriş düzenine döndürüldü (topla oynama otomatik tamamlaması korunur).
+  - İlgili `mstp` / `mstd` olay dalları, `UI_ONLY` kayıtları ve `.advq` / `.advinp.stp` / `.advst` CSS kuralları temizlendi.
+- Sürüm `19.0` (`VER`, `package.json` 19.0.0, `sw.js` `fc27-lig-v19-0`).
+
 ## v18.43 (Paket 3: Derin Analitik Motoru — Rakip Katmanı, Yakın Maç/Clutch, Oyuncu Profili & Canlı Grup Matematiği)
 - **Rakip Güç Katmanı Performansı (`oppTierCard`):** Oynanan maçları rakibin `GEN` gücüne göre 4 katmana (**85+ Elit**, **80–84 Güçlü**, **75–79 Orta**, **<75 Zayıf**) ayırıp her katmandaki G-B-M, galibiyet %, gol ortalaması ve xG farkını gösterir (`İstat. › Analiz` & `Geçmiş › Maçlar`).
 - **Soğukkanlılık & Skor Farkı Analizi (`marginCard`):** 1 gol farklı / penaltılı yakın maçlardaki kazanma oranını (Clutch Endeksi), 2+ farklı rahat galibiyetleri ve ağır yenilgileri orantılı çubuk ve yorumla özetler.

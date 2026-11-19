@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="18.43",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="19.0",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -3640,7 +3640,7 @@ function render(){
   const focusEl=aeId?$(aeId):null;
   if(focusEl&&document.activeElement!==focusEl){focusEl.focus();if(aeSel!=null&&typeof focusEl.setSelectionRange=="function")try{focusEl.setSelectionRange(aeSel,aeSel)}catch(e){}}}
 
-const UI_ONLY=new Set(["stab","mexp","fxw","fxv","mstp","mstd","adv","cust","roall","vitall","sall","rstopen","sfopen","hm","grk","tropen","trclose","bkadv","madv","qs","medit","mall","qx","gofin","mg","mo","mu","mp","mpf","mpa","glsc","glas","glclr","glasclr","glasno","glasopen","tel","tpl","ht","hmod","sfm","sfr","sv","sfd","sfx","ro","dcancel","next","all","no","tinfo","pinfo","gs","gsgo","tif","ren","own","owno","mman","ex","im","rcv","sum","oldlsx"]);
+const UI_ONLY=new Set(["stab","mexp","fxw","fxv","adv","cust","roall","vitall","sall","rstopen","sfopen","hm","grk","tropen","trclose","bkadv","madv","qs","medit","mall","qx","gofin","mg","mo","mu","mp","mpf","mpa","glsc","glas","glclr","glasclr","glasno","glasopen","tel","tpl","ht","hmod","sfm","sfr","sv","sfd","sfx","ro","dcancel","next","all","no","tinfo","pinfo","gs","gsgo","tif","ren","own","owno","mman","ex","im","rcv","sum","oldlsx"]);
 document.addEventListener("click",async e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.t!==undefined){hideToast();st.tab=+b.dataset.t;if(st.tab==6)refreshQuota(true);render();scrollTo(0,0);return}
@@ -3667,8 +3667,6 @@ document.addEventListener("click",async e=>{
 
   else if(a=="fxw"){st.fxw=+dv}
   else if(a=="fxv"){st.fxv=dv}
-  else if(a=="mstp"){st.mst=st.mst||defMst();const p=Math.max(0,Math.min(100,+dv));st.mst.myPos=String(p);st.mst.oppPos=String(100-p)}
-  else if(a=="mstd"){st.mst=st.mst||defMst();const curV=parseInt(st.mst[dk],10),d=+b.dataset.d,nv=Math.max(0,Math.min(60,(Number.isFinite(curV)?curV:0)+d));st.mst[dk]=String(nv);if(dk=="mySot"&&(!(parseInt(st.mst.myShots,10)>=nv)))st.mst.myShots=String(nv);else if(dk=="oppSot"&&(!(parseInt(st.mst.oppShots,10)>=nv)))st.mst.oppShots=String(nv);else if(dk=="myShots"&&parseInt(st.mst.mySot,10)>nv)st.mst.mySot=String(nv);else if(dk=="oppShots"&&parseInt(st.mst.oppSot,10)>nv)st.mst.oppSot=String(nv)}
   else if(a=="stab"){st.stab=dv}
   else if(a=="mexp"){st.mexp=st.mexp||nob();const curOpen=(id in st.mexp)?!!st.mexp[id]:(b.dataset.def==="1");st.mexp[id]=!curOpen}
   else if(a=="simm"){ensureSim(s).m=+dv}
@@ -4145,18 +4143,14 @@ function advFormUI(s){
   const hasAny=Object.values(q).some(v=>v!==""&&v!=null);
   let h=`<button type="button" class="advbtn ${st.madv?"on":""}" data-a="madv"><span>📊 Gelişmiş İstatistik Ekle (Opsiyonel)${hasAny?" ✓":""}</span><span>${st.madv?"▴":"▾"}</span></button>`;
   if(!st.madv)return h;
-  const inp=(k,ph,dec,step)=>step
-    ?`<div class="advinp stp"><button type="button" class="advst" data-a="mstd" data-k="${k}" data-d="-1" aria-label="Azalt">−</button><input id="mst_${k}" class="tin" data-mst="${k}" inputmode="numeric" maxlength="2" placeholder="${ph}" value="${esc(q[k]??"")}"><button type="button" class="advst" data-a="mstd" data-k="${k}" data-d="1" aria-label="Artır">+</button></div>`
-    :`<div class="advinp"><input id="mst_${k}" class="tin" data-mst="${k}" inputmode="${dec?"decimal":"numeric"}" maxlength="5" placeholder="${ph}" value="${esc(q[k]??"")}"></div>`;
-  const row=(lbl,sub,k1,k2,ph1,ph2,dec,step)=>`<div class="advrow">${inp(k1,ph1,dec,step)}<div class="lbl">${lbl}${sub?`<small>${sub}</small>`:""}</div>${inp(k2,ph2,dec,step)}</div>`;
+  const row=(lbl,sub,k1,k2,ph1,ph2,dec)=>`<div class="advrow"><div class="advinp"><input id="mst_${k1}" class="tin" data-mst="${k1}" inputmode="${dec?"decimal":"numeric"}" maxlength="5" placeholder="${ph1}" value="${esc(q[k1]??"")}"></div><div class="lbl">${lbl}${sub?`<small>${sub}</small>`:""}</div><div class="advinp"><input id="mst_${k2}" class="tin" data-mst="${k2}" inputmode="${dec?"decimal":"numeric"}" maxlength="5" placeholder="${ph2}" value="${esc(q[k2]??"")}"></div></div>`;
   const mp=parseFloat(q.myPos),opP=parseFloat(q.oppPos),pBar=Number.isFinite(mp)&&Number.isFinite(opP)&&mp+opP>0?`<div class="advbar"><i style="width:${mp}%"></i><i style="width:${opP}%"></i></div>`:"";
-  const posChips=`<div class="advq" role="group" aria-label="Hızlı topla oynama">${[40,45,50,55,60,65].map(v=>`<button type="button" class="chip${mp===v?" on":""}" data-a="mstp" data-v="${v}">%${v}</button>`).join("")}</div>`;
   h+=`<div class="advbox"><div class="advhd"><span>★ ${esc(me)}</span><span>5 Altın Veri</span><span>${esc(op)}</span></div>`+
-    row("Topla Oynama %","otomatik tamamlar","myPos","oppPos","50","50",false,false)+posChips+pBar+
-    row("Toplam Şut","maç boyu","myShots","oppShots","10","8",false,true)+
-    row("İsabetli Şut","kaleyi bulan","mySot","oppSot","6","4",false,true)+
-    row("Pas İsabeti %","yüzde","myPass","oppPass","85","82",false,false)+
-    row("xG (Gol Beklentisi)","ondalık (örn. 1.8)","myXg","oppXg","1.5","1.1",true,false)+
+    row("Topla Oynama %","otomatik tamamlar","myPos","oppPos","50","50",false)+pBar+
+    row("Toplam Şut","maç boyu","myShots","oppShots","10","8",false)+
+    row("İsabetli Şut","kaleyi bulan","mySot","oppSot","6","4",false)+
+    row("Pas İsabeti %","yüzde","myPass","oppPass","85","82",false)+
+    row("xG (Gol Beklentisi)","ondalık (örn. 1.8)","myXg","oppXg","1.5","1.1",true)+
     `<div class="note" style="margin:6px 0 0;text-align:center">Girilen verilerle Hak Ediş, xG Verimliliği ve Taktiksel DNA (Radar) otomatik hesaplanır.</div></div>`;
   return h;
 }
