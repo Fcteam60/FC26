@@ -1,5 +1,14 @@
 # Değişiklik listesi
 
+## v18.39 (Premium Puan Tablosu & Takımım / Sezonu Bitir Yeniden Tasarımı)
+- **Gruplar canlı puan tablosu baştan tasarlandı (`grpCard`, `.card.ptbl`):**
+  - **Sıra (`#`) ve Puan (`P`) hizalama hatası giderildi:** Sol kenar şeridinin sıra rozetini kesmesi ve `.row.tb` kuralı yüzünden rakamların sola yapışması düzeltildi; tüm sayısal sütunlar ve puan kapsülleri tam ortalandı.
+  - **Broadcast Standings görünümü:** Kura sayfasıyla uyumlu büyük harf rozetli başlık (`.pt-hd`) ve canlı hafta hapı (`5. Hafta`), yumuşak cam sütun başlığı (`.pt-col`), renkli averaj (`+` zümrüt / `−` mercan), gruptan çıkış sınırını netleştiren kesikli **eleme hattı** (`.qcut`) ve özel SVG ikonlu **Hafta sonuçları ve fikstür** düğmesi eklendi.
+- **Takımım & Sezonu Bitir sayfası yenilendi (`teamView`, `lockNote`, `#fincard`):**
+  - **Kadro İnceleme & Kilit Kartı:** FUT kartının altındaki düz buton kulüp renkli cam karta (`.tm-sqbtn`), kilit metni ve *Takımı değiştir* bloğu Kura sayfasıyla uyumlu kilit kartına (`.klock.tlock`) dönüştürüldü.
+  - **Sezonu Bitir (`#fincard`):** Düz form alanları yerine kupa ikonlu cam karta taşındı; *Gruptaki Sıran* ve *Puan* yan yana 2 sütunlu ızgarada (`.su-fgrid`), kayıtlı sonuç ise altın/zümrüt özet bandında (`.fin-ban`) gösterilir.
+- Sürüm `18.39` (`VER`, `package.json` 18.39.0, `sw.js` `fc27-lig-v18-39`).
+
 ## v18.38 (Premium Kurulum Sayfası — Turnuva Mimarı)
 - **Kurulum sayfası baştan tasarlandı (`setupView`, `lockedView`, `setupBlueprint`, `suTeamGrid`):**
   - **Turnuva Mimarı Başlık Kartı (`.su-hero`):** Üstte radyal ışıklı cam başlık ve canlı sezon rozeti eklendi.
