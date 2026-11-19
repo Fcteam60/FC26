@@ -1,5 +1,21 @@
 # Değişiklik listesi
 
+## v18.28 (Premium Kura Sayfası)
+- **"Kura onaylandı" bandı:** Düz not ve buton yerine kilit simgeli, yeşil tonlu durum kartı. Kaçıncı denemede kesinleştiği altında yazar; "Kurayı ve takımı sıfırla" tam genişlikte, kırmızı tonlu ve simgeli bir buton oldu (işlevi aynı).
+- **Kura bilgi kartı:** Eski düz metin kutusu, "Torbalı kura / Rastgele kura" başlıklı karta dönüştü; takım, grup, torba sayısı ve aynı ülke kuralı rozet olarak gösterilir.
+- **Grup kartları:** Büyük harf rozetli başlık (senin grubun altın renkli, "★ Senin grubun" etiketli), gradyan güç çubuğu ve GEN / HÜC / DEF için üç ayrı istatistik kutusu. Eski "Gen 78,8 · Hüc 79,4 · Def 77,4" tek satırı kalktı.
+- **Takım satırları:** Daha büyük bayrak ve arma, takım adının altında HÜC / ORT / DEF değerleri, parlak gradyanlı genel puan rozeti. Senin takımın altın vurgulu satırla öne çıkar; satırlar arası ince ayraçlar, dokunma ve üzerine gelme geri bildirimi eklendi.
+- Gruplar sekmesinde maç oynanmadan önce görünen liste de aynı tasarımı kullanır. Veri yapısı ve işlevler değişmedi; açık/koyu tema ve 320 px ekran desteklenir.
+
+## v18.27 (Premium Maç Günlüğü Kartları)
+- **Maç kartı yeniden tasarlandı (İstat. › Maç günlüğü):** Üstte sonuç renginde ince vurgu şeridi, tur etiketi ve düzenle / maç kartı / sil için tutarlı çizgi simgeli (SVG) butonlar (34 px dokunma alanı). "Kart" yazılı geniş buton kalktı, işlevleri aynı.
+- **Skor tablosu:** Takım armaları adın üstünde büyük ve ortalı; skor kapsülü daha büyük, gölgeli. Uzun takım adları kesilir, taşma olmaz. Armasız takımlar için yer tutucu eklendi.
+- **Karşılaştırmalı istatistik paneli:** Dağınık rozetlerin yerine "Sen – Rakip" çubuklu satırlar: xG, Topla oynama, Şut, İsabetli şut, Pas isabeti. Üstün olan taraf renkli vurgulanır, çubuk iki tarafın oranını gösterir. "parantez: isabetli şut" açıklamasına gerek kalmadı; isabetli şut ayrı satır. Kurtarış ve Gol − xG panelin altında rozet olarak durur.
+- **Hak ediş kutusu:** "Hak edilmiş galibiyet / Şanslı / Şanssız" durumu ve gerekçe cümlesi, renk kodlu (yeşil / mavi / turuncu) tek bir açıklama kutusunda birleşti. Eski sol kenar çizgisi kaldırıldı.
+- **Goller ve asistler:** Tek satırda "…" ile kesilen metin yerine sarmalanan rozetler: ⚽ golcü + 👟 asist, kendi kalesine goller kırmızı çerçeveli, maçın adamı altın rozetli (rakip oyuncuysa takımıyla).
+- **"Son maçlar" başlığı** ince çizgili bölüm başlığına dönüştü.
+- Veri yapısı ve işlevler değişmedi; açık/koyu tema ve 320 px ekran desteklenir.
+
 ## v18.26 (Premium Alt Gezinme Çubuğu)
 - **Yüzen cam dock:** Alt çubuk kenarlara yapışık düz şeritten, ekrandan ayrılmış yuvarlak köşeli (26 px) cam efektli bir dock'a dönüştü: bulanık arka plan, ince kenarlık, yumuşak gölge ve üst kenar ışığı. Geniş ekranlarda en fazla 520 px genişlikte ortalanır.
 - **Aktif sekme:** Üstteki ince çizgi kaldırıldı; seçili sekme vurgu renginde degrade dolgulu, ince halkalı bir hap içinde gösterilir. Simge hafifçe büyür ve kalınlaşır, geçişler animasyonludur (hareket kapalıyken animasyon yok).

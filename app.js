@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="18.26",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="18.28",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -1005,10 +1005,13 @@ function grpCard(g,gi){
   const sim=ensureSim(s),rows=(s.cfg.gs||lg)?calcGroupTable(s,gi):[];
   const hasPlayed=rows.some(r=>r.o>0);
   if(st.tab==2||!hasPlayed){
-    return `<div class="card${hl?" hl":""}${mn?" mine":""}${dd?" dead":""}"><h3>${gname(s,gi)}<small>${g.length?"Gen "+fx(ravg("g"))+" · Hüc "+fx(ravg("a"))+" · Def "+fx(ravg("d")):""}</small></h3><i class="gb"><u style="width:${pc}%"></u></i>`+
+    const gl=lg?"★":s.cfg.gs?GL(gi):gi+1,avg=f=>g.length?fx(ravg(f)):"—";
+    const head=`<div class="kgh"><span class="kgl">${gl}</span><div class="kgt"><b>${gname(s,gi)}</b><small>${g.length} takım${mn?` · <i class="kgm">★ Senin grubun</i>`:""}</small></div></div>`+
+      (g.length?`<i class="gb kgb"><u style="width:${pc}%"></u></i><div class="kgs"><span><em>GEN</em><b>${avg("g")}</b></span><span><em>HÜC</em><b>${avg("a")}</b></span><span><em>DEF</em><b>${avg("d")}</b></span></div>`:"");
+    return `<div class="card kgc${hl?" hl":""}${mn?" mine":""}${dd?" dead":""}">${head}`+
     g.slice().sort((x,y)=>{const qx=qL.indexOf(x),qy=qL.indexOf(y);if(qx>=0||qy>=0)return (qx<0?99:qx)-(qy<0?99:qy);return V(RT(s,y))-V(RT(s,x))}).map(i=>{
       const ti=RT(s,i),qr=qL.indexOf(i),qBadge=qr>=0?`<span class="qbdg">${qr+1}. Çıktı ✓</span>`:"";
-      return `<button class="row tb ${qr>=0?"qrow":""}" data-a="tinfo" data-i="${i}" aria-label="${esc(ti.n)} kadrosunu incele"><span class="cc">${fl(ti.c)}</span>${badge(i,20)}<span class="n">${nm(i)}</span>${qBadge}${rb(ti.g)}<span class="chev">›</span></button>`;
+      return `<button class="row tb kr ${qr>=0?"qrow":""}${i===s.my?" kme":""}" data-a="tinfo" data-i="${i}" aria-label="${esc(ti.n)} kadrosunu incele"><span class="cc">${fl(ti.c)}</span>${badge(i,26)}<span class="n kn"><span class="kt">${nm(i)}</span><small title="${esc(CN[ti.c][0])}"><span><i>HÜC</i> ${ti.a}</span><span><i>ORT</i> ${ti.o}</span><span><i>DEF</i> ${ti.d}</span></small></span>${qBadge}${rb(ti.g)}<span class="chev">›</span></button>`;
     }).join("")+(g.length?"":`<div class="row empty">—</div>`)+`</div>`;
   }
   const maxW=Math.max(sim.w,mn?(s.mt||[]).filter(m=>m.rd==="Grup").length:0);
@@ -1780,7 +1783,8 @@ function wipeS(s){s.delM=Array.from(new Set([...(s.delM||[]),...(s.mt||[]).map(m
 function doUnlock(s){const had=hasData(s);wipeS(s);s.lk=false;s.P=null;s.G=null;s.my=null;s.sn=null;s.dn=0;st.mode=null;st.tp=false;st.dr=null;st.k=0;sync();return had?"Kurulum açıldı, sezon verileri sıfırlandı":"Kurulum açıldı, takım ve kura silindi"}
 function doReset(s){const had=hasData(s);wipeS(s);s.G=null;s.my=null;st.mode=null;st.dr=null;st.k=0;sync();return had?"Takım ve kura sıfırlandı, sezon verileri silindi":"Takım ve kura sıfırlandı"}
 const lockNote=(s,lk)=>lk?`<div class="note" style="margin:8px 0">Takım kilitli: kura onaylandı${(s.mt||[]).length?" ve maç girildi":""}. Sonradan değiştirmek kura ve maç kayıtlarını bozar.</div><button class="btn opt" data-a="chteam">Takımı değiştir<small>${hasData(s)?"Kurayı ve bu sezonun maç, oyuncu, sonuç kayıtlarını sıfırlar":"Kurayı sıfırlar, yeniden takım seçip kura çekersin"}</small></button>`:`<div class="note" style="margin:8px 0">Kura çekimi başladı, takım artık değiştirilemez. Değiştirmek istersen önce çekilen kurayı iptal et.</div><button class="btn opt" data-a="dcancel">Kurayı iptal et<small>Çekilen kura silinir</small></button>`;
-const lockDraw=s=>`<div class="note" style="margin:0 0 8px">Kura onaylandı${s.dn>1?" ("+s.dn+". denemede)":""}. Yeniden çekmek için önce sıfırla.</div><div class="bar"><button class="btn" data-a="chteam">Kurayı ve takımı sıfırla</button></div>`;
+const KI={lock:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5M12 14.5v2"/></svg>',reset:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.4-5.5M4.5 4.5v4h4"/></svg>',pot:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17M3.5 12h17M6 6.5c2.2 1.6 3.4 3.4 3.4 5.5S8.2 15.9 6 17.5M18 6.5c-2.2 1.6-3.4 3.4-3.4 5.5s1.2 3.9 3.4 5.5"/></svg>'};
+const lockDraw=s=>`<div class="klock"><div class="klh"><span class="kli">${KI.lock}</span><div class="klt"><b>Kura onaylandı</b><small>${s.dn>1?s.dn+". denemede kesinleşti · ":""}Yeniden çekmek için önce sıfırla.</small></div></div><button class="btn kreset" data-a="chteam">${KI.reset}<span>Kurayı ve takımı sıfırla</span></button></div>`;
 
 /* ---------- KURULUM SEKMESİ ---------- */
 const chp=(a,k,v,l,on)=>`<button class="chip ${on?"on":""}" data-a="${a}" data-k="${k}" data-v="${v}">${l}</button>`;
@@ -1904,8 +1908,16 @@ function drawView(s){
   const last=d&&k>0?d.seq[k-1]:null,done=d&&k>=d.seq.length,pot=s.rl.dm!="rnd";
   const info=(pot?`Torbalı kura: takımlar güce göre ${gsz(c)} torbaya ayrılır, her ${c.gs?"gruba":"eşleşmeye"} her torbadan bir takım düşer.`:"Tamamen rastgele kura.")+(s.rl.gcap?(c.gs?` Aynı grupta aynı ülkeden en fazla ${s.rl.gcap} takım.`:" Aynı ülke eşleşmez."):"");
   return (s.G&&!d?lockDraw(s):`<div class="bar"><button class="btn p" data-a="new">Yeni kura hazırla</button><button class="btn" data-a="bal">En dengeli kurayı otomatik kur</button></div>`)+(s.dn&&!(s.G&&!d)?`<div class="note" style="margin:0 0 8px">Bu sezon hazırlanan kura sayısı: <b>${s.dn}</b></div>`:"")+
-  (d?`<div class="dock"><div class="big ${last?"":"pop"}">${last?stage(s,k,N,Gn,pot,last):`<div>Kura hazır. Takımları tek tek çek.</div>`}</div><div class="bar">${done?`<button class="btn p" data-a="use">Bu kurayı kullan</button>`:`<button class="btn p" data-a="next">Sıradaki takımı çek</button><button class="btn" data-a="all">Hepsini göster</button>`}</div></div>`:`<div class="big">${info}</div>`)+
+  (d?`<div class="dock"><div class="big ${last?"":"pop"}">${last?stage(s,k,N,Gn,pot,last):`<div>Kura hazır. Takımları tek tek çek.</div>`}</div><div class="bar">${done?`<button class="btn p" data-a="use">Bu kurayı kullan</button>`:`<button class="btn p" data-a="next">Sıradaki takımı çek</button><button class="btn" data-a="all">Hepsini göster</button>`}</div></div>`:kInfo(s,c,Gn,N,pot))+
   `<div class="grid">${G.map((g,i)=>grpCard(g,i)).join("")}</div>`}
+function kInfo(s,c,Gn,N,pot){
+  const gp=s.rl.gcap,un=c.gs?"grup":"eşleşme",lg=isLg(c);
+  const chips=[`<span class="kchip"><b>${N}</b> takım</span>`];
+  if(!lg)chips.push(`<span class="kchip"><b>${Gn}</b> ${un}</span>`);
+  if(pot)chips.push(`<span class="kchip"><b>${gsz(c)}</b> torba</span>`);
+  if(gp)chips.push(`<span class="kchip kchip-w">${c.gs?`Aynı ülkeden en fazla <b>${gp}</b>`:"Aynı ülke eşleşmez"}</span>`);
+  const ds=pot?`Takımlar güce göre ${gsz(c)} torbaya ayrılır; her ${c.gs?"gruba":"eşleşmeye"} her torbadan bir takım düşer.`:"Takımlar tamamen rastgele dağıtılır.";
+  return `<div class="kinfo"><div class="kih"><span class="kii">${KI.pot}</span><div class="kit"><b>${pot?"Torbalı kura":"Rastgele kura"}</b><small>${ds}</small></div></div><div class="kchips">${chips.join("")}</div></div>`}
 
 function tcard(s){
   const t=RT(s,s.my),gi=s.G?s.G.findIndex(g=>g.includes(s.my)):-1,tr=t.g>=85?1:t.g>=80?2:t.g>=75?3:0;
@@ -2322,39 +2334,57 @@ const NAV5=[["Sezon",'<path d="M5 21V4M5 5h11l-2 3.5L16 12H5"/>',[7,0,1],7],["Tu
 const tabPre=t=>t==0||t==1?`<div class="bar"><button class="chip" data-t="7">‹ Sezon</button></div>`:t==2||t==3||t==8||t==9?`<div class="bar"><button class="chip ${t==2?"on":""}" ${t==2?'aria-current="page"':""} data-t="2" style="flex:1;padding-left:4px;padding-right:4px">Kura</button><button class="chip ${t==3?"on":""}" ${t==3?'aria-current="page"':""} data-t="3" style="flex:1;padding-left:4px;padding-right:4px">Gruplar</button><button class="chip ${t==8?"on":""}" ${t==8?'aria-current="page"':""} data-t="8" style="flex:1;padding-left:4px;padding-right:4px">Fikstür</button><button class="chip ${t==9?"on":""}" ${t==9?'aria-current="page"':""} data-t="9" style="flex:1;padding-left:4px;padding-right:4px">İstatistik</button></div>`:"";
 const FDL={w:"Galibiyet (G)",d:"Beraberlik (B)",l:"Mağlubiyet (M)"};
 const dotsOf=ms=>ms.slice(-5).map(m=>{const r=mres(m);return `<i class="fd ${r}" role="img" aria-label="${FDL[r]}" title="${FDL[r]}: ${esc(m.on)} ${m.gf}-${m.ga}"></i>`}).join("");
+const SBI={
+  edit:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19.2 8.8a2.1 2.1 0 0 0-3-3L5 17z"/><path d="M14 7l3 3"/></svg>',
+  card:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="3"/><circle cx="9" cy="10.2" r="1.5"/><path d="M4 17.5l5-4.5 3.5 3 3-2.5 4.5 4"/></svg>',
+  del:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V4.5h4V7M7 7l.8 12.5h8.4L17 7M10.5 11v5M13.5 11v5"/></svg>'
+};
+const sbF2=x=>(+x).toFixed(2).replace(".",","),sbFP=x=>"%"+Math.round(+x),sbFI=x=>String(Math.round(+x));
+function sbCmp(label,a,b,f){
+  const has=a!=null&&b!=null,lead=has&&a!==b?(a>b?"l":"r"):"";
+  const cls=(side)=>lead?(lead==side?" ld":" lo"):"";
+  const bar=has&&(a>0||b>0)?`${a>0?`<i class="${lead=="r"?"dim":""}" style="flex:${a}"></i>`:""}${b>0?`<i class="o${lead=="l"?" dim":""}" style="flex:${b}"></i>`:""}`:"";
+  return `<div class="sbr"><b class="a${cls("l")}">${a==null?"—":f(a)}</b><span>${label}</span><b class="b${cls("r")}">${b==null?"—":f(b)}</b><div class="sbb">${bar}</div></div>`;
+}
 function sbRow(s,m){
   const r=mres(m),oi=m.opp!=null&&T[m.opp]?m.opp:ixOf(m.on),me=s.my!=null&&T[s.my]?s.my:null;
   const sub=m.pf!=null&&m.pa!=null?`<small>P ${m.pf}–${m.pa}</small>`:m.et?`<small>UZ</small>`:"";
-  let goalMeta="";
+  // --- Goller / asistler / maçın adamı: sarmalanan rozetler (tek satırda kesilmez) ---
+  const evs=[];
   if(Array.isArray(m.gls)&&m.gls.some(g=>g&&g.sc)){
-    goalMeta=m.gls.filter(g=>g&&g.sc).map(g=>isKK(g.sc)?"⚽ Kendi Kalesine (KK)":`⚽ ${esc(g.sc)}${g.as?` (👟 ${esc(g.as)})`:""}`).join(" · ");
+    m.gls.filter(g=>g&&g.sc).forEach(g=>evs.push(isKK(g.sc)?`<span class="sbev og"><i>⚽</i><b>Kendi Kalesine (KK)</b></span>`:`<span class="sbev"><i>⚽</i><b>${esc(g.sc)}</b>${g.as?`<em>👟 ${esc(g.as)}</em>`:""}</span>`));
   }else{
-    const scL=Object.entries(m.sc||{}).filter(e=>e[1]>0).map(([n,g])=>(isKK(n)?"Kendi Kalesine (KK)":esc(n))+(g>1?" ×"+g:"")).join(", ");
-    const asL=Object.entries(m.as||{}).filter(e=>e[1]>0).map(([n,a])=>esc(n)+(a>1?" ×"+a:"")).join(", ");
-    goalMeta=[scL?"⚽ "+scL:"",asL?"👟 "+asL:""].filter(Boolean).join(" · ");
+    Object.entries(m.sc||{}).filter(e=>e[1]>0).forEach(([n,g])=>evs.push(`<span class="sbev${isKK(n)?" og":""}"><i>⚽</i><b>${isKK(n)?"Kendi Kalesine (KK)":esc(n)}</b>${g>1?`<em>×${g}</em>`:""}</span>`));
+    Object.entries(m.as||{}).filter(e=>e[1]>0).forEach(([n,a])=>evs.push(`<span class="sbev as"><i>👟</i><b>${esc(n)}</b>${a>1?`<em>×${a}</em>`:""}</span>`));
   }
-  const oppMom=!m.mom&&(m.omom||(m.opp!=null?pickOppMom(m.opp,m.og,m.gf,m.ga):""));const meta=[goalMeta,m.mom?"★ "+esc(m.mom):(oppMom?`★ ${esc(oppMom)} (${esc(m.on)})`:"")].filter(Boolean).join(" · ");
+  const oppMom=!m.mom&&(m.omom||(m.opp!=null?pickOppMom(m.opp,m.og,m.gf,m.ga):""));
+  if(m.mom)evs.push(`<span class="sbev mom" title="Maçın adamı"><i>★</i><b>${esc(m.mom)}</b></span>`);
+  else if(oppMom)evs.push(`<span class="sbev mom" title="Maçın adamı"><i>★</i><b>${esc(oppMom)}</b><em>${esc(m.on)}</em></span>`);
+  const evHtml=evs.length?`<div class="sbevs">${evs.join("")}</div>`:"";
+  // --- İstatistik paneli: Sen – Rakip karşılaştırma çubukları ---
   const des=matchDeserve(m),eff=xgEffInfo(m),stObj=m.stats;
-  const desHtml=des?`<span class="desbdg ${des.k}" title="${esc(des.t)}">${des.ic} ${esc(des.t)}</span>`:"";
-  const effHtml=eff?`<span class="xgeff ${eff.cls}" title="${esc(eff.t)} · Gol − xG: attığın gol ile pozisyonlarının değeri arasındaki fark">Gol − xG: ${eff.s}</span>`:"";
-  let stPills="";
+  let panel="";
   if(stObj){
-    const pills=[];
-    if(stObj.myXg!=null||stObj.oppXg!=null)pills.push(`<span class="sbpill">xG <b>${stObj.myXg!=null?stObj.myXg.toFixed(2).replace(".",","):"—"}</b> – ${stObj.oppXg!=null?stObj.oppXg.toFixed(2).replace(".",","):"—"}</span>`);
-    if(stObj.myPos!=null)pills.push(`<span class="sbpill">Top <b>%${stObj.myPos}</b> – %${stObj.oppPos??(100-stObj.myPos)}</span>`);
-    if(stObj.myShots!=null||stObj.oppShots!=null){
-      const ms0=stObj.myShots??"—",os0=stObj.oppShots??"—",ms1=stObj.mySot!=null?`(${stObj.mySot})`:"",os1=stObj.oppSot!=null?`(${stObj.oppSot})`:"";
-      pills.push(`<span class="sbpill">Şut <b>${ms0}${ms1}</b> – ${os0}${os1}</span>`);
-    }
-    if(stObj.myPass!=null||stObj.oppPass!=null)pills.push(`<span class="sbpill">Pas <b>%${stObj.myPass??"—"}</b> – %${stObj.oppPass??"—"}</span>`);
-    if(stObj.oppSot!=null){const sv=Math.max(0,stObj.oppSot-(+m.ga||0));pills.push(`<span class="sbpill" title="Kaleci kurtarışı: rakibin isabetli şutlarından gole dönüşmeyenler">Kurtarış <b>${sv}/${stObj.oppSot}</b></span>`)}
-    const why=deserveWhy(m,des);
-    if(pills.length||effHtml)stPills=`<div class="sbstats"><span class="sbleg">Sen – Rakip · parantez: isabetli şut</span>${pills.join("")}${effHtml}</div>${why?`<div class="sbwhy">${esc(why)}</div>`:""}`;
+    const rows=[];
+    if(stObj.myXg!=null||stObj.oppXg!=null)rows.push(sbCmp("xG",stObj.myXg,stObj.oppXg,sbF2));
+    if(stObj.myPos!=null)rows.push(sbCmp("Topla oynama",stObj.myPos,stObj.oppPos??(100-stObj.myPos),sbFP));
+    if(stObj.myShots!=null||stObj.oppShots!=null)rows.push(sbCmp("Şut",stObj.myShots,stObj.oppShots,sbFI));
+    if(stObj.mySot!=null||stObj.oppSot!=null)rows.push(sbCmp("İsabetli şut",stObj.mySot,stObj.oppSot,sbFI));
+    if(stObj.myPass!=null||stObj.oppPass!=null)rows.push(sbCmp("Pas isabeti",stObj.myPass,stObj.oppPass,sbFP));
+    const chips=[];
+    if(stObj.oppSot!=null){const sv=Math.max(0,stObj.oppSot-(+m.ga||0));chips.push(`<span class="sbchip" title="Kaleci kurtarışı: rakibin isabetli şutlarından gole dönüşmeyenler">Kurtarış <b>${sv}/${stObj.oppSot}</b></span>`)}
+    if(eff)chips.push(`<span class="xgeff ${eff.cls}" title="${esc(eff.t)} · Gol − xG: attığın gol ile pozisyonlarının değeri arasındaki fark">Gol − xG: ${eff.s}</span>`);
+    if(rows.length||chips.length)panel=`<div class="sbst">${rows.length?`<div class="sbsth"><span>Sen</span><span>Rakip</span></div>${rows.join("")}`:""}${chips.length?`<div class="sbchips">${chips.join("")}</div>`:""}</div>`;
   }
-  return `<div class="sbcard${des&&(des.k=="unlucky"||des.k=="undeserved")?" "+des.k:""}"><div class="sbtop"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span class="sbrd">${esc(m.rd)}${m.lg?" · "+m.lg+". maç":""}</span>${desHtml}</div><div class="sbact"><button class="mb" data-a="medit" data-id="${m.id}" aria-label="Maçı düzenle" title="Maçı düzenle">✎</button><button class="mb" data-a="mkart" data-id="${m.id}" aria-label="Maç kartı oluştur" style="width:auto;padding:0 8px">Kart</button><button class="mb" data-a="mdel" data-id="${m.id}" aria-label="Maçı sil">✕</button></div></div><div class="sbmain"><div class="sbtm hm"><span class="n">${me!=null?esc(T[me].n):"Takımım"}</span>${me!=null?badge(me,26):""}</div><div class="sbsc ${r}" aria-label="${{w:"Galibiyet",d:"Beraberlik",l:"Mağlubiyet"}[r]}">${m.gf} – ${m.ga}${sub}</div><div class="sbtm aw">${oi!=null&&oi>=0&&T[oi]?badge(oi,26):""}<span class="n">${esc(m.on)}</span></div></div>${stPills}${meta?`<div class="sbbot">${meta}</div>`:""}</div>`}
+  const why=deserveWhy(m,des);
+  const callout=des?`<div class="sbv ${des.k}"><b><span aria-hidden="true">${des.ic}</span>${esc(des.t)}</b>${why?`<p>${esc(why)}</p>`:""}</div>`:"";
+  const crest=i=>i!=null&&i>=0&&T[i]?badge(i,38):`<span class="sbph" aria-hidden="true">⚽</span>`;
+  const myN=me!=null?esc(T[me].n):"Takımım";
+  const act=`<div class="sbact"><button class="mb" data-a="medit" data-id="${m.id}" aria-label="Maçı düzenle" title="Maçı düzenle">${SBI.edit}</button><button class="mb" data-a="mkart" data-id="${m.id}" aria-label="Maç kartı oluştur" title="Maç kartı oluştur">${SBI.card}</button><button class="mb dl" data-a="mdel" data-id="${m.id}" aria-label="Maçı sil" title="Maçı sil">${SBI.del}</button></div>`;
+  return `<div class="sbcard sb-${r}${des&&(des.k=="unlucky"||des.k=="undeserved")?" "+des.k:""}"><div class="sbtop"><span class="sbrd">${esc(m.rd)}${m.lg?" · "+m.lg+". maç":""}</span>${act}</div><div class="sbmain"><div class="sbtm hm">${crest(me)}<span class="n">${myN}</span></div><div class="sbsc ${r}" aria-label="${{w:"Galibiyet",d:"Beraberlik",l:"Mağlubiyet"}[r]}">${m.gf} – ${m.ga}${sub}</div><div class="sbtm aw">${crest(oi)}<span class="n">${esc(m.on)}</span></div></div>${panel}${callout}${evHtml}</div>`}
 function matchLog(s){const ms=s.mt||[],showM=st.mall?ms.slice().reverse():ms.slice(-8).reverse();
   return `<div class="card"><h3>Maç günlüğü<span class="fm">${dotsOf(ms)}</span></h3>`+
-  (ms.length?`<div class="rt">${st.mall?"Tüm maçlar ("+ms.length+")":"Son maçlar"}</div>`+showM.map(m=>sbRow(s,m)).join("")+(ms.length>8?`<div class="bar" style="margin:8px 0 0"><button class="chip" data-a="mall" style="width:100%">${st.mall?"Daha az göster":"Tüm maçları göster ("+ms.length+")"}</button></div>`:""):emp("Maç sonuçlarını Kura › Gruplar ekranından girebilirsin. G-B-M, gol ve oyuncu golleri otomatik güncellenir."))+`</div>`}
+  (ms.length?`<div class="rt sbhd"><span>${st.mall?"Tüm maçlar ("+ms.length+")":"Son maçlar"}</span></div>`+showM.map(m=>sbRow(s,m)).join("")+(ms.length>8?`<div class="bar" style="margin:8px 0 0"><button class="chip" data-a="mall" style="width:100%">${st.mall?"Daha az göster":"Tüm maçları göster ("+ms.length+")"}</button></div>`:""):emp("Maç sonuçlarını Kura › Gruplar ekranından girebilirsin. G-B-M, gol ve oyuncu golleri otomatik güncellenir."))+`</div>`}
 const sheetHtml=(s,fresh)=>`<button class="qbk${fresh?" in":""}" data-a="qx" aria-label="Kapat"></button><div class="sheet${fresh?" in":""}" role="dialog" aria-label="Maç sonucu">${matchCard(s,true)}</div>`;
 function grpState(s){
   if(s.my==null||!s.G||!s.cfg.gs)return null;
