@@ -1,5 +1,13 @@
 # Değişiklik listesi
 
+## v20.3 (Premium Sezon Karşılaştırma — Broadcast H2H)
+- **Sezon Karşılaştır kartı baştan tasarlandı (`cmpCard`, `cmpsw`, `.cmp-vs`, `.cmp-bars`):**
+  - Düz metin satırları ve kesilen (`...`) metinler yerine çift kulüp ışıklı **Broadcast VS** sahnesi eklendi: her iki sezonun kulüp arması, `GEN` puanı, kısa format etiketi, tam okunur durum hapı, `G-B-M` özeti ve orantılı form çubuğu.
+  - İki sezon arasında tek dokunuşla yer değiştiren **⇄ Swap** (`cmpsw`, sıfır disk yazımlı `UI_ONLY`) düğmesi eklendi.
+  - **Orantılı Karşılaştırma Çubukları:** Galibiyet Oranı, Maç Başı Puan, Atılan Gol/Maç, Yenen Gol/Maç (düşük olan önde), Gol Averajı, Oyuncu Katkısı (G+A) ve her iki sezonda veri varsa Ortalama xG/Maç otomatik renk kodlu çubuklarla kıyaslanır.
+  - Alt bantta her iki sezonun **En Golcü** oyuncusu ve varsa **Oyun Ayarı** yan yana gösterilir.
+- Sürüm `20.3` (`VER`, `package.json` 20.3.0, `sw.js` `fc27-lig-v20-3`).
+
 ## v20.2 (Simülasyon Gol & Asist Kalibrasyonu)
 - **Mevkiye özel gerçekçi gol & asist ağırlıkları (`sim.js` — `SIM_GW`, `SIM_AW`, `pickSimScorer`, `simAssistsFor`):**
   - Genel `F / M / D` katsayıları yerine her mevki ayrı ağırlıklandırıldı: golde `ST/CF (6.5) > Kanat (4.6–4.8) > CAM (3.4) > LM/RM (2.6) > CM (1.5) > CDM (0.55) > Defans (0.30–0.42)`; asistte `CAM (5.0) > Kanat (4.0–4.2) > CM (3.0) > ST/CF (2.4–2.8) > Bek (1.7–2.0) > CDM (1.1) > CB (0.25)`.

@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.2",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="20.3",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -416,12 +416,87 @@ function chartCard(list){const f=(list||store.seasons).filter(x=>x.res);
   const lab=(v,x)=>n<=8&&v>0?`<text x="${x}" y="${yv(v)-3}" font-size="8" text-anchor="middle" style="fill:var(--tx)">${v}</text>`:"";
   const c2=tk.map(v=>gl(yv(v),v)).join("")+f.map((x,i)=>{const xa=cx(i)-bw2-1,xb=cx(i)+1;return bar(xa,gv[i],"var(--ac)")+bar(xb,av[i],"var(--mut)")+lab(gv[i],xa+bw2/2)+lab(av[i],xb+bw2/2)}).join("");
   return cd("Grafikler",`<div class="lb">Ulaşılan derece (altın çubuk: şampiyonluk)</div><svg viewBox="0 0 300 140" style="width:100%" role="img" aria-label="Sezonlara göre ulaşılan derece">${c1}${ax}</svg><div class="lb">Gol (renkli) ve asist (gri)</div><svg viewBox="0 0 300 140" style="width:100%" role="img" aria-label="Sezonlara göre gol ve asist">${c2}${ax}</svg>`)}
-function cmpCard(){const S=store.seasons;if(S.length<2)return "";
-  const a=S.find(x=>x.id==st.ca)||S[0],b=S.find(x=>x.id==st.cb)||S[1];
-  const o=x=>S.map(y=>`<option value="${y.id}" ${y.id==x.id?"selected":""}>${esc(y.name)}</option>`).join("");
-  const g=x=>[x.ts.w,x.ts.d,x.ts.l].map(v=>v||0).join("-");
-  const rows=[["Format",x=>isLg(x.cfg)?x.cfg.N+" takım · puan ligi":x.cfg.N+" takım"+(x.cfg.gs?" · "+x.cfg.gs+"’lü grup":" · eleme")],["Takım",x=>x.my!=null?T[x.my].n:"—"],["Sonuç",x=>x.res?rlb(x.res,x.cfg,x.grk):"Devam"],["Oyun ayarı",x=>oyTxt(x)||"—"],["Gol",x=>sum(x.pl,"g")],["Asist",x=>sum(x.pl,"a")],["G-B-M",g],["Atılan/yenen",x=>(x.ts.gf||0)+"/"+(x.ts.ga||0)]];
-  return `<div class="card pglass pcmp"><h3>Sezon karşılaştır</h3><div class="cmp"><select id="ca" class="sel">${o(a)}</select><select id="cb" class="sel">${o(b)}</select></div>`+rows.map(([l,f])=>`<div class="row"><span class="lb" style="width:82px">${l}</span><span class="n">${esc(f(a))}</span><span class="n">${esc(f(b))}</span></div>`).join("")+`</div>`}
+function cmpCard(){
+  const S=store.seasons;if(S.length<2)return "";
+  const a=S.find(x=>x.id==st.ca)||S[0],b=S.find(x=>x.id==st.cb)||S.find(x=>x.id!==a.id)||S[1];
+  const o=x=>S.map(y=>`<option value="${y.id}" ${y.id==x.id?"selected":""}>${esc(y.name)}${y.my!=null&&T[y.my]?" · "+esc(T[y.my].n):""}</option>`).join("");
+  const info=x=>{
+    const t=x.ts||{},w=+t.w||0,d=+t.d||0,l=+t.l||0,n=w+d+l,gf=+t.gf||0,ga=+t.ga||0,gd=gf-ga;
+    const pts=w*3+d,wr=n?w/n*100:0,ppm=n?pts/n:0,gfm=n?gf/n:0,gam=n?ga/n:0;
+    const pg=sum(x.pl||[],"g"),pa=sum(x.pl||[],"a"),pga=pg+pa;
+    const topP=(x.pl||[]).filter(p=>p&&!isKK(p.n)&&(p.g||0)>0).sort((p1,p2)=>p2.g-p1.g||(p2.a||0)-(p1.a||0))[0]||null;
+    const xgMs=(x.mt||[]).filter(m=>m.stats&&m.stats.myXg!=null);
+    const xgAvg=xgMs.length?xgMs.reduce((acc,m)=>acc+(+m.stats.myXg||0),0)/xgMs.length:null;
+    const tm=x.my!=null&&T[x.my]?RT(x,x.my):null,cb=tm?bspec(x.my):null;
+    const stCls=x.res?(x.res.st==7?"gold":"fin"):"live";
+    const stShort=x.res?rlb(x.res,x.cfg,x.grk).split(" · ")[0]:"Devam ediyor";
+    const fmtShort=isLg(x.cfg)?`${x.cfg.N}T · Lig`:`${x.cfg.N}T`+(x.cfg.gs?` · ${x.cfg.gs}’lü Grup`:" · Eleme");
+    return{x,w,d,l,n,gf,ga,gd,pts,wr,ppm,gfm,gam,pg,pa,pga,topP,xgAvg,tm,cb,stCls,stShort,fmtShort,oy:oyTxt(x)};
+  };
+  const A=info(a),B=info(b);
+  const swIc='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h11M14 4l4 3-4 3M17 17H6M10 14l-4 3 4 3"/></svg>';
+  const selBar=`<div class="cmp-sel"><select id="ca" class="sel" aria-label="1. sezon">${o(a)}</select><button class="mb sc-ic cmp-sw" data-a="cmpsw" aria-label="Sezonları yer değiştir" title="Yer değiştir">${swIc}</button><select id="cb" class="sel" aria-label="2. sezon">${o(b)}</select></div>`;
+  const side=(I,cls)=>{
+    const cr=I.tm?badge(I.x.my,42):`<span class="sbph" style="width:42px;height:46px">⚽</span>`;
+    return `<div class="cmp-tm ${cls}">${cr}<b class="cmp-tn">${I.tm?esc(I.tm.n):"Takım yok"}</b>`+
+      `<div class="cmp-sub">${I.tm?`<span class="cmp-ovr">${I.tm.g} GEN</span>`:""}<span>${esc(I.fmtShort)}</span></div>`+
+      `<span class="sc-st ${I.stCls} cmp-st">${esc(I.stShort)}</span>`+
+      `<div class="cmp-rec"><span>${I.w}G</span>·<span>${I.d}B</span>·<span>${I.l}M</span><em>(${I.n}M)</em></div>`+
+      (I.n?sbar({w:I.w,d:I.d,l:I.l}):`<div class="msb"><i class="d" style="flex:1;opacity:.25"></i></div>`)+
+      `</div>`;
+  };
+  const vsSty=` style="--ca1:${A.cb?A.cb.c1:"#12b886"};--cb1:${B.cb?B.cb.c1:"#38bdf8"}"`;
+  const vsStage=`<div class="cmp-vs"${vsSty}>${side(A,"l")}<div class="cmp-mid"><span class="cmp-vsb">VS</span></div>${side(B,"r")}</div>`;
+  const barRow=(lbl,va,vb,fa,fb,lowBetter,subA,subB)=>{
+    const has=va!=null&&vb!=null;
+    const lead=!has||Math.abs(va-vb)<1e-6?"":(lowBetter?(va<vb?"l":"r"):(va>vb?"l":"r"));
+    let pA=50,pB=50;
+    if(has){
+      const a0=Math.max(0,va),b0=Math.max(0,vb);
+      if(va<0||vb<0){
+        const mn=Math.min(va,vb),sh=Math.abs(mn)+1;
+        const sa=va+sh,sb=vb+sh,tot=sa+sb;
+        if(tot>0){pA=sa/tot*100;pB=sb/tot*100}
+      }else if(a0+b0>0){
+        if(lowBetter){
+          const ia=1/(a0+0.35),ib=1/(b0+0.35),tot=ia+ib;
+          pA=ia/tot*100;pB=ib/tot*100;
+        }else{pA=a0/(a0+b0)*100;pB=b0/(a0+b0)*100}
+      }
+    }
+    return `<div class="cmp-r">`+
+      `<div class="cmp-rh">`+
+        `<b class="a${lead=="l"?" ld":lead=="r"?" lo":""}">${fa}${subA?`<small>${subA}</small>`:""}</b>`+
+        `<span>${lbl}</span>`+
+        `<b class="b${lead=="r"?" ld":lead=="l"?" lo":""}">${fb}${subB?`<small>${subB}</small>`:""}</b>`+
+      `</div>`+
+      `<div class="cmp-bar"><i class="a${lead=="r"?" dim":""}" style="flex:${pA.toFixed(1)}"></i><i class="b${lead=="l"?" dim":""}" style="flex:${pB.toFixed(1)}"></i></div>`+
+    `</div>`;
+  };
+  const dStr=v=>(v>0?"+":v<0?"−":"")+Math.abs(v);
+  const rows=[
+    barRow("Galibiyet Oranı",A.n?A.wr:null,B.n?B.wr:null,A.n?"%"+Math.round(A.wr):"—",B.n?"%"+Math.round(B.wr):"—",false),
+    barRow("Maç Başı Puan",A.n?A.ppm:null,B.n?B.ppm:null,A.n?xgN2(A.ppm):"—",B.n?xgN2(B.ppm):"—",false),
+    barRow("Atılan Gol / Maç",A.n?A.gfm:null,B.n?B.gfm:null,A.n?xgN2(A.gfm):"—",B.n?xgN2(B.gfm):"—",false,A.n?` (${A.gf})`:"",B.n?` (${B.gf})`:""),
+    barRow("Yenen Gol / Maç",A.n?A.gam:null,B.n?B.gam:null,A.n?xgN2(A.gam):"—",B.n?xgN2(B.gam):"—",true,A.n?` (${A.ga})`:"",B.n?` (${B.ga})`:""),
+    barRow("Gol Averajı",A.n?A.gd:null,B.n?B.gd:null,A.n?dStr(A.gd):"—",B.n?dStr(B.gd):"—",false),
+    barRow("Oyuncu Katkısı (G+A)",A.pga,B.pga,`${A.pg}G · ${A.pa}A`,`${B.pg}G · ${B.pa}A`,false)
+  ];
+  if(A.xgAvg!=null&&B.xgAvg!=null){
+    rows.push(barRow("Ortalama xG / Maç",A.xgAvg,B.xgAvg,xgN2(A.xgAvg),xgN2(B.xgAvg),false));
+  }
+  const footCells=[];
+  if(A.topP||B.topP){
+    footCells.push(`<div class="cmp-fitem"><span>En Golcü</span><div class="cmp-fpair"><b>${A.topP?`⚽ ${esc(A.topP.n)} (${A.topP.g}G)`:"—"}</b><b>${B.topP?`⚽ ${esc(B.topP.n)} (${B.topP.g}G)`:"—"}</b></div></div>`);
+  }
+  if(A.oy||B.oy){
+    footCells.push(`<div class="cmp-fitem"><span>Oyun Ayarı</span><div class="cmp-fpair"><b>${esc(A.oy||"—")}</b><b>${esc(B.oy||"—")}</b></div></div>`);
+  }
+  const footHtml=footCells.length?`<div class="cmp-foot">${footCells.join("")}</div>`:"";
+  const sameNote=a.id===b.id?`<div class="note" style="margin:8px 0 0;text-align:center">Farklı bir sezon seçerek karşılaştırmayı görebilirsin.</div>`:"";
+  return psetCard("radar","sky","Sezon Karşılaştır","Head-to-Head sezon performansı","H2H",
+    selBar+vsStage+`<div class="cmp-bars">${rows.join("")}</div>`+footHtml+sameNote
+  )}
 function fmtBytes(b){
   if(!Number.isFinite(b)||b<=0)return "0 KB";
   if(b<1024*1024)return Math.max(1,Math.round(b/1024))+" KB";
@@ -1986,7 +2061,7 @@ function render(){
   const focusEl=aeId?$(aeId):null;
   if(focusEl&&document.activeElement!==focusEl){focusEl.focus();if(aeSel!=null&&typeof focusEl.setSelectionRange=="function")try{focusEl.setSelectionRange(aeSel,aeSel)}catch(e){}}}
 
-const UI_ONLY=new Set(["stab","mexp","fxw","fxv","bkv","adv","cust","roall","vitall","sall","rstopen","sfopen","hm","grk","tropen","trclose","bkadv","madv","qs","medit","mall","qx","gofin","mg","mo","mu","mp","mpf","mpa","glsc","glas","glclr","glasclr","glasno","glasopen","tel","tpl","ht","hmod","sfm","sfr","sv","sfd","sfx","ro","dcancel","next","all","no","tinfo","pinfo","totsv","guide","gs","gsgo","tif","ren","own","owno","mman","ex","im","rcv","sum","oldlsx"]);
+const UI_ONLY=new Set(["stab","mexp","fxw","fxv","bkv","adv","cust","roall","vitall","sall","rstopen","sfopen","hm","grk","tropen","trclose","bkadv","madv","qs","medit","mall","qx","gofin","mg","mo","mu","mp","mpf","mpa","glsc","glas","glclr","glasclr","glasno","glasopen","tel","tpl","ht","hmod","sfm","sfr","sv","sfd","sfx","ro","dcancel","next","all","no","tinfo","pinfo","totsv","guide","cmpsw","gs","gsgo","tif","ren","own","owno","mman","ex","im","rcv","sum","oldlsx"]);
 document.addEventListener("click",async e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.t!==undefined){hideToast();st.tab=+b.dataset.t;if(st.tab==6)refreshQuota(true);render();scrollTo(0,0);return}
@@ -2073,6 +2148,7 @@ document.addEventListener("click",async e=>{
   else if(a=="totsg"){mkImg("tots",store.seasons.find(y=>y.id==id)||s);return}
   else if(a=="totsv"){st.totsv=id}
   else if(a=="guide"){st.guide=true}
+  else if(a=="cmpsw"){const S=store.seasons;if(S.length>=2){const curA=(S.find(x=>x.id==st.ca)||S[0]).id,curB=(S.find(x=>x.id==st.cb)||S.find(x=>x.id!==curA)||S[1]).id;st.ca=curB;st.cb=curA}}
   else if(a=="karne"){mkImg("karne",store.seasons.find(y=>y.id==id)||s);return}
   else if(a=="mkart"){const q=findM(id);if(!q)return;mkImg("mac",q);return}
   else if(a=="kariyer"){mkImg("kariyer",{name:"ozet"});return}
