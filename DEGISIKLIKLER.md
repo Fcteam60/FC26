@@ -1,5 +1,17 @@
 # Değişiklik listesi
 
+## v18.40 (Premium Broadcast Maç Kartı, Sezon Karnesi & Poster Önizleme Modalı)
+- **Sezon Karnesi (`karneCv`) baştan tasarlandı:**
+  - **Kulüp renkli stadyum ışığı (`dkBg`, `glassBox`):** Senin kulübünün renklerinden (`c1`/`c2`) veya şampiyonlukta metalik altından beslenen çift taraflı stadyum ışığı, hafif saha geometrisi filigranı ve cam paneller eklendi.
+  - **Kulüp Vitrini & HÜC/ORT/DEF rozetleri:** Gölgeli arma, kulüp adı altında `HÜC / ORT / DEF` hapları ve sağda seviyeye göre altın/gümüş/bronz `GENEL` amblemi yer alır.
+  - **Telemetri & Ödüller Vitrini:** Galibiyet oranlı (`%`) 3'lü G-B-M cam kartları, orantılı G-B-M çubuğu, 4'lü gol/averaj/puan kutuları ve havada duran eski emojili satırlar yerine altın vurgulu **MVP** bandı + 2 sütunlu **Sezon Ödülleri** cam ızgarası tasarlandı.
+  - **Maç Sonuçları & G/B/M Form:** Maç listesi başlığına harfli (`G`/`B`/`M`) form daireleri, her satıra renkli sonuç ve skor kapsülleri eklendi.
+- **Maç Kartı (`macCv`) baştan tasarlandı:**
+  - **Çift kulüp ışıklı skor tabelası:** Sol taraf senin, sağ taraf rakibinin kulüp rengiyle aydınlanır; gölgeli armalar, dev parıltılı skor, uzatma/penaltı rozeti ve gradyan sonuç/hak ediş hapı yer alır.
+  - **Broadcast Maç Analizi & Detaylar:** Önde olan tarafı vurgulayan bölünmüş istatistik çubukları, `Gol − xG` verimlilik hapı, numaralı gol rozetleri, sağda hizalı `ASİST` kapsülleri ve altın **★ MOTM** bandı eklendi.
+- **Poster Önizleme Modalı (`imgDlg`, `.pimgdlg`):** Görselin iki yanında çıkan beyaz boşluk (`background:#fff`) tamamen kaldırıldı; koyu sahne çerçevesi ve özel SVG ikonlu **Paylaş / İndir** çubuğuna geçirildi.
+- Sürüm `18.40` (`VER`, `package.json` 18.40.0, `sw.js` `fc27-lig-v18-40`).
+
 ## v18.39 (Premium Puan Tablosu & Takımım / Sezonu Bitir Yeniden Tasarımı)
 - **Gruplar canlı puan tablosu baştan tasarlandı (`grpCard`, `.card.ptbl`):**
   - **Sıra (`#`) ve Puan (`P`) hizalama hatası giderildi:** Sol kenar şeridinin sıra rozetini kesmesi ve `.row.tb` kuralı yüzünden rakamların sola yapışması düzeltildi; tüm sayısal sütunlar ve puan kapsülleri tam ortalandı.

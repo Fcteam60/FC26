@@ -2106,3 +2106,26 @@ html[data-club] .ptbl .gtbl.row.tb.pt-r.myrow::after{display:none}
   .pt-n,.pt-av{font-size:11.5px}
   .ptbl .pt-r .gpts{font-size:14px}
 }
+/* ===== v18.40: Premium Poster Önizleme Modalı (.pimgdlg) ===== */
+.dbox.wide.pimgdlg{
+  padding:14px;border-radius:22px;
+  border:1px solid color-mix(in srgb,var(--gold) 28%,var(--gbd));
+  background:radial-gradient(95% 60% at 50% 0%,rgba(240,194,75,.10),transparent 65%),var(--gsheet);
+  box-shadow:0 20px 50px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.12);
+}
+.pimg-hd{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.pimg-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.pimg-t b{font-family:var(--num);font-size:21px;line-height:1.1;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pimg-t small{font-size:11.5px;color:var(--mut)}
+.pimg-stage{
+  border-radius:16px;overflow:hidden;padding:6px;
+  background:#050a12;border:1px solid rgba(255,255,255,.12);
+  box-shadow:inset 0 0 24px rgba(0,0,0,.6),0 8px 24px rgba(0,0,0,.35);
+}
+.pimgdlg .shimg{
+  display:block;width:100%;max-height:62vh;margin:0;border:0;border-radius:11px;
+  object-fit:contain;background:#050a12;
+}
+.pimg-nt{font-size:12px;color:var(--mut);text-align:center;margin:9px 0 11px}
+.pimg-acts{display:grid;grid-template-columns:1.3fr 1fr;gap:8px}
+.pimg-acts a.btn{text-decoration:none}
