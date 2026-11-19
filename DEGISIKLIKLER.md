@@ -1,5 +1,25 @@
 # Değişiklik listesi
 
+## v18.36 (Aşama 2: Premium Sezonlar & Rakipler Sayfaları)
+- **Geçmiş › Sezonlar yenilendi (`seasonsView`, `A6c`, `.sf-box`, `.scard`):**
+  - Ekranın tamamını kaplayan eski açık filtre bloğu, tek satırlık segmentli **Tümü | Kupa | Lig** barı + **Liste | Galeri** anahtarı + katlanabilir **Filtrele** çekmecesine (`st.sfopen`, sıfır disk yazımlı `UI_ONLY`) dönüştürüldü.
+  - **Kulüp ışıklı sezon kartları (`.card.scard`):** Her sezon kartı kulübün renklerinden (`--sc1`/`--sc2`) hafif ışık alır; aktif sezon zümrüt çerçeve ve `Aktif` etiketi, şampiyonluk sezonu altın parıltı alır. Armalı başlık, durum rozeti, `G-B-M` / Gol / Oyuncu mikro hapları ve ikonlu kompakt aksiyon çubuğu (*Aç*, *Karne*, *Özet*, *Adı değiştir*, *Sil*) eklendi.
+- **Geçmiş › Rakipler yenilendi (`oppCard`, `revCard`, `rivBlk`, `.pop-r`, `.rev-r`):**
+  - **Rakiplerim KPI özeti:** Düz iki satırlık özet yerine 3'lü KPI kutusu (*Farklı Rakip*, *Toplam Maç*, *Galibiyet %*) ve renkli vurgu şeritleri (*En çok yendiğin*, *En çok kaybettiğin*, *Seni en çok eleyen*) eklendi.
+  - **Kızıl vurgulu İntikam Listesi (`.rev-r`):** Soluk gri skor metinleri yerine alev ikonlu cam kart içinde kırmızı skor kapsülleri (`.rec-sc.l`) ve tur/eleme notları yerleştirildi.
+  - **Akıllı G-B-M rozetleri (`.gbm.pgbm`) & açılır H2H çekmecesi (`.podt`):** Sıfır değerli (`0G`/`0B`/`0M`) kutuların parlak neon gürültüsü giderilip soluklaştırıldı; rakibe dokununca açılan H2H paneli seri hapları, skor kapsüllü maç satırları ve averaj özetine yükseltildi.
+- Sürüm `18.36` (`VER`, `package.json` 18.36.0; `sw.js` önbelleği `fc27-lig-v18-36` olarak güncellenmelidir).
+
+## v18.35 (Aşama 1: Premium Akordeonlar, Sezon Ödülleri Vitrini & Ayarlar Yeniden Tasarımı)
+- **Sezon ekranı akordeonları ve Sezon Ödülleri yenilendi (`homeView`, `awardsCard`, `.pfold`, `.awd`):**
+  - Açık akordeon başlığını parlak neon yeşile boyayan `.acbtn.on` çakışması giderildi; tüm akordeonlar (Sezon Ödülleri, Rakip Analizi, Oyun Ayarları, Rozetler, Veri Sıfırlama) özel SVG ikon rozetli, canlı özet haplı (`.xfpill`) ve dairesel açma oklu (`.acc`) cam panellere geçirildi.
+  - **Sezon Ödülleri (`awardsCard`):** Akordeon içindeki mükerrer "Sezon ödülleri" başlığı kaldırıldı. *Sezonun MVP'si* üstte tam genişlikte altın ışıklı hero kart oldu; altındaki ödüller kategoriye özel renkli SVG ikonlarla 2 sütunlu dizilir ve tek sayıda ödül kaldığında son kart (örn. *Altın İkili*) tam genişliğe yayılarak boşluk ve isim kesilmesi önlenir.
+- **Ayarlar sayfası baştan tasarlandı (`setView`, `quotaCard`, `appCard`, `rcvCard`, `trashCard`, `resetCard`):**
+  - Düz ayırıcı çizgiler ve iri neon butonlar yerine her bölüm özel SVG ikonlu ve durum haplı gruplanmış cam kartlara (`.card.pglass.pset`) taşındı.
+  - **Görünüm ve Deneyim:** Tema (*Otomatik | Taktik Tahtası | Gece Stadyumu*) ve Hareket (*Açık | Kapalı*) seçimleri zarif segmentli kontrollere (`.stabs.seg3` / `.seg2`) dönüştürüldü.
+  - **Yedekleme & Depolama:** İkonlu yan yana *Yedeği İndir / Dosyadan Yükle* aksiyonları, 3'lü depolama KPI kutusu ve gradyan doluluk göstergesi eklendi; yasal uyarı metni katlanabilir alana alındı.
+- Sürüm `18.35` (`VER`, `package.json` 18.35.0; `sw.js` önbelleği `fc27-lig-v18-35` olarak güncellenmelidir).
+
 ## v18.34 (Katlanabilir Analiz Panelleri Hizalama Düzeltmesi & Premium Rekorlar / Hall of Fame)
 - **Katlanabilir analiz panelleri (`.xfold`) düzeltildi ve yükseltildi (`xgSec`, `xgSummaryCard`, `style.css`):**
   - Eski `v18.30` kuralının (`details.xfold>summary.xsh span:first-child`) ikon kutusunu başlığın üstüne iten CSS çakışması giderildi.
