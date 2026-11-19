@@ -1,5 +1,11 @@
 # Değişiklik listesi
 
+## v19.3 (Mobil Yakınlaştırma Engeli — Çift Dokunuş, İki Parmak & iOS Form Odak Koruması)
+- **Viewport sabitlendi (`index.html`):** `maximum-scale=1, minimum-scale=1, user-scalable=no` eklenerek yerel uygulama ölçeği sabitlendi.
+- **Çift dokunuş & form odak yakınlaştırması kapatıldı (`style.css`):** Tüm sayfa ve etkileşimli öğelere `touch-action: pan-x pan-y` ve `-webkit-text-size-adjust: 100%` uygulandı; iOS Safari'nin form alanına dokununca otomatik yakınlaştırmasını önlemek için tüm `input`, `select` ve `textarea` yazı boyutları en az `16px` yapıldı.
+- **İki parmakla (pinch-zoom) yakınlaştırma koruması (`app.js`):** iOS Safari `gesturestart/change/end` ve çoklu dokunuşlu (`touches.length > 1`) `touchstart/touchmove` olayları engellenerek tek parmak kaydırma ve hızlı buton tıklamaları bozulmadan iki parmak yakınlaştırma kapatıldı.
+- Sürüm `19.3` (`VER`, `package.json` 19.3.0, `sw.js` `fc27-lig-v19-3`).
+
 ## v19.2 (Gruptan Çıkanlar Mobil Taşma Düzeltmesi & TOTS PNG Posteri)
 - **Gruptan Çıkanlar (`.pg`, `qualSummary`) mobil taşma düzeltmesi:** Sağ sütundaki takım adlarının ve GEN rozetlerinin ekran kenarından kesilmesine yol açan `grid-template-columns: 1fr 1fr` hatası `repeat(2, minmax(0, 1fr))` ile düzeltildi; her çıkan takım taşmasız, kompakt cam kart olarak dizilir ve senin takımın altın çerçeveyle vurgulanır.
 - **Turnuvanın En İyi 11'i (TOTS) PNG Posteri (`totsCv`, `totsg`):** `Turnuva › İstatistik › Turnuvanın En İyi 11'i` kartına **En İyi 11'i Görsel Olarak Paylaş** düğmesi eklendi. 1080×1460 yüksek çözünürlüklü gece stadyumu ışıklı yeşil saha üzerinde 4-3-3 dizilişi, kulüp armaları, renkli mevki etiketleri ve performans haplarıyla indirilebilir/paylaşılabilir PNG poster üretir.

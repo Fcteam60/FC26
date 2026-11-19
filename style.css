@@ -2475,3 +2475,7 @@ button.hof-r.tap:active{background:var(--hi)}
 .pg .row.tb .n{font-size:12.5px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pg .row.tb .g{flex:0 0 auto;min-width:28px;font-size:14.5px;padding:0 5px;border-radius:6px}
 @media(max-width:349px){.pg{grid-template-columns:1fr}}
+/* ===== v19.3: Mobil Yakınlaştırma Engeli (Çift Dokunuş, İki Parmak & Form Odak Koruması) ===== */
+html,body{touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+button,a,input,select,textarea,summary,label{touch-action:pan-x pan-y}
+input,select,textarea,.sel,.f,.su-fld .sel,.sf-sels .sel{font-size:16px}
