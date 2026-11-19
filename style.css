@@ -294,14 +294,7 @@ button{transition:transform .08s}button:active{transform:scale(.96)}
 /* ===== v3: Grubum, küçük takım kartı, kompakt oyuncu satırı ===== */
 /* .tmini stilleri v18.30 bölümüne taşındı */
 .gq{margin-top:8px;padding:10px 12px;border:1px solid var(--ac);border-radius:12px;background:var(--hi)}
-.pq{border-top:1px solid var(--bd)}
-.pq.op{background:var(--hi);border-radius:12px;padding:0 10px 8px;margin:4px 0;border-top:0}
-.prow{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;background:none;border:0;color:var(--tx);font:inherit;text-align:left;padding:6px 0;cursor:pointer}
-.prow .n{flex:1;min-width:0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pst{display:flex;flex-direction:column;align-items:center;min-width:36px;line-height:1.05}
-.pst b{font-family:var(--num);font-size:20px}
-.pst i{font-style:normal;font-size:13px;color:var(--mut)}
-.prow .chev{color:var(--mut);width:16px;text-align:center}
+/* .pq/.prow/.pst v18.31 itibarıyla kaldırıldı */
 
 /* ===== v4: kadro / takım incele ===== */
 .row.tb{width:100%;background:none;border:0;border-top:1px solid var(--bd);color:var(--tx);font:inherit;text-align:left;cursor:pointer;min-height:44px}
@@ -986,7 +979,7 @@ main{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
 .psbox.fm .fd:first-child{margin-left:0}
 
 /* 4) İstatistik Alt Sekmeleri (.stabs) & Katlanabilir Paneller (.sbtog, details.xfold) */
-.stabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:0 0 12px;padding:4px;border-radius:15px;background:rgba(127,150,140,.11);border:1px solid var(--gbd)}
+.stabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:0 0 12px;padding:4px;border-radius:15px;background:rgba(127,150,140,.11);border:1px solid var(--gbd)}
 .stabs .chip{min-height:38px;margin:0;padding:7px 4px;border-radius:11px;border:1px solid transparent;background:transparent;color:var(--mut);font-size:12.5px;font-weight:700;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stabs .chip.on{background:var(--card)!important;color:var(--ac)!important;border-color:color-mix(in srgb,var(--ac) 36%,var(--gbd))!important;box-shadow:0 2px 8px rgba(0,0,0,.14)}
 .sbtog{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;padding:8px 11px;min-height:38px;border-radius:12px;cursor:pointer;border:1px solid var(--gbd);background:rgba(127,150,140,.08);color:var(--tx);font:600 12.5px inherit;text-align:left;-webkit-tap-highlight-color:transparent}

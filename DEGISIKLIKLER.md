@@ -1,5 +1,12 @@
 # Değişiklik listesi
 
+## v18.31 (İstatistik Sekmesi Sadeleştirmesi: 3 Alt Sekme & Mevki Dağılımı Taşınması)
+- **Kadro / Manuel Oyuncu Düzenleme alanı kaldırıldı (`statView`):** Maç girişlerinden otomatik hesaplanan oyuncu istatistikleri için manuel giriş/düzenleme kartı ve `Kadro` alt sekmesi kaldırıldı.
+- **Mevki dağılımı `Analiz` sekmesine taşındı:** `posDistCard([s])` artık `İstat. › Analiz` altında, *Oyun Tarzın* ve *xG, xPts & Verimlilik Analizi* kartlarının devamında gösterilir.
+- **Üst alt-sekme çubuğu 3'lü yapıya geçti (`.stabs`):** `İstat.` sekmesinde yalnızca **Maçlar | Analiz | Ödüller** kalır (`repeat(3, 1fr)`).
+- **Ölü kod ve CSS temizliği:** Kaldırılan manuel oyuncu düzenleme paneline ait `CF`, `st.px`, `a=="px"`, `a=="pm"`, `a=="pdel"`, `d.pr` olay dalları, `aePr` odak takibi ve `.pq` / `.prow` / `.pst` CSS kuralları temizlendi. Mevcut kayıtlı veriler (`s.pl`, `p.r`, `p.b`) geriye dönük uyumluluk için korunur.
+- Sürüm `18.31` (`VER`, `package.json` 18.31.0; `sw.js` önbelleği `fc27-lig-v18-31` olarak güncellenmelidir).
+
 ## v18.30 (Premium Sezon Ekranı & Kompakt İstatistik Sekmesi)
 - **Sezon ekranı yeniden tasarımı (`tmini`, `grpBox`, `seasonStatBox`, `homeView`):**
   - **Kulüp kartı (`tmini`):** Koyu temada parlayan düz açık zemin kaldırıldı; kulübün kendi renklerinden (`--club1`/`--club2`) hafif ışık alan cam kart tasarımına geçildi. Sağda seviyeye göre (altın/gümüş/bronz) `GEN` rozeti, altta `HÜC / ORT / DEF` güç çubukları yer alır. Kart sezon akışında en üste alındı.
