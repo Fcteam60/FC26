@@ -1110,3 +1110,117 @@ details.xfold .xfb{margin-top:10px}
 .dhkc b{font-family:var(--num);font-size:30px;line-height:1;color:var(--hk);font-variant-numeric:tabular-nums}
 .dhkc>span:last-child{font-size:11.5px;font-weight:700;color:var(--tx);line-height:1.15}
 @media(max-width:359px){.dnasc b{font-size:27px}.dhkc b{font-size:26px}.dhkc>span:last-child{font-size:11px}}
+/* ===== v18.33: Premium xG, xPts & Verimlilik Analizi ===== */
+/* 1) Hero Durum Bandı (.xvd.pxvd) */
+.xvd.pxvd{
+  --vc:var(--mut);
+  display:flex;align-items:flex-start;gap:12px;
+  padding:13px 14px;margin:4px 0 12px;border-radius:16px;
+  border:1px solid color-mix(in srgb,var(--vc) 32%,var(--gbd));border-left-width:1px;
+  background:radial-gradient(95% 110% at 0% 0%,color-mix(in srgb,var(--vc) 18%,transparent) 0%,transparent 65%),var(--gcard);
+  box-shadow:var(--gsh-lo),inset 0 1px 0 rgba(255,255,255,.08);
+}
+.xvd.pxvd.pos{--vc:var(--ac)}
+.xvd.pxvd.neg{--vc:#f97316}
+.xvdi{
+  flex:0 0 auto;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
+  color:var(--vc);background:color-mix(in srgb,var(--vc) 15%,transparent);
+  border:1px solid color-mix(in srgb,var(--vc) 35%,transparent);
+}
+.xvdi svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.xvdm{flex:1;min-width:0}
+.xvdm>b{display:block;font-family:var(--num);font-size:21px;line-height:1.1;letter-spacing:.01em;color:var(--tx)}
+.xvdm>span{display:block;font-size:12.5px;color:var(--mut);margin-top:3px;line-height:1.35}
+.xvdp{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.xvp{
+  display:inline-flex;align-items:baseline;gap:4px;padding:2px 9px;border-radius:99px;
+  background:rgba(127,150,140,.12);border:1px solid var(--gbd);font-size:11.5px;color:var(--mut);
+}
+.xvp b{font-family:var(--num);font-size:14px;color:var(--tx);font-variant-numeric:tabular-nums}
+.xvp.pos{background:rgba(15,157,107,.14);border-color:rgba(15,157,107,.35)}.xvp.pos b{color:var(--ac)}
+.xvp.neg{background:rgba(249,115,22,.14);border-color:rgba(249,115,22,.35)}.xvp.neg b{color:#f97316}
+
+/* 2) Birleşik Koç Özeti Kartı (.xinsbox) */
+.xinsbox{
+  margin:0 0 14px;padding:11px 13px;border-radius:16px;
+  border:1px solid var(--gbd);background:rgba(127,150,140,.06);
+  box-shadow:var(--gsh-lo),inset 0 1px 0 rgba(255,255,255,.06);
+}
+.xinsh{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--bd)}
+.xinsh b{font-family:var(--num);font-size:16px;letter-spacing:.04em;text-transform:uppercase;color:var(--tx)}
+.xinsh span{font-size:11.5px;color:var(--mut);font-weight:600}
+.xinsbox .xins{margin:0;gap:0}
+.xinsbox .xins li{
+  --ic:var(--mut);
+  background:transparent;border:0;border-radius:0;padding:8px 0;
+  border-top:1px solid var(--bd);gap:10px;align-items:flex-start;
+}
+.xinsbox .xins li:first-child{border-top:0;padding-top:2px}
+.xinsbox .xins li:last-child{padding-bottom:2px}
+.xinsbox .xins li.pos{--ic:var(--ac)}
+.xinsbox .xins li.neg{--ic:#f97316}
+.xini{
+  flex:0 0 auto;width:28px;height:28px;border-radius:9px;display:grid;place-items:center;margin-top:1px;
+  color:var(--ic);background:color-mix(in srgb,var(--ic) 14%,transparent);
+  border:1px solid color-mix(in srgb,var(--ic) 30%,transparent);
+}
+.xini svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.xint{flex:1;min-width:0;font-size:12.5px;line-height:1.42;color:var(--mut)}
+.xint b{color:var(--tx);font-weight:600}
+
+/* 3) Bölüm Başlıkları (.xshl / .xshi) & Katlanabilir Modüller (details.xfold) */
+.xshl{display:flex;align-items:center;gap:9px;min-width:0}
+.xshl>span:last-child{display:flex;flex-direction:column;min-width:0}
+.xshi{
+  flex:0 0 auto;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
+  color:var(--ac);background:color-mix(in srgb,var(--ac) 13%,transparent);
+  border:1px solid color-mix(in srgb,var(--ac) 28%,transparent);
+}
+.xshi svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+details.xfold{
+  margin-top:10px;padding:11px 13px;border-radius:16px;
+  border:1px solid var(--gbd);background:rgba(127,150,140,.06);
+  box-shadow:var(--gsh-lo),inset 0 1px 0 rgba(255,255,255,.06);
+}
+details.xfold>summary.xsh{flex-direction:row;align-items:center;justify-content:space-between;gap:8px;margin:0}
+details.xfold[open]{border-color:color-mix(in srgb,var(--ac) 34%,var(--gbd))}
+
+/* 4) Broadcast Telemetri KPI Kutuları (.xt) */
+.xtg{gap:9px}
+.xt{
+  --tc:var(--mut);
+  position:relative;overflow:hidden;
+  padding:12px 10px 10px;border-radius:15px;text-align:center;
+  border:1px solid color-mix(in srgb,var(--tc) 24%,var(--gbd));
+  background:radial-gradient(95% 75% at 50% 0%,color-mix(in srgb,var(--tc) 14%,transparent) 0%,transparent 70%),rgba(127,150,140,.07);
+  box-shadow:var(--gsh-lo),inset 0 1px 0 rgba(255,255,255,.07);
+}
+.xt.pos{--tc:var(--ac)}
+.xt.neg{--tc:#f97316}
+.xt .xtl{
+  display:block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--mut);margin:0 0 4px;line-height:1.2;
+}
+.xt b{font-family:var(--num);font-size:34px;line-height:1;letter-spacing:.01em;font-variant-numeric:tabular-nums;color:var(--tx)}
+.xt.pos b{color:var(--ac)}
+.xt.neg b{color:#f97316}
+.xt .xtsub{
+  display:inline-block;margin:6px auto 8px;padding:2px 8px;border-radius:99px;
+  background:rgba(127,150,140,.13);border:1px solid var(--gbd);
+  font-size:11.5px;font-weight:600;color:var(--tx);line-height:1.25;max-width:100%;
+}
+.xt.pos .xtsub{background:rgba(15,157,107,.13);border-color:rgba(15,157,107,.3);color:var(--ac)}
+.xt.neg .xtsub{background:rgba(249,115,22,.13);border-color:rgba(249,115,22,.3);color:#f97316}
+.xt em{
+  display:block;font-style:normal;color:var(--mut);font-size:11.5px;line-height:1.35;
+  margin-top:auto;padding-top:7px;border-top:1px solid var(--bd);
+}
+
+/* 5) xG Payı Karşılaştırma Çubuğu (.xbarbox) */
+.xbarbox{margin-top:10px;padding:9px 11px;border-radius:12px;background:rgba(127,150,140,.07);border:1px solid var(--gbd)}
+.xbarbox .xbarl{margin:0 0 6px;font-size:12px;color:var(--tx)}
+.xbarbox .xbarl b{font-family:var(--num);font-size:16px}
+.xbarbox .xbarl em{font-style:normal;color:var(--mut);font-size:11.5px}
+.xbarbox .xbar{margin:0;height:8px;border-radius:99px}
+.xbarbox .xbar i{border-radius:99px}
+@media(max-width:359px){.xt b{font-size:29px}.xvdm>b{font-size:19px}}

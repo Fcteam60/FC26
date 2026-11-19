@@ -1,5 +1,13 @@
 # Değişiklik listesi
 
+## v18.33 (Premium xG, xPts & Verimlilik Analizi)
+- **xG, xPts & Verimlilik Analizi yeniden tasarlandı (`xgSummaryCard`, `.pxvd`, `.xinsbox`, `.xt`, `.xbarbox`):**
+  - Üst durum bandı (`.xvd.pxvd`) soluk uyarı kutusundan çıkarılıp ikonlu, hafif radyal ışıklı ve `xG / xPts / Gol−xG` kapsam haplı hero karta dönüştürüldü.
+  - 4–5 ayrı kutu halinde yığılan emojili koç notları, özel SVG ikonlu tek birleşik cam **Koç Özeti** kartında (`.xinsbox`) toplandı.
+  - Tüm KPI kutuları (`.xt`) üstte büyük harf etiket, ortada `34px` semantik renkli sayı, altında delta hapı (`.xtsub`) ve ince ayraçlı yorum içeren katmanlı cam kartlara yükseltildi; tekrar eden uzun xG/xPts ders kitabı notları temizlendi (terimler sözlüğünde zaten mevcut).
+  - Tüm alt bölümlere ve katlanabilir analiz modüllerine (`details.xfold`) özel SVG ikonlar (`XGI`), `xG Payı` çubuğuna yüzdeli karşılaştırma kutusu (`.xbarbox`) eklendi.
+- Sürüm `18.33` (`VER`, `package.json` 18.33.0; `sw.js` önbelleği `fc27-lig-v18-33` olarak güncellenmelidir).
+
 ## v18.32 (Premium Oyun Tarzın / Taktiksel DNA & 3'lü Hak Ediş Dashboard)
 - **Taktiksel DNA eksen kartları yeniden tasarlandı (`tacticalDnaCard`, `.dnaitem`):**
   - Numaralandırma (`1., 2., 3., 4.`) kaldırıldı; her eksene özel çizgi SVG ikon (`DNAI`) eklendi.
