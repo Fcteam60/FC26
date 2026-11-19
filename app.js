@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="19.0",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="19.1",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -943,6 +943,40 @@ function finishTournament(s){
   else st.tab=7;
   return `Turnuva sonlandırıldı! 🏆 Şampiyon: ${T[out.ch].n}`}
 
+function koTreeHtml(s,ko,RDs){
+  const firstCnt=(ko[RDs[0]]&&ko[RDs[0]].length)||Math.max(1,Math.floor(adv(s.cfg)/2));
+  const cols=RDs.map((rd,rIdx)=>{
+    const expCnt=Math.max(1,Math.round(firstCnt/Math.pow(2,rIdx)));
+    const pairs=Array.isArray(ko[rd])?ko[rd]:[];
+    const isFirst=rIdx===0,isLast=rIdx===RDs.length-1;
+    const slots=rg(expCnt).map(pIdx=>{
+      const p=pairs[pIdx]||null;
+      const done=!!(p&&p.w!=null),mine=!!(p&&(p.t1===s.my||p.t2===s.my));
+      const w1=done&&p.w===p.t1,w2=done&&p.w===p.t2;
+      const sideCls=isLast?"":(pIdx%2===0?" top":" bot");
+      const armCls=mine?" mine":done?" dn":"";
+      const tmRow=(ti,g,isW,isL)=>{
+        if(ti==null||!T[ti])return `<div class="bkt-tm tbd"><span class="bkt-ph">?</span><span class="n">Bekleniyor</span><b>—</b></div>`;
+        return `<button class="bkt-tm${isW?" w":isL?" l":""}${ti===s.my?" me":""}" data-a="tinfo" data-i="${ti}" aria-label="${esc(T[ti].n)} kadrosunu incele">${badge(ti,16)}<span class="n">${esc(T[ti].n)}</span><b>${done?g:"·"}</b></button>`;
+      };
+      let meta="";
+      if(done){
+        const parts=[];
+        if(Array.isArray(p.leg1)&&Array.isArray(p.leg2)&&p.leg1.length>=2&&p.leg2.length>=2)parts.push(`${p.leg1[0]}-${p.leg1[1]} · ${p.leg2[0]}-${p.leg2[1]}`);
+        if(p.pf!=null&&p.pa!=null)parts.push(`P ${p.pf}-${p.pa}`);
+        else if(p.et)parts.push("UZ");
+        if(parts.length)meta=`<div class="bkt-ft">${parts.join(" · ")}</div>`;
+      }
+      const node=`<div class="bkt-node${mine?" mine":""}${done?" dn":""}${isLast?" fin":""}">`+
+        tmRow(p?p.t1:null,p?p.g1:null,w1,done&&!w1)+
+        tmRow(p?p.t2:null,p?p.g2:null,w2,done&&!w2)+
+        meta+`</div>`;
+      return `<div class="bkt-slot${isFirst?" fst":""}${isLast?" lst":""}${sideCls}${armCls}">${node}${!isLast?`<i class="bkt-arm" aria-hidden="true"></i>`:""}</div>`;
+    }).join("");
+    return `<div class="bkt-col${isLast?" fin":""}"><div class="bkt-chd">${isLast?"🏆 ":""}${esc(rd)}</div><div class="bkt-colb">${slots}</div></div>`;
+  }).join("");
+  return `<div class="bkt-wrap" role="region" aria-label="Eleme ağacı diyagramı"><div class="bkt-tree">${cols}</div></div><div class="note" style="margin:6px 0 0">Yatay kaydırarak tüm eleme turlarını takip edebilir, gol detayları için «Liste» görünümüne geçebilirsin.</div>`;
+}
 function koBracketCard(s){
   if(isLg(s.cfg)||!s.G)return "";
   initKoBracket(s,false);
@@ -964,25 +998,32 @@ function koBracketCard(s){
   }else if(out&&out.done&&!s.res){
     simBtns=`<div class="gq" style="margin:0 0 10px;border-color:var(--gold)"><b>🏆 Turnuva Maçları Tamamlandı!</b><div class="note" style="margin:3px 0 8px">Şampiyon: <b>${esc(T[out.ch].n)}</b>${out.ru!=null?` · Finalist: <b>${esc(T[out.ru].n)}</b>`:""}. Turnuvayı sonlandırıp geçmişe ve karneye kaydedebilirsin.</div><button class="btn p cta" data-a="fintrn">🏆 Turnuvayı Sonlandır ve Kaydet</button></div>`;
   }
-  const rdBlocks=RDs.filter(rd=>Array.isArray(ko[rd])&&ko[rd].length).map(rd=>{
-    const pairs=ko[rd];
-    const items=pairs.map(p=>{
-      const mine=p.t1===s.my||p.t2===s.my,done=p.w!=null;
-      const w1=p.w===p.t1,w2=p.w===p.t2,isFin=rd===RDs[RDs.length-1],isTwo=Array.isArray(p.leg1)&&Array.isArray(p.leg2)&&p.leg1.length>=2&&p.leg2.length>=2;
-      const ck='<i class="bkck" role="img" aria-label="Turu geçti" title="Turu geçti">✓</i>';
-      const scStr=done?`${p.g1}–${p.g2}${p.pf!=null?` <small>(P ${p.pf}-${p.pa})</small>`:p.et?` <small>(UZ)</small>`:""}${isTwo?` <small class="bkleg" title="1.M ${p.leg1[0]}–${p.leg1[1]} · 2.M ${p.leg2[0]}–${p.leg2[1]}">RÖVANŞLI</small>`:""}`:"vs";
-      const det=done?simMetaLine(p.t1,p.t2,p.g1,p.g2,p.s1,p.s2,p.a1,p.a2,p.leg1,p.leg2):"";
-      return `<div class="bktie${mine?" mine":""}${done?" dn":""}${isFin?" fin":""}">`+
-        `<span class="bktm hm${w1?" w":""}">${w1?ck:""}${p.l1?`<small class="bksd">${p.l1}</small>`:""}<span class="n">${nm(p.t1)}</span>${badge(p.t1,18)}</span>`+
-        `<b class="bksc">${scStr}</b>`+
-        `<span class="bktm aw${w2?" w":""}">${badge(p.t2,18)}<span class="n">${nm(p.t2)}</span>${p.l2?`<small class="bksd">${p.l2}</small>`:""}${w2?ck:""}</span>`+
-        (det?`<div class="simdet">${det}</div>`:"")+
-        `</div>`;
+  const canTree=RDs.length>=2,bkv=canTree?(st.bkv==="list"?"list":"tree"):"list";
+  const viewSw=canTree?`<div class="stabs seg2" style="margin:0 0 10px" role="tablist" aria-label="Eleme görünümü"><button class="chip ${bkv==="tree"?"on":""}" role="tab" aria-selected="${bkv==="tree"}" data-a="bkv" data-v="tree">🌳 Ağaç Görünümü</button><button class="chip ${bkv==="list"?"on":""}" role="tab" aria-selected="${bkv==="list"}" data-a="bkv" data-v="list">📋 Detaylı Liste</button></div>`:"";
+  let content="";
+  if(bkv==="tree"){
+    content=koTreeHtml(s,ko,RDs);
+  }else{
+    content=RDs.filter(rd=>Array.isArray(ko[rd])&&ko[rd].length).map(rd=>{
+      const pairs=ko[rd];
+      const items=pairs.map(p=>{
+        const mine=p.t1===s.my||p.t2===s.my,done=p.w!=null;
+        const w1=p.w===p.t1,w2=p.w===p.t2,isFin=rd===RDs[RDs.length-1],isTwo=Array.isArray(p.leg1)&&Array.isArray(p.leg2)&&p.leg1.length>=2&&p.leg2.length>=2;
+        const ck='<i class="bkck" role="img" aria-label="Turu geçti" title="Turu geçti">✓</i>';
+        const scStr=done?`${p.g1}–${p.g2}${p.pf!=null?` <small>(P ${p.pf}-${p.pa})</small>`:p.et?` <small>(UZ)</small>`:""}${isTwo?` <small class="bkleg" title="1.M ${p.leg1[0]}–${p.leg1[1]} · 2.M ${p.leg2[0]}–${p.leg2[1]}">RÖVANŞLI</small>`:""}`:"vs";
+        const det=done?simMetaLine(p.t1,p.t2,p.g1,p.g2,p.s1,p.s2,p.a1,p.a2,p.leg1,p.leg2):"";
+        return `<div class="bktie${mine?" mine":""}${done?" dn":""}${isFin?" fin":""}">`+
+          `<span class="bktm hm${w1?" w":""}">${w1?ck:""}${p.l1?`<small class="bksd">${p.l1}</small>`:""}<span class="n">${nm(p.t1)}</span>${badge(p.t1,18)}</span>`+
+          `<b class="bksc">${scStr}</b>`+
+          `<span class="bktm aw${w2?" w":""}">${badge(p.t2,18)}<span class="n">${nm(p.t2)}</span>${p.l2?`<small class="bksd">${p.l2}</small>`:""}${w2?ck:""}</span>`+
+          (det?`<div class="simdet">${det}</div>`:"")+
+          `</div>`;
+      }).join("");
+      const isF=rd===RDs[RDs.length-1],cntTx=`${pairs.filter(p=>p.w!=null).length}/${pairs.length} eşleşme`;
+      return `<div class="bkrd${isF?" fin":""}">${isF?`<div class="bkfh"><b>🏆 FİNAL</b><small>${cntTx}</small></div>`:`<div class="rt" style="margin:6px 0 4px"><b>${rd}</b> <small>${cntTx}</small></div>`}<div class="bkgrid">${items}</div></div>`;
     }).join("");
-    const isF=rd===RDs[RDs.length-1],cntTx=`${pairs.filter(p=>p.w!=null).length}/${pairs.length} eşleşme`;
-    return `<div class="bkrd${isF?" fin":""}">${isF?`<div class="bkfh"><b>🏆 FİNAL</b><small>${cntTx}</small></div>`:`<div class="rt" style="margin:6px 0 4px"><b>${rd}</b> <small>${cntTx}</small></div>`}<div class="bkgrid">${items}</div></div>`;
-  }).join("");
-  return `<div class="card pglass pko" style="margin:0 0 12px"><h3>🏆 Eleme Ağacı (Bracket)<small>${out&&out.done?`Şampiyon: ${esc(T[out.ch].n)}`:(userElim?"Elendin · Turnuva devam ediyor":koPath(s.cfg))}</small></h3>${simBtns}${rdBlocks}</div>`}
+  }
+  return `<div class="card pglass pko" style="margin:0 0 12px"><h3>🏆 Eleme Ağacı (Bracket)<small>${out&&out.done?`Şampiyon: ${esc(T[out.ch].n)}`:(userElim?"Elendin · Turnuva devam ediyor":koPath(s.cfg))}</small></h3>${simBtns}${viewSw}${content}</div>`}
 
 function grpCard(g,gi){
   const s=cur(),ravg=f=>g.reduce((a,i)=>a+RT(s,i)[f],0)/g.length;
@@ -1158,7 +1199,7 @@ const norm=()=>store.seasons.forEach(s=>{
 norm();
 const cur=()=>store.seasons.find(s=>s.id==store.cur)||store.seasons[0];
 const defMst=()=>({myPos:"",oppPos:"",myShots:"",oppShots:"",mySot:"",oppSot:"",myPass:"",oppPass:"",myXg:"",oppXg:""});
-const sync=()=>{st.ti=null;st.pi=null;st.dr=null;st.k=0;st.mg=0;st.mo=0;st.mu=0;st.mp=0;st.mpf=0;st.mpa=0;st.mgls=[];st.msc=nob();st.mas=nob();st.mmom="";st.mop=null;st.mlg=null;st.qs=false;st.trm=null;st.fxw=0;st.fxv=null;st.med=null;st.mall=false;st.sall=false;st.madv=false;st.isGenerating=false;st.mst=defMst();st.mexp=nob();if(!st.stab)st.stab="m"};
+const sync=()=>{st.ti=null;st.pi=null;st.dr=null;st.k=0;st.mg=0;st.mo=0;st.mu=0;st.mp=0;st.mpf=0;st.mpa=0;st.mgls=[];st.msc=nob();st.mas=nob();st.mmom="";st.mop=null;st.mlg=null;st.qs=false;st.trm=null;st.fxw=0;st.fxv=null;st.bkv=null;st.med=null;st.mall=false;st.sall=false;st.madv=false;st.isGenerating=false;st.mst=defMst();st.mexp=nob();if(!st.stab)st.stab="m"};
 function refreshQuota(reRender){
   if(typeof estimateStorage!=="function")return Promise.resolve(null);
   return estimateStorage().then(est=>{
@@ -1521,11 +1562,29 @@ function plProfileData(name){
   return{name:disp,db,totG,totA,totM,totMom,totGA:totG+totA,clG,clA,clMom,seasons:seasons.reverse(),topOpps,partners};
 }
 
+function plSeasonChartSvg(seasons){
+  const L=seasons.slice().reverse().slice(-8);
+  if(!L.length)return "";
+  const W=300,H=96,pL=10,pR=10,pT=18,pB=22,hh=H-pT-pB;
+  const mx=Math.max(1,...L.map(x=>x.g+x.a)),slot=(W-pL-pR)/L.length,bw=Math.min(24,Math.max(10,slot*0.52));
+  const bars=L.map((x,i)=>{
+    const cx=pL+slot*(i+0.5),tot=x.g+x.a,gH=x.g/mx*hh,aH=x.a/mx*hh,totH=gH+aH;
+    const lbl=x.sName.replace(/^Sezon\s*/i,"S").slice(0,5);
+    return `<g><title>${esc(x.sName)}: ${x.g}G · ${x.a}A</title>`+
+      (x.g?`<rect class="plb-g" x="${(cx-bw/2).toFixed(1)}" y="${(pT+hh-gH).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(2,gH).toFixed(1)}" rx="3"/>`:"")+
+      (x.a?`<rect class="plb-a" x="${(cx-bw/2).toFixed(1)}" y="${(pT+hh-totH).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(2,aH).toFixed(1)}" rx="3"/>`:"")+
+      (tot?`<text class="plb-v" x="${cx.toFixed(1)}" y="${Math.max(11,pT+hh-totH-4).toFixed(1)}" text-anchor="middle">${tot}</text>`:"")+
+      `<text class="plb-l" x="${cx.toFixed(1)}" y="${H-6}" text-anchor="middle">${esc(lbl)}</text></g>`;
+  }).join("");
+  return `<div class="pl-sec"><div class="pl-chd"><span class="pset-lbl" style="margin:0">Sezon İvmesi (G + A)</span><span class="pl-leg"><i></i>Gol <i class="a"></i>Asist</span></div><div class="pl-chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Sezonlara göre gol ve asist grafiği"><line class="plb-ax" x1="${pL}" y1="${pT+hh}" x2="${W-pR}" y2="${pT+hh}"/>${bars}</svg></div></div>`;
+}
 function plDlg(){
   const d=st.pi?plProfileData(st.pi):null;
   if(!d)return "";
-  const db=d.db,ti=db?db.i:null;
-  const sub=db?`${db.p.p} · ${db.p.a} yaş · ${esc(T[ti].n)}`:"Kariyer oyuncu profili";
+  const db=d.db,ti=db?db.i:(d.seasons[0]&&d.seasons[0].tmIdx!=null&&T[d.seasons[0].tmIdx]?d.seasons[0].tmIdx:null);
+  const cb=ti!=null&&T[ti]?bspec(ti):null;
+  const sty=cb?` style="--pc1:${cb.c1};--pc2:${cb.c2}"`:"";
+  const sub=db?`<span class="sqp p-${db.p.g}" style="display:inline-flex;margin-right:4px">${db.p.p}</span>${db.p.a} yaş · ${esc(T[db.i].n)}`:"Kariyer oyuncu profili";
   const kpis=`<div class="pset-kpi" style="margin-top:10px">`+
     `<div class="pk2 emr"><b>${d.totG}</b><span>Gol</span></div>`+
     `<div class="pk2 sky"><b>${d.totA}</b><span>Asist</span></div>`+
@@ -1539,15 +1598,16 @@ function plDlg(){
     `<span class="dnam"><b>${d.seasons.length}</b><em>Sezon</em></span>`+
     (d.clG+d.clA+d.clMom?`<span class="dnam"><b>${d.clG}G ${d.clA}A</b><em>Eleme</em></span>`:"")+
     `</div>`;
+  const chartHtml=d.seasons.length>=2?plSeasonChartSvg(d.seasons):"";
   const oppHtml=d.topOpps.length?`<div class="pl-sec"><div class="pset-lbl">En Çok Gol Attığı Rakipler</div>`+
     d.topOpps.map(([on,cnt])=>{const oi=ixOf(on);return `<div class="row">${oi!=null?badge(oi,20):""}<span class="n"><b>${esc(on)}</b></span><span class="g">${cnt} gol</span></div>`}).join("")+`</div>`:"";
   const partHtml=d.partners.length?`<div class="pl-sec"><div class="pset-lbl">En Uyumlu Asist Partnerleri</div>`+
     d.partners.map(p=>`<div class="row"><span class="n"><b>${esc(p.n)}</b><small class="pm"> ${p.from?`${p.from} asist aldı`:""}${p.from&&p.to?" · ":""}${p.to?`${p.to} asist verdi`:""}</small></span><span class="g">${p.from+p.to}</span></div>`).join("")+`</div>`:"";
   const snHtml=d.seasons.length?`<div class="pl-sec"><div class="pset-lbl">Sezon Bazlı Performans</div>`+
     d.seasons.map(x=>`<div class="row">${x.tmIdx!=null&&T[x.tmIdx]?badge(x.tmIdx,20):""}<span class="n"><b>${esc(x.sName)}</b>${x.tmIdx!=null&&T[x.tmIdx]?` <small class="pm">${esc(T[x.tmIdx].n)}</small>`:""}</span><span class="sqst"><i class="sg">${x.g}G</i>${x.a?`<i class="sa">${x.a}A</i>`:""}${x.mom?`<i class="sm">${x.mom}★</i>`:""}</span></div>`).join("")+`</div>`:"";
-  return `<div class="dlg ti"><button class="tibk" data-a="no" aria-label="Kapat"></button><div class="dbox tisheet" role="dialog" aria-modal="true" aria-label="${esc(d.name)} oyuncu profili">`+
+  return `<div class="dlg ti"><button class="tibk" data-a="no" aria-label="Kapat"></button><div class="dbox tisheet plsheet"${sty} role="dialog" aria-modal="true" aria-label="${esc(d.name)} oyuncu profili">`+
     `<div class="tih">${ti!=null?badge(ti,46):`<span class="aci">${UICO.boot}</span>`}<div class="tim"><b>${esc(d.name)}</b><span>${sub}</span></div>${db?`<div class="tmo2"><b>${db.p.o}</b><i>GEN</i></div>`:""}</div>`+
-    kpis+metaPills+oppHtml+partHtml+snHtml+
+    kpis+metaPills+chartHtml+oppHtml+partHtml+snHtml+
     `<div class="bar"><button class="btn p" data-a="no" style="flex:1">Kapat</button></div>`+
   `</div></div>`;
 }
@@ -2885,6 +2945,73 @@ const tplOn=(c,p)=>p[4]===0&&p[2]===p[3]?isLg(c):(c.N==p[2]&&(c.gs||0)==p[3]&&(!
 /* ---------- SEZON ANA EKRANI, 5'Lİ GEZİNME, HIZLI SKOR PANELİ ---------- */
 const crs=(i,w)=>`<div style="display:flex;justify-content:center;margin-bottom:2px">${badge(i,w||36)}</div>`;
 const PITCH='<svg viewBox="0 0 96 64" aria-hidden="true"><rect x="4" y="4" width="88" height="56" rx="3"/><path d="M48 4v56"/><circle cx="48" cy="32" r="9"/><rect x="4" y="20" width="12" height="24"/><rect x="80" y="20" width="12" height="24"/></svg>';
+function tourneyTots(s,st2){
+  if(!st2||!st2.teams||!st2.teams.length)return null;
+  const tmMap=nob();st2.teams.forEach(t=>{if(t.o>0)tmMap[t.ti]=t});
+  const pool=nob();
+  const put=(n,ti,pos,grp,ovr,g,a,mom)=>{
+    if(!n||isKK(n)||ti==null||!T[ti]||!tmMap[ti])return;
+    const k=nz(n)+"|"+ti;
+    if(!pool[k])pool[k]={n,ti,pos:pos||"CM",grp:grp||"M",ovr:ovr||75,g:0,a:0,mom:0,mine:ti===s.my};
+    if(g)pool[k].g=Math.max(pool[k].g,g);
+    if(a)pool[k].a=Math.max(pool[k].a,a);
+    if(mom)pool[k].mom=Math.max(pool[k].mom,mom);
+  };
+  (st2.players||[]).forEach(p=>{
+    const f=sqFind(p.ti,p.n)||(sqFindAny(p.n)&&sqFindAny(p.n).p);
+    put(p.n,p.ti,f?f.p:"CM",f?f.g:"M",f?f.o:76,p.g||0,p.a||0,p.mom||0);
+  });
+  Object.values(tmMap).forEach(tm=>{
+    const sq=squadOf(tm.ti);if(!sq.length)return;
+    const addTop=(gCode,cnt)=>{
+      sq.filter(p=>p.g===gCode).sort((a,b)=>(a.t==="S"?0:1)-(b.t==="S"?0:1)||b.o-a.o).slice(0,cnt)
+        .forEach(p=>put(p.n,tm.ti,p.p,p.g,p.o,0,0,0));
+    };
+    addTop("K",1);addTop("D",4);addTop("M",3);addTop("F",3);
+  });
+  const list=Object.values(pool).map(p=>{
+    const tm=tmMap[p.ti],cs=tm?tm.cs:0,gaPm=tm&&tm.o?tm.ga/tm.o:1.5,wr=tm&&tm.o?tm.w/tm.o:0;
+    let sc=0;
+    if(p.grp==="K")sc=p.mom*6+cs*4.5+Math.max(0,2.2-gaPm)*3.5+wr*2.5+p.ovr*0.12+p.g*5+p.a*3;
+    else if(p.grp==="D")sc=p.g*5.5+p.a*4+p.mom*4.5+cs*2.8+Math.max(0,2.0-gaPm)*2.0+wr*1.8+p.ovr*0.10;
+    else if(p.grp==="M")sc=p.g*3.8+p.a*3.2+p.mom*3.5+wr*1.5+p.ovr*0.08;
+    else sc=p.g*4.0+p.a*2.5+p.mom*3.5+wr*1.2+p.ovr*0.08;
+    return Object.assign(p,{sc,cs,mvp:3*p.g+2*p.a+2*p.mom});
+  });
+  const pick=(gCode,n)=>list.filter(p=>p.grp===gCode).sort((a,b)=>b.sc-a.sc||b.mvp-a.mvp||b.ovr-a.ovr||TR_CMP(a.n,b.n)).slice(0,n);
+  const K=pick("K",1),D=pick("D",4),M=pick("M",3),F=pick("F",3);
+  if(K.length<1||D.length<4||M.length<3||F.length<3)return null;
+  return{F,M,D,K};
+}
+function totsPitchCard(s,st2){
+  const xi=tourneyTots(s,st2);if(!xi)return "";
+  const shortNm=n=>{const ps=String(n||"").trim().split(/\s+/);return ps.length>1&&n.length>12?ps[ps.length-1]:n};
+  const node=p=>{
+    const stat=p.g||p.a?`${p.g?p.g+"G":""}${p.g&&p.a?" ":""}${p.a?p.a+"A":""}`:(p.mom?`${p.mom}★`:(p.cs?`${p.cs} TK`:`${p.ovr}`));
+    const act=p.mine?`data-a="pinfo" data-n="${esc(p.n)}"`:`data-a="tinfo" data-i="${p.ti}"`;
+    return `<button class="tots-pl${p.mine?" mine":""}" ${act} aria-label="${esc(p.n)} (${esc(T[p.ti].n)})">`+
+      `<span class="tots-bdg">${badge(p.ti,26)}<i class="tots-pos p-${p.grp}">${esc(p.pos)}</i></span>`+
+      `<b class="tots-nm">${p.mine?"★ ":""}${esc(shortNm(p.n))}</b>`+
+      `<span class="tots-st">${stat}${p.mom&&(p.g||p.a)?` · ${p.mom}★`:""}</span>`+
+    `</button>`;
+  };
+  const pitch=`<div class="tots-pitch" role="region" aria-label="Turnuvanın En İyi 11'i 4-3-3 dizilişi">`+
+    `<svg class="tots-lines" viewBox="0 0 360 440" preserveAspectRatio="none" aria-hidden="true">`+
+      `<rect x="10" y="10" width="340" height="420" rx="8"/>`+
+      `<line x1="10" y1="220" x2="350" y2="220"/>`+
+      `<circle cx="180" cy="220" r="46"/><circle cx="180" cy="220" r="3" fill="currentColor"/>`+
+      `<rect x="92" y="10" width="176" height="64"/><rect x="134" y="10" width="92" height="24"/>`+
+      `<rect x="92" y="366" width="176" height="64"/><rect x="134" y="406" width="92" height="24"/>`+
+    `</svg>`+
+    `<div class="tots-rows">`+
+      `<div class="tots-row r3">${xi.F.map(node).join("")}</div>`+
+      `<div class="tots-row r3">${xi.M.map(node).join("")}</div>`+
+      `<div class="tots-row r4">${xi.D.map(node).join("")}</div>`+
+      `<div class="tots-row r1">${xi.K.map(node).join("")}</div>`+
+    `</div>`+
+  `</div><div class="note" style="margin:8px 0 0">Gol, asist, MOTM ve temiz kasa performansına göre otomatik 4-3-3 seçilir. Oyuncuya dokunarak profil/kadro inceleyebilirsin.</div>`;
+  return psetCard("trophy","gold","Turnuvanın En İyi 11’i","Canlı performans seçkisi · 4-3-3","TOTS",pitch);
+}
 function tstatView(s){
   if(!s.G||!s.G.length)return `<div class="card pglass">${emp("Turnuva istatistikleri kura sonrası burada görünür.")}</div>`;
   const st2=tourneyStats(s);
@@ -2910,7 +3037,7 @@ function tstatView(s){
   const big=M.slice().sort((a,b)=>Math.abs(b.g1-b.g2)-Math.abs(a.g1-a.g2)||(b.g1+b.g2)-(a.g1+a.g2))[0];
   const hi=M.slice().sort((a,b)=>(b.g1+b.g2)-(a.g1+a.g2))[0];
   const mline=m=>`<div class="simm"><button class="tl" data-a="tinfo" data-i="${m.t1}">${esc(T[m.t1].n)}</button><b>${m.g1}–${m.g2}</b><button class="tl" data-a="tinfo" data-i="${m.t2}">${esc(T[m.t2].n)}</button></div>`;
-  let h="";
+  let h=totsPitchCard(s,st2);
   if(mvp.length)h+=psetCard("trophy","gold","Turnuva MVP’si","3×gol + 2×asist + 2×MOTM",`ilk ${mvp.length}`,podium(mvp,o=>o.mvp,"puan",o=>`${o.g}G ${o.a}A ${o.mom}MA`,o=>`${o.mvp} p <small>${o.g}G ${o.a}A ${o.mom}MA</small>`));
   if(gol.length)h+=psetCard("boot","gold","Gol Krallığı","Turnuvanın en golcü oyuncuları",`ilk ${gol.length}`,podium(gol,o=>o.g,"gol",o=>`${o.a} asist`,o=>`${o.g}G`));
   h+=psetCard("play","sky","Asist Krallığı","En çok gol pası verenler",asi.length?`ilk ${asi.length}`:"0",asi.length?podium(asi,o=>o.a,"asist",o=>`${o.g} gol`,o=>`${o.a}A`):`<div class="note" style="margin:0">Asist verisi oynanan maçlardan toplanır; henüz asist kaydı yok.</div>`);
@@ -3310,7 +3437,7 @@ function tiBody(i){
   const row=p=>{
     const ps=stMap[nz(p.n)];
     const bdg=ps?`<span class="sqst" aria-label="Sezon istatistiği">${ps.g?`<i class="sg">${ps.g}G</i>`:""}${ps.a?`<i class="sa">${ps.a}A</i>`:""}${ps.mom?`<i class="sm">${ps.mom}★</i>`:""}</span>`:"";
-    return `<div class="sqr${p.t=="R"?" rz":""}${ps?" hasst":""}"><span class="sqn">${p.j||""}</span><span class="sqm"><span class="sqnm">${esc(p.n)}${p.t=="S"?`<i class="xi" aria-label="İlk 11">●</i>`:""}</span>${bdg}</span><span class="sqp">${p.p}</span><span class="sqa">${p.a}</span><span class="sqo">${rb(p.o)}</span></div>`;
+    return `<div class="sqr${p.t=="R"?" rz":""}${ps?" hasst":""}"><span class="sqn">${p.j||""}</span><span class="sqm"><span class="sqnm">${esc(p.n)}${p.t=="S"?`<i class="xi" aria-label="İlk 11">●</i>`:""}</span>${bdg}</span><span class="sqp p-${p.g}">${p.p}</span><span class="sqa">${p.a}</span><span class="sqo">${rb(p.o)}</span></div>`;
   };
   let body="";
   ["K","D","M","F"].filter(g=>f=="A"||f==g).forEach(g=>{const G=L.filter(p=>p.g==g&&(!tq||nz(p.n).includes(tq)));if(G.length)body+=`<div class="rt">${SQL[g]} <small>${G.length}</small></div>`+G.map(row).join("")});
@@ -3640,7 +3767,7 @@ function render(){
   const focusEl=aeId?$(aeId):null;
   if(focusEl&&document.activeElement!==focusEl){focusEl.focus();if(aeSel!=null&&typeof focusEl.setSelectionRange=="function")try{focusEl.setSelectionRange(aeSel,aeSel)}catch(e){}}}
 
-const UI_ONLY=new Set(["stab","mexp","fxw","fxv","adv","cust","roall","vitall","sall","rstopen","sfopen","hm","grk","tropen","trclose","bkadv","madv","qs","medit","mall","qx","gofin","mg","mo","mu","mp","mpf","mpa","glsc","glas","glclr","glasclr","glasno","glasopen","tel","tpl","ht","hmod","sfm","sfr","sv","sfd","sfx","ro","dcancel","next","all","no","tinfo","pinfo","gs","gsgo","tif","ren","own","owno","mman","ex","im","rcv","sum","oldlsx"]);
+const UI_ONLY=new Set(["stab","mexp","fxw","fxv","bkv","adv","cust","roall","vitall","sall","rstopen","sfopen","hm","grk","tropen","trclose","bkadv","madv","qs","medit","mall","qx","gofin","mg","mo","mu","mp","mpf","mpa","glsc","glas","glclr","glasclr","glasno","glasopen","tel","tpl","ht","hmod","sfm","sfr","sv","sfd","sfx","ro","dcancel","next","all","no","tinfo","pinfo","gs","gsgo","tif","ren","own","owno","mman","ex","im","rcv","sum","oldlsx"]);
 document.addEventListener("click",async e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.t!==undefined){hideToast();st.tab=+b.dataset.t;if(st.tab==6)refreshQuota(true);render();scrollTo(0,0);return}
@@ -3667,6 +3794,7 @@ document.addEventListener("click",async e=>{
 
   else if(a=="fxw"){st.fxw=+dv}
   else if(a=="fxv"){st.fxv=dv}
+  else if(a=="bkv"){st.bkv=dv}
   else if(a=="stab"){st.stab=dv}
   else if(a=="mexp"){st.mexp=st.mexp||nob();const curOpen=(id in st.mexp)?!!st.mexp[id]:(b.dataset.def==="1");st.mexp[id]=!curOpen}
   else if(a=="simm"){ensureSim(s).m=+dv}

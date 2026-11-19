@@ -1,5 +1,12 @@
 # Değişiklik listesi
 
+## v19.1 (Broadcast Saha Dizilişi TOTS, Bağlantı Çizgili Eleme Ağacı, Oyuncu Profili Işığı/Grafiği & Mevki Rozetleri)
+- **Turnuvanın En İyi 11'i — Broadcast Saha Dizilişi (`tourneyTots`, `totsPitchCard`, `.tots-pitch`):** `Turnuva › İstatistik` sekmesinin en üstüne, gece stadyumu ışıklı perspektif yeşil saha üzerinde otomatik **4-3-3** dizilişi eklendi. Gol, asist, MOTM ve temiz kasa performansına göre seçilen 11 oyuncu kulüp arması, mevki rozeti ve stat hapıyla gösterilir; kendi oyuncularına dokununca Oyuncu Profili, rakip oyunculara dokununca Kadro penceresi açılır.
+- **Gerçek Bağlantı Çizgili Eleme Ağacı (`koTreeHtml`, `koBracketCard`, `bkv`):** 2+ turlu eleme aşamalarında yatay kaydırmalı, eşleşmeleri üst tura altın/zümrüt kollarla bağlayan gerçek turnuva ağacı (**🌳 Ağaç Görünümü**) varsayılan oldu; gol/asist dökümü için **📋 Detaylı Liste** görünümüne tek dokunuşla geçilebilir.
+- **Oyuncu Profili Kulüp Işığı & Mini Sezon Grafiği (`plDlg`, `plSeasonChartSvg`, `.plsheet`):** Tıklanabilir Oyuncu Profili penceresi oyuncunun kulübünün renklerinden (`--pc1`/`--pc2`) üst stadyum ışığı alır; 2+ sezon verisi olan oyuncularda sezonlara göre yığılmış **Gol + Asist** çubuk grafiği (`Sezon İvmesi`) gösterilir.
+- **Kadro İnceleme Mevki Renk Kodları (`tiBody`, `.sqp.p-*`):** Kadro penceresindeki pozisyon etiketleri (`GK`, `CB`, `CM`, `ST` vb.) *Mevki Dağılımı* ile uyumlu renk kodlu hap rozetlere (Kaleci kehribar, Defans çivit, Orta saha gök mavisi, Forvet zümrüt) geçirildi.
+- Sürüm `19.1` (`VER`, `package.json` 19.1.0, `sw.js` `fc27-lig-v19-1`).
+
 ## v19.0 (Gelişmiş İstatistik Formu Sadeleştirmesi & Büyük Sürüm)
 - **Gelişmiş İstatistik formundaki hızlı çipler ve şut stepper düğmeleri kaldırıldı (`advFormUI`, `mstp`, `mstd`):**
   - *Topla Oynama* altındaki `%40–%65` hızlı çipleri ve *Toplam Şut / İsabetli Şut* yanındaki `−/+` adım düğmeleri çıkarıldı; 5 Altın Veri alanı sade, doğrudan sayısal giriş düzenine döndürüldü (topla oynama otomatik tamamlaması korunur).
