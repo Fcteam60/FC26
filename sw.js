@@ -1,11 +1,11 @@
-const CACHE = "fc27-lig-v18-29";
+const CACHE = "fc27-lig-v18-37";
 const FILES = [
   "./",
   "./index.html",
   "./style.css",
+  "./app.js",
   "./data.js",
   "./storage.js",
-  "./app.js",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png",
@@ -13,51 +13,75 @@ const FILES = [
   "./apple-touch-icon.png"
 ];
 
-// Kurulumda tarayıcı HTTP önbelleğini atla (cache:"reload"): GitHub Pages dosyaları ~10 dk önbellekte tutar,
-// yoksa yeni SW eski index.html'i önbelleğe alabilir. Tek dosya eksik olsa bile kurulum başarısız olmaz.
 self.addEventListener("install", e => {
   e.waitUntil(
-    caches.open(CACHE)
-      .then(c => Promise.all(FILES.map(f =>
-        c.add(new Request(f, { cache: "reload" })).catch(err => console.warn("SW asset skip:", f, err))
-      )))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE).then(c =>
+      Promise.all(
+        FILES.map(u =>
+          fetch(new Request(u, { cache: "no-cache" }))
+            .then(r => (r && r.ok ? c.put(u, r) : null))
+            .catch(() => null)
+        )
+      )
+    ).then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener("activate", e => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
       .then(() => self.clients.matchAll({ type: "window" }))
-      .then(clients => clients.forEach(cl => cl.postMessage({ type: "SW_UPDATED", cache: CACHE })))
+      .then(cs => cs.forEach(cl => cl.postMessage({ type: "SW_UPDATED", cache: CACHE })))
   );
 });
 
-// Stale-While-Revalidate: önbellekten anında aç, arka planda ağdan güncelle.
-// Arka plan güncellemesi e.waitUntil içinde: tarayıcı işlem bitmeden SW'yi kapatamaz.
-// Sayfa gezintisinde sorgu dizesi (?utm=...) önbellek eşleşmesini bozmasın diye ignoreSearch kullanılır.
 self.addEventListener("fetch", e => {
-  if (e.request.method !== "GET") return;
-  const isNav = e.request.mode === "navigate";
-  e.respondWith((async () => {
-    const cached = await caches.match(e.request, { ignoreSearch: isNav });
-    const update = fetch(e.request, { cache: "no-cache" }).then(async res => {
-      if (res && res.ok && new URL(e.request.url).origin === location.origin) {
-        const c = await caches.open(CACHE);
-        await c.put(e.request, res.clone());
-        if (isNav) {
-          await c.put("./index.html", res.clone());
+  const req = e.request;
+  if (req.method !== "GET") return;
+  const url = new URL(req.url);
+  if (url.origin !== self.location.origin) return;
+
+  if (req.mode === "navigate") {
+    e.respondWith(
+      caches.open(CACHE).then(c =>
+        c.match("./index.html", { ignoreSearch: true }).then(cached => {
+          const net = fetch(new Request("./index.html", { cache: "no-cache" }))
+            .then(r => {
+              if (r && r.ok) {
+                c.put("./index.html", r.clone());
+                c.put("./", r.clone());
+              }
+              return r;
+            })
+            .catch(() => cached);
+          if (cached) {
+            e.waitUntil(net);
+            return cached;
+          }
+          return net;
+        })
+      )
+    );
+    return;
+  }
+
+  e.respondWith(
+    caches.open(CACHE).then(c =>
+      c.match(req, { ignoreSearch: true }).then(cached => {
+        const net = fetch(req)
+          .then(r => {
+            if (r && r.ok) c.put(req, r.clone());
+            return r;
+          })
+          .catch(() => cached);
+        if (cached) {
+          e.waitUntil(net);
+          return cached;
         }
-      }
-      return res;
-    });
-    if (cached) { e.waitUntil(update.catch(() => {})); return cached; }
-    try { return await update; }
-    catch (_) {
-      if (isNav) { const idx = await caches.match("./index.html"); if (idx) return idx; }
-      return Response.error();
-    }
-  })());
+        return net;
+      })
+    )
+  );
 });

@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="18.36",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="18.37",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -1322,7 +1322,7 @@ function elimData(){const M=nob();store.seasons.forEach(x=>{if(!x.res||x.my==nul
   const ko=(x.mt||[]).filter(m=>m.rd!="Grup"),l=ko[ko.length-1];if(!l||!l.on)return;M[l.on]=(M[l.on]||0)+1});
   return Object.entries(M).sort((a,b)=>b[1]-a[1])}
 function streaks(L){let w=0,u=0,nl=0,bw=0,bu=0;(L||allM().map(e=>e.m)).forEach(m=>{const r=mres(m);w=r=="w"?w+1:0;u=r=="l"?0:u+1;nl=r=="w"?0:nl+1;bw=Math.max(bw,w);bu=Math.max(bu,u)});return{w,u,nl,bw,bu}}
-const stkPill=()=>{const k=streaks();let t="";if(k.u>=3)t=k.u+" maçtır yenilmiyorsun"+(k.w==k.u?" (hepsi galibiyet)":"");else if(k.w>=2)t=k.w+" maç üst üste galibiyet";else if(k.nl>=3)t=k.nl+" maçtır galibiyet yok";return t?`<div class="stk">${t}</div>`:""};
+const stkPill=()=>{const k=streaks();let t="",cls="";if(k.u>=3){t=k.u+" maçtır yenilmez"+(k.w==k.u?" ("+k.w+"G)":"");cls="w"}else if(k.w>=2){t=k.w+" maç üst üste galibiyet";cls="w"}else if(k.nl>=3){t=k.nl+" maçtır galibiyet yok";cls="l"}return t?`<div class="stk pstk ${cls}">${cls=="w"?UICO.flame:UICO.bolt}<span>${t}</span></div>`:""};
 const sbar=o=>`<div class="msb" role="img" aria-label="${gbmT(o)}">${["w","d","l"].map(k=>o[k]?`<i class="${k}" style="flex:${o[k]}"></i>`:"").join("")}</div>`;
 const tile=(v,l,sub)=>`<div><b>${v}</b><span>${l}</span>${sub?`<small>${sub}</small>`:""}</div>`;
 function formCard(ML){const L=ML.slice(-10),n=L.length;if(n<2)return "";
@@ -1769,8 +1769,8 @@ function bkRemind(){
   const sFin=!!(s&&s.res&&(nw>=1||!store.lb||(s.ut&&store.lb&&s.ut>store.lb)));
   const need=sFin||(store.lb?(nw>=10||(nw>=1&&days>=14)||days>=30):t>=5);
   if(!need)return "";
-  const msg=sFin?(store.lb?`${esc(s.name)} tamamlandı ve son yedekten beri ${nw} yeni maç/sonuç kaydedildi (son yedek: ${dTR(store.lb)}).`:`${esc(s.name)} tamamlandı ama henüz hiç yedek almadın. Kariyerini güvenceye almak için şimdi yedek al.`):(store.lb?(nw>0?`Son yedekten beri ${nw} maç girdin (son yedek: ${dTR(store.lb)}).`:`Son yedeğinin üzerinden ${Math.floor(days)} gün geçti (son yedek: ${dTR(store.lb)}).`):`${t} maç kaydettin ama hiç yedek almadın. Tarayıcı verisi silinirse sezonların kaybolur.`);
-  return `<div class="bks" role="status"><div class="bkt"><b>💾 Yedek zamanı</b>${msg} <button class="bkl" data-t="6">Ayarlar › Yedekleme</button></div><button class="btn p" data-a="exf">Yedek indir</button></div>`}
+  const msg=sFin?(store.lb?`${esc(s.name)} bitti · son yedekten beri ${nw} yeni kayıt.`:`${esc(s.name)} bitti · henüz hiç yedek almadın.`):(store.lb?(nw>0?`Son yedekten (${dTR(store.lb)}) beri ${nw} maç eklendi.`:`Son yedeğinin üzerinden ${Math.floor(days)} gün geçti.`):`${t} maç kaydettin, henüz yedek yok. Verilerini güvenceye al.`);
+  return `<div class="bks pbks" role="status"><span class="pbks-ic">${UICO.backup}</span><div class="bkt"><b>Yedek Zamanı</b><span>${msg}</span> <button class="bkl" data-t="6">Ayarlar ›</button></div><button class="btn pbks-btn" data-a="exf">Yedekle</button></div>`}
 const sfBan=()=>`<div class="big" role="alert" style="text-align:left"><b class="wr">Değişiklikler kaydedilemedi.</b><div class="note" style="margin:4px 0 8px">Tarayıcı depolaması dolu ya da kapalı olabilir (özel sekme?). Sekmeyi kapatırsan son girdiğin veriler kaybolur. Şimdi yedek al.</div><button class="btn p" data-t="6">Yedek al</button></div>`;
 function delSeason(id){
   const x=store.seasons.find(q=>q.id==id);if(!x)return;
@@ -2639,18 +2639,58 @@ function homeView(s){
   const ms=s.mt||[],has=s.my!=null,fin=!!s.res;
   const S=[["Kurulum",s.lk,"t",0],["Takım",has,"t",1],["Kura",!!s.G,"t",2],["Oyna",ms.length>0||fin,"t",3],["Bitir",fin,"a","gofin"]];
   const ci=S.findIndex(x=>!x[1]);
-  let h=`<div class="prog">${S.map((x,i)=>`<button class="stp ${x[1]?"dn":i==ci?"cu":""}" data-${x[2]}="${x[3]}"><i>${x[1]?"✓":i+1}</i><span>${x[0]}</span></button>`).join("")}</div>`;
-  let ttl,txt,main,sec="";
-  if(!s.lk){ttl="Turnuvayı kur";txt="Bir şablon seç, kuralları onayla.";main=`<button class="btn p cta" data-t="0">Kurulumu yap</button>`}
-  else if(!has){ttl="Takımını seç";txt="Kuradan önce takımın belli olmalı.";main=`<button class="btn p cta" data-t="1">Takımı seç</button>`}
-  else if(!s.G){ttl="Kura zamanı";txt=T[s.my].n+" hazır. Gruplar kuradan çıkacak.";main=`<button class="btn p cta" data-t="2">Kurayı çek</button>`}
-  else if(!fin){
+  let h=`<div class="prog pprog">${S.map((x,i)=>`<button class="stp ${x[1]?"dn":i==ci?"cu":""}" data-${x[2]}="${x[3]}"><i>${x[1]?"✓":i+1}</i><span>${x[0]}</span></button>`).join("")}</div>`;
+  let ey="",ttl="",txt="",mid="",main="",sec="",opCol="";
+  const playIc='<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="7 4 20 12 7 20 7 4"/></svg>';
+  const flagIc='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4M5 5h11l-2 3.5L16 12H5"/></svg>';
+  if(!s.lk){
+    ey="ADIM 1 · KURULUM";ttl="Turnuvayı Kur";txt="Hazır bir şablon seç veya kendi lig kurallarını belirle.";
+    mid=`<div class="ph-head"><span class="ph-em">${UICO.sliders}</span><div><div class="rs">${esc(ttl)}</div><div class="hn">${esc(txt)}</div></div></div>`;
+    main=`<button class="btn p ph-cta" data-t="0">${playIc}<span>Kurulumu Başlat</span></button>`;
+  }else if(!has){
+    ey="ADIM 2 · TAKIM SEÇİMİ";ttl="Takımını Seç";txt="Kura çekiminden önce sahaya çıkacağın kulübü belirle.";
+    mid=`<div class="ph-head"><span class="ph-em">${UICO.shield}</span><div><div class="rs">${esc(ttl)}</div><div class="hn">${esc(txt)}</div></div></div>`;
+    main=`<button class="btn p ph-cta" data-t="1">${playIc}<span>Takımı Seç</span></button>`;
+  }else if(!s.G){
+    ey="ADIM 3 · KURA ÇEKİMİ";ttl="Kura Zamanı";txt=T[s.my].n+" hazır. Gruplar ve eşleşmeler kurayla belirlenecek.";
+    mid=`<div class="ph-head"><div class="ph-crest">${badge(s.my,46)}</div><div><div class="rs">${esc(ttl)}</div><div class="hn">${esc(txt)}</div></div></div>`;
+    main=`<button class="btn p ph-cta" data-t="2">${UICO.spark}<span>Kurayı Çek</span></button>`;
+  }else if(!fin){
     const gi=s.G.findIndex(g=>g.includes(s.my)),riv=gi>=0?s.G[gi].filter(i=>i!==s.my):[];
-    const nx=s.cfg.gs?nextGrpOpp(riv,i=>ms.filter(m=>m.opp===i&&m.rd=="Grup").length,s.cfg.gl):(ms.length?undefined:riv[0]);
-    ttl="Sahaya çık";txt=nx!==undefined?"Sıradaki rakip: "+T[nx].n+" ("+T[nx].g+")":(isLg(s.cfg)?"Lig maçların tamamlandı! Aşağıdan lig dereceni kaydedip sezonu bitirebilirsin.":(ms.length?"Sıradaki eleme maçını gir ya da sezonu bitir.":"Maç biter bitmez skoru gir."));
-    main=`<button class="btn p cta" data-t="3">⚽ Maçı Kura › Gruplar’dan gir</button>`;sec=`<button class="btn" data-a="gofin">Sezonu bitir</button>`;{const gz=grpState(s);if(gz&&gz.pend&&!isLg(s.cfg))txt="Grup maçların bitti. Aşağıdan gruptan çıkıp çıkmadığını işaretle."}}
-  else{ttl=rlb(s.res,s.cfg,s.grk);txt="Sezon kaydedildi.";main=`<button class="btn p cta" data-a="ns">Yeni sezon başlat</button>`;sec=`<button class="btn" data-a="karne" data-id="${s.id}">Karneyi paylaş</button>`}
-  h+=`<div class="big hero${fin&&s.res.st==7?" gold":""}"><div class="rs">${esc(ttl)}</div><div class="hn">${esc(txt)}</div>${stkPill()}${main}${sec?`<div class="bar" style="margin:8px 0 0">${sec}</div>`:""}</div>`;
+    const nxGrp=s.cfg.gs?nextGrpOpp(riv,i=>ms.filter(m=>m.opp===i&&m.rd=="Grup").length,s.cfg.gl):(ms.length?undefined:riv[0]);
+    const stg=autoStage(s),nxKo=nxGrp===undefined&&stg!=="Grup"?getAutoKoOpponent(s,stg):null;
+    const opp=nxGrp!==undefined?nxGrp:(nxKo!=null&&T[nxKo]?nxKo:null);
+    const gz=grpState(s);
+    if(opp!=null&&T[opp]){
+      const me=RT(s,s.my),op=RT(s,opp),df=me.g-op.g,hh=h2h(opp);
+      const cbOp=bspec(opp);if(cbOp&&cbOp.c1)opCol=` style="--op1:${cbOp.c1}"`;
+      ey=stg==="Grup"?(isLg(s.cfg)?"SIRADAKİ LİG MAÇI":`SIRADAKİ MAÇ · ${gname(s,gi).toUpperCase()}`):`SIRADAKİ MAÇ · ${stg.toUpperCase()}`;
+      const vsSub=hh?`${hh.o.w}G ${hh.o.d}B ${hh.o.l}M`:(df===0?"Eşit güç":(df>0?`+${df} GEN`:`${df} GEN`));
+      mid=`<div class="ph-vs">`+
+        `<div class="ph-tm">${badge(s.my,50)}<b>${esc(me.n)}</b><span class="ph-g">${me.g} GEN</span></div>`+
+        `<div class="ph-mid"><span class="ph-vsb">VS</span><span class="ph-sub">${esc(vsSub)}</span></div>`+
+        `<button class="ph-tm op" data-a="tinfo" data-i="${opp}" aria-label="${esc(op.n)} kadrosunu incele">${badge(opp,50)}<b>${esc(op.n)}</b><span class="ph-g">${op.g} GEN · Kadro ›</span></button>`+
+        `</div>`;
+    }else{
+      ey=isLg(s.cfg)?"LİG TAMAMLANDI":(gz&&gz.pend?"GRUP AŞAMASI BİTTİ":"SAHAYA ÇIK");
+      ttl=isLg(s.cfg)?"Lig Maçları Bitti":(gz&&gz.pend?"Gruptan Çıktın mı?":"Sahaya Çık");
+      txt=isLg(s.cfg)?"Lig dereceni kaydedip sezonu tamamlayabilirsin.":(gz&&gz.pend?"Aşağıdan gruptaki sıranı seçip eleme turuna geç.":"Sıradaki maçı Turnuva ekranından gir veya sezonu bitir.");
+      mid=`<div class="ph-head"><div class="ph-crest">${badge(s.my,46)}</div><div><div class="rs">${esc(ttl)}</div><div class="hn">${esc(txt)}</div></div></div>`;
+    }
+    main=`<button class="btn p ph-cta" data-t="3">${playIc}<span>Maç Merkezi · Skoru Gir</span></button>`;
+    sec=`<button class="btn ph-sec" data-a="gofin">${flagIc}<span>Sezonu Bitir</span></button>`;
+  }else{
+    const ch=s.res.st==7,ts=s.ts||{};
+    ey=ch?"ŞAMPİYONLUK SEZONU":"SEZON TAMAMLANDI";
+    ttl=rlb(s.res,s.cfg,s.grk);
+    txt=`${ts.w||0}G · ${ts.d||0}B · ${ts.l||0}M · ${ts.gf||0}/${ts.ga||0} gol`;
+    mid=`<div class="ph-head"><div class="ph-crest">${badge(s.my,48)}</div><div><div class="rs">${esc(ttl)}</div><div class="hn">${esc(txt)}</div></div></div>`;
+    main=`<button class="btn p ph-cta" data-a="ns">${UICO.spark}<span>Yeni Sezon Başlat</span></button>`;
+    sec=`<button class="btn ph-sec" data-a="karne" data-id="${s.id}">${UICO.trophy}<span>Karneyi Paylaş</span></button>`;
+  }
+  const topBar=`<div class="ph-top"><span class="ph-ey"><i class="ph-dot"></i>${esc(ey)}</span>${!fin?stkPill():""}</div>`;
+  const acts=`<div class="ph-acts${sec?" two":""}">${main}${sec}</div>`;
+  h+=`<div class="big hero phero${fin&&s.res.st==7?" gold":""}"${opCol}>${topBar}${mid}${acts}</div>`;
   if(!s.lk)h+=PITCH_ART;h+=iosPwaRemind()+bkRemind();
   const fold=(id,ic,tone,ttl,sub,pill,bodyFn)=>{const op=!!(st.hm&&st.hm[id]);return `<div class="pfold ${tone}${op?" open":""}"><button class="acbtn${op?" open":""}" data-a="hm" data-k="${id}" aria-expanded="${op}"><span class="aci">${UICO[ic]}</span><span class="act"><b>${ttl}</b>${sub?`<small>${sub}</small>`:""}</span><span class="acr">${pill?`<span class="xfpill">${pill}</span>`:""}<span class="acc" aria-hidden="true">${UICO.chev}</span></span></button>${op?`<div class="acbody">${bodyFn()}</div>`:""}</div>`};
   if(has){
@@ -3853,6 +3893,6 @@ window.addEventListener("storage",e=>{
 if("serviceWorker" in navigator){const had=!!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!st.upd){st.upd=true;render()}});
   navigator.serviceWorker.addEventListener("message",e=>{if(had&&e.data&&e.data.type==="SW_UPDATED"&&!st.upd){st.upd=true;render()}});
-  addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").then(r=>{SWR=r}).catch(e=>elog("sw",e&&e.message))});
+  addEventListener("load",()=>{navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>{SWR=r;r.update().catch(()=>{})}).catch(e=>elog("sw",e&&e.message))});
   document.addEventListener("visibilitychange",()=>{if(!document.hidden&&SWR)SWR.update().catch(()=>{})})}
 try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().then(ok=>{st.pers=!!ok;if(!ok)render()}).catch(()=>{})}catch(e){}

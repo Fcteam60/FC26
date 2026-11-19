@@ -1,5 +1,16 @@
 # Değişiklik listesi
 
+## v18.37 (Premium Sezon Ana Ekranı — Broadcast Matchday Hub & Anında Güncelleme)
+- **Sezon ana ekranı baştan tasarlandı (`homeView`, `stkPill`, `bkRemind`, `.pprog`, `.phero`, `.ph-vs`, `.pbks`):**
+  - **Cam İlerleme Çubuğu (`.prog.pprog`):** Üstteki 5 adımlı akış (*Kurulum → Takım → Kura → Oyna → Bitir*), cam kapsül içine alındı; tamamlanan adımlar zümrüt gradyanlı, aktif adım halkalı vurguyla gösterilir.
+  - **Broadcast Matchday Hub (`.big.hero.phero`):** Düz yeşil çizgili eski kart kaldırıldı; senin kulübün (`--club1`) ve sıradaki rakibinin (`--op1`) renklerinden çift taraflı stadyum ışığı alan cam kart tasarlandı. Sıradaki maçta iki takımın `50px` armaları, `GEN` puanları, merkez `VS` rozeti ve güç farkı / H2H özeti gösterilir; rakibe dokununca doğrudan kadrosu açılır.
+  - **Dengeli Aksiyon Satırı (`.ph-acts`):** İri neon buton ve solda boşta kalan *Sezonu bitir* düğmesi yerine özel SVG ikonlu zümrüt gradyanlı **Maç Merkezi · Skoru Gir** ve yanında dengeli **Sezonu Bitir** (bitmiş sezonda **Yeni Sezon Başlat / Karneyi Paylaş**) cam düğmeleri yerleştirildi.
+  - **Zarif Yedekleme Şeridi (`.bks.pbks`):** Kehribar cam ikon rozeti, sadeleştirilmiş metin ve altın tonlu kompakt **Yedekle** butonuyla yenilendi.
+- **Anında PWA Güncelleme (`sw.js` & `app.js`):**
+  - `app.js` içindeki Service Worker kaydına `{ updateViaCache: "none" }` ve açılışta `r.update()` eklendi; GitHub Pages'in 10 dakikalık HTTP önbelleğine takılmadan yeni sürüm algılanır.
+  - `sw.js` (`CACHE = "fc27-lig-v18-37"`) bundan böyle her sürüm ZIP paketine doğrudan dahil edilir.
+- Sürüm `18.37` (`VER`, `package.json` 18.37.0, `sw.js` `fc27-lig-v18-37`).
+
 ## v18.36 (Aşama 2: Premium Sezonlar & Rakipler Sayfaları)
 - **Geçmiş › Sezonlar yenilendi (`seasonsView`, `A6c`, `.sf-box`, `.scard`):**
   - Ekranın tamamını kaplayan eski açık filtre bloğu, tek satırlık segmentli **Tümü | Kupa | Lig** barı + **Liste | Galeri** anahtarı + katlanabilir **Filtrele** çekmecesine (`st.sfopen`, sıfır disk yazımlı `UI_ONLY`) dönüştürüldü.
