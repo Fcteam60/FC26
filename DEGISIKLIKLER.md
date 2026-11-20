@@ -1,5 +1,18 @@
 # Değişiklik listesi
 
+## v20.7 (Rol Uyumlu TOTS Motoru, Turnuva Oyuncu Maç Dökümü & Broadcast Okunaklık Cilası)
+- **Rol (Slot) Bazlı Gerçekçi En İyi 11 (`TOTS_FMTS`, `TOTS_ALT`, `tourneyTots`):**
+  - Artık her mevki slotuna yalnızca kendi rolüne uygun oyuncular seçilir: 3’lü savunmada yalnız `CB`, 4’lü/5’li savunmada gerçek `LB/LWB` ve `RB/RWB` bekler, 3’lü merkez orta sahada yalnız `CDM/CM/CAM` (kanatlar merkeze düşmez).
+  - `LM/RM` oyuncuları `4-3-3` ve `3-4-3` dizilişlerinde hücum kanadı (`LW/RW`) olarak da değerlendirilebilir.
+  - Dar havuzlu turnuvalarda eksik mevki çıkarsa komşu mevki sigortası (`TOTS_ALT`) küçük puan cezasıyla devreye girer.
+- **Tıklanabilir Turnuva Oyuncu Detay Penceresi (`tourneyPlayerDetail`, `tpDlg`, `tpinfo`):**
+  - En İyi 11 sahasındaki veya `Turnuva › İstatistik` liderlik listelerindeki **herhangi bir oyuncuya** (hem kendi oyuncularına hem rakip kulüp oyuncularına) dokununca o sezonki **Gol, Asist, MOTM, Hat-Trick, Temiz Kasa** toplamları ve **kime karşı gol/asist/MOTM ürettiğini gösteren maç maç döküm** açılır.
+  - Tek dokunuşla kendi oyuncularında *Kariyer Profili*’ne, rakip oyuncularda *Takım Kadrosu*’na geçilebilir.
+- **Broadcast Okunaklık ve Premium Görsel Cila (`.tots-pitch`, `totsDispName`, `totsCv`):**
+  - Akıllı soyadı kısaltması (`totsDispName`) ve kendi oyuncuları için arma üstü altın yıldız işareti (`.tots-mine-pip`) sayesinde 4’lü hatlarda dahi isimler (`J. Bell...` gibi) kesilmez.
+  - Daha net saha çizgileri, üst stadyum ışığı, yüksek kontrastlı cam isim kapsülleri, daha büyük kulüp armaları, mevkiye özel renk kodlu pozisyon rozetleri (`GK` kehribar, `DEF` çivit, `MID` gök mavisi, `FWD` zümrüt) ve dengeli altın `MVP` kartıyla okunaklık ve kalite hissi üst seviyeye taşındı.
+- Sürüm `20.7` (`VER`, `package.json` 20.7.0, `sw.js` `fc27-lig-v20-7`).
+
 ## v20.6 (Dinamik Formasyonlu & Mevki Dengeli Turnuvanın En İyi 11’i)
 - **7 Farklı Otomatik Formasyon (`TOTS_FMTS`, `tourneyTots`):** Turnuvanın En İyi 11’i artık sabit `4-3-3` yerine **4-3-3, 4-4-2, 4-5-1, 3-5-2, 3-4-3, 5-3-2 ve 5-4-1** dizilişlerinden o turnuvadaki oyuncu performanslarına en uygun olanı otomatik seçer.
 - **Mevkiler Arası Puan Dengesi (Robust Z-Skor Normalizasyonu):** Defansların temiz kasa ve gol katsayılarının diğer mevkileri ezmemesi için her saha oyuncusunun puanı kendi mevki grubunun gövde ortalaması ve standart sapmasına göre normalize edilir (`z`). Böylece orta sahaların parladığı turnuvada `3-5-2` / `4-5-1`, savunmaların öne çıktığı turnuvada `5-3-2` / `5-4-1`, hücumcuların şov yaptığı turnuvada `3-4-3` / `4-3-3` doğal olarak seçilir.

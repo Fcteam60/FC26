@@ -359,7 +359,7 @@ async function totsCv(s){
 
   const mvpP=totsFindMvp(xi);
   const F=totsOrderLine(xi.F,"F"),M=totsOrderLine(xi.M,"M"),D=totsOrderLine(xi.D,"D"),K=xi.K||[];
-  const posCol={K:"#c97a16",D:"#3b4ec8",M:"#3b4ec8",F:"#3b4ec8"};
+  const posCol={K:"#d97706",D:"#4f46e5",M:"#0284c7",F:"#059669"};
   const drawPlayer=(p,cx,cy,cw)=>{
     const isMvp=mvpP&&p.n===mvpP.n&&p.ti===mvpP.ti;
     const parts=[];
@@ -367,7 +367,7 @@ async function totsCv(s){
     if(p.a)parts.push(`${p.a}A`);
     if(p.mom)parts.push(`${p.mom}★`);
     const statStr=parts.length?parts.join(" · "):(p.cs?`${p.cs} TK`:`${p.ovr} GEN`);
-    const dispNm=((isMvp||p.mine)?"★ ":"")+p.n;
+    const dispNm=(p.mine&&!isMvp?"★ ":"")+totsDispName(p.n,cw<=220?4:3);
     c.save();
     if(isMvp){
       const ch=244,x=Math.round(cx-cw/2),y=Math.round(cy-ch/2);
