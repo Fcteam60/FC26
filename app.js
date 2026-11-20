@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.3",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="20.4",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -357,7 +357,21 @@ function gInfo(s){
   return "Rakip ortalaması "+fx(rv.reduce((a,i)=>a+T[i].g,0)/rv.length)+" · "+(s.cfg.gs?"Grup":"Eşleşme")+" gücü "+r+"/"+s.G.length+(s.cfg.gs&&s.G.length>=4&&r<=2?" · ☠ Ölüm grubu":"")}
 function sumText(x){const t=x.ts,dna=calcTacticalDNA(x),xgM=(x.mt||[]).filter(m=>m.stats&&m.stats.myXg!=null),totG=xgM.reduce((a,m)=>a+(+m.gf||0),0),totX=xgM.reduce((a,m)=>a+(+m.stats.myXg||0),0),xd=totG-totX;return [`FC 27 · ${x.name}`,fmt(x.cfg),x.my!=null?`Takım: ${T[x.my].n} (${CN[T[x.my].c][0]})`:"",x.res?`Sonuç: ${rlb(x.res,x.cfg,x.grk)}`:"Devam ediyor",(t.w||t.d||t.l||t.gf||t.ga)?`G-B-M: ${t.w||0}-${t.d||0}-${t.l||0} · Gol: ${t.gf||0}/${t.ga||0}`:"",xgM.length?`xG Analizi (${xgM.length} maç): ${totX.toFixed(2).replace(".",",")} xG · Verimlilik ${(xd>0?"+":"")+xd.toFixed(2).replace(".",",")} (${xd>=0?"Mükemmel bitiricilik":"Bitiricilik sorunu"})`:"",dna?`Menajer Kimliği: ${dna.title} (Hücum ${dna.atk} · Kontrol ${dna.ctrl} · Agresyon ${dna.aggr} · Verimlilik ${dna.eff})`:"",x.pl.length?`Oyuncular: ${sum(x.pl,"g")} gol · ${sum(x.pl,"a")} asist`:""].filter(Boolean).join("\n")}
 function tsCard(list){const S=list||store.seasons,tK=k=>S.reduce((a,x)=>a+((x.ts||{})[k]||0),0),w=tK("w"),d=tK("d"),l=tK("l"),n=w+d+l;if(!n)return "";
-  return cd("Takım toplamları",R2("Maç",n)+R2("G-B-M",w+"-"+d+"-"+l)+R2("Galibiyet oranı","%"+Math.round(w/n*100))+R2("Atılan / yenen gol",tK("gf")+" / "+tK("ga"))+R2("Maç başı gol",fx(tK("gf")/n)))}
+  const gf=tK("gf"),ga=tK("ga"),gd=gf-ga,wr=Math.round(w/n*100);
+  const gdStr=(gd>0?"+":gd<0?"−":"")+Math.abs(gd);
+  return psetCard("shield","emr","Takım Toplamları","Tüm maçların kümülatif özeti",`${n} maç`,
+    `${sbar({w,d,l})}`+
+    `<div class="psgbm" style="margin:9px 0">`+
+      `<div class="psg w"><b>${w}</b><span>Galibiyet</span></div>`+
+      `<div class="psg d"><b>${d}</b><span>Beraberlik</span></div>`+
+      `<div class="psg l"><b>${l}</b><span>Mağlubiyet</span></div>`+
+    `</div>`+
+    `<div class="pset-kpi" style="margin:0">`+
+      `<div class="pk2 emr"><b>%${wr}</b><span>Galibiyet</span></div>`+
+      `<div class="pk2 sky"><b>${gf}/${ga}</b><span>Gol (${gdStr})</span></div>`+
+      `<div class="pk2 gold"><b>${fx(gf/n)}</b><span>Gol / Maç</span></div>`+
+    `</div>`
+  )}
 function weak(x){if(x.my==null||!x.P||x.P.length<4)return false;return withSn(x,()=>{const p=x.P.slice().sort((a,b)=>V(T[b])-V(T[a]));return p.indexOf(x.my)>=Math.floor(p.length*.6)})}
 function achList(raw){const out=achRaw();return raw?out:out.map(a=>a.done?a:(Array.isArray(store.ach)&&store.ach.includes(a.id)?Object.assign({},a,{done:true}):a))}
 function achRaw(){
@@ -403,7 +417,31 @@ function achScan(noWrite){try{
 }catch(e){}}
 function achCard(){
   const A=achList(),so=A.slice().sort((x,y)=>(y.done-x.done)||(y.cur/y.goal-x.cur/x.goal));
-  return so.map(a=>`<div class="ach${a.done?" un":""}"><div class="pt"><span class="n"><b>${a.ic||"🏅"} ${esc(a.name)}</b></span>${a.done?`${(store.achd||{})[a.id]?`<span class="lb">${esc(store.achd[a.id])}</span> `:""}<b class="ok" aria-label="Kazanıldı">✓ Kazanıldı</b>`:`<b class="lb">${a.cur}/${a.goal}</b>`}</div><div class="lb" style="margin-top:2px">${esc(a.desc||"")}</div>${!a.done&&a.goal>1?`<div class="bk" role="progressbar" aria-label="${esc(a.name)}" aria-valuemin="0" aria-valuemax="${a.goal}" aria-valuenow="${a.cur}"><i style="width:${a.cur/a.goal*100}%"></i></div>`:""}</div>`).join("")}
+  const doneN=A.filter(a=>a.done).length,progN=A.filter(a=>!a.done&&a.cur>0).length,lockN=A.length-doneN-progN;
+  const totPct=A.length?Math.round(doneN/A.length*100):0;
+  const hd=`<div class="ach-hd">`+
+    `<div class="ach-ht"><span>Genel Tamamlanma</span><b>${doneN}/${A.length} <em>(%${totPct})</em></b></div>`+
+    `<div class="ach-hbar" role="progressbar" aria-label="Rozet tamamlanma oranı" aria-valuemin="0" aria-valuemax="${A.length}" aria-valuenow="${doneN}"><i style="width:${Math.max(doneN?5:0,totPct)}%"></i></div>`+
+    `<div class="ach-pills"><span class="ap ok"><b>${doneN}</b> Kazanıldı</span><span class="ap pr"><b>${progN}</b> İlerliyor</span><span class="ap lk"><b>${lockN}</b> Kilitli</span></div>`+
+    `</div>`;
+  const cards=so.map(a=>{
+    const pct=a.goal>0?Math.min(100,Math.round(a.cur/a.goal*100)):0;
+    const state=a.done?"un":a.cur>0?"prog":"lk";
+    const dt=(store.achd||{})[a.id];
+    const badgeR=a.done
+      ? `<span class="ach-st ok">✓ Kazanıldı${dt?` · ${esc(dt)}`:""}</span>`
+      : (a.goal>1?`<span class="ach-st ${a.cur>0?"pr":"lk"}">${a.cur}/${a.goal} <em>%${pct}</em></span>`:`<span class="ach-st lk">Kilitli</span>`);
+    const bar=(!a.done&&a.goal>1)?`<div class="ach-bar" role="progressbar" aria-label="${esc(a.name)}" aria-valuemin="0" aria-valuemax="${a.goal}" aria-valuenow="${a.cur}"><i style="width:${pct}%"></i></div>`:"";
+    return `<div class="ach-c ${state}">`+
+      `<div class="ach-em" aria-hidden="true"><span>${a.ic||"🏅"}</span>${a.done?`<i class="ach-ck">✓</i>`:""}</div>`+
+      `<div class="ach-b">`+
+        `<div class="ach-top"><b>${esc(a.name)}</b>${badgeR}</div>`+
+        `<p class="ach-ds">${esc(a.desc||"")}</p>`+
+        bar+
+      `</div>`+
+    `</div>`;
+  }).join("");
+  return hd+`<div class="ach-list">${cards}</div>`}
 function chartCard(list){const f=(list||store.seasons).filter(x=>x.res);
   if(f.length<2)return cd("Grafikler",`<div class="note">Grafik için bu kategoride en az 2 biten sezon gerekli.</div>`);
   const n=f.length,L=46,R=294,B=118,Hh=100,slot=(R-L)/n,cx=i=>L+slot*(i+.5),ev=Math.ceil(n/10);
@@ -1171,15 +1209,24 @@ function histView(){
   const card=(t,b)=>`<div class="card pglass"><h3>${t}</h3>${b}</div>`;
   const R=(a,b)=>`<div class="row${b===0?" z":""}"><span class="n">${a}</span><b>${b}</b></div>`;
   const isL=hmod=="lg",isC=hmod=="cup";
-  const A1=card(isL?"Lig toplu istatistik":isC?"Kupa toplu istatistik":"Toplu istatistik",
-    R("Sezon / biten",filtS.length+" / "+n)+
-    R("Şampiyonluk",cnt[7])+
-    (isL?R("İkincilik",cnt[6])+R("İlk 3 (podyum)",cnt[5]+cnt[6]+cnt[7]):R("Finale kalma",cnt[6]+cnt[7])+R("Yarı final ve üstü",cnt[5]+cnt[6]+cnt[7]))+
-    (best>=0?R("En iyi sonuç",isL?(SNL[best]||SN[best]):SN[best]):""));
+  const a1Sub=isL?"Puan usulü lig özeti":isC?"Eleme usulü kupa özeti":"Tüm turnuvalar özeti";
+  const a1k3=isL?cnt[5]+cnt[6]+cnt[7]:cnt[6]+cnt[7],a1l3=isL?"İlk 3 (Podyum)":"Final",a1k4=isL?cnt[6]:cnt[5]+cnt[6]+cnt[7],a1l4=isL?"İkincilik":"Yarı Final+";
+  const A1=psetCard("bolt","sky",isL?"Lig Toplu İstatistik":isC?"Kupa Toplu İstatistik":"Toplu İstatistik",a1Sub,`${n}/${filtS.length} biten`,
+    `<div class="pset-kpi" style="margin-bottom:${best>=0?"10px":"0"}">`+
+      `<div class="pk2 gold${cnt[7]?"":" z"}"><b>${cnt[7]}</b><span>Şampiyonluk</span></div>`+
+      `<div class="pk2 emr${a1k3?"":" z"}"><b>${a1k3}</b><span>${a1l3}</span></div>`+
+      `<div class="pk2 sky${a1k4?"":" z"}"><b>${a1k4}</b><span>${a1l4}</span></div>`+
+    `</div>`+
+    (best>=0?`<div class="rec-best" style="margin-top:0"><span class="reci">${XGI.pts}</span><div><span class="recl">En İyi Derece</span><b>${esc((isL?(SNL[best]||SN[best]):SN[best]).trim())}</b></div></div>`:"")
+  );
   const distKeys=isL?[0,4,5,6,7]:SN.map((_,i)=>i).filter(i=>i==0||i>=2||cnt[i]>0);
-  const A2=distKeys.some(i=>cnt[i]>0)?card(isL?"Lig sıralama dağılımı":"Sonuç dağılımı",distKeys.map(i=>`<div class="row${cnt[i]?"":" z"}"><span class="n" style="flex:0 0 150px">${isL?(SNL[i]||SN[i]):SN[i]}</span><div class="bk"><i style="width:${cnt[i]/mx*100}%"></i></div><b>${cnt[i]}</b></div>`).join("")):"";
-  const A3=(!isL&&gp.length?card("Grupta elenme puanları",R("Ortalama",fx(gp.reduce((a,b)=>a+b,0)/gp.length))+R("En düşük / en yüksek",Math.min(...gp)+" / "+Math.max(...gp))):"")+
-           ((isL||hmod=="all")&&lgp.length?card("Lig puan istatistikleri",R("Ortalama lig puanı",fx(lgp.reduce((a,b)=>a+b,0)/lgp.length))+R("En düşük / en yüksek puan",Math.min(...lgp)+" / "+Math.max(...lgp))):"");
+  const A2=distKeys.some(i=>cnt[i]>0)?psetCard("radar","emr",isL?"Lig Sıralama Dağılımı":"Sonuç Dağılımı","Sezonların bitiş noktaları",`${n} sezon`,
+    `<div class="pdist">${distKeys.map(i=>{const v=cnt[i],pc=v?Math.max(8,Math.round(v/mx*100)):0,cls=i==7?"gold":i>=5?"emr":i>=3?"sky":"mut";return `<div class="pdist-r ${cls}${v?"":" z"}"><div class="pdist-t"><span>${esc((isL?(SNL[i]||SN[i]):SN[i]).trim())}</span><b>${v}</b></div><div class="pdist-b"><i style="width:${pc}%"></i></div></div>`}).join("")}</div>`
+  ):"";
+  const A3=(!isL&&gp.length?psetCard("spark","org","Grupta Elenme Puanları","Gruptan çıkılamayan sezonlar",`${gp.length} sezon`,
+    `<div class="pset-kpi" style="margin:0"><div class="pk2 org"><b>${fx(gp.reduce((a,b)=>a+b,0)/gp.length)}</b><span>Ortalama</span></div><div class="pk2 sky"><b>${Math.min(...gp)}</b><span>En Düşük</span></div><div class="pk2 gold"><b>${Math.max(...gp)}</b><span>En Yüksek</span></div></div>`):"")+
+           ((isL||hmod=="all")&&lgp.length?psetCard("spark","sky","Lig Puan İstatistikleri","Tamamlanan lig sezonları",`${lgp.length} sezon`,
+    `<div class="pset-kpi" style="margin:0"><div class="pk2 emr"><b>${fx(lgp.reduce((a,b)=>a+b,0)/lgp.length)}</b><span>Ortalama</span></div><div class="pk2 sky"><b>${Math.min(...lgp)}</b><span>En Düşük</span></div><div class="pk2 gold"><b>${Math.max(...lgp)}</b><span>En Yüksek</span></div></div>`):"");
   const totG=sum(pl,"g"),totA=sum(pl,"a"),totM=sum(pl,"mom");
   const hofBlk=(ttl,sub,ic,body)=>`<div class="hof-sec"><div class="hof-sh"><span class="xshi">${XGI[ic]||XGI.pts}</span><div><b>${ttl}</b>${sub?`<small>${sub}</small>`:""}</div></div>${body}</div>`;
   const A4=`<div class="card pglass phof"><h3>Kariyer Yıldızları<small>tüm sezonlar</small></h3>`+
@@ -1859,12 +1906,25 @@ function edge(me,i){const b=T[i],d=[["hücumu","a"],["orta sahası","o"],["defan
 function genTxt(me,i){const d=T[i].g-me.g;return d>0?"genel gücü "+d+" puan yüksek":d<0?"genel gücü "+(-d)+" puan düşük":"senle aynı güçte"}
 function analCard(s){
   const R=rivals(s);if(!R.length)return "";
-  const me=T[s.my],so=R.slice().sort((x,y)=>V(T[y])-V(T[x])),hi=so[0],lo=so[so.length-1];
-  const dv=i=>[["a","Hüc"],["o","Ort"],["d","Def"]].map(([k,l])=>`${l}<b class="${dcl(T[i][k]-me[k])}">${sg(T[i][k]-me[k])}</b>`).join(" ");
-  let h=`<div>En tehlikeli rakip: <b>${esc(T[hi].n)}</b> (${T[hi].g}), ${edge(me,hi)}.</div>`;
-  if(so.length>1)h+=`<div style="margin-top:4px">En kolay rakip: <b>${esc(T[lo].n)}</b> (${T[lo].g}), ${genTxt(me,lo)}.</div>`;
-  h+=`<div class="rt">Rakiplerin sana göre farkı</div>`+so.map(i=>`<button class="row tb" data-a="tinfo" data-i="${i}" aria-label="${esc(T[i].n)} kadrosunu incele"><span class="cc">${fl(T[i].c)}</span><span class="n">${esc(T[i].n)}</span><span class="dl">${dv(i)}</span>${rb(T[i].g)}<span class="chev">›</span></button>`).join("")+`<div class="note">Hüc hücum, Ort orta saha, Def defans. Kırmızı: rakip önde, yeşil: sen öndesin. Satıra basınca takımın kadrosu açılır.</div>`;
-  return cd(`Rakip analizi<small>${gname(s,s.G.findIndex(g=>g.includes(s.my)))}</small>`,h)}
+  const me=T[s.my],gi=s.G.findIndex(g=>g.includes(s.my)),so=R.slice().sort((x,y)=>V(T[y])-V(T[x])),hi=so[0],lo=so[so.length-1];
+  const sub=`<div class="ran-hd"><span class="xfpill sky">${esc(gname(s,gi))}</span><span class="ran-me">Senin gücün: <b>${me.g} GEN</b> <em>(${me.a}/${me.o}/${me.d})</em></span></div>`;
+  const spot=`<div class="ran-spot${so.length>1?"":" one"}">`+
+    `<button class="ran-sc hi" data-a="tinfo" data-i="${hi}" aria-label="${esc(T[hi].n)} kadrosunu incele"><div class="ran-sey"><span>EN TEHLİKELİ</span>${rb(T[hi].g)}</div><div class="ran-stm">${badge(hi,28)}<b>${esc(T[hi].n)}</b></div><small>${esc(edge(me,hi))}</small></button>`+
+    (so.length>1?`<button class="ran-sc lo" data-a="tinfo" data-i="${lo}" aria-label="${esc(T[lo].n)} kadrosunu incele"><div class="ran-sey"><span>EN KOLAY</span>${rb(T[lo].g)}</div><div class="ran-stm">${badge(lo,28)}<b>${esc(T[lo].n)}</b></div><small>${esc(genTxt(me,lo))}</small></button>`:"")+
+    `</div>`;
+  const rows=so.map(i=>{
+    const ti=T[i],gd=ti.g-me.g,gdCls=gd>0?"neg":gd<0?"pos":"neu",gdTxt=gd===0?"=":sg(gd);
+    const pills=[["a","HÜC"],["o","ORT"],["d","DEF"]].map(([k,l])=>{
+      const d=ti[k]-me[k],c=d>0?"neg":d<0?"pos":"neu";
+      return `<span class="ran-p ${c}"><em>${l}</em><b>${ti[k]}</b><i>${d===0?"=":sg(d)}</i></span>`;
+    }).join("");
+    return `<button class="ran-r" data-a="tinfo" data-i="${i}" aria-label="${esc(ti.n)} kadrosunu incele">`+
+      `<div class="ran-top">${fl(ti.c)}${badge(i,24)}<b class="ran-nm">${esc(ti.n)}</b><span class="ran-gd ${gdCls}">${gdTxt}</span>${rb(ti.g)}<span class="ran-chv" aria-hidden="true">›</span></div>`+
+      `<div class="ran-pills">${pills}</div>`+
+    `</button>`;
+  }).join("");
+  const leg=`<div class="ran-leg"><span><i class="pos"></i>Yeşil: sen öndesin</span><span><i class="neg"></i>Kırmızı: rakip önde</span><span>Kadro için dokun</span></div>`;
+  return sub+spot+`<div class="pset-lbl" style="margin:11px 0 6px">Rakiplerin Sana Göre Farkı</div><div class="ran-list">${rows}</div>`+leg}
 const vsLine=(s,i)=>{if(s.my==null||i==null||!T[i])return "";const a=T[s.my],b=T[i];return h2hLine(i)+`<div class="note" style="margin:0 0 6px">Rakip sana göre: ${DIM.map(([k,l])=>`${l} ${b[k]} (<span class="${dcl(b[k]-a[k])}">${sg(b[k]-a[k])}</span>)`).join(" · ")}</div>`};
 
 /* ---------- RASTGELE TAKIM: SLOT ANİMASYONU ---------- */

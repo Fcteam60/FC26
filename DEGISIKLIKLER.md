@@ -1,5 +1,18 @@
 # Değişiklik listesi
 
+## v20.4 (Elit Görsel Yenileme — Geçmiş › Özet, Rakip Analizi & Rozet Vitrini)
+- **Geçmiş › Özet (`careerCard`, `xpCard`, `tsCard`, `A1`/`A2`/`A3`):**
+  - *Kariyer Özeti* semantik 3'lü cam KPI kartları, orantılı G-B-M çubuğu ve renk kodlu telemetri şeridiyle yenilendi.
+  - *Beklenene Göre Performans* kartı `psetCard` cam başlığı, kulüp armalı sezon kartları ve `Beklenen → Ulaşılan` iki kutulu akışla baştan tasarlandı.
+  - *Toplu İstatistik*, *Sonuç Dağılımı*, *Puan İstatistikleri* ve *Takım Toplamları* kartları da aynı premium cam kart diline geçirildi.
+- **Sezon › Rakip Analizi (`analCard`):**
+  - Akordeon içindeki mükerrer başlık kaldırıldı; üstte **En Tehlikeli / En Kolay** ikili spot kartı eklendi.
+  - Takım adlarının kesilmesini önleyen 2 katmanlı cam rakip satırlarına geçildi: üstte bayrak + arma + tam kulüp adı + genel fark hapı + `GEN` rozeti, altta 3'lü renk kodlu `HÜC / ORT / DEF` fark hapları.
+- **Rozet Vitrini (`achCard`):**
+  - Üstte genel tamamlanma yüzdesi, gradyan ilerleme çubuğu ve `Kazanıldı / İlerliyor / Kilitli` özet hapları eklendi.
+  - Her rozet; durumuna göre altın/zümrüt veya kilitli görünümlü madalya amblemi (`.ach-em`), yüzdeli ilerleme hapı ve ince `5px` gradyan ilerleme çubuğuyla dokunsal vitrin kartına dönüştürüldü.
+- Sürüm `20.4` (`VER`, `package.json` 20.4.0, `sw.js` `fc27-lig-v20-4`).
+
 ## v20.3 (Premium Sezon Karşılaştırma — Broadcast H2H)
 - **Sezon Karşılaştır kartı baştan tasarlandı (`cmpCard`, `cmpsw`, `.cmp-vs`, `.cmp-bars`):**
   - Düz metin satırları ve kesilen (`...`) metinler yerine çift kulüp ışıklı **Broadcast VS** sahnesi eklendi: her iki sezonun kulüp arması, `GEN` puanı, kısa format etiketi, tam okunur durum hapı, `G-B-M` özeti ve orantılı form çubuğu.

@@ -39,10 +39,34 @@ function xpData(mode){return store.seasons.filter(x=>(!mode||mode=="all"||(mode=
   return{x,r:Math.ceil(r),N,g:T[x.my].g,p:N>1?(Math.ceil(r)-1)/(N-1):0,ex,ac,d:pos(ac)-pos(ex)}}))}
 const dc=d=>d>0?"p":d<0?"n":"z";
 function xpCard(mode){const D=xpData(mode);
-  if(!D.length)return cd("Beklenene göre performans",emp("Seçili kategoride takım ve kura seçilmiş, sonucu girilmiş sezonlar burada beklentiyle karşılaştırılır."));
+  if(!D.length)return psetCard("radar","sky","Beklenene Göre Performans","Güç sırasına göre turnuva verimi",null,emp("Seçili kategoride takım ve kura seçilmiş, sonucu girilmiş sezonlar burada beklentiyle karşılaştırılır."));
   const tot=D.reduce((a,o)=>a+o.d,0),up=D.filter(o=>o.d>0).length,dn=D.filter(o=>o.d<0).length;
-  const rows=D.slice().reverse().slice(0,10).map(o=>{const lg=isLg(o.x.cfg),uLbl=lg?"kademe":"tur";return `<div class="xpr"><div class="xpt"><b>${esc(o.x.name)} · ${esc(T[o.x.my].n)}</b><span class="xpd ${dc(o.d)}">${o.d?dI(o.d)+" "+uLbl:"beklenen"}</span></div><div class="xps">Güç ${o.g} · ${o.r}./${o.N} · beklenen: ${esc(stTxt(o.x.cfg,o.ex).trim())} → ulaşılan: ${esc(rlb(o.x.res,o.x.cfg,o.x.grk).split(" · ")[0].trim())}</div></div>`}).join("");
-  return cd("Beklenene göre performans",`<div class="mtl"><div><b>${dI(tot)}</b><span>toplam fark</span></div><div><b>${up}</b><span>beklentinin üstü</span></div><div><b>${dn}</b><span>beklentinin altı</span></div></div>`+rows+`<div class="note">Beklenen derece, takımının o sezonki rakipler arasındaki güç sırasından çıkar (1. şampiyon, 2. ikinci/finalist vb.).</div>`)}
+  const tone=tot>0?"emr":tot<0?"org":"sky";
+  const kpis=`<div class="pset-kpi">`+
+    `<div class="pk2 ${tone}"><b>${dI(tot)}</b><span>Toplam Fark</span></div>`+
+    `<div class="pk2 emr${up?"":" z"}"><b>${up}</b><span>Beklenti Üstü</span></div>`+
+    `<div class="pk2 org${dn?"":" z"}"><b>${dn}</b><span>Beklenti Altı</span></div>`+
+    `</div>`;
+  const rows=D.slice().reverse().slice(0,10).map(o=>{
+    const lg=isLg(o.x.cfg),uLbl=lg?"kademe":"tur",c=dc(o.d);
+    const expT=stTxt(o.x.cfg,o.ex).trim(),actT=rlb(o.x.res,o.x.cfg,o.x.grk).split(" · ")[0].trim();
+    return `<div class="pxp-r ${c}">`+
+      `<div class="pxp-top">`+
+        `${badge(o.x.my,28)}`+
+        `<div class="pxp-m"><b>${esc(o.x.name)} · ${esc(T[o.x.my].n)}</b><small>${o.g} GEN · Güç sırası ${o.r}/${o.N}</small></div>`+
+        `<span class="pxp-d ${c}">${o.d?dI(o.d)+" "+uLbl:"Beklenen"}</span>`+
+      `</div>`+
+      `<div class="pxp-flow">`+
+        `<div class="pxp-box"><span>Beklenen</span><b>${esc(expT)}</b></div>`+
+        `<span class="pxp-arr" aria-hidden="true">→</span>`+
+        `<div class="pxp-box act"><span>Ulaşılan</span><b>${esc(actT)}</b></div>`+
+      `</div>`+
+    `</div>`;
+  }).join("");
+  return psetCard("radar",tone,"Beklenene Göre Performans","Güç sırasına göre turnuva verimi",`${D.length} sezon`,
+    kpis+`<div class="pxp-list">${rows}</div>`+
+    `<div class="note" style="margin:9px 0 0">Beklenen derece, takımının o sezonki rakipler arasındaki güç sırasından hesaplanır.</div>`
+  )}
 function powerCard(mode){const D=xpData(mode);if(D.length<2)return "";
   const gs=D.map(o=>o.g),g0=Math.min(...gs)-1,g1=Math.max(...gs)+1,gw=Math.max(4,g1-g0),X=g=>36+(g-g0)/gw*252,Y=v=>140-v/7*128,seen=nob();
   const LRS={0:"Alt",4:"Orta",5:"3.",6:"2.",7:"Şamp."},gKeys=mode=="lg"?[0,4,5,6,7]:[0,3,4,5,6,7],grid=gKeys.map(v=>`<line class="gl" x1="30" x2="294" y1="${Y(v)}" y2="${Y(v)}"/><text x="2" y="${Y(v)+3}">${mode=="lg"?(LRS[v]||RS[v]):RS[v]}</text>`).join("");
@@ -469,11 +493,27 @@ function careerData(mode){
 function careerCard(mode){const d=careerData(mode);if(!d.n&&!(d.t.w+d.t.d+d.t.l))return "";
   const isL=mode=="lg",isC=mode=="cup",ttl=isL?"Lig Kariyer Özeti":isC?"Kupa Kariyer Özeti":"Kariyer Özeti";
   const sub=isL?"Puan usulü lig performansı":isC?"Eleme usulü kupa performansı":"Tüm sezonlar toplamı";
-  const col3=isL?`<div><b>${d.pod}</b><span>ilk 3 (podyum)</span></div>`:`<div><b>${d.fin}</b><span>${isC?"finale kalma":"final / ilk 2"}</span></div>`;
+  const c3v=isL?d.pod:d.fin,c3l=isL?"İlk 3 (Podyum)":(isC?"Final":"Final / İlk 2");
+  const totM=d.t.w+d.t.d+d.t.l,wr=totM?Math.round(d.t.w/totM*100):0,gd=d.t.gf-d.t.ga;
+  const gdStr=(gd>0?"+":gd<0?"−":"")+Math.abs(gd);
   const shIc='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>';
+  const kpis=`<div class="car-kpi">`+
+    `<div class="ck sky"><b>${d.n}</b><span>${isL?"Lig Sezonu":isC?"Kupa Sezonu":"Sezon"}</span></div>`+
+    `<div class="ck gold${d.ch?"":" z"}"><b>${d.ch}</b><span>Şampiyonluk</span></div>`+
+    `<div class="ck emr${c3v?"":" z"}"><b>${c3v}</b><span>${c3l}</span></div>`+
+    `</div>`;
+  const tel=totM?`<div class="car-tel">`+
+    `<div class="car-th"><span>Kariyer Karnesi · ${totM} Maç</span><b class="car-wr">%${wr} Galibiyet</b></div>`+
+    `${sbar(d.t)}`+
+    `<div class="car-pills">`+
+      `<span class="cp w"><b>${d.t.w}</b><em>G</em></span>`+
+      `<span class="cp d"><b>${d.t.d}</b><em>B</em></span>`+
+      `<span class="cp l"><b>${d.t.l}</b><em>M</em></span>`+
+      `<span class="cp gl"><b>${d.t.gf}–${d.t.ga}</b><em class="${gd>0?"pos":gd<0?"neg":""}">(${gdStr})</em></span>`+
+    `</div>`+
+    `</div>`:"";
   return psetCard("trophy","gold",ttl,sub,`${d.n} sezon`,
-    `<div class="mtl"><div><b>${d.n}</b><span>${isL?"lig sezonu":isC?"kupa sezonu":"sezon"}</span></div><div><b>${d.ch}</b><span>şampiyonluk</span></div>${col3}</div>`+
-    `<div class="mrec">${d.t.w} G · ${d.t.d} B · ${d.t.l} M · ${d.t.gf}/${d.t.ga} gol</div>`+
+    kpis+tel+
     `<div class="bar" style="margin:10px 0 0"><button class="btn pset-sec" data-a="kariyer" style="width:100%">${shIc}<span>Kariyer Özetini Paylaş</span></button></div>`
   )}
 
