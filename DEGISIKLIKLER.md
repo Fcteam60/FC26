@@ -1,3 +1,10 @@
+## v20.13 (2026-11-20) — Genel Menajer Profili, Kupa Dolabı & Gereksiz Tekrar Temizliği
+- **Genel Menajer Profili (`analytics.js` `calcTacticalDNA`, `tacticalDnaCard`, `matchTab`):** `Geçmiş › Maçlar` sekmesindeki Taktiksel DNA kartı artık tek sezonu değil, tüm kariyerdeki (ve varsa seçili zorluk filtresindeki) tüm istatistikli maçları baz alarak **Genel Menajer Profili** üretir. `İstat. › Analiz` ve Karne 2. sayfa aktif/ilgili sezon bazlı çalışmaya devam eder.
+- **Kupa Dolabı Yalnızca `Geçmiş › Özet`'te (`app.js` `histView`):** Kupa Dolabı (`vitrinCard`) üst alt-sekme çubuğunun altına ve yalnızca `Özet` sekmesine alındı; `Rekorlar`, `Sezonlar`, `Rakipler` ve `Maçlar` sekmelerinde ekranın üst alanı rahatlatıldı.
+- **Akıllı Gruptan Çıkanlar Kutusu (`app.js` `qualSummary`):** 8'den az gruplu turnuvalarda eleme ağacı oluştuktan sonra `Turnuva › Gruplar` ekranındaki mükerrer Gruptan Çıkanlar kutusu gizlenir; 8+ gruplu turnuvalarda veya eleme ağacı henüz oluşmadığında gösterilmeye devam eder.
+- **En İyi Derece Tekrarı Kaldırıldı (`app.js` `histView` `A1`):** `Rekorlar` sekmesinde zaten yer alan En İyi Sezon/Derece bandı `Geçmiş › Özet › Toplu İstatistik` kartından kaldırıldı.
+- **Ölü Kod & CSS Temizliği (`app.js`, `style.css`):** Kullanılmayan `R2`, `R3`, `chp`, `drawView.info`, `histView.card/R`, `a=="cp"` dalı ve 16 satır eski CSS kuralı (`.xpr`, `.xpt`, `.xpd`, `.xps`, `.xhr3`, `.sbstats`, `.sbpill`, `.sbbot`, `.sbleg`, `.sbwhy`) temizlendi.
+
 ## v20.12 (2026-11-20) — 2 Sayfalık Sezon Karnesi (Menajer Kimliği) & Metin Özeti Temizliği
 - **2 Sayfalık Sezon Karnesi (`posters.js` `karneDnaCv`, `mkImg`, `imgDlg`):** Sezon tamamlandıktan sonra (`x.res`) ve o sezonda gelişmiş maç istatistikleri girildiyse **Karne** artık 2 sayfalık Broadcast PNG olarak üretilir:
   - **Sayfa 1 · Sezon Karnesi:** Kulüp kartı, G-B-M, gol/averaj/puan, Sezon Ödülleri ve maç sonuçları.

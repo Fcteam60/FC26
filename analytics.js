@@ -151,7 +151,7 @@ function matchTab(){const A0=allM(),ds=new Set(A0.map(dOf)),fd=ds.has(st.sfd)?st
   const cl=Object.entries(CO).map(([c,L])=>({c:c,o:tally(L)})).sort((a,b)=>b.o.n-a.o.n),cm=cl[0]?cl[0].o.n:1;
   const bst=cl.filter(x=>x.o.n>=3).sort((a,b)=>b.o.w/b.o.n-a.o.w/a.o.n)[0];
   const c7=cl.length?cd("Rakip ülkeler",(bst?`<div class="note" style="margin:0 0 6px">En başarılı olduğun ülke: <b>${CN[bst.c][0]}</b> (%${Math.round(bst.o.w/bst.o.n*100)} galibiyet)</div>`:"")+cl.slice(0,8).map(x=>`<div class="row"><span class="n" style="flex:0 0 110px">${fl(x.c)} ${CN[x.c][0]}</span><div class="bk"><i style="width:${x.o.n/cm*100}%"></i></div><b>${x.o.n}</b><span class="lb" style="min-width:38px;text-align:right">%${Math.round(x.o.w/x.o.n*100)}</span></div>`).join("")+`<div class="note">Sağdaki: o ülkeye karşı galibiyet oranı.</div>`):"";
-  return fb+tacticalDnaCard(curS)+xgSummaryCard(ML)+c1+formCard(ML)+c3+oppTierCard(A)+marginCard(ML)+c4+c5+twoLegCard(A)+etPkCard(ML)+c6+surCard(ML)+oyDiff(A0)+c7}
+  return fb+tacticalDnaCard(null,{career:true,matches:ML,fd:fd})+xgSummaryCard(ML)+c1+formCard(ML)+c3+oppTierCard(A)+marginCard(ML)+c4+c5+twoLegCard(A)+etPkCard(ML)+c6+surCard(ML)+oyDiff(A0)+c7}
 
 /* ---------- v18.43 (Paket 3): Derin Analitik Motoru (Rakip Katmanı, Yakın Maç/Clutch, Rövanş, Oyuncu Profili) ---------- */
 function oppTierCard(A){
@@ -619,12 +619,22 @@ function advFormUI(s){
     `<div class="note" style="margin:6px 0 0;text-align:center">Girilen verilerle Hak Ediş, xG Verimliliği ve Taktiksel DNA (Radar) otomatik hesaplanır.</div></div>`;
   return h;
 }
-function calcTacticalDNA(s,onlySeason){
-  const curM=((s&&s.mt)||[]).filter(m=>m.stats);
-  if(onlySeason&&!curM.length)return null;
-  const allSt=onlySeason?[]:store.seasons.flatMap(x=>(x.mt||[]).filter(m=>m.stats));
-  const src=(curM.length>=1?curM:allSt).slice(-15);
-  if(!src.length)return null;
+function calcTacticalDNA(s,opt){
+  const onlySeason=opt===true,isCareer=!!(opt&&typeof opt==="object"&&opt.career);
+  let src=[],scopeLbl="";
+  if(isCareer){
+    const rawL=Array.isArray(opt.matches)?opt.matches:store.seasons.flatMap(x=>x.mt||[]);
+    src=rawL.filter(m=>m&&m.stats);
+    if(!src.length)return null;
+    scopeLbl=opt.fd?`${opt.fd} (${src.length} istatistikli maç)`:`Tüm kariyer (${src.length} istatistikli maç)`;
+  }else{
+    const curM=((s&&s.mt)||[]).filter(m=>m.stats);
+    if(onlySeason&&!curM.length)return null;
+    const allSt=onlySeason?[]:store.seasons.flatMap(x=>(x.mt||[]).filter(m=>m.stats));
+    src=(curM.length>=1?curM:allSt).slice(-15);
+    if(!src.length)return null;
+    scopeLbl=curM.length>=1?"Bu sezon (son "+src.length+" istatistikli maç)":"Kariyer (son "+src.length+" istatistikli maç)";
+  }
   const n=src.length,avgOf=(fn)=>{const vals=src.map(fn).filter(v=>v!=null&&Number.isFinite(v));return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null};
   const mPos=avgOf(m=>m.stats.myPos)??50;
   const mPass=avgOf(m=>m.stats.myPass)??80;
@@ -696,7 +706,7 @@ function calcTacticalDNA(s,onlySeason){
   const cntK=fn=>src.filter(m=>fn(m)!=null).length;
   const covd={pos:cntK(m=>m.stats.myPos),pass:cntK(m=>m.stats.myPass),shots:cntK(m=>m.stats.myShots),sot:cntK(m=>m.stats.mySot),xg:cntK(m=>m.stats.myXg),oShots:cntK(m=>m.stats.oppShots),oSot:cntK(m=>m.stats.oppSot),oXg:cntK(m=>m.stats.oppXg)};
   const miss=[["Topla oynama",covd.pos],["Pas isabeti",covd.pass],["Şut",covd.shots],["İsabetli şut",covd.sot],["xG",covd.xg],["Rakip şutu",covd.oShots],["Rakip xG",covd.oXg]].filter(x=>!x[1]).map(x=>x[0]);
-  return{n,scope:curM.length>=1?"Bu sezon (son "+n+" istatistikli maç)":"Kariyer (son "+n+" istatistikli maç)",atk,ctrl,aggr,eff,title,desc,icon,mPos,mPass,mShots,mSot,mXg,oShots,oXg,mGf,oSot,conv,gxRatio,miss,cov:covd,xgDiff,unluckyCnt,stealCnt,deservedCnt};
+  return{n,scope:scopeLbl,isCareer,atk,ctrl,aggr,eff,title,desc,icon,mPos,mPass,mShots,mSot,mXg,oShots,oXg,mGf,oSot,conv,gxRatio,miss,cov:covd,xgDiff,unluckyCnt,stealCnt,deservedCnt};
 }
 function radarSvg(dna){
   const W=240,H=220,cx=120,cy=110,R=72;
@@ -793,10 +803,11 @@ function tacticalDeltaHtml(s){
   }).join("");
   return `<div class="tdel-box"><div class="tdel-h"><b>Sezon Gelişimi</b><small>${esc(prevS.name)} → ${esc(s.name)}</small></div><div class="tdel-g">${cells}</div></div>`;
 }
-function tacticalDnaCard(s){
-  const dna=calcTacticalDNA(s);
+function tacticalDnaCard(s,careerOpt){
+  const isCareer=!!(careerOpt&&careerOpt.career);
+  const dna=calcTacticalDNA(s,isCareer?careerOpt:false);
   if(!dna){
-    return `<div class="dnacard"><div class="dnahd"><h3 style="margin:0">🧬 Oyun Tarzın & Menajer Kimliği</h3><span class="lb">Taktiksel Analiz</span></div><div class="note" style="margin:6px 0">Maç skoru girerken <b>“Gelişmiş İstatistik Ekle”</b> bölümünden girdiğin verilerle (Topla Oynama, Şut, Pas, xG) nasıl bir futbol oynadığını 100 üzerinden puanlar ve menajer kimliğini belirler.</div></div>`;
+    return `<div class="dnacard"><div class="dnahd"><h3 style="margin:0">🧬 ${isCareer?"Genel Menajer Profili":"Oyun Tarzın & Menajer Kimliği"}</h3><span class="lb">${isCareer?"Kariyer Analizi":"Taktiksel Analiz"}</span></div><div class="note" style="margin:6px 0">Maç skoru girerken <b>“Gelişmiş İstatistik Ekle”</b> bölümünden girdiğin verilerle (Topla Oynama, Şut, Pas, xG) ${isCareer?"tüm kariyerindeki genel menajer profilini":"nasıl bir futbol oynadığını"} 100 üzerinden puanlar ve menajer kimliğini belirler.</div></div>`;
   }
   const xd=xgS2(dna.xgDiff),effCol=dna.xgDiff>=0?"pos":"neg";
   const ax=[
@@ -831,14 +842,14 @@ function tacticalDnaCard(s){
   const totDes=dna.deservedCnt+dna.stealCnt+dna.unluckyCnt;
   const dhkBar=totDes>0?`<div class="dhkbar" role="img" aria-label="Hak ediş dağılımı: ${dna.deservedCnt} hak edilmiş, ${dna.stealCnt} şanslı, ${dna.unluckyCnt} şanssız">${dna.deservedCnt?`<i class="ok" style="flex:${dna.deservedCnt}"></i>`:""}${dna.stealCnt?`<i class="st" style="flex:${dna.stealCnt}"></i>`:""}${dna.unluckyCnt?`<i class="un" style="flex:${dna.unluckyCnt}"></i>`:""}</div>`:"";
   return `<div class="dnacard">
-    <div class="dnahd"><div><div class="lb" style="text-transform:uppercase;letter-spacing:.05em;font-weight:700">Oyun Tarzın · ${esc(dna.scope)}</div><div class="dnabdg" style="margin-top:4px"><span>${dna.icon}</span><span>${esc(dna.title)}</span></div></div><span class="dlv ${cf[1]}" title="Puanların kaç maça dayandığına göre güven düzeyi">${cf[0]} · ${dna.n} maç</span></div>
+    <div class="dnahd"><div><div class="lb" style="text-transform:uppercase;letter-spacing:.05em;font-weight:700">${isCareer?"Genel Menajer Profili":"Oyun Tarzın"} · ${esc(dna.scope)}</div><div class="dnabdg" style="margin-top:4px"><span>${dna.icon}</span><span>${esc(dna.title)}</span></div></div><span class="dlv ${cf[1]}" title="Puanların kaç maça dayandığına göre güven düzeyi">${cf[0]} · ${dna.n} maç</span></div>
     <div class="note" style="margin:0 0 10px">${esc(dna.desc)}</div>
     <div class="dnasum"><span>💪 En güçlü: <b>${DNASH[best.k]}</b> (${best.v})</span><span>🔧 Geliştirilecek: <b>${DNASH[worst.k]}</b> (${worst.v})</span></div>
     <div class="dnagrid">
       <div class="dnaradar">${radarSvg(dna)}</div>
       <div class="dnalist">${items}</div>
     </div>
-    ${tacticalDeltaHtml(s)}
+    ${isCareer?"":tacticalDeltaHtml(s)}
     <div class="dhkbox">
       <div class="dhkh"><b>Maç sonuçların hak edildi mi?</b>${totDes?`<span class="lb">${totDes} xG maçı</span>`:""}</div>
       ${dhkBar}
@@ -856,7 +867,7 @@ function tacticalDnaCard(s){
       <div><dt>Top & Pas Kontrolü</dt><dd>Topla oynama (%55; %30 = 0 puan, %70 = tam puan) + pas isabeti (%45; %65 = 0 puan, %93 = tam puan).</dd></div>
       <div><dt>Savunma Direnci & Pres</dt><dd>Düşük topla oynama / savunma ağırlıklı oyun (%50) + rakip şutlarının isabetsiz kalma oranı (%30) + rakibin az şut çekmesi (%20).</dd></div>
       <div><dt>Bitiricilik Verimi</dt><dd>Gol / xG oranı ve gol / şut dönüşümü. Beklentiyle aynı gol sayısı yaklaşık 55 puan verir; fazlası puanı yükseltir.</dd></div>
-      <div><dt>Hangi maçlar sayılır?</dt><dd>İstatistik girilmiş en fazla son 15 maç. Bu sezonda istatistikli maç varsa yalnızca bu sezon, yoksa tüm kariyer kullanılır.</dd></div>
+      <div><dt>Hangi maçlar sayılır?</dt><dd>${isCareer?"Kariyerindeki (ve varsa seçili zorluk filtresindeki) istatistik girilmiş tüm maçlar genel menajer profiline dahil edilir.":"İstatistik girilmiş en fazla son 15 maç. Bu sezonda istatistikli maç varsa yalnızca bu sezon, yoksa tüm kariyer kullanılır."}</dd></div>
     </dl></details>
   </div>`;
 }

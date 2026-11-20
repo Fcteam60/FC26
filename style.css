@@ -285,11 +285,6 @@ button{transition:transform .08s}button:active{transform:scale(.96)}
 .gold .spt .ln.ch{stroke:#6b4a00}.gold .spt .dn.ch{fill:#6b4a00}.gold .spt text{fill:#4a3600}
 .sfb{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
 
-.xpr{padding:8px 0;border-top:1px solid var(--bd)}.xpr:first-of-type{border-top:0}
-.xpt{display:flex;justify-content:space-between;align-items:center;gap:8px}.xpt b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.xpd{font-family:var(--num);font-weight:700;font-size:15px;padding:2px 9px;border-radius:99px;color:#fff;flex:0 0 auto}
-.xpd.p{background:var(--ac);color:var(--acx)}.xpd.n{background:var(--wr)}.xpd.z{background:var(--mut)}
-.xps{font-size:13px;color:var(--mut);margin-top:2px}
 .scp text{fill:var(--mut);font-size:9px}.scp .gl{stroke:var(--bd)}.scp .p{fill:var(--ac)}.scp .n{fill:var(--wr)}.scp .z{fill:var(--mut)}
 /* ===== v3: Grubum, küçük takım kartı, kompakt oyuncu satırı ===== */
 /* .tmini stilleri v18.30 bölümüne taşındı */
@@ -357,7 +352,6 @@ button{transition:transform .08s}button:active{transform:scale(.96)}
 .sbsc.w{background:linear-gradient(135deg,#12b886,#0b7a53)}
 .sbsc.d{background:linear-gradient(135deg,#64748b,#475569)}
 .sbsc.l{background:linear-gradient(135deg,#e03131,#a61e1e)}
-.sbbot{margin-top:5px;padding-top:4px;border-top:1px solid var(--bd);font-size:12px;color:var(--mut);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* Gruptan çıkanlar rozetleri */
 .qbdg{font-family:var(--num);font-size:13px;font-weight:700;padding:1px 7px;border-radius:99px;background:var(--ac);color:var(--acx);flex:0 0 auto;letter-spacing:.02em}
 .qbdg.off{background:var(--hi);color:var(--mut);font-weight:600}
@@ -399,9 +393,6 @@ button{transition:transform .08s}button:active{transform:scale(.96)}
 .xgeff.neu{background:var(--hi);color:var(--mut)}
 .sbcard.unlucky{border-left:4px solid #f97316}
 .sbcard.undeserved{border-left:4px solid #2563eb}
-.sbstats{margin-top:6px;padding-top:6px;border-top:1px dashed var(--bd);display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:12px}
-.sbpill{background:var(--hi);padding:2px 8px;border-radius:6px;font-family:var(--num);font-size:13px;color:var(--tx)}
-.sbpill b{color:var(--ac)}
 /* Taktiksel DNA & Radar */
 .dnacard{position:relative;overflow:hidden;border:1px solid var(--gbd);border-radius:16px;padding:14px;background:var(--gcard);box-shadow:var(--gsh);margin-top:10px}
 .dnahd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;flex-wrap:wrap}
@@ -744,14 +735,7 @@ html[data-club] .gtbl.row.myrow::after{content:"";position:absolute;inset:0;poin
 .dnaitem .dnx{font-size:12.5px;margin-top:6px;line-height:1.4}
 .dnaitem .dnt{font-size:11.5px;margin-top:4px;color:var(--mut);line-height:1.35}
 .dnawarn{margin-top:8px;padding:6px 10px;border-radius:8px;background:var(--hi)}
-.sbleg{flex:1 0 100%;text-align:center;font-size:11px;color:var(--mut)}
-.sbwhy{margin-top:6px;font-size:12px;color:var(--mut);text-align:center;line-height:1.4}
 @media (max-width:339px){.xtg{grid-template-columns:1fr}}
-.xhr3{display:grid;gap:6px;margin:4px 0 8px}
-.xhr3>div{display:flex;align-items:center;gap:12px;background:var(--hi);border-radius:12px;padding:8px 12px}
-.xhr3 b{flex:none;min-width:34px;text-align:center;font-family:var(--num);font-size:28px;line-height:1.1}
-.xhr3 span{display:block;font-size:13.5px;font-weight:600}
-.xhr3 small{display:block;color:var(--mut);font-size:12.5px;line-height:1.35;margin-top:1px}
 
 /* ===== v18.26: Premium yüzen alt gezinme çubuğu (cam efektli hap dock) ===== */
 :root{--nvA:rgba(15,157,107,.13);--nvRing:rgba(15,157,107,.30);--nvBg:rgba(255,255,255,.90);--nvBd:rgba(20,32,27,.09);--nvSh:0 10px 28px rgba(20,32,27,.16),0 2px 6px rgba(20,32,27,.08);--nvHi:rgba(255,255,255,.7)}
