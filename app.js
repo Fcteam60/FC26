@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.4",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="20.6",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -222,7 +222,7 @@ function remap(o){
       if(s.sim.mom)s.sim.mom=rmMap(s.sim.mom);
       rebuildSimScorers(s);
     }
-    if(s.res&&typeof s.res=="object"){if(s.res.ch!=null)s.res.ch=m2(s.res.ch);if(s.res.ru!=null)s.res.ru=m2(s.res.ru);if(s.res.topG&&s.res.topG.ti!=null)s.res.topG.ti=m2(s.res.topG.ti);if(s.res.mvp&&s.res.mvp.ti!=null)s.res.mvp.ti=m2(s.res.mvp.ti);if(s.res.tots&&typeof s.res.tots=="object"){let okT=true;["F","M","D","K"].forEach(k=>{if(Array.isArray(s.res.tots[k])){s.res.tots[k]=s.res.tots[k].map(p=>{if(!p)return null;const ti=m2(p.ti);return ti!=null?Object.assign({},p,{ti}):null}).filter(Boolean)}else okT=false});if(!okT||s.res.tots.K.length<1||s.res.tots.D.length<4||s.res.tots.M.length<3||s.res.tots.F.length<3)s.res.tots=null}}
+    if(s.res&&typeof s.res=="object"){if(s.res.ch!=null)s.res.ch=m2(s.res.ch);if(s.res.ru!=null)s.res.ru=m2(s.res.ru);if(s.res.topG&&s.res.topG.ti!=null)s.res.topG.ti=m2(s.res.topG.ti);if(s.res.mvp&&s.res.mvp.ti!=null)s.res.mvp.ti=m2(s.res.mvp.ti);if(s.res.tots&&typeof s.res.tots=="object"){let okT=true;["F","M","D","K"].forEach(k=>{if(Array.isArray(s.res.tots[k])){s.res.tots[k]=s.res.tots[k].map(p=>{if(!p)return null;const ti=m2(p.ti);return ti!=null?Object.assign({},p,{ti}):null}).filter(Boolean)}else okT=false});if(!okT||s.res.tots.K.length!==1||s.res.tots.D.length<3||s.res.tots.M.length<3||s.res.tots.F.length<1||(s.res.tots.D.length+s.res.tots.M.length+s.res.tots.F.length)!==10)s.res.tots=null}}
     if(s.my!=null)s.my=m(s.my);
     if(s.P)s.P=s.P.map(m).filter(x=>x!==null);
     if(s.sn&&typeof s.sn=="object"){const nsn=nob();Object.entries(s.sn).forEach(([k,v])=>{const nk=ALIAS[k]||k;if(IX[nk]!==undefined)nsn[nk]=v});s.sn=nsn}
@@ -1285,8 +1285,13 @@ const tplOn=(c,p)=>p[4]===0&&p[2]===p[3]?isLg(c):(c.N==p[2]&&(c.gs||0)==p[3]&&(!
 /* ---------- SEZON ANA EKRANI, 5'Lİ GEZİNME, HIZLI SKOR PANELİ ---------- */
 const crs=(i,w)=>`<div style="display:flex;justify-content:center;margin-bottom:2px">${badge(i,w||36)}</div>`;
 const PITCH='<svg viewBox="0 0 96 64" aria-hidden="true"><rect x="4" y="4" width="88" height="56" rx="3"/><path d="M48 4v56"/><circle cx="48" cy="32" r="9"/><rect x="4" y="20" width="12" height="24"/><rect x="80" y="20" width="12" height="24"/></svg>';
+const TOTS_FMTS=[["4-3-3",4,3,3],["4-4-2",4,4,2],["4-5-1",4,5,1],["3-5-2",3,5,2],["3-4-3",3,4,3],["5-3-2",5,3,2],["5-4-1",5,4,1]];
+const totsFmtOf=xi=>xi?(xi.fmt||`${(xi.D||[]).length}-${(xi.M||[]).length}-${(xi.F||[]).length}`):"4-3-3";
 function tourneyTots(s,st2){
-  if(s&&s.res&&s.res.tots&&["F","M","D","K"].every(k=>Array.isArray(s.res.tots[k])&&s.res.tots[k].length&&s.res.tots[k].every(p=>p&&T[p.ti])))return s.res.tots;
+  if(s&&s.res&&s.res.tots&&["F","M","D","K"].every(k=>Array.isArray(s.res.tots[k])&&s.res.tots[k].length&&s.res.tots[k].every(p=>p&&T[p.ti]))){
+    const t=s.res.tots;
+    return Object.assign({},t,{fmt:t.fmt||`${t.D.length}-${t.M.length}-${t.F.length}`});
+  }
   if(!st2||!st2.teams||!st2.teams.length)return null;
   const tmMap=nob();st2.teams.forEach(t=>{if(t.o>0)tmMap[t.ti]=t});
   const pool=nob();
@@ -1317,51 +1322,125 @@ function tourneyTots(s,st2){
     else if(p.grp==="D")sc=p.g*5.5+p.a*4+p.mom*4.5+cs*2.8+Math.max(0,2.0-gaPm)*2.0+wr*1.8+p.ovr*0.10;
     else if(p.grp==="M")sc=p.g*3.8+p.a*3.2+p.mom*3.5+wr*1.5+p.ovr*0.08;
     else sc=p.g*4.0+p.a*2.5+p.mom*3.5+wr*1.2+p.ovr*0.08;
-    return Object.assign(p,{sc,cs,mvp:3*p.g+2*p.a+2*p.mom});
+    return Object.assign(p,{sc,cs,mvp:3*p.g+2*p.a+2*p.mom,z:0});
   });
-  const pick=(gCode,n)=>list.filter(p=>p.grp===gCode).sort((a,b)=>b.sc-a.sc||b.mvp-a.mvp||b.ovr-a.ovr||TR_CMP(a.n,b.n)).slice(0,n);
-  const K=pick("K",1),D=pick("D",4),M=pick("M",3),F=pick("F",3);
-  if(K.length<1||D.length<4||M.length<3||F.length<3)return null;
-  return{F,M,D,K};
+  const byG=nob();
+  ["K","D","M","F"].forEach(gCode=>{
+    const arr=list.filter(p=>p.grp===gCode).sort((a,b)=>b.sc-a.sc||b.mvp-a.mvp||b.ovr-a.ovr||TR_CMP(a.n,b.n));
+    if(gCode!=="K"&&arr.length){
+      const body=arr.length>=12?arr.slice(5):arr;
+      const mu=body.reduce((a,p)=>a+p.sc,0)/body.length;
+      const vr=body.reduce((a,p)=>a+(p.sc-mu)*(p.sc-mu),0)/body.length;
+      const sd=Math.max(2.5,Math.sqrt(vr));
+      arr.forEach(p=>{p.z=(p.sc-mu)/sd});
+    }
+    byG[gCode]=arr;
+  });
+  if(byG.K.length<1)return null;
+  let best=null;
+  TOTS_FMTS.forEach(([fmtName,dN,mN,fN])=>{
+    if(byG.D.length<dN||byG.M.length<mN||byG.F.length<fN)return;
+    const D=byG.D.slice(0,dN),M=byG.M.slice(0,mN),F=byG.F.slice(0,fN);
+    const zSum=D.reduce((a,p)=>a+p.z,0)+M.reduce((a,p)=>a+p.z,0)+F.reduce((a,p)=>a+p.z,0)+(fmtName==="4-3-3"?0.02:0);
+    if(!best||zSum>best.zSum)best={fmt:fmtName,zSum,F,M,D,K:byG.K.slice(0,1)};
+  });
+  if(!best)return null;
+  return{F:best.F,M:best.M,D:best.D,K:best.K,fmt:best.fmt};
+}
+function totsOrderLine(arr,role){
+  if(!Array.isArray(arr)||arr.length<2)return arr||[];
+  const L=arr.slice();
+  if(role==="F"){
+    const w=p=>/^(LW|LF)$/.test(p.pos)?0:/^(RW|RF)$/.test(p.pos)?2:1;
+    return L.sort((a,b)=>w(a)-w(b));
+  }
+  if(role==="M"){
+    if(L.length===5){
+      const wideL=L.filter(p=>p.pos==="LM"),wideR=L.filter(p=>p.pos==="RM");
+      const cams=L.filter(p=>p.pos==="CAM"),pivs=L.filter(p=>p.pos==="CDM"||p.pos==="CM");
+      const rest=L.filter(p=>!wideL.includes(p)&&!wideR.includes(p)&&!cams.includes(p)&&!pivs.includes(p));
+      const pool=[...cams,...pivs,...rest];
+      const slot=[null,null,null,null,null];
+      if(wideL.length)slot[0]=wideL.shift();
+      if(wideR.length)slot[4]=wideR.shift();
+      const rem=[...wideL,...wideR,...pool];
+      const camIdx=rem.findIndex(p=>p.pos==="CAM");
+      if(camIdx>=0)slot[2]=rem.splice(camIdx,1)[0];
+      [1,3,2,0,4].forEach(idx=>{if(!slot[idx]&&rem.length)slot[idx]=rem.shift()});
+      return slot.filter(Boolean);
+    }
+    const w=p=>/^(LM)$/.test(p.pos)?0:/^(RM)$/.test(p.pos)?3:/^(CAM)$/.test(p.pos)?2:1;
+    return L.sort((a,b)=>w(a)-w(b));
+  }
+  if(role==="D"){
+    const w=p=>/^(LB|LWB)$/.test(p.pos)?0:/^(RB|RWB)$/.test(p.pos)?2:1;
+    return L.sort((a,b)=>w(a)-w(b));
+  }
+  return L;
+}
+function totsFindMvp(xi){
+  const all=[...(xi.F||[]),...(xi.M||[]),...(xi.D||[]),...(xi.K||[])];
+  if(!all.length)return null;
+  const score=p=>3*(p.g||0)+2*(p.a||0)+2*(p.mom||0);
+  const top=all.slice().sort((a,b)=>score(b)-score(a)||(b.sc||0)-(a.sc||0)||(b.ovr||0)-(a.ovr||0))[0];
+  return top&&(score(top)>0||top.cs>0)?top:null;
 }
 function totsPitchHtml(xi){
-  const shortNm=n=>{const ps=String(n||"").trim().split(/\s+/);return ps.length>1&&n.length>12?ps[ps.length-1]:n};
-  const node=p=>{
-    const stat=p.g||p.a?`${p.g?p.g+"G":""}${p.g&&p.a?" ":""}${p.a?p.a+"A":""}`:(p.mom?`${p.mom}★`:(p.cs?`${p.cs} TK`:`${p.ovr}`));
+  const shortNm=n=>{const ps=String(n||"").trim().split(/\s+/);return ps.length>1&&n.length>11?ps[0][0]+". "+ps[ps.length-1]:n};
+  const mvpP=totsFindMvp(xi),fmtStr=totsFmtOf(xi);
+  const F=totsOrderLine(xi.F,"F"),M=totsOrderLine(xi.M,"M"),D=totsOrderLine(xi.D,"D"),K=xi.K||[];
+  const bSz=n=>n===4?30:n===5?32:34;
+  const node=(p,sz)=>{
+    const isMvp=mvpP&&p.n===mvpP.n&&p.ti===mvpP.ti;
+    const parts=[];
+    if(p.g)parts.push(`${p.g}G`);
+    if(p.a)parts.push(`${p.a}A`);
+    if(p.mom)parts.push(`${p.mom}<i class="tots-star">★</i>`);
+    if(!parts.length)parts.push(p.cs?`${p.cs} TK`:`${p.ovr} GEN`);
+    const statHtml=parts.join(` <i class="tots-dot">·</i> `);
     const act=p.mine?`data-a="pinfo" data-n="${esc(p.n)}"`:`data-a="tinfo" data-i="${p.ti}"`;
-    return `<button class="tots-pl${p.mine?" mine":""}" ${act} aria-label="${esc(p.n)} (${esc(T[p.ti].n)})">`+
-      `<span class="tots-bdg">${badge(p.ti,26)}<i class="tots-pos p-${p.grp}">${esc(p.pos)}</i></span>`+
-      `<b class="tots-nm">${p.mine?"★ ":""}${esc(shortNm(p.n))}</b>`+
-      `<span class="tots-st">${stat}${p.mom&&(p.g||p.a)?` · ${p.mom}★`:""}</span>`+
+    const cls=`tots-pl${isMvp?" mvp":""}${p.mine?" mine":""}`;
+    const star=(isMvp||p.mine)?`<i class="tots-star">★</i> `:"";
+    return `<button class="${cls}" ${act} aria-label="${esc(p.n)} (${esc(T[p.ti].n)})">`+
+      (isMvp?`<span class="tots-mvp">MVP</span>`:"")+
+      `<span class="tots-bdg">${badge(p.ti,sz)}<i class="tots-pos p-${p.grp}">${esc(p.pos)}</i></span>`+
+      `<span class="tots-nm">${star}${esc(shortNm(p.n))}</span>`+
+      `<span class="tots-st">${statHtml}</span>`+
     `</button>`;
   };
-  return `<div class="tots-pitch" role="region" aria-label="Turnuvanın En İyi 11'i 4-3-3 dizilişi">`+
-    `<svg class="tots-lines" viewBox="0 0 360 440" preserveAspectRatio="none" aria-hidden="true">`+
-      `<rect x="10" y="10" width="340" height="420" rx="8"/>`+
-      `<line x1="10" y1="220" x2="350" y2="220"/>`+
-      `<circle cx="180" cy="220" r="46"/><circle cx="180" cy="220" r="3" fill="currentColor"/>`+
-      `<rect x="92" y="10" width="176" height="64"/><rect x="134" y="10" width="92" height="24"/>`+
-      `<rect x="92" y="366" width="176" height="64"/><rect x="134" y="406" width="92" height="24"/>`+
+  return `<div class="tots-pitch" role="region" aria-label="Turnuvanın En İyi 11'i ${esc(fmtStr)} dizilişi">`+
+    `<svg class="tots-lines" viewBox="0 0 360 470" preserveAspectRatio="none" aria-hidden="true">`+
+      `<polygon points="54,18 306,18 348,452 12,452"/>`+
+      `<polygon points="114,18 246,18 256,74 104,74"/>`+
+      `<polygon points="146,18 214,18 218,40 142,40"/>`+
+      `<path d="M154,74 Q180,92 206,74"/>`+
+      `<line x1="35" y1="214" x2="325" y2="214"/>`+
+      `<ellipse cx="180" cy="214" rx="54" ry="37"/>`+
+      `<circle cx="180" cy="214" r="3" fill="currentColor"/>`+
+      `<polygon points="94,370 266,370 284,452 76,452"/>`+
+      `<polygon points="134,416 226,416 232,452 128,452"/>`+
+      `<path d="M148,370 Q180,350 212,370"/>`+
     `</svg>`+
     `<div class="tots-rows">`+
-      `<div class="tots-row r3">${xi.F.map(node).join("")}</div>`+
-      `<div class="tots-row r3">${xi.M.map(node).join("")}</div>`+
-      `<div class="tots-row r4">${xi.D.map(node).join("")}</div>`+
-      `<div class="tots-row r1">${xi.K.map(node).join("")}</div>`+
+      `<div class="tots-row r${F.length} frow">${F.map(p=>node(p,bSz(F.length))).join("")}</div>`+
+      `<div class="tots-row r${M.length} mrow">${M.map(p=>node(p,bSz(M.length))).join("")}</div>`+
+      `<div class="tots-row r${D.length} drow">${D.map(p=>node(p,bSz(D.length))).join("")}</div>`+
+      `<div class="tots-row r1 krow">${K.map(p=>node(p,34)).join("")}</div>`+
     `</div>`+
   `</div>`;
 }
 function totsPitchCard(s,st2){
   const xi=tourneyTots(s,st2);if(!xi)return "";
-  const pitch=totsPitchHtml(xi)+`<div class="bar" style="margin:10px 0 0"><button class="btn pset-sec" data-a="totsg" data-id="${s.id}" style="width:100%"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg><span>En İyi 11’i Görsel Olarak Paylaş</span></button></div><div class="note" style="margin:8px 0 0">Gol, asist, MOTM ve temiz kasa performansına göre otomatik 4-3-3 seçilir. Oyuncuya dokunarak profil/kadro inceleyebilirsin.</div>`;
-  return psetCard("trophy","gold","Turnuvanın En İyi 11’i",s.res&&s.res.tots?"Sezon arşivi · 4-3-3":"Canlı performans seçkisi · 4-3-3","TOTS",pitch);
+  const fmtStr=totsFmtOf(xi);
+  const pitch=totsPitchHtml(xi)+`<div class="bar" style="margin:10px 0 0"><button class="btn pset-sec" data-a="totsg" data-id="${s.id}" style="width:100%"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg><span>En İyi 11’i Görsel Olarak Paylaş</span></button></div><div class="note" style="margin:8px 0 0">Mevki dengeli performans puanına göre en uygun formasyon (4-3-3, 4-4-2, 4-5-1, 3-5-2, 3-4-3, 5-3-2, 5-4-1) otomatik seçilir. Oyuncuya dokunarak profil/kadro inceleyebilirsin.</div>`;
+  return psetCard("trophy","gold","Turnuvanın En İyi 11’i",(s.res&&s.res.tots?"Sezon arşivi":"Canlı performans seçkisi")+" · "+fmtStr,"TOTS",pitch);
 }
 function totsDlg(){
   const x=store.seasons.find(y=>y.id==st.totsv);if(!x)return "";
   const xi=tourneyTots(x,tourneyStats(x));if(!xi)return "";
-  const mvp=x.res&&x.res.mvp;
+  const mvp=x.res&&x.res.mvp,fmtStr=totsFmtOf(xi);
   return `<div class="dlg ti"><button class="tibk" data-a="no" aria-label="Kapat"></button><div class="dbox tisheet" role="dialog" aria-modal="true" aria-label="${esc(x.name)} En İyi 11">`+
-    `<div class="tots-dlg-hd"><div><b>${esc(x.name)} · En İyi 11</b><small>${mvp?`Turnuva MVP: ${esc(mvp.n)} (${mvp.g}G ${mvp.a}A ${mvp.mom}★)`:esc(fmt(x.cfg))}</small></div><button class="mb sc-ic" data-a="no" aria-label="Kapat">✕</button></div>`+
+    `<div class="tots-dlg-hd"><div><b>${esc(x.name)} · En İyi 11 (${esc(fmtStr)})</b><small>${mvp?`Turnuva MVP: ${esc(mvp.n)} (${mvp.g}G ${mvp.a}A ${mvp.mom}★)`:esc(fmt(x.cfg))}</small></div><button class="mb sc-ic" data-a="no" aria-label="Kapat">✕</button></div>`+
     totsPitchHtml(xi)+
     `<div class="bar" style="margin:10px 0 0"><button class="btn p pset-pri" data-a="totsg" data-id="${x.id}" style="flex:1">Görsel Olarak Paylaş</button><button class="btn pset-sec" data-a="no">Kapat</button></div>`+
   `</div></div>`;

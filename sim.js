@@ -787,7 +787,7 @@ function snapshotSeasonAwards(s){
   return{
     topG:topS?{n:topS.n,ti:topS.ti,g:topS.g}:null,
     mvp:mvpP?{n:mvpP.n,ti:mvpP.ti,g:mvpP.g,a:mvpP.a,mom:mvpP.mom,mvp:mvpP.mvp}:null,
-    tots:xiRaw?{F:xiRaw.F.map(slim),M:xiRaw.M.map(slim),D:xiRaw.D.map(slim),K:xiRaw.K.map(slim)}:null
+    tots:xiRaw?{fmt:totsFmtOf(xiRaw),F:xiRaw.F.map(slim),M:xiRaw.M.map(slim),D:xiRaw.D.map(slim),K:xiRaw.K.map(slim)}:null
   };
 }
 function finishTournament(s){

@@ -1,5 +1,21 @@
 # Değişiklik listesi
 
+## v20.6 (Dinamik Formasyonlu & Mevki Dengeli Turnuvanın En İyi 11’i)
+- **7 Farklı Otomatik Formasyon (`TOTS_FMTS`, `tourneyTots`):** Turnuvanın En İyi 11’i artık sabit `4-3-3` yerine **4-3-3, 4-4-2, 4-5-1, 3-5-2, 3-4-3, 5-3-2 ve 5-4-1** dizilişlerinden o turnuvadaki oyuncu performanslarına en uygun olanı otomatik seçer.
+- **Mevkiler Arası Puan Dengesi (Robust Z-Skor Normalizasyonu):** Defansların temiz kasa ve gol katsayılarının diğer mevkileri ezmemesi için her saha oyuncusunun puanı kendi mevki grubunun gövde ortalaması ve standart sapmasına göre normalize edilir (`z`). Böylece orta sahaların parladığı turnuvada `3-5-2` / `4-5-1`, savunmaların öne çıktığı turnuvada `5-3-2` / `5-4-1`, hücumcuların şov yaptığı turnuvada `3-4-3` / `4-3-3` doğal olarak seçilir.
+- **5’li Hatlar İçin 2 Kademeli Taktiksel Yerleşim (`.tots-row.r5`, `totsCv`):** 5 orta sahalı dizilişlerde üstte `LM–CAM–RM`, altta çift pivot (`3+2` W dizilimi); 5 savunmalı dizilişlerde kanat bekler önde, 3 stoper arkada konumlanır. Hem mobil ekranda hem 1080×1460 PNG posterde sıfır taşma ve sıfır çakışma sağlanır.
+- **Arşiv & Geriye Dönük Uyumluluk (`snapshotSeasonAwards`, `remap`):** Sezon sonu arşivine seçilen formasyon (`fmt`) kaydedilir; eski sezon kayıtları sorunsuz şekilde `4-3-3` olarak açılmaya devam eder.
+- Sürüm `20.6` (`VER`, `package.json` 20.6.0, `sw.js` `fc27-lig-v20-6`).
+
+## v20.5 (Broadcast Perspektif TOTS Sahası & Altın MVP Vitrin Kartı)
+- **Turnuvanın En İyi 11’i (`totsPitchHtml`, `totsCv`, `.tots-pitch`):**
+  - **Perspektif 3B Saha:** Düz dikdörtgen yerine üste doğru daralan yamuk (trapezoid) perspektif saha çizgileri, perspektif ceza sahaları, elips orta yuvarlak ve dikey çim şeritleri eklendi.
+  - **Yüzen Broadcast Oyuncular:** Kutu görünümü kaldırıldı; oyuncular saha üzerinde yüzen kulüp arması, sağ alt köşede hap mevki rozeti (`ST`, `LW`, `CDM`, `GK` vb.), buzlu koyu yeşil isim kapsülü ve altın yıldızlı (`★`) kompakt stat hapıyla gösterilir.
+  - **Doğal 4-3-3 Kademesi & Mevki Sıralaması (`totsOrderLine`):** Kanatlar, forvet, ön libero ve bekler gerçek saha kademesine göre konumlanır.
+  - **Altın MVP Vitrin Kartı (`totsFindMvp`):** En İyi 11 içindeki en yüksek performanslı oyuncu sağ üst köşede `MVP` etiketli, altın ışıklı buzlu cam kartla öne çıkarılır.
+  - **PNG Poster Eşitlemesi (`totsCv`):** Paylaşılan yüksek çözünürlüklü TOTS PNG posteri de birebir aynı perspektif saha ve MVP vitrin tasarımına geçirildi.
+- Sürüm `20.5` (`VER`, `package.json` 20.5.0, `sw.js` `fc27-lig-v20-5`).
+
 ## v20.4 (Elit Görsel Yenileme — Geçmiş › Özet, Rakip Analizi & Rozet Vitrini)
 - **Geçmiş › Özet (`careerCard`, `xpCard`, `tsCard`, `A1`/`A2`/`A3`):**
   - *Kariyer Özeti* semantik 3'lü cam KPI kartları, orantılı G-B-M çubuğu ve renk kodlu telemetri şeridiyle yenilendi.
