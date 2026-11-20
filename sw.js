@@ -1,14 +1,14 @@
-const CACHE = "fc27-lig-v20-10";
+const CACHE = "fc27-lig-v20-11";
 const FILES = [
   "./",
   "./index.html",
-  "./style.css?v=20.10",
-  "./data.js?v=20.10",
-  "./storage.js?v=20.10",
-  "./sim.js?v=20.10",
-  "./analytics.js?v=20.10",
-  "./posters.js?v=20.10",
-  "./app.js?v=20.10",
+  "./style.css?v=20.11",
+  "./data.js?v=20.11",
+  "./storage.js?v=20.11",
+  "./sim.js?v=20.11",
+  "./analytics.js?v=20.11",
+  "./posters.js?v=20.11",
+  "./app.js?v=20.11",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png",

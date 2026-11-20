@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.10",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="20.11",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -194,7 +194,7 @@ function grpCard(g,gi){
 /* ---------- VERİ ---------- */
 const today=()=>new Date().toLocaleDateString("tr-TR");
 const esc=x=>String(x).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const nextNo=()=>{const L=store.seasons.map(x=>{const m=/^Sezon (\d+)$/.exec(x.name||"");return m?+m[1]:0});return Math.max(store.nx||0,...L)+1};
+const nextNo=()=>{const L=store.seasons.map(x=>{const m=/^Sezon (\d+)$/.exec(x.name||"");return m?+m[1]:0});return Math.max(0,...L)+1};
 const mk=(id,n,prev)=>({id,name:"Sezon "+n,date:today(),G:null,my:null,res:null,pl:[],mt:[],ts:nob(),cfg:prev?cp(prev.cfg):cp(DEFC),rl:prev?cp(prev.rl):cp(DEFR),P:null,lk:false,oy:prev&&prev.oy?cp(prev.oy):Object.assign(nob(),{d:"",h:"",c:""})});
 const okS=o=>o&&Array.isArray(o.seasons)&&o.seasons.length;
 let DROP=[];
@@ -762,7 +762,7 @@ function delSeason(id){
   store.trash=[{s:x,t:Date.now()}].concat(store.trash||[]).slice(0,10);
   store.seasons=store.seasons.filter(q=>q.id!=id);
   const fresh=!store.seasons.length;
-  if(fresh){store.nx=1;store.seasons.push(mk(Date.now(),1))}
+  if(fresh){store.nx=1;store.seasons.push(mk(Date.now(),1))}else store.nx=Math.max(0,...store.seasons.map(q=>{const m=/^Sezon (\d+)$/.exec(q.name||"");return m?+m[1]:0}))
   if(fresh||store.cur==id)store.cur=store.seasons[store.seasons.length-1].id;
   sync();st.mode=null;
   return fresh?"Sezon silindi, boş yeni sezon açıldı":"Sezon silindi · Ayarlar › Son silinenler’den geri getirilebilir"}

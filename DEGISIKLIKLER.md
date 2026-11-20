@@ -1,3 +1,7 @@
+## v20.11 (2026-11-20) — Sezon Numaralandırma Düzeltmesi
+- **Sezon Silme Sonrası Numara Atlama Düzeltildi (`app.js` `nextNo`, `delSeason`):** Yeni sezon numarası artık hep ileri giden `store.nx` sayacı yerine mevcut sezonların en büyük numarasına göre (`Math.max(0, ...L) + 1`) hesaplanır ve sezon silindiğinde `store.nx` mevcut sezonlara göre güncellenir. Böylece Sezon 3 eklenip silindiğinde sıradaki sezon tekrar **Sezon 3** olarak açılır.
+- **Önbellek Güncellemesi (`sw.js` `fc27-lig-v20-11` + `?v=20.11`):** Güncellemenin anında yansıması için sürüm `20.11` yapıldı.
+
 ## v20.10 (2026-11-20) — İdeal İlk 11 Optimizasyonu (Sakatlık/Rotasyon Düzeltmesi)
 - **59 Takımda 110 As Oyuncu İlk 11'e Çekildi (`data.js`):** Gerçek hayat sakatlığı, cezası veya hafta sonu rotasyonu nedeniyle yedekte kalmış yıldızlar (Musiala, Saliba, Gyökeres, Kvaratskhelia, Balogun, Thuram, Çalhanoğlu, Svilar, Orkun Kökçü, Asensio, Kenan Yıldız, Locatelli, Aspas, Orsolini, Kleindienst vb.) her takımın mevcut dizilişi (`D-M-F`) hiç bozulmadan İlk 11'e (`S`), yerlerindeki düşük güçlü yedekler ise kulübeye (`B`) alındı.
 - **Önbellek Güncellemesi (`sw.js` `fc27-lig-v20-10` + `?v=20.10`):** Yeni kadro verilerinin anında yansıması için sürüm `20.10` yapıldı.
