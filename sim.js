@@ -585,10 +585,20 @@ function syncUserMatchesToBracket(s){
           }else if(myGf!==myGa){
             p.pf=null;p.pa=null;
             p.w=myGf>myGa?s.my:opp;
+          }else{
+            p.pf=null;p.pa=null;p.w=null;
           }
+        }else if(p.w!=null||p.g1!=null||p.g2!=null){
+          p.g1=null;p.g2=null;p.et=0;p.pf=null;p.pa=null;p.w=null;
         }
       }
     });
+    if(!pairs.every(p=>p.w!=null)){
+      for(let k=rIdx+1;k<RDs.length;k++){
+        const nxt=ko[RDs[k]];
+        if(Array.isArray(nxt)&&nxt.every(x=>x&&x.w==null))delete ko[RDs[k]];
+      }
+    }
     if(pairs.every(p=>p.w!=null)&&rIdx+1<RDs.length){
       const nextRd=RDs[rIdx+1];
       if(!Array.isArray(ko[nextRd])||!ko[nextRd].length){

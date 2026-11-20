@@ -1,3 +1,9 @@
+## v20.15 (2026-11-20) — Tam Denetim Düzeltmeleri (Eleme Posteri Logoları, TOTS/MVP Arşiv Eşitlemesi & Bracket Temizliği)
+- **Eleme Ağacı PNG Posteri Kulüp Logoları (`posters.js` `koCv`):** Eşleşme düğümlerindeki hatalı `m.h / m.a / m.b` referansları `p.t1 / p.t2` olarak düzeltildi; Eleme Ağacı PNG posterinde artık tüm takımların gerçek PNG armaları eksiksiz ön-yüklenip çizilir.
+- **Hızlı Sezon Bitişlerinde TOTS & MVP Arşivi (`app.js` `lgchamp`, `gqn`):** Lig şampiyonluğu (`lgchamp`) ve grupta elenme (`gqn`) kısayol butonları da artık `snapshotSeasonAwards(s)` çağırarak sezonun MVP'sini, Gol Kralı'nı ve En İyi 11'ini (`tots`) arşive kaydeder.
+- **Eleme Maçı Silme Senkronizasyonu (`app.js` `mdel`, `sim.js` `syncUserMatchesToBracket`):** Bir eleme maçı silindiğinde eleme ağacındaki ilgili eşleşmenin skoru/galibi temizlenir ve oynanmamış üst tur düğümleri senkronize edilir.
+- **Veri Tutarlılığı (`app.js` `wipeS`, `mergeSeasons`):** `wipeS` içinde `s.sim.as` ve `s.sim.mom` alanları eksiksiz sıfırlanır; yedek birleştirmede (`mergeSeasons`) karma fikstür bayrağı (`fxMix`) korunur.
+
 ## v20.14 (2026-11-20) — Karma (Rastgele) Grup & Lig Fikstürü
 - **Güç sırasına göre fikstür düzeltildi (`app.js` `mixG`, `grpRivals`):** Torbalı kura sonrası grupların `1. torba → son torba` (en güçlüden en güçsüze) sırasıyla saklanması nedeniyle fikstürün hep en güçlü rakiplerle başlayıp zayıflara doğru gitmesi sorunu giderildi.
 - **Yeni kuralar (`use`, `bal`):** Grup veya lig kurası onaylandığında her grubun fikstür sırası otomatik karıştırılır (`s.fxMix = 1`). Puan tablosu ve Kura ekranı görsel olarak güç/puan sırasını korurken, maç fikstürü tamamen karma akar.

@@ -440,7 +440,7 @@ async function koCv(s){
   initKoBracket(s,false);
   const sim=ensureSim(s),ko=sim.ko,RDs=rds(s.cfg).filter(r=>r!=="Grup");
   if(!RDs.length||!RDs.some(rd=>Array.isArray(ko[rd])&&ko[rd].length))throw new Error("Eleme ağacı henüz oluşmadı");
-  if(typeof preloadLogos==="function"){const _ki=[];RDs.forEach(rd=>(ko[rd]||[]).forEach(m=>{if(m){if(m.h!=null)_ki.push(m.h);if(m.a!=null)_ki.push(m.a);if(m.b!=null)_ki.push(m.b)}}));await preloadLogos(_ki)}
+  if(typeof preloadLogos==="function"){const _ki=[];RDs.forEach(rd=>(ko[rd]||[]).forEach(p=>{if(p){if(p.t1!=null)_ki.push(p.t1);if(p.t2!=null)_ki.push(p.t2)}}));await preloadLogos(_ki)}
   const firstCnt=(ko[RDs[0]]&&ko[RDs[0]].length)||Math.max(1,Math.floor(adv(s.cfg)/2));
   const colW=300,colGap=68,padX=54,headH=210,footH=92,slotH=124;
   const W=Math.max(1080,padX*2+RDs.length*colW+(RDs.length-1)*colGap);
