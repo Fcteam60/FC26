@@ -2908,3 +2908,5 @@ button.sqr.sqr-btn{
   font:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent;
 }
 button.sqr.sqr-btn:active{background:var(--hi)}
+/* v20.9: Kulüp PNG logoları */
+.bd-img{object-fit:contain;user-select:none;-webkit-user-drag:none}

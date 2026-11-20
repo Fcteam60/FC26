@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.8",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="20.9",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -2369,9 +2369,46 @@ function bspec(i){const n=T[i].n;if(bsp[n])return bsp[n];
   const h=x%360,h2=(h+[30,60,150,180,210][(x>>>9)%5])%360,li=(x>>>5)&1;
   const ini=n.split(/[\s.\-']+/).filter(Boolean).map(w=>w[0]).join("").slice(0,3).toUpperCase();
   return bsp[n]={c1:`hsl(${h},55%,32%)`,c2:li?`hsl(${h2},75%,58%)`:"#f1f1ea",p:BP[(x>>>13)%6],ini}}
-function badge(i,w){const b=bspec(i),fs=b.ini.length>2?14:b.ini.length==2?17:21;
+const _lImg=Object.create(null);
+function logoUrl(i){const t=T[i];return(t&&typeof LOGOS!=="undefined"&&LOGOS[t.n])?LOGOS[t.n]:""}
+function preloadLogos(idxs){
+  const seen=new Set(),ps=[];
+  (idxs||[]).forEach(i=>{
+    if(i==null||!T[i]||seen.has(i))return;
+    seen.add(i);
+    const u=logoUrl(i);if(!u)return;
+    const k=T[i].n,ex=_lImg[k];
+    if(ex&&ex.complete)return;
+    ps.push(new Promise(res=>{
+      const im=ex||new Image();
+      _lImg[k]=im;
+      let done=false;const fin=()=>{if(!done){done=true;res()}};
+      im.onload=fin;im.onerror=fin;
+      if(!ex)im.src=u;
+      setTimeout(fin,2500);
+    }));
+  });
+  return Promise.all(ps);
+}
+function badgeSvg(i,w){const b=bspec(i),fs=b.ini.length>2?14:b.ini.length==2?17:21;
   return `<svg class="bd" viewBox="0 0 46 53" width="${w}" height="${Math.round(w*53/46)}" ${w<40?'aria-hidden="true"':`role="img" aria-label="${esc(T[i].n)} arması"`}><g clip-path="url(#shd-clip)"><rect width="46" height="53" fill="${b.c1}"/><path d="${b.p}" fill="${b.c2}"/></g><path d="${SHD}" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2"/><text x="23" y="29" text-anchor="middle" dominant-baseline="central" font-size="${fs}" font-weight="700" fill="#fff" style="font-family:var(--num);paint-order:stroke;stroke:rgba(0,0,0,.55);stroke-width:2.6px;stroke-linejoin:round">${esc(b.ini)}</text></svg>`}
-function drawBadge(c,i,x,y,w){const b=bspec(i),k=w/46,fs=b.ini.length>2?14:b.ini.length==2?17:21,sh=new Path2D(SHD);
+function badge(i,w){
+  const u=logoUrl(i);
+  if(u){
+    const h=Math.round(w*53/46);
+    return `<img class="bd bd-img" src="${u}" width="${w}" height="${h}" ${w<40?'alt="" aria-hidden="true"':`alt="${esc(T[i].n)} arması"`} loading="lazy" decoding="async" onerror="this.onerror=null;this.outerHTML=badgeSvg(${i},${w})">`;
+  }
+  return badgeSvg(i,w);
+}
+function drawBadge(c,i,x,y,w){
+  const t=T[i],im=t&&_lImg[t.n];
+  if(im&&im.complete&&im.naturalWidth>0){
+    const h=Math.round(w*53/46),sc=Math.min(w/im.naturalWidth,h/im.naturalHeight);
+    const dw=im.naturalWidth*sc,dh=im.naturalHeight*sc;
+    c.drawImage(im,x+(w-dw)/2,y+(h-dh)/2,dw,dh);
+    return;
+  }
+  const b=bspec(i),k=w/46,fs=b.ini.length>2?14:b.ini.length==2?17:21,sh=new Path2D(SHD);
   c.save();c.translate(x,y);c.scale(k,k);
   c.save();c.clip(sh);c.fillStyle=b.c1;c.fillRect(0,0,46,53);c.fillStyle=b.c2;c.fill(new Path2D(b.p));c.restore();
   c.lineWidth=2;c.strokeStyle="rgba(255,255,255,.9)";c.stroke(sh);

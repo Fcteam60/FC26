@@ -11,6 +11,7 @@ const fit=(c,t,w)=>{if(c.measureText(t).width<=w)return t;while(t.length>2&&c.me
 const grad=(c,x0,x1,a,b)=>{const g=c.createLinearGradient(x0,0,x1,0);g.addColorStop(0,a);g.addColorStop(1,b);return g};
 const mkCv=(w,h)=>{const cv=document.createElement("canvas");cv.width=w;cv.height=h;return cv};
 async function kuraCv(s){
+  if(typeof preloadLogos==="function"&&s&&s.G)await preloadLogos(s.G.flat());
   const G=s.G,gs=G[0].length,n=G.length,cols=n<=1?1:n<=8?2:3,W=1080,P=40,gap=20;
   const cw=(W-2*P-gap*(cols-1))/cols,fs=cols==3?23:29,rh=cols==3?46:54,hh=68,ch=hh+gs*rh+18;
   const rows=Math.ceil(n/cols),HH=184,H=HH+rows*ch+(rows-1)*gap+96;
@@ -140,6 +141,7 @@ function drawPosterFooter(c,W,H,sub){
   tx(c,sub||"BROADCAST EDITION",W-54,fy+16,20,"#64748b","right",600);
 }
 async function karneCv(x,p){p=p==null?1:p;const cu=n=>Math.round(n*p);
+  if(typeof preloadLogos==="function"&&x&&x.my!=null)await preloadLogos([x.my]);
   const t=RT(x,x.my),W=1080,ts=x.ts,v=k=>ts[k]||0,champ=x.res&&x.res.st==7;
   const cb=bspec(x.my),allMt=x.mt||[],ms=allMt.slice(-5);
   const top=f=>{const L=x.pl.filter(q=>q[f]>0).sort((a,b)=>b[f]-a[f]);if(!L.length)return null;const mx=L[0][f],ties=L.filter(q=>q[f]==mx);return{n:ties.map(q=>q.n).join(", "),v:mx}};
@@ -312,6 +314,7 @@ async function karneCv(x,p){p=p==null?1:p;const cu=n=>Math.round(n*p);
 async function totsCv(s){
   const st2=tourneyStats(s),xi=tourneyTots(s,st2);
   if(!xi)throw new Error("TOTS için yeterli veri yok");
+  if(typeof preloadLogos==="function")await preloadLogos([].concat(xi.F||[],xi.M||[],xi.D||[],xi.K||[]).map(p=>p.ti));
   const W=1080,H=1460,cv=mkCv(W,H),c=cv.getContext("2d");
   const cb=s.my!=null&&T[s.my]?bspec(s.my):null,champ=!!(s.res&&s.res.st===7);
   dkBg(c,W,H,cb?cb.c1:"#3ee6a8",cb?cb.c2:"#f0c24b",champ);
@@ -437,6 +440,7 @@ async function koCv(s){
   initKoBracket(s,false);
   const sim=ensureSim(s),ko=sim.ko,RDs=rds(s.cfg).filter(r=>r!=="Grup");
   if(!RDs.length||!RDs.some(rd=>Array.isArray(ko[rd])&&ko[rd].length))throw new Error("Eleme ağacı henüz oluşmadı");
+  if(typeof preloadLogos==="function"){const _ki=[];RDs.forEach(rd=>(ko[rd]||[]).forEach(m=>{if(m){if(m.h!=null)_ki.push(m.h);if(m.a!=null)_ki.push(m.a);if(m.b!=null)_ki.push(m.b)}}));await preloadLogos(_ki)}
   const firstCnt=(ko[RDs[0]]&&ko[RDs[0]].length)||Math.max(1,Math.floor(adv(s.cfg)/2));
   const colW=300,colGap=68,padX=54,headH=210,footH=92,slotH=124;
   const W=Math.max(1080,padX*2+RDs.length*colW+(RDs.length-1)*colGap);
@@ -648,6 +652,7 @@ async function kariyerCv(){const mode=st.hmod||"all",d=careerData(mode),isL=mode
 /* Maç kartı görseli */
 const findM=id=>{for(const x of store.seasons){const m=(x.mt||[]).find(q=>q.id==id);if(m)return{id,x,m,name:"mac-"+id}}return null};
 async function macCv(q){const x=q.x,m=q.m,r=mres(m),oi=m.opp!=null&&T[m.opp]?m.opp:ixOf(m.on),me=x.my!=null&&T[x.my]?x.my:null;
+  if(typeof preloadLogos==="function")await preloadLogos([me,oi]);
   const cHome=me!=null?bspec(me).c1:"#0f9d6b",cAway=oi!=null&&oi>=0&&T[oi]?bspec(oi).c1:"#f97316";
   const hasGls=Array.isArray(m.gls)&&m.gls.some(g=>g&&g.sc);
   const glList=hasGls?m.gls.filter(g=>g&&g.sc):[];

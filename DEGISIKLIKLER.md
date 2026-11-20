@@ -1,3 +1,9 @@
+## v20.9 (2026-11-20) — Gerçek Kulüp Logoları + Güncel İlk 11'ler + Anında Güncelleme
+- **99 Kulüp PNG Logosu Eklendi (`logos/` + `data.js` `LOGOS`):** Puan tablosu, fikstür, eleme ağacı, takım kartı, TOTS, maç günlüğü ve tüm paylaşılan PNG posterlerde (`kuraCv`, `karneCv`, `totsCv`, `koCv`, `macCv`) gerçek kulüp armaları gösterilir.
+- **Otomatik SVG Kalkan Yedeği:** Logosu bulunmayan 9 takım (`River Plate`, `Boca Juniors`, `Club América`, `Toluca`, `PAOK`, `Wolfsburg`, `Alavés`, `Estudiantes`, `Girona`) ve çevrimdışı durumlar için mevcut SVG kalkan armaları otomatik devreye girer.
+- **75 Takımın Güncel İlk 11 & Mevki Verileri (`data.js`):** EA FC 27 kadro görsellerine göre 75 takımın ilk 11, yedek ve mevki bilgileri güncellendi.
+- **Anında Güncelleme (`sw.js` `fc27-lig-v20-9` + `?v=20.9`):** Önbellek sürümü yükseltildi ve kod/veri dosyaları (`html`, `js`, `css`) *Network-First* stratejisine geçirilerek GitHub Pages güncellemelerinin eski önbelleğe takılmadan anında yansıması sağlandı.
+
 # Değişiklik listesi
 
 ## v20.8 (Takım İnceleme: İlk 11 Broadcast Saha Görünümü & Yedek Kulübesi)

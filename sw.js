@@ -1,14 +1,14 @@
-const CACHE = "fc27-lig-v20-8";
+const CACHE = "fc27-lig-v20-9";
 const FILES = [
   "./",
   "./index.html",
-  "./style.css",
-  "./app.js",
-  "./data.js",
-  "./storage.js",
-  "./sim.js",
-  "./analytics.js",
-  "./posters.js",
+  "./style.css?v=20.9",
+  "./data.js?v=20.9",
+  "./storage.js?v=20.9",
+  "./sim.js?v=20.9",
+  "./analytics.js?v=20.9",
+  "./posters.js?v=20.9",
+  "./app.js?v=20.9",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png",
@@ -46,30 +46,31 @@ self.addEventListener("fetch", e => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
-  if (req.mode === "navigate") {
+  // HTML, JS, CSS: Network-First (güncellemeler anında yansır, çevrimdışıyken önbellekten açılır)
+  const isCode = req.mode === "navigate" || /\.(html|js|css)$/i.test(url.pathname) || url.pathname.endsWith("/");
+  if (isCode) {
     e.respondWith(
-      caches.open(CACHE).then(c =>
-        c.match("./index.html", { ignoreSearch: true }).then(cached => {
-          const net = fetch(new Request("./index.html", { cache: "no-cache" }))
-            .then(r => {
-              if (r && r.ok) {
-                c.put("./index.html", r.clone());
-                c.put("./", r.clone());
-              }
-              return r;
-            })
-            .catch(() => cached);
-          if (cached) {
-            e.waitUntil(net);
-            return cached;
+      fetch(new Request(req, { cache: "no-cache" }))
+        .then(r => {
+          if (r && r.ok) {
+            const cl = r.clone();
+            caches.open(CACHE).then(c => {
+              c.put(req, cl);
+              if (req.mode === "navigate") c.put("./index.html", r.clone());
+            });
           }
-          return net;
+          return r;
         })
-      )
+        .catch(() =>
+          caches.open(CACHE).then(c =>
+            c.match(req, { ignoreSearch: true }).then(m => m || (req.mode === "navigate" ? c.match("./index.html", { ignoreSearch: true }) : null))
+          )
+        )
     );
     return;
   }
 
+  // Logolar ve ikonlar: Cache-First + arka planda güncelleme
   e.respondWith(
     caches.open(CACHE).then(c =>
       c.match(req, { ignoreSearch: true }).then(cached => {
