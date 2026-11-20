@@ -526,7 +526,181 @@ async function koCv(s){
 
   drawPosterFooter(c,W,H,s.name.toUpperCase()+" · ELEME AĞACI");
   return cv}
-function clrImg(){if(st.img&&st.img.url&&st.img.url.startsWith("blob:")){try{URL.revokeObjectURL(st.img.url)}catch(e){}}st.img=null}
+
+function wrapLines(c,text,maxW,maxLines){
+  const words=String(text||"").split(/\s+/).filter(Boolean),lines=[];
+  let cur="";
+  for(const w of words){
+    const test=cur?cur+" "+w:w;
+    if(c.measureText(test).width<=maxW){cur=test}
+    else{
+      if(cur)lines.push(cur);
+      cur=w;
+      if(maxLines&&lines.length>=maxLines-1)break;
+    }
+  }
+  if(cur&&(!maxLines||lines.length<maxLines))lines.push(cur);
+  if(maxLines&&lines.length===maxLines&&words.join(" ").length>lines.join(" ").length){
+    lines[maxLines-1]=fit(c,lines[maxLines-1]+"…",maxW);
+  }
+  return lines;
+}
+async function karneDnaCv(x){
+  const dna=calcTacticalDNA(x,true);
+  if(!dna)return null;
+  if(typeof preloadLogos==="function"&&x&&x.my!=null)await preloadLogos([x.my]);
+  const t=RT(x,x.my),W=1080,H=1420,cb=bspec(x.my),champ=x.res&&x.res.st==7;
+  const cv=mkCv(W,H),c=cv.getContext("2d");
+  dkBg(c,W,H,cb.c1,cb.c2,champ);
+
+  // Header
+  drawPill(c,"MENAJER KİMLİĞİ · SAYFA 2/2",48,42,304,38,"rgba(240,194,75,.18)","rgba(240,194,75,.06)","rgba(240,194,75,.52)","#fbeaa8",20);
+  tx(c,x.name.toUpperCase()+" · TAKTİKSEL DNA",48,114,48,"#f8fafc","left",700);
+  tx(c,t.n.toUpperCase(),W-48,70,26,"#fbeaa8","right",700);
+  tx(c,dna.n+" İSTATİSTİKLİ MAÇ",W-48,112,22,"#3ee6a8","right",700);
+
+  // Hero Identity Card
+  const hy=178,hh=252;
+  glassBox(c,44,hy,992,hh,26,champ?"rgba(240,194,75,.60)":"rgba(62,230,168,.42)",champ?"#f0c24b":cb.c1);
+  c.save();c.shadowColor="rgba(0,0,0,.55)";c.shadowBlur=22;c.shadowOffsetY=8;
+  drawBadge(c,x.my,76,hy+48,132);
+  c.restore();
+  drawPill(c,"SEZONUN MENAJER KİMLİĞİ",236,hy+28,248,32,"rgba(240,194,75,.16)",null,"rgba(240,194,75,.45)","#fbeaa8",17);
+  c.font="700 54px "+NUMF;
+  tx(c,fit(c,dna.title.toUpperCase(),750),236,hy+94,54,champ?"#fbeaa8":"#f8fafc","left",700);
+  c.font="500 22px system-ui,-apple-system,sans-serif";
+  const dLines=wrapLines(c,dna.desc,756,2);
+  dLines.forEach((ln,idx)=>{
+    c.fillStyle="#cbd5e1";c.textAlign="left";c.textBaseline="middle";
+    c.fillText(ln,236,hy+144+idx*28);
+  });
+  const axList=[
+    {k:"atk",n:"Hücum Tehdidi",v:dna.atk,sub:`${xgN1(dna.mShots)} Şut/M · ${xgN2(dna.mXg)} xG/M`},
+    {k:"ctrl",n:"Top & Pas Kontrolü",v:dna.ctrl,sub:`%${Math.round(dna.mPos)} Top · %${Math.round(dna.mPass)} Pas`},
+    {k:"aggr",n:"Savunma Direnci & Pres",v:dna.aggr,sub:`${xgN1(dna.oShots)} Rakip Şut · ${xgN2(dna.oXg)} Rakip xG`},
+    {k:"eff",n:"Bitiricilik Verimi",v:dna.eff,sub:`Gol−xG ${xgS2(dna.xgDiff)} · %${Math.round(dna.conv*100)} Dönüşüm`}
+  ];
+  const srt=axList.slice().sort((a,b)=>b.v-a.v),best=srt[0],worst=srt[srt.length-1];
+  drawPill(c,`EN GÜÇLÜ: ${DNASH[best.k].toUpperCase()} (${best.v})`,236,hy+198,270,34,"rgba(16,185,129,.18)",null,"rgba(62,230,168,.42)","#3ee6a8",18);
+  drawPill(c,`GELİŞTİRİLECEK: ${DNASH[worst.k].toUpperCase()} (${worst.v})`,520,hy+198,314,34,"rgba(249,115,22,.16)",null,"rgba(249,115,22,.42)","#fb923c",18);
+
+  // Middle Card: Radar + 4 Axis Bars
+  const my=454,mh=452;
+  glassBox(c,44,my,992,mh,24,"rgba(255,255,255,.12)");
+  tx(c,"TAKTİKSEL DNA · 4 EKSEN ANALİZİ",74,my+38,25,"#f0c24b","left",700);
+  // Left Radar Chart
+  const rcx=264,rcy=my+250,R=136;
+  const rPts=[[0,-1,"HÜCUM",dna.atk],[1,0,"KONTROL",dna.ctrl],[0,1,"DİRENÇ",dna.aggr],[-1,0,"BİTİRİCİLİK",dna.eff]];
+  [0.25,0.5,0.75,1].forEach(k=>{
+    const r=R*k;
+    c.save();c.beginPath();
+    c.moveTo(rcx,rcy-r);c.lineTo(rcx+r,rcy);c.lineTo(rcx,rcy+r);c.lineTo(rcx-r,rcy);c.closePath();
+    c.strokeStyle=k===1?"rgba(255,255,255,.26)":"rgba(255,255,255,.10)";
+    c.lineWidth=k===1?2:1.2;
+    if(k<1)c.setLineDash([4,4]);
+    c.stroke();c.restore();
+  });
+  c.save();c.strokeStyle="rgba(255,255,255,.16)";c.lineWidth=1.4;
+  c.beginPath();c.moveTo(rcx,rcy-R);c.lineTo(rcx,rcy+R);c.moveTo(rcx-R,rcy);c.lineTo(rcx+R,rcy);c.stroke();c.restore();
+  c.save();c.beginPath();
+  rPts.forEach(([dx,dy,,v],idx)=>{const r=R*(v/100);if(idx)c.lineTo(rcx+dx*r,rcy+dy*r);else c.moveTo(rcx+dx*r,rcy+dy*r)});
+  c.closePath();
+  const rf=c.createRadialGradient(rcx,rcy,10,rcx,rcy,R);
+  rf.addColorStop(0,"rgba(62,230,168,.42)");rf.addColorStop(1,"rgba(15,157,107,.18)");
+  c.fillStyle=rf;c.fill();
+  c.lineWidth=3;c.strokeStyle="#3ee6a8";c.stroke();
+  c.restore();
+  rPts.forEach(([dx,dy,,v])=>{
+    const r=R*(v/100);
+    c.save();c.shadowColor="#f0c24b";c.shadowBlur=10;
+    c.fillStyle="#fbeaa8";c.beginPath();c.arc(rcx+dx*r,rcy+dy*r,6.5,0,Math.PI*2);c.fill();
+    c.lineWidth=2;c.strokeStyle="#091423";c.stroke();c.restore();
+  });
+  tx(c,`HÜCUM (${dna.atk})`,rcx,rcy-R-24,20,"#e2e8f0","center",700);
+  tx(c,`DİRENÇ (${dna.aggr})`,rcx,rcy+R+26,20,"#e2e8f0","center",700);
+  tx(c,`KONTROL`,rcx+R+12,rcy-10,18,"#cbd5e1","left",700);
+  tx(c,String(dna.ctrl),rcx+R+12,rcy+14,22,"#3ee6a8","left",700);
+  tx(c,`BİTİRİCİLİK`,rcx-R-12,rcy-10,18,"#cbd5e1","right",700);
+  tx(c,String(dna.eff),rcx-R-12,rcy+14,22,"#f0c24b","right",700);
+
+  // Vertical divider between Radar & Bars
+  c.fillStyle="rgba(255,255,255,.08)";c.fillRect(486,my+74,1.5,mh-102);
+
+  // Right 4 Axis Bars
+  const lvlCol=v=>v>=80?["#f0c24b","#3ee6a8","ELİT"]:v>=65?["#12b886","#3ee6a8","ÇOK İYİ"]:v>=50?["#0ea5e9","#38bdf8","İYİ"]:v>=35?["#d97706","#fbbf24","ORTA"]:["#f97316","#ef4444","GELİŞTİRİLMELİ"];
+  axList.forEach((a,idx)=>{
+    const bx=514,by=my+78+idx*90,bw=492,[c1,c2,lvl]=lvlCol(a.v);
+    c.fillStyle="rgba(255,255,255,.038)";rr(c,bx,by,bw,78,14);c.fill();
+    c.lineWidth=1.2;c.strokeStyle="rgba(255,255,255,.08)";c.stroke();
+    tx(c,a.n.toUpperCase(),bx+16,by+24,21,"#f8fafc","left",700);
+    drawPill(c,lvl,bx+292,by+12,110,24,"rgba(255,255,255,.07)",null,c1,c2,13);
+    tx(c,String(a.v),bx+bw-16,by+26,34,c1,"right",700);
+    // Progress bar
+    c.fillStyle="rgba(255,255,255,.10)";rr(c,bx+16,by+46,bw-32,8,4);c.fill();
+    c.fillStyle=grad(c,bx+16,bx+16+(bw-32)*(a.v/100),c1,c2);
+    rr(c,bx+16,by+46,Math.max(12,Math.round((bw-32)*(a.v/100))),8,4);c.fill();
+    tx(c,a.sub,bx+16,by+66,15,"#94a3b8","left",600);
+  });
+
+  // Bottom Card: xG, xPts & Hak Ediş
+  const by=930,bh=386;
+  glassBox(c,44,by,992,bh,24,"rgba(255,255,255,.12)");
+  const sMs=(x.mt||[]).filter(m=>m.stats),xgMs=sMs.filter(m=>m.stats.myXg!=null),xaMs=xgMs.filter(m=>m.stats.oppXg!=null);
+  const totGf=xgMs.reduce((a,m)=>a+(+m.gf||0),0),totXg=xgMs.reduce((a,m)=>a+(+m.stats.myXg||0),0),xgD=totGf-totXg;
+  const totGa=xaMs.reduce((a,m)=>a+(+m.ga||0),0),totOXg=xaMs.reduce((a,m)=>a+(+m.stats.oppXg||0),0);
+  const totXpts=xaMs.reduce((a,m)=>a+calcMatchXpts(m.stats.myXg,m.stats.oppXg).xPts,0);
+  const actPts=xaMs.reduce((a,m)=>{const r=mres(m);return a+(r=="w"?3:r=="d"?1:0)},0),xpD=actPts-totXpts;
+  const gkMs=sMs.filter(m=>m.stats.oppSot!=null),totOSot=gkMs.reduce((a,m)=>a+Math.max(0,+m.stats.oppSot||0),0),totSav=gkMs.reduce((a,m)=>a+Math.max(0,(+m.stats.oppSot||0)-(+m.ga||0)),0);
+  const gkPct=totOSot>0?Math.round(totSav/totOSot*100):null;
+
+  tx(c,"xG, xPts & VERİMLİLİK TELEMETRİSİ",74,by+38,25,"#f0c24b","left",700);
+  const finSt=xgMs.length?(xgD>=0.5?["MÜKEMMEL BİTİRİCİLİK","#3ee6a8","rgba(16,185,129,.18)"]:xgD<=-0.5?["BİTİRİCİLİK SORUNU","#fb923c","rgba(249,115,22,.18)"]:["DENGELİ BİTİRİCİLİK","#cbd5e1","rgba(148,163,184,.16)"]):null;
+  if(finSt)drawPill(c,finSt[0],728,by+20,278,36,finSt[2],null,finSt[1],finSt[1],18);
+
+  const kpis=[
+    ["ÜRETİLEN xG",xgMs.length?xgN2(totXg):"—",xgMs.length?`${totGf} Gol (${xgS2(xgD)})`:"Veri yok",xgD>=0.5?"#3ee6a8":xgD<=-0.5?"#fb923c":"#f8fafc"],
+    ["YENEN xG",xaMs.length?xgN2(totOXg):"—",xaMs.length?`${totGa} Gol (${xgS2(totGa-totOXg)})`:"Veri yok",(totOXg-totGa)>=0.75?"#3ee6a8":(totOXg-totGa)<=-0.75?"#fb923c":"#cbd5e1"],
+    ["BEKLENEN PUAN",xaMs.length?xgN1(totXpts):"—",xaMs.length?`Gerçek: ${actPts} (${xgS1(xpD)})`:"Veri yok",xpD>=1.5?"#3ee6a8":xpD<=-1.5?"#fb923c":"#f0c24b"],
+    gkPct!=null?["KALECİ KURTARIŞ","%"+gkPct,`${totSav}/${totOSot} Kurtarış`,gkPct>=75?"#3ee6a8":gkPct<=55?"#fb923c":"#38bdf8"]
+               :["TOPLA OYNAMA","%"+Math.round(dna.mPos),`Pas İsabeti %${Math.round(dna.mPass)}`,"#38bdf8"]
+  ];
+  kpis.forEach(([lbl,val,sub,col],i)=>{
+    const kx=72+i*238,ky=by+74;
+    c.fillStyle="rgba(255,255,255,.045)";rr(c,kx,ky,222,146,16);c.fill();
+    c.lineWidth=1.2;c.strokeStyle="rgba(255,255,255,.10)";c.stroke();
+    tx(c,lbl,kx+111,ky+28,17,"#94a3b8","center",700);
+    tx(c,val,kx+111,ky+78,56,col,"center",700);
+    tx(c,sub,kx+111,ky+122,17,"#cbd5e1","center",600);
+  });
+
+  // Hak Ediş 3-Box Strip
+  const dhy=by+242;
+  tx(c,"MAÇ SONUÇLARI HAK EDİLDİ Mİ?",74,dhy+12,18,"#94a3b8","left",700);
+  [[dna.deservedCnt,"HAK EDİLMİŞ","#3ee6a8","rgba(16,185,129,.14)","rgba(62,230,168,.38)"],
+   [dna.stealCnt,"ŞANSLI SONUÇ","#60a5fa","rgba(59,130,246,.14)","rgba(96,165,250,.38)"],
+   [dna.unluckyCnt,"ŞANSSIZ SONUÇ","#fb923c","rgba(249,115,22,.14)","rgba(251,146,60,.38)"]
+  ].forEach(([cnt,lbl,col,bg,bd],i)=>{
+    const dx=72+i*318,dy=dhy+32;
+    c.save();if(!cnt)c.globalAlpha=.46;
+    c.fillStyle=bg;rr(c,dx,dy,300,88,15);c.fill();
+    c.lineWidth=1.4;c.strokeStyle=bd;c.stroke();
+    tx(c,String(cnt),dx+48,dy+45,52,col,"center",700);
+    tx(c,lbl,dx+96,dy+34,21,"#f8fafc","left",700);
+    tx(c,cnt===1?"1 maç":`${cnt} maç`,dx+96,dy+62,17,"#94a3b8","left",600);
+    c.restore();
+  });
+
+  drawPosterFooter(c,W,H,x.name.toUpperCase()+" · MENAJER KİMLİĞİ (2/2)");
+  return cv;
+}
+
+function clrImg(){
+  if(st.img){
+    const urls=new Set([st.img.url,...(st.img.pages||[]).map(p=>p&&p.url)]);
+    urls.forEach(u=>{if(u&&u.startsWith("blob:")){try{URL.revokeObjectURL(u)}catch(e){}}});
+  }
+  st.img=null;
+}
 async function mkImg(kind,x){
   if(st.isGenerating)return;
   if(kind=="karne"&&x.my==null){ask("Karne için önce takım seçilmiş olmalı.");render();return}
@@ -537,14 +711,35 @@ async function mkImg(kind,x){
   try{
     try{await document.fonts.load('700 30px "FC Sayi"')}catch(e){}
     const cv=kind=="kura"?await kuraCv(x):kind=="tots"?await totsCv(x):kind=="ko"?await koCv(x):kind=="kariyer"?await kariyerCv():kind=="mac"?await macCv(x):await karneCv(x);
-    const blob=await new Promise(r=>cv.toBlob(r,"image/png"));
-    const url=blob&&typeof URL!="undefined"&&URL.createObjectURL?URL.createObjectURL(blob):cv.toDataURL("image/png");
+    const toImgObj=async(canvas,ttl,fn)=>{
+      const blob=await new Promise(r=>canvas.toBlob(r,"image/png"));
+      const url=blob&&typeof URL!="undefined"&&URL.createObjectURL?URL.createObjectURL(blob):canvas.toDataURL("image/png");
+      return{title:ttl,name:fn,url,blob,w:canvas.width,h:canvas.height};
+    };
+    const baseSlug=x.name.replace(/[^\wÀ-ɏ]+/g,"-").replace(/^-+|-+$/g,"").toLowerCase();
+    const mainTitle=kind=="kariyer"?"Kariyer özeti":kind=="mac"?"Maç kartı":kind=="tots"?x.name+" · En İyi 11 (TOTS)":kind=="ko"?x.name+" · Eleme Ağacı":x.name+(kind=="kura"?" kurası":" karnesi");
+    const mainName="fc27-"+kind+"-"+baseSlug+".png";
+    const p1=await toImgObj(cv,mainTitle,mainName);
+    let pages=null;
+    if(kind=="karne"&&x.res&&calcTacticalDNA(x,true)){
+      const cv2=await karneDnaCv(x);
+      if(cv2){
+        const p2=await toImgObj(cv2,x.name+" · Menajer Kimliği","fc27-karne-"+baseSlug+"-kimlik.png");
+        pages=[p1,p2];
+      }
+    }
     clrImg();hideToast();
-    st.img={title:kind=="kariyer"?"Kariyer özeti":kind=="mac"?"Maç kartı":kind=="tots"?x.name+" · En İyi 11 (TOTS)":kind=="ko"?x.name+" · Eleme Ağacı":x.name+(kind=="kura"?" kurası":" karnesi"),name:"fc27-"+kind+"-"+x.name.replace(/[^\wÀ-ɏ]+/g,"-").replace(/^-+|-+$/g,"").toLowerCase()+".png",url,blob,msg:"",x,w:cv.width,h:cv.height,anim:kind=="karne"&&!rm()};
+    st.img=Object.assign({},p1,{msg:"",x,pg:0,pages,anim:kind=="karne"&&!rm()});
   }catch(e){hideToast();ask("Görsel oluşturulamadı.")}
   finally{st.isGenerating=false;st.genId=null;render()}
   if(st.img&&st.img.anim)playKarne(st.img)}
-const imgDlg=()=>{const shIc='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>';return `<div class="dlg"><div class="dbox wide pimgdlg" role="dialog" aria-modal="true"><div class="pimg-hd"><span class="aci">${UICO.trophy}</span><div class="pimg-t"><b>${esc(st.img.title)}</b><small>Yüksek çözünürlüklü PNG kartı</small></div><button class="mb sc-ic" data-a="no" aria-label="Kapat">✕</button></div><div class="pimg-stage">${st.img.anim?`<canvas id="kcv" class="shimg" width="${st.img.w||1080}" height="${st.img.h||1400}" role="img" aria-label="${esc(st.img.title)}"></canvas>`:`<img class="shimg" src="${st.img.url}" alt="${esc(st.img.title)}">`}</div><div class="pimg-nt">${esc(st.img.msg||"Görsele basılı tutarak da galeriye kaydedebilirsin.")}</div><div class="pimg-acts"><button class="btn p pset-pri" data-a="shimg">${shIc}<span>Paylaş</span></button><a class="btn pset-sec" href="${st.img.url}" download="${esc(st.img.name)}">${UICO.backup}<span>İndir</span></a></div></div></div>`};
+const imgDlg=()=>{
+  const shIc='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>';
+  const pg=st.img.pg||0,hasP=Array.isArray(st.img.pages)&&st.img.pages.length>1,curP=hasP?(st.img.pages[pg]||st.img):st.img;
+  const tabs=hasP?`<div class="stabs seg2 pimg-tabs" role="tablist" aria-label="Karne sayfaları"><button class="chip ${pg===0?"on":""}" role="tab" aria-selected="${pg===0}" data-a="imgpg" data-v="0">1 · Sezon Karnesi</button><button class="chip ${pg===1?"on":""}" role="tab" aria-selected="${pg===1}" data-a="imgpg" data-v="1">2 · Menajer Kimliği</button></div>`:"";
+  const showAnim=pg===0&&st.img.anim;
+  return `<div class="dlg"><div class="dbox wide pimgdlg" role="dialog" aria-modal="true"><div class="pimg-hd"><span class="aci">${UICO.trophy}</span><div class="pimg-t"><b>${esc(curP.title)}</b><small>${hasP?`Sayfa ${pg+1}/${st.img.pages.length} · `:""}Yüksek çözünürlüklü PNG kartı</small></div><button class="mb sc-ic" data-a="no" aria-label="Kapat">✕</button></div>${tabs}<div class="pimg-stage">${showAnim?`<canvas id="kcv" class="shimg" width="${curP.w||1080}" height="${curP.h||1400}" role="img" aria-label="${esc(curP.title)}"></canvas>`:`<img class="shimg" src="${curP.url}" alt="${esc(curP.title)}">`}</div><div class="pimg-nt">${esc(st.img.msg||"Görsele basılı tutarak da galeriye kaydedebilirsin.")}</div><div class="pimg-acts"><button class="btn p pset-pri" data-a="shimg">${shIc}<span>Paylaş</span></button><a class="btn pset-sec" href="${curP.url}" download="${esc(curP.name)}">${UICO.backup}<span>İndir</span></a></div></div></div>`;
+};
 
 async function kariyerCv(){const mode=st.hmod||"all",d=careerData(mode),isL=mode=="lg",isC=mode=="cup",W=1080;
   const bestMap=isL?SNL:SN,totM=d.t.w+d.t.d+d.t.l,wrPct=totM?Math.round(d.t.w/totM*100):0;

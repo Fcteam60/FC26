@@ -1,3 +1,11 @@
+## v20.12 (2026-11-20) — 2 Sayfalık Sezon Karnesi (Menajer Kimliği) & Metin Özeti Temizliği
+- **2 Sayfalık Sezon Karnesi (`posters.js` `karneDnaCv`, `mkImg`, `imgDlg`):** Sezon tamamlandıktan sonra (`x.res`) ve o sezonda gelişmiş maç istatistikleri girildiyse **Karne** artık 2 sayfalık Broadcast PNG olarak üretilir:
+  - **Sayfa 1 · Sezon Karnesi:** Kulüp kartı, G-B-M, gol/averaj/puan, Sezon Ödülleri ve maç sonuçları.
+  - **Sayfa 2 · Menajer Kimliği:** O sezona özel Menajer Kimliği unvanı, 4 eksenli Broadcast Radar Grafiği (Hücum, Kontrol, Direnç, Bitiricilik), xG/xPts/Kaleci telemetrisi ve Hak Ediş dağılımı.
+  - Önizleme penceresinden **`1 · Sezon Karnesi`** / **`2 · Menajer Kimliği`** arasında anında geçiş yapıp her sayfayı ayrı ayrı paylaşabilir veya indirebilirsin.
+- **Metin Özeti (`Özet`) Kaldırıldı (`app.js`):** `Geçmiş › Sezonlar` kartlarındaki mükerrer metin özeti butonu ve penceresi kaldırılarak kart alt çubuğu sadeleştirildi (`Aç · Karne · En İyi 11 · ✎ · 🗑`).
+- **Sezona Özel Taktiksel DNA (`analytics.js` `calcTacticalDNA(s, onlySeason)`):** 2. sayfa yalnızca ilgili sezonun istatistikli maçlarını baz alır; başka sezonların verisiyle karışmaz.
+
 ## v20.11 (2026-11-20) — Sezon Numaralandırma Düzeltmesi
 - **Sezon Silme Sonrası Numara Atlama Düzeltildi (`app.js` `nextNo`, `delSeason`):** Yeni sezon numarası artık hep ileri giden `store.nx` sayacı yerine mevcut sezonların en büyük numarasına göre (`Math.max(0, ...L) + 1`) hesaplanır ve sezon silindiğinde `store.nx` mevcut sezonlara göre güncellenir. Böylece Sezon 3 eklenip silindiğinde sıradaki sezon tekrar **Sezon 3** olarak açılır.
 - **Önbellek Güncellemesi (`sw.js` `fc27-lig-v20-11` + `?v=20.11`):** Güncellemenin anında yansıması için sürüm `20.11` yapıldı.

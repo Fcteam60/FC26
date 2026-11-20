@@ -2910,3 +2910,6 @@ button.sqr.sqr-btn{
 button.sqr.sqr-btn:active{background:var(--hi)}
 /* v20.9: Kulüp PNG logoları */
 .bd-img{object-fit:contain;user-select:none;-webkit-user-drag:none}
+
+/* v20.12: 2 Sayfalık Karne Sekme Çubuğu */
+.pimg-tabs{margin:0 0 10px!important}

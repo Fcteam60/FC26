@@ -619,9 +619,10 @@ function advFormUI(s){
     `<div class="note" style="margin:6px 0 0;text-align:center">Girilen verilerle Hak Ediş, xG Verimliliği ve Taktiksel DNA (Radar) otomatik hesaplanır.</div></div>`;
   return h;
 }
-function calcTacticalDNA(s){
+function calcTacticalDNA(s,onlySeason){
   const curM=((s&&s.mt)||[]).filter(m=>m.stats);
-  const allSt=store.seasons.flatMap(x=>(x.mt||[]).filter(m=>m.stats));
+  if(onlySeason&&!curM.length)return null;
+  const allSt=onlySeason?[]:store.seasons.flatMap(x=>(x.mt||[]).filter(m=>m.stats));
   const src=(curM.length>=1?curM:allSt).slice(-15);
   if(!src.length)return null;
   const n=src.length,avgOf=(fn)=>{const vals=src.map(fn).filter(v=>v!=null&&Number.isFinite(v));return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null};
