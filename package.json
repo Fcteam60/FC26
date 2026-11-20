@@ -1,6 +1,6 @@
 {
   "name": "fc27-lig",
-  "version": "20.7.0",
+  "version": "20.8.0",
   "private": true,
   "description": "FC 27 Grup Ligi ve Turnuva Takip Uygulaması (PWA)",
   "scripts": {

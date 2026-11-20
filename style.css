@@ -2837,3 +2837,74 @@ input,textarea,select,[contenteditable]{-webkit-user-select:text;user-select:tex
 .ach-bar{height:5px;border-radius:99px;background:rgba(127,150,140,.2);overflow:hidden;margin-top:8px}
 .ach-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#0a7c56,var(--ac),#3ee6a8);box-shadow:0 0 8px rgba(62,230,168,.35)}
 @media(max-width:359px){.ran-spot{grid-template-columns:1fr}.ck b{font-size:27px}}
+
+/* ===== v20.8: Takım İnceleme İlk 11 Saha Görünümü (.xi-pitch, .xi-med, .xi-bench) ===== */
+.tots-pitch.xi-pitch{padding:12px 6px 14px}
+.xi-ptop{
+  position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;
+  gap:8px;padding:0 6px 10px;
+}
+.xi-pill{
+  display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;
+  background:rgba(5,18,13,.82);border:1px solid rgba(110,231,183,.38);
+  font-family:var(--num);font-size:12.5px;font-weight:700;letter-spacing:.05em;color:#6ee7b7;
+  box-shadow:0 2px 6px rgba(0,0,0,.35);
+}
+.xi-pill.mut{color:#cbd5e1;border-color:rgba(255,255,255,.18)}
+.xi-pill.mut b{color:#fef0b8;font-size:13.5px}
+
+/* OVR Madalyon (Takım İlk 11 Saha Oyuncusu) */
+.xi-med{
+  position:relative;display:inline-flex;align-items:center;justify-content:center;
+  width:42px;height:42px;border-radius:13px;margin-bottom:2px;
+  font-family:var(--num);font-size:21px;font-weight:700;line-height:1;
+  box-shadow:0 5px 12px rgba(0,0,0,.52),inset 0 1px 0 rgba(255,255,255,.45);
+  border:1.5px solid rgba(255,255,255,.32);
+}
+.xi-med b{font-variant-numeric:tabular-nums}
+.xi-med.t1{background:linear-gradient(145deg,#fef0b8,#d4a017);color:#2b2000;border-color:#fde68a}
+.xi-med.t2{background:linear-gradient(145deg,#f3f6f8,#9aa6b2);color:#111827;border-color:#e2e8f0}
+.xi-med.t3{background:linear-gradient(145deg,#f3cfa8,#b87338);color:#2a1500;border-color:#f5d0a9}
+.xi-med.t0{background:linear-gradient(145deg,#1e3a2f,#0f241c);color:#e2f7ee;border-color:rgba(110,231,183,.45)}
+.tots-row.r4 .xi-med{width:38px;height:38px;font-size:19px;border-radius:11px}
+.xi-no{
+  position:absolute;left:-7px;top:-6px;font-style:normal;
+  font-family:var(--num);font-size:10px;font-weight:700;line-height:1;
+  padding:2px 4px;border-radius:6px;background:rgba(5,16,12,.92);color:#cbd5e1;
+  border:1px solid rgba(255,255,255,.22);box-shadow:0 2px 4px rgba(0,0,0,.45);
+}
+.xi-pl .tots-pos{right:-10px;bottom:-4px}
+.xi-pl .tots-st.xi-age{
+  background:rgba(5,16,12,.72);color:#94a3b8;border-color:rgba(255,255,255,.16);font-weight:600;
+}
+.xi-pl.has-st .tots-nm{border-color:rgba(248,214,110,.68);color:#fef0b8}
+
+/* Yedek Kulübesi Şeridi (.xi-bench) */
+.xi-bench{
+  margin-top:10px;padding:10px 10px 9px;border-radius:14px;
+  background:rgba(127,150,140,.07);border:1px solid var(--gbd);
+}
+.xi-bh{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:7px}
+.xi-bh span{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
+.xi-bh small{font-size:11px;color:var(--mut);opacity:.85}
+.xi-bchips{display:flex;flex-wrap:wrap;gap:6px}
+.xi-bc{
+  display:inline-flex;align-items:center;gap:5px;min-height:30px;padding:3px 8px 3px 5px;
+  border-radius:9px;border:1px solid var(--gbd);background:var(--gcard);color:var(--tx);
+  font:600 12px inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.xi-bc:active{transform:scale(.96);border-color:var(--ac)}
+.xi-bp{
+  font-style:normal;font-family:var(--num);font-size:11px;font-weight:700;
+  padding:1px 5px;border-radius:5px;color:#fff;line-height:1.2;
+}
+.xi-bp.p-K{background:#b45309}.xi-bp.p-D{background:#4338ca}.xi-bp.p-M{background:#0284c7}.xi-bp.p-F{background:#059669}
+.xi-bc b{font-family:var(--num);font-size:13.5px;color:var(--mut)}
+.xi-bc em{font-style:normal;font-family:var(--num);font-size:12px;font-weight:700;color:var(--ac)}
+
+/* Tam Kadro Listesinde Tıklanabilir Oyuncu Satırı (.sqr-btn) */
+button.sqr.sqr-btn{
+  width:100%;background:none;border:0;border-top:1px solid var(--bd);color:inherit;
+  font:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+button.sqr.sqr-btn:active{background:var(--hi)}

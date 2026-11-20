@@ -1,5 +1,15 @@
 # Değişiklik listesi
 
+## v20.8 (Takım İnceleme: İlk 11 Broadcast Saha Görünümü & Yedek Kulübesi)
+- **İlk 11 Saha Görünümü (`teamXiData`, `teamPitchHtml`, `tiDlg`):**
+  - Herhangi bir takıma dokununca açılan **Takım İncele** penceresi artık varsayılan olarak kulübün gerçek İlk 11’ini (`t === "S"`) otomatik tespit edilen dizilişle (`4-3-3`, `4-4-2`, `4-5-1`, `3-5-2` vb.) perspektif yeşil saha üzerinde gösterir.
+  - Her oyuncu kartı seviyeye göre renkli **GEN madalyonu** (altın 85+, gümüş 80–84, bronz 75–79), forma numarası, renk kodlu mevki rozeti, kesilmeyen isim kapsülü ve varsa bu sezonki gol/asist/MOTM istatistiğiyle sunulur.
+  - Sahanın hemen altında kulübün **Yedek Kulübesi (`B`)** kompakt mevki rozetli çiplerle listelenir.
+- **Tam Etkileşim & Akıllı Geçiş (`tiv`, `tiBody`, `gsgo`):**
+  - Üstteki segmentli **⚽ İlk 11 Saha | 📋 Tam Kadro** anahtarıyla sıfır disk yazımıyla (`UI_ONLY`) anında geçiş yapılır; Global Arama’dan doğrudan bir oyuncu seçildiğinde kadro listesi o oyuncuya süzülmüş olarak açılır.
+  - Hem saha üzerindeki oyunculardan hem yedek kulübesinden hem de Tam Kadro listesindeki herhangi bir satırdan oyuncuya dokunarak o sezonki maç bazlı gol/asist dökümüne (`tpDlg`) ulaşılabilir.
+- Sürüm `20.8` (`VER`, `package.json` 20.8.0, `sw.js` `fc27-lig-v20-8`).
+
 ## v20.7 (Rol Uyumlu TOTS Motoru, Turnuva Oyuncu Maç Dökümü & Broadcast Okunaklık Cilası)
 - **Rol (Slot) Bazlı Gerçekçi En İyi 11 (`TOTS_FMTS`, `TOTS_ALT`, `tourneyTots`):**
   - Artık her mevki slotuna yalnızca kendi rolüne uygun oyuncular seçilir: 3’lü savunmada yalnız `CB`, 4’lü/5’li savunmada gerçek `LB/LWB` ve `RB/RWB` bekler, 3’lü merkez orta sahada yalnız `CDM/CM/CAM` (kanatlar merkeze düşmez).

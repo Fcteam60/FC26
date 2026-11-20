@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.7",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="20.8",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -320,7 +320,7 @@ const norm=()=>store.seasons.forEach(s=>{
 norm();
 const cur=()=>store.seasons.find(s=>s.id==store.cur)||store.seasons[0];
 const defMst=()=>({myPos:"",oppPos:"",myShots:"",oppShots:"",mySot:"",oppSot:"",myPass:"",oppPass:"",myXg:"",oppXg:""});
-const sync=()=>{st.ti=null;st.pi=null;st.tpi=null;st.totsv=null;st.guide=false;st.dr=null;st.k=0;st.mg=0;st.mo=0;st.mu=0;st.mp=0;st.mpf=0;st.mpa=0;st.mgls=[];st.msc=nob();st.mas=nob();st.mmom="";st.mop=null;st.mlg=null;st.qs=false;st.trm=null;st.fxw=0;st.fxv=null;st.bkv=null;st.med=null;st.mall=false;st.sall=false;st.madv=false;st.isGenerating=false;st.mst=defMst();st.mexp=nob();if(!st.stab)st.stab="m"};
+const sync=()=>{st.ti=null;st.tiv="xi";st.pi=null;st.tpi=null;st.totsv=null;st.guide=false;st.dr=null;st.k=0;st.mg=0;st.mo=0;st.mu=0;st.mp=0;st.mpf=0;st.mpa=0;st.mgls=[];st.msc=nob();st.mas=nob();st.mmom="";st.mop=null;st.mlg=null;st.qs=false;st.trm=null;st.fxw=0;st.fxv=null;st.bkv=null;st.med=null;st.mall=false;st.sall=false;st.madv=false;st.isGenerating=false;st.mst=defMst();st.mexp=nob();if(!st.stab)st.stab="m"};
 function refreshQuota(reRender){
   if(typeof estimateStorage!=="function")return Promise.resolve(null);
   return estimateStorage().then(est=>{
@@ -1591,7 +1591,7 @@ function tpDlg(){
   }
   const leftBtn=d.mine
     ? `<button class="btn pset-sec" data-a="pinfo" data-n="${esc(d.n)}" style="flex:1">Kariyer Profili</button>`
-    : `<button class="btn pset-sec" data-a="tinfo" data-i="${d.ti}" style="flex:1">Takım Kadrosu</button>`;
+    : `<button class="btn pset-sec" data-a="tinfo" data-i="${d.ti}" data-v="${st.ti===d.ti?"list":"xi"}" style="flex:1">${st.ti===d.ti?"Tam Kadro Listesi":"Takım Kadrosu"}</button>`;
   return `<div class="dlg ti"><button class="tibk" data-a="tpclose" aria-label="Kapat"></button><div class="dbox tisheet plsheet"${sty} role="dialog" aria-modal="true" aria-label="${esc(d.n)} sezon performansı">`+
     `<div class="tih">${badge(d.ti,46)}<div class="tim"><b>${esc(d.n)}</b><span>${sub}</span></div><div class="tmo2"><b>${d.ovr}</b><i>GEN</i></div></div>`+
     kpis+metaHtml+matchHtml+
@@ -2032,14 +2032,130 @@ function tiSeasonStats(s,ti){
   }
   return map;
 }
+function teamOrderLine(arr,role){
+  if(!Array.isArray(arr)||arr.length<2)return arr||[];
+  const L=arr.slice();
+  if(role==="F"){
+    const w=p=>/^(LW|LF)$/.test(p.p)?0:/^(RW|RF)$/.test(p.p)?2:1;
+    return L.sort((a,b)=>w(a)-w(b)||b.o-a.o);
+  }
+  if(role==="D"){
+    const w=p=>/^(LB|LWB)$/.test(p.p)?0:/^(RB|RWB)$/.test(p.p)?2:1;
+    return L.sort((a,b)=>w(a)-w(b)||b.o-a.o);
+  }
+  if(role==="M"){
+    if(L.length===5){
+      const wideL=L.filter(p=>p.p==="LM"||p.p==="LW"),wideR=L.filter(p=>p.p==="RM"||p.p==="RW");
+      const cams=L.filter(p=>p.p==="CAM"),pivs=L.filter(p=>p.p==="CDM"||p.p==="CM");
+      const rest=L.filter(p=>!wideL.includes(p)&&!wideR.includes(p)&&!cams.includes(p)&&!pivs.includes(p));
+      const slot=[null,null,null,null,null];
+      if(wideL.length)slot[0]=wideL.shift();
+      if(wideR.length)slot[4]=wideR.shift();
+      const rem=[...wideL,...wideR,...cams,...pivs,...rest];
+      const camI=rem.findIndex(p=>p.p==="CAM");
+      if(camI>=0)slot[2]=rem.splice(camI,1)[0];
+      [1,3,2,0,4].forEach(idx=>{if(!slot[idx]&&rem.length)slot[idx]=rem.shift()});
+      return slot.filter(Boolean);
+    }
+    if(L.length===4){
+      const w=p=>/^(LM|LW)$/.test(p.p)?0:/^(RM|RW)$/.test(p.p)?3:/^(CDM)$/.test(p.p)?1:2;
+      return L.sort((a,b)=>w(a)-w(b)||b.o-a.o);
+    }
+    if(L.length===3){
+      const out=L.sort((a,b)=>(a.p==="LM"?0:a.p==="RM"?2:1)-(b.p==="LM"?0:b.p==="RM"?2:1)||b.o-a.o);
+      const cdmI=out.findIndex(p=>p.p==="CDM");
+      if(cdmI===0||cdmI===2){const tmp=out[1];out[1]=out[cdmI];out[cdmI]=tmp}
+      return out;
+    }
+    const w=p=>/^(LM|CDM)$/.test(p.p)?0:/^(RM|CAM)$/.test(p.p)?2:1;
+    return L.sort((a,b)=>w(a)-w(b)||b.o-a.o);
+  }
+  return L;
+}
+function teamXiData(i){
+  const L=squadOf(i);if(!L.length)return null;
+  let xi=L.filter(p=>p.t==="S");
+  if(xi.length<11){
+    const used=new Set(xi.map(p=>p.n));
+    L.filter(p=>!used.has(p.n)).sort((a,b)=>(a.t==="B"?0:1)-(b.t==="B"?0:1)||b.o-a.o).forEach(p=>{if(xi.length<11)xi.push(p)});
+  }
+  const K=xi.filter(p=>p.g==="K").slice(0,1);
+  const out=xi.filter(p=>p.g!=="K");
+  let D=out.filter(p=>p.g==="D"),M=out.filter(p=>p.g==="M"),F=out.filter(p=>p.g==="F");
+  // Normalize rare >5 line counts into neighboring line so pitch layout stays crisp
+  while(M.length>5){const mv=M.pop();if(F.length<3)F.push(mv);else D.push(mv)}
+  while(D.length>5){M.push(D.pop())}
+  while(F.length>4){M.push(F.pop())}
+  D=teamOrderLine(D,"D");M=teamOrderLine(M,"M");F=teamOrderLine(F,"F");
+  const fmtStr=`${D.length}-${M.length}-${F.length}`;
+  const xo=xi.length?xi.reduce((a,p)=>a+p.o,0)/xi.length:0;
+  const bench=L.filter(p=>p.t==="B").sort((a,b)=>b.o-a.o);
+  return{K,D,M,F,fmt:fmtStr,xo,bench};
+}
+function teamPitchHtml(i,s){
+  const xi=teamXiData(i);if(!xi)return `<div class="note">Bu takım için kadro verisi yok.</div>`;
+  const stMap=tiSeasonStats(s,i);
+  const tierCls=o=>o>=85?"t1":o>=80?"t2":o>=75?"t3":"t0";
+  const node=(p,cols)=>{
+    const ps=stMap[nz(p.n)];
+    const parts=[];
+    if(ps){
+      if(ps.g)parts.push(`${ps.g}G`);
+      if(ps.a)parts.push(`${ps.a}A`);
+      if(ps.mom)parts.push(`${ps.mom}<i class="tots-star">★</i>`);
+    }
+    const hasStat=parts.length>0;
+    const sep=cols>=4?`<i class="tots-dot">·</i>`:` <i class="tots-dot">·</i> `;
+    const subHtml=hasStat?parts.join(sep):`${p.a} yaş`;
+    const nmTxt=totsDispName(p.n,cols);
+    return `<button class="tots-pl xi-pl${hasStat?" has-st":""}" data-a="tpinfo" data-n="${esc(p.n)}" data-i="${i}" data-s="${s.id}" aria-label="${esc(p.n)} (${p.p}, ${p.o} GEN)">`+
+      `<span class="xi-med ${tierCls(p.o)}">`+
+        (p.j?`<i class="xi-no">#${p.j}</i>`:"")+
+        `<b>${p.o}</b>`+
+        `<i class="tots-pos p-${p.g}">${esc(p.p)}</i>`+
+      `</span>`+
+      `<span class="tots-nm">${esc(nmTxt)}</span>`+
+      `<span class="tots-st${hasStat?"":" xi-age"}">${subHtml}</span>`+
+    `</button>`;
+  };
+  const benchHtml=xi.bench.length
+    ? `<div class="xi-bench"><div class="xi-bh"><span>Yedek Kulübesi</span><small>${xi.bench.length} oyuncu · dokunarak detay gör</small></div><div class="xi-bchips">`+
+      xi.bench.map(p=>{
+        const ps=stMap[nz(p.n)];
+        const stTag=ps?` <em>${ps.g?ps.g+"G":""}${ps.a?(ps.g?" ":"")+ps.a+"A":""}</em>`:"";
+        return `<button class="xi-bc" data-a="tpinfo" data-n="${esc(p.n)}" data-i="${i}" data-s="${s.id}"><i class="xi-bp p-${p.g}">${esc(p.p)}</i><span>${esc(totsDispName(p.n,3))}</span><b>${p.o}</b>${stTag}</button>`;
+      }).join("")+`</div></div>`
+    : "";
+  return `<div class="tots-pitch xi-pitch" role="region" aria-label="${esc(T[i].n)} İlk 11 (${esc(xi.fmt)})">`+
+    `<div class="xi-ptop"><span class="xi-pill">${esc(xi.fmt)} DİZİLİŞ</span><span class="xi-pill mut">İlk 11 Ort. <b>${fx(xi.xo)}</b></span></div>`+
+    `<svg class="tots-lines" viewBox="0 0 360 470" preserveAspectRatio="none" aria-hidden="true">`+
+      `<polygon points="50,16 310,16 350,454 10,454"/>`+
+      `<polygon points="112,16 248,16 258,74 102,74"/>`+
+      `<polygon points="145,16 215,16 219,39 141,39"/>`+
+      `<path d="M154,74 Q180,92 206,74"/>`+
+      `<line x1="33" y1="214" x2="327" y2="214"/>`+
+      `<ellipse cx="180" cy="214" rx="54" ry="37"/>`+
+      `<circle cx="180" cy="214" r="3" fill="currentColor"/>`+
+      `<polygon points="92,370 268,370 286,454 74,454"/>`+
+      `<polygon points="133,416 227,416 233,454 127,454"/>`+
+      `<path d="M148,370 Q180,350 212,370"/>`+
+    `</svg>`+
+    `<div class="tots-rows">`+
+      (xi.F.length?`<div class="tots-row r${xi.F.length} frow">${xi.F.map(p=>node(p,xi.F.length)).join("")}</div>`:"")+
+      (xi.M.length?`<div class="tots-row r${xi.M.length} mrow">${xi.M.map(p=>node(p,xi.M.length)).join("")}</div>`:"")+
+      (xi.D.length?`<div class="tots-row r${xi.D.length} drow">${xi.D.map(p=>node(p,xi.D.length)).join("")}</div>`:"")+
+      (xi.K.length?`<div class="tots-row r1 krow">${xi.K.map(p=>node(p,1)).join("")}</div>`:"")+
+    `</div>`+
+  `</div>`+benchHtml;
+}
 function tiBody(i){
-  const L=squadOf(i),f=st.tif||"A",tq=nz(st.tiq||"");
+  const L=squadOf(i),f=st.tif||"A",tq=nz(st.tiq||""),s=cur();
   if(!L.length)return `<div class="note">Bu takım için kadro verisi yok.</div>`;
-  const stMap=tiSeasonStats(cur(),i);
+  const stMap=tiSeasonStats(s,i);
   const row=p=>{
     const ps=stMap[nz(p.n)];
     const bdg=ps?`<span class="sqst" aria-label="Sezon istatistiği">${ps.g?`<i class="sg">${ps.g}G</i>`:""}${ps.a?`<i class="sa">${ps.a}A</i>`:""}${ps.mom?`<i class="sm">${ps.mom}★</i>`:""}</span>`:"";
-    return `<div class="sqr${p.t=="R"?" rz":""}${ps?" hasst":""}"><span class="sqn">${p.j||""}</span><span class="sqm"><span class="sqnm">${esc(p.n)}${p.t=="S"?`<i class="xi" aria-label="İlk 11">●</i>`:""}</span>${bdg}</span><span class="sqp p-${p.g}">${p.p}</span><span class="sqa">${p.a}</span><span class="sqo">${rb(p.o)}</span></div>`;
+    return `<button class="sqr sqr-btn${p.t=="R"?" rz":""}${ps?" hasst":""}" data-a="tpinfo" data-n="${esc(p.n)}" data-i="${i}" data-s="${s.id}"><span class="sqn">${p.j||""}</span><span class="sqm"><span class="sqnm">${esc(p.n)}${p.t=="S"?`<i class="xi" aria-label="İlk 11">●</i>`:""}</span>${bdg}</span><span class="sqp p-${p.g}">${p.p}</span><span class="sqa">${p.a}</span><span class="sqo">${rb(p.o)}</span></button>`;
   };
   let body="";
   ["K","D","M","F"].filter(g=>f=="A"||f==g).forEach(g=>{const G=L.filter(p=>p.g==g&&(!tq||nz(p.n).includes(tq)));if(G.length)body+=`<div class="rt">${SQL[g]} <small>${G.length}</small></div>`+G.map(row).join("")});
@@ -2047,7 +2163,8 @@ function tiBody(i){
 }
 function tiDlg(){
   const i=st.ti;if(i==null||!T[i])return "";
-  const s=cur(),r=RT(s,i),L=squadOf(i),f=st.tif||"A";
+  const s=cur(),r=RT(s,i),L=squadOf(i),f=st.tif||"A",tiv=st.tiv==="list"?"list":"xi";
+  const cb=bspec(i),sty=cb?` style="--pc1:${cb.c1};--pc2:${cb.c2}"`:"";
   const mine=i===s.my,riv=!mine&&s.my!=null&&rivals(s).includes(i);
   const tag=mine?` · <b>Senin takımın</b>`:riv?` · <b>Grup rakibin</b>`:"";
   const xi=L.filter(p=>p.t=="S"),ag=L.length?L.reduce((a,p)=>a+p.a,0)/L.length:0,xo=xi.length?xi.reduce((a,p)=>a+p.o,0)/xi.length:0;
@@ -2055,7 +2172,13 @@ function tiDlg(){
   const topSc=stVals.filter(x=>x.g>0).sort((a,b)=>b.g-a.g||b.a-a.a)[0];
   const topAs=stVals.filter(x=>x.a>0).sort((a,b)=>b.a-a.a||b.g-a.g)[0];
   const snStrip=stVals.length?`<div class="ti-sn"><span class="ti-snl">${esc(s.name)}</span>${topSc?`<span class="sqst"><i class="sg">⚽ ${esc(topSc.n)} (${topSc.g}G)</i></span>`:""}${topAs?`<span class="sqst"><i class="sa">👟 ${esc(topAs.n)} (${topAs.a}A)</i></span>`:""}</div>`:"";
-  return `<div class="dlg ti"><button class="tibk" data-a="no" aria-label="Kapat"></button><div class="dbox tisheet" role="dialog" aria-label="${esc(T[i].n)} kadrosu"><div class="tih">${badge(i,46)}<div class="tim"><b>${esc(T[i].n)}</b><span>${fl(T[i].c)} ${CN[T[i].c][0]}${tag}</span></div><div class="tmo2"><b>${r.g}</b><i>GEN</i></div></div><div class="tix"><span>HÜC<b>${r.a}</b></span><span>ORT<b>${r.o}</b></span><span>DEF<b>${r.d}</b></span></div>${snStrip}${L.length?`<div class="note" style="margin:8px 0 4px">${L.length} oyuncu · yaş ort. ${fx(ag)} · ilk 11 ort. ${fx(xo)}</div>${sqChips("tif",f)}<input id="tiq" class="f" type="search" placeholder="Kadroda oyuncu ara" value="${esc(st.tiq||"")}" autocomplete="off" aria-label="Kadroda oyuncu ara"><div class="sqh"><span class="sqn">No</span><span class="sqm">Oyuncu</span><span class="sqp">Poz</span><span class="sqa">Yaş</span><span class="sqo">GEN</span></div>`:""}<div id="tiL">${tiBody(i)}</div>${L.length?`<div class="note">● ilk 11 · soluk satırlar rezerv · renkli rozetler bu sezonun gol/asist/MOTM katkısını gösterir.</div>`:""}<div class="bar"><button class="btn p" data-a="no" style="flex:1">Kapat</button></div></div></div>`}
+  const swBar=L.length?`<div class="stabs seg2" style="margin:10px 0 8px" role="tablist" aria-label="Kadro görünümü"><button class="chip ${tiv==="xi"?"on":""}" role="tab" aria-selected="${tiv==="xi"}" data-a="tiv" data-v="xi">⚽ İlk 11 Saha</button><button class="chip ${tiv==="list"?"on":""}" role="tab" aria-selected="${tiv==="list"}" data-a="tiv" data-v="list">📋 Tam Kadro (${L.length})</button></div>`:"";
+  const content=!L.length
+    ? `<div class="note">Bu takım için kadro verisi yok.</div>`
+    : (tiv==="xi"
+      ? teamPitchHtml(i,s)+`<div class="note" style="margin:8px 0 0">Simülasyonlarda bu İlk 11 (%82–85 ağırlık) ve yedek kulübesi baz alınır. Oyuncuya dokunarak sezon maç dökümünü görebilirsin.</div>`
+      : `<div class="note" style="margin:2px 0 4px">${L.length} oyuncu · yaş ort. ${fx(ag)} · ilk 11 ort. ${fx(xo)}</div>${sqChips("tif",f)}<input id="tiq" class="f" type="search" placeholder="Kadroda oyuncu ara" value="${esc(st.tiq||"")}" autocomplete="off" aria-label="Kadroda oyuncu ara"><div class="sqh"><span class="sqn">No</span><span class="sqm">Oyuncu</span><span class="sqp">Poz</span><span class="sqa">Yaş</span><span class="sqo">GEN</span></div><div id="tiL">${tiBody(i)}</div><div class="note">● ilk 11 · soluk satırlar rezerv · oyuncuya dokunarak sezon detayını görebilirsin.</div>`);
+  return `<div class="dlg ti"><button class="tibk" data-a="no" aria-label="Kapat"></button><div class="dbox tisheet plsheet"${sty} role="dialog" aria-label="${esc(T[i].n)} kadrosu"><div class="tih">${badge(i,46)}<div class="tim"><b>${esc(T[i].n)}</b><span>${fl(T[i].c)} ${CN[T[i].c][0]}${tag}</span></div><div class="tmo2"><b>${r.g}</b><i>GEN</i></div></div><div class="tix"><span>HÜC<b>${r.a}</b></span><span>ORT<b>${r.o}</b></span><span>DEF<b>${r.d}</b></span></div>${snStrip}${swBar}${content}<div class="bar"><button class="btn p" data-a="no" style="flex:1">Kapat</button></div></div></div>`}
 let ALLDL_DONE=false;
 function ensureAllPlayersDatalist(){
   if(ALLDL_DONE)return;const dl=$("allpl");if(!dl)return;
@@ -2369,7 +2492,7 @@ function render(){
   const focusEl=aeId?$(aeId):null;
   if(focusEl&&document.activeElement!==focusEl){focusEl.focus();if(aeSel!=null&&typeof focusEl.setSelectionRange=="function")try{focusEl.setSelectionRange(aeSel,aeSel)}catch(e){}}}
 
-const UI_ONLY=new Set(["stab","mexp","fxw","fxv","bkv","adv","cust","roall","vitall","sall","rstopen","sfopen","hm","grk","tropen","trclose","bkadv","madv","qs","medit","mall","qx","gofin","mg","mo","mu","mp","mpf","mpa","glsc","glas","glclr","glasclr","glasno","glasopen","tel","tpl","ht","hmod","sfm","sfr","sv","sfd","sfx","ro","dcancel","next","all","no","tinfo","pinfo","tpinfo","tpclose","totsv","guide","cmpsw","gs","gsgo","tif","ren","own","owno","mman","ex","im","rcv","sum","oldlsx"]);
+const UI_ONLY=new Set(["stab","mexp","fxw","fxv","bkv","adv","cust","roall","vitall","sall","rstopen","sfopen","hm","grk","tropen","trclose","bkadv","madv","qs","medit","mall","qx","gofin","mg","mo","mu","mp","mpf","mpa","glsc","glas","glclr","glasclr","glasno","glasopen","tel","tpl","ht","hmod","sfm","sfr","sv","sfd","sfx","ro","dcancel","next","all","no","tinfo","pinfo","tpinfo","tpclose","totsv","guide","cmpsw","gs","gsgo","tif","tiv","ren","own","owno","mman","ex","im","rcv","sum","oldlsx"]);
 document.addEventListener("click",async e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.t!==undefined){hideToast();st.tab=+b.dataset.t;if(st.tab==6)refreshQuota(true);render();scrollTo(0,0);return}
@@ -2499,10 +2622,11 @@ document.addEventListener("click",async e=>{
   else if(a=="tpclose"){st.tpi=null}
   else if(a=="tpinfo"){st.tpi={n:b.dataset.n||"",ti:i,sid:b.dataset.s?+b.dataset.s:cur().id}}
   else if(a=="pinfo"){st.tpi=null;st.pi=b.dataset.n||null}
-  else if(a=="tinfo"){st.tpi=null;st.ti=i;st.tif="A";st.tiq=""}
+  else if(a=="tinfo"){st.tpi=null;st.ti=i;st.tiv=dv||"xi";st.tif="A";st.tiq=""}
   else if(a=="gs"){st.gs=true;st.gsq="";setTimeout(()=>{const e=$("gsq");if(e)e.focus()},60)}
-  else if(a=="gsgo"){st.gs=false;st.ti=i;st.tif="A";st.tiq=b.dataset.n||""}
+  else if(a=="gsgo"){st.gs=false;st.ti=i;st.tif="A";st.tiq=b.dataset.n||"";st.tiv=b.dataset.n?"list":"xi"}
   else if(a=="tif")st.tif=dv
+  else if(a=="tiv")st.tiv=dv
   else if(a=="ren"){const x=store.seasons.find(q=>q.id==id);if(!x)return;st.ren={id:x.id,v:x.name};setTimeout(()=>{const e=$("rn");if(e){e.focus();e.select()}},30)}
   else if(a=="own"){st.own=1}
   else if(a=="owno"){st.own=0}
