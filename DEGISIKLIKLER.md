@@ -1,3 +1,8 @@
+## v20.14 (2026-11-20) — Karma (Rastgele) Grup & Lig Fikstürü
+- **Güç sırasına göre fikstür düzeltildi (`app.js` `mixG`, `grpRivals`):** Torbalı kura sonrası grupların `1. torba → son torba` (en güçlüden en güçsüze) sırasıyla saklanması nedeniyle fikstürün hep en güçlü rakiplerle başlayıp zayıflara doğru gitmesi sorunu giderildi.
+- **Yeni kuralar (`use`, `bal`):** Grup veya lig kurası onaylandığında her grubun fikstür sırası otomatik karıştırılır (`s.fxMix = 1`). Puan tablosu ve Kura ekranı görsel olarak güç/puan sırasını korurken, maç fikstürü tamamen karma akar.
+- **Mevcut sezonlarla tam uyum:** Henüz grup maçı başlamamış eski kuralar otomatik karıştırılır; yarıda olan eski sezonlarda ise diğer grupların oynanmış eşleşmeleri bozulmadan senin kalan rakiplerin deterministik karma sıraya geçer.
+
 ## v20.13 (2026-11-20) — Genel Menajer Profili, Kupa Dolabı & Gereksiz Tekrar Temizliği
 - **Genel Menajer Profili (`analytics.js` `calcTacticalDNA`, `tacticalDnaCard`, `matchTab`):** `Geçmiş › Maçlar` sekmesindeki Taktiksel DNA kartı artık tek sezonu değil, tüm kariyerdeki (ve varsa seçili zorluk filtresindeki) tüm istatistikli maçları baz alarak **Genel Menajer Profili** üretir. `İstat. › Analiz` ve Karne 2. sayfa aktif/ilgili sezon bazlı çalışmaya devam eder.
 - **Kupa Dolabı Yalnızca `Geçmiş › Özet`'te (`app.js` `histView`):** Kupa Dolabı (`vitrinCard`) üst alt-sekme çubuğunun altına ve yalnızca `Özet` sekmesine alındı; `Rekorlar`, `Sezonlar`, `Rakipler` ve `Maçlar` sekmelerinde ekranın üst alanı rahatlatıldı.

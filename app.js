@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.13",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="20.14",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -309,6 +309,7 @@ const norm=()=>store.seasons.forEach(s=>{
   s.cfg=Object.assign(cp(DEFC),s.cfg||{});fixC(s.cfg);
   s.rl=Object.assign(cp(DEFR),s.rl||{});s.rl.xc=s.rl.xc||[];
   if(s.G===undefined)s.G=null;
+  if(s.G&&!s.fxMix&&(s.cfg.gs||isLg(s.cfg))&&(!s.sim||!s.sim.w)&&!(s.mt||[]).some(m=>m.rd==="Grup")){s.G=mixG(s,s.G);s.fxMix=1}
   s.gqs=(s.gqs&&typeof s.gqs=="object")?toNob(s.gqs):nob();ensureSim(s);if(!Object.keys(s.sim.sc||{}).length)rebuildSimScorers(s);
   s.P=s.P||null;s.lk=!!s.lk&&!!s.P;
   (s.mt||[]).forEach(m=>{const j=ixOf(m.on);if(j!==undefined)m.opp=j;m.sc=toNob(m.sc);m.as=toNob(m.as);if(m.stats===undefined||typeof m.stats!="object")m.stats=null});
@@ -805,8 +806,8 @@ const resetCard=()=>`<div class="pfold dgr${st.rstopen?" open":""}"><button clas
 const hasData=s=>(s.mt||[]).length>0||(s.pl||[]).length>0||!!s.res||Object.values(s.tb||{}).some(v=>v);
 const tmLock=s=>!!s.G||(s.mt||[]).length>0;
 function wipeS(s){s.delM=Array.from(new Set([...(s.delM||[]),...(s.mt||[]).map(m=>m.id).filter(Boolean)]));s.mt=[];s.pl=[];s.res=null;s.gq=null;s.gqs=nob();s.sim={m:0,w:0,gm:nob(),ko:nob(),sc:nob()};s.ts=nob();s.tb=nob();reTs(s)}
-function doUnlock(s){const had=hasData(s);wipeS(s);s.lk=false;s.P=null;s.G=null;s.my=null;s.sn=null;s.dn=0;st.mode=null;st.tp=false;st.dr=null;st.k=0;sync();return had?"Kurulum açıldı, sezon verileri sıfırlandı":"Kurulum açıldı, takım ve kura silindi"}
-function doReset(s){const had=hasData(s);wipeS(s);s.G=null;s.my=null;st.mode=null;st.dr=null;st.k=0;sync();return had?"Takım ve kura sıfırlandı, sezon verileri silindi":"Takım ve kura sıfırlandı"}
+function doUnlock(s){const had=hasData(s);wipeS(s);s.lk=false;s.P=null;s.G=null;s.fxMix=0;s.my=null;s.sn=null;s.dn=0;st.mode=null;st.tp=false;st.dr=null;st.k=0;sync();return had?"Kurulum açıldı, sezon verileri sıfırlandı":"Kurulum açıldı, takım ve kura silindi"}
+function doReset(s){const had=hasData(s);wipeS(s);s.G=null;s.fxMix=0;s.my=null;st.mode=null;st.dr=null;st.k=0;sync();return had?"Takım ve kura sıfırlandı, sezon verileri silindi":"Takım ve kura sıfırlandı"}
 const lockNote=(s,lk)=>lk?`<div class="klock tlock"><div class="klh"><span class="kli">${KI.lock}</span><div class="klt"><b>Takım Kilitli</b><small>Kura onaylandı${(s.mt||[]).length?" ve maç girildi":""}. Değiştirmek ${hasData(s)?"kurayı ve bu sezonun maç, oyuncu, sonuç kayıtlarını sıfırlar.":"kurayı sıfırlar."}</small></div></div><button class="btn kreset" data-a="chteam">${KI.reset}<span>Takımı Değiştir</span></button></div>`:`<div class="klock tlock"><div class="klh"><span class="kli">${KI.lock}</span><div class="klt"><b>Kura Çekimi Başladı</b><small>Takım değiştirilemez. Devam etmek için önce çekilen kurayı iptal et.</small></div></div><button class="btn kreset" data-a="dcancel">${KI.reset}<span>Kurayı İptal Et</span></button></div>`;
 const KI={lock:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5M12 14.5v2"/></svg>',reset:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.4-5.5M4.5 4.5v4h4"/></svg>',pot:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17M3.5 12h17M6 6.5c2.2 1.6 3.4 3.4 3.4 5.5S8.2 15.9 6 17.5M18 6.5c-2.2 1.6-3.4 3.4-3.4 5.5s1.2 3.9 3.4 5.5"/></svg>'};
 const lockDraw=s=>`<div class="klock"><div class="klh"><span class="kli">${KI.lock}</span><div class="klt"><b>Kura onaylandı</b><small>${s.dn>1?s.dn+". denemede kesinleşti · ":""}Yeniden çekmek için önce sıfırla.</small></div></div><button class="btn kreset" data-a="chteam">${KI.reset}<span>Kurayı ve takımı sıfırla</span></button></div>`;
@@ -1098,6 +1099,14 @@ function ensureMgls(gf){
   syncGlsToMaps();
 }
 const lgs=(c,rd)=>rd=="Grup"?c.gl:(rd==RN[2]?c.fl:c.kl);
+const mixG=(s,G)=>(s.cfg.gs||isLg(s.cfg))?G.map(g=>sh(g)):G.map(g=>g.slice());
+function grpRivals(s,gi){
+  const g=s&&s.G&&s.G[gi];if(!g)return [];
+  const L=g.filter(i=>i!==s.my);
+  if(s.fxMix||(!s.cfg.gs&&!isLg(s.cfg)))return L;
+  const h=i=>{let x=Math.imul(((+s.id||1)^((gi+1)*2654435761)^((i+1)*2246822519))>>>0,1597334677)>>>0;x^=x>>>13;x=Math.imul(x,3266489917)>>>0;return (x^x>>>16)>>>0};
+  return L.slice().sort((a,b)=>h(a)-h(b));
+}
 function nextGrpOpp(riv,gpFn,gl){
   const maxL=gl||1;
   for(let l=1;l<=maxL;l++){
@@ -1115,7 +1124,7 @@ const legInfo=s=>{const L=lgs(s.cfg,st.mrd),dn=(s.mt||[]).filter(m=>m.id!==st.me
 function matchCard(s,sheet){
   const c=s.cfg,RD=rds(c),ms=s.mt||[],edM=st.med?ms.find(x=>x.id==st.med):null;
   if(!RD.includes(st.mrd))st.mrd=autoStage(s);
-  const gi=s.G?s.G.findIndex(g=>g.includes(s.my)):-1,riv=gi>=0?s.G[gi].filter(i=>i!==s.my):[];
+  const gi=s.G?s.G.findIndex(g=>g.includes(s.my)):-1,riv=gi>=0?grpRivals(s,gi):[];
   const autoKo=st.mrd!=="Grup"&&!edM?getAutoKoOpponent(s,st.mrd):null;if(autoKo!=null)st.mop=autoKo;
   const cm=(i,rd)=>ms.filter(m=>m.id!==st.med&&m.opp===i&&m.rd==rd).length,gp=i=>cm(i,"Grup");
   const qSet=new Set(Object.values(s.gqs||{}).flat().filter(i=>i!==s.my));
@@ -1669,7 +1678,7 @@ function fixtureView(s){
   const seqC=nob();
   const nextOpp=(gi,w)=>{
     if(!seqC[gi]){
-      const riv=s.G[gi].filter(x=>x!==s.my),cnt=nob(),sq=[];
+      const riv=grpRivals(s,gi),cnt=nob(),sq=[];
       myGm.forEach(m=>{if(m.opp!=null)cnt[m.opp]=(cnt[m.opp]||0)+1});
       for(let k=myGm.length;k<totW;k++){const o=nextGrpOpp(riv,i=>cnt[i]||0,gl);sq.push(o===undefined?null:o);if(o!==undefined)cnt[o]=(cnt[o]||0)+1}
       seqC[gi]=sq}
@@ -1778,7 +1787,7 @@ function grpState(s){
   let pts=0,gf=0,ga=0;
   gm.forEach(m=>{const a=+m.gf||0,b=+m.ga||0;gf+=a;ga+=b;pts+=a>b?3:a==b?1:0});
   const ko=ms.some(m=>m.rd!="Grup"),done=gm.length>=need,gq=s.gq==1||ko;
-  const rem=s.G[gi].filter(i=>i!==s.my&&gm.filter(m=>m.opp===i).length<s.cfg.gl);
+  const rem=grpRivals(s,gi).filter(i=>gm.filter(m=>m.opp===i).length<s.cfg.gl);
   return{gi,need,played:gm.length,pts,gd:gf-ga,done,ko,gq,pend:done&&!gq&&!s.res,rem}}
 function grpBox(s){
   const g=grpState(s);if(!g)return "";
@@ -1954,7 +1963,7 @@ function homeView(s){
     mid=`<div class="ph-head"><div class="ph-crest">${badge(s.my,46)}</div><div><div class="rs">${esc(ttl)}</div><div class="hn">${esc(txt)}</div></div></div>`;
     main=`<button class="btn p ph-cta" data-t="2">${UICO.spark}<span>Kurayı Çek</span></button>`;
   }else if(!fin){
-    const gi=s.G.findIndex(g=>g.includes(s.my)),riv=gi>=0?s.G[gi].filter(i=>i!==s.my):[];
+    const gi=s.G.findIndex(g=>g.includes(s.my)),riv=gi>=0?grpRivals(s,gi):[];
     const nxGrp=s.cfg.gs?nextGrpOpp(riv,i=>ms.filter(m=>m.opp===i&&m.rd=="Grup").length,s.cfg.gl):(ms.length?undefined:riv[0]);
     const stg=autoStage(s),nxKo=nxGrp===undefined&&stg!=="Grup"?getAutoKoOpponent(s,stg):null;
     const opp=nxGrp!==undefined?nxGrp:(nxKo!=null&&T[nxKo]?nxKo:null);
@@ -2646,8 +2655,8 @@ document.addEventListener("click",async e=>{
   else if(a=="new"){if(s.G){ask("Kura onaylandı. Yeniden çekmek için önce kurayı sıfırla.");render();return}st.dr=withSn(s,()=>genDraw(s,1500,1));st.k=0;if(st.dr)s.dn=(s.dn||0)+1;else ask("Bu kurallarla kura üretilemedi. Kurulumda ülke sınırını gevşetip tekrar dene.")}
   else if(a=="next"){st.k++;const q=st.dr&&st.dr.seq[st.k-1];if(q&&q[0]===s.my){try{navigator.vibrate&&navigator.vibrate([70,50,140])}catch(e){}}}
   else if(a=="all"&&st.dr)st.k=st.dr.seq.length;
-  else if(a=="use"){if(!st.dr||s.G)return;s.G=st.dr.G.map(g=>g.slice());sync();st.tab=3}
-  else if(a=="bal"){if(s.G){ask("Kura onaylandı. Yeniden çekmek için önce kurayı sıfırla.");render();return}const d=withSn(s,()=>genDraw(s,4000,.4,1500));if(d){s.dn=(s.dn||0)+1;s.G=d.G.map(g=>g.slice());sync();st.tab=3;un="Gruplar otomatik kuruldu"}else ask("Bu kurallarla kura üretilemedi. Kurulumda ülke sınırını gevşetip tekrar dene.")}
+  else if(a=="use"){if(!st.dr||s.G)return;s.G=mixG(s,st.dr.G);s.fxMix=1;sync();st.tab=3}
+  else if(a=="bal"){if(s.G){ask("Kura onaylandı. Yeniden çekmek için önce kurayı sıfırla.");render();return}const d=withSn(s,()=>genDraw(s,4000,.4,1500));if(d){s.dn=(s.dn||0)+1;s.G=mixG(s,d.G);s.fxMix=1;sync();st.tab=3;un="Gruplar otomatik kuruldu"}else ask("Bu kurallarla kura üretilemedi. Kurulumda ülke sınırını gevşetip tekrar dene.")}
   else if(a=="yes"){const f=st.ask&&st.ask.fn;st.ask=null;if(f){const r=await f();if(typeof r=="string")un=r}}
   else if(a=="no"){st.ask=null;clrImg();st.ren=null;st.imp=null;st.ti=null;st.pi=null;st.tpi=null;st.totsv=null;st.guide=false;st.gs=false;st.tiq=""}
   else if(a=="tpclose"){st.tpi=null}
