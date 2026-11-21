@@ -3274,3 +3274,111 @@ button.sqr.sqr-btn:active{background:var(--hi)}
   .bkt-tm .n{font-size:12.5px}
   .bkt-tm .bkt-sc{min-width:24px;height:22px;font-size:14.5px}
 }
+
+/* ===== v20.19: Premium Plus Kura Scouting Güç Kapsülleri & Sezon Ödülleri Vitrini ===== */
+/* 1) 4-Sütunlu Grup Telemetri Şeridi (.kgs.kgs4) */
+.kgs-wrap .kgs.kgs4{grid-template-columns:repeat(4,1fr)}
+.kgs-wrap .kgs.kgs4 span.hi{background:color-mix(in srgb,var(--ac) 10%,transparent)}
+.kgs-wrap .kgs.kgs4 span.hi em{color:var(--ac)}
+.kgc.mine .kgs-wrap .kgs.kgs4 span.hi{background:rgba(240,194,75,.12)}
+.kgc.mine .kgs-wrap .kgs.kgs4 span.hi em{color:#b8860b}
+:root[data-theme="dark"] .kgc.mine .kgs-wrap .kgs.kgs4 span.hi em{color:#fbeaa8}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .kgc.mine .kgs-wrap .kgs.kgs4 span.hi em{color:#fbeaa8}}
+
+/* 2) Takım Satırı Altı: Scouting HÜC / ORT / DEF Kapsülleri (.kr-st, .kr-p) */
+.kr .kn{gap:5px}
+.kt-r{gap:6px}
+.kt-r .kr-fl{margin-right:0}
+.kt-r .kr-fl .fg{width:18px;height:12px;border-radius:3px}
+.kr-st{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;max-width:214px;width:100%}
+.kr-p{
+  display:flex;flex-direction:column;gap:3px;min-width:0;
+  padding:3px 6px 4px;border-radius:8px;
+  background:rgba(127,150,140,.09);border:1px solid var(--gbd);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
+}
+.kr-pt{display:flex;align-items:baseline;justify-content:space-between;gap:3px;line-height:1}
+.kr-pt i{font-style:normal;font-size:9px;font-weight:800;letter-spacing:.05em;color:var(--mut)}
+.kr-pt b{font-family:var(--num);font-size:14px;font-weight:700;color:var(--tx);font-variant-numeric:tabular-nums}
+.kr-pb{display:block;height:2.5px;border-radius:99px;background:rgba(127,150,140,.20);overflow:hidden;text-decoration:none}
+.kr-pb s{display:block;height:100%;border-radius:99px;text-decoration:none;background:linear-gradient(90deg,#64748b,#94a3b8)}
+
+/* Güç Seviyesine Göre Semantik Renkler (85+ Altın, 80-84 Zümrüt) */
+.kr-p.s1{background:rgba(240,194,75,.14);border-color:rgba(212,160,23,.38)}
+.kr-p.s1 .kr-pt i{color:#9a6b00}
+.kr-p.s1 .kr-pt b{color:#7c5400}
+.kr-p.s1 .kr-pb s{background:linear-gradient(90deg,#d4a017,#f8e08a)}
+.kr-p.s2{background:rgba(15,157,107,.10);border-color:rgba(15,157,107,.28)}
+.kr-p.s2 .kr-pt i{color:var(--ac)}
+.kr-p.s2 .kr-pb s{background:linear-gradient(90deg,#0a7c56,#3ee6a8)}
+:root[data-theme="dark"] .kr-p.s1 .kr-pt i,:root[data-theme="dark"] .kr-p.s1 .kr-pt b{color:#fbeaa8}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .kr-p.s1 .kr-pt i,:root:not([data-theme="light"]) .kr-p.s1 .kr-pt b{color:#fbeaa8}
+}
+@media(max-width:359px){
+  .kr-st{gap:3.5px}
+  .kr-p{padding:2.5px 4.5px 3.5px;border-radius:7px}
+  .kr-pt i{font-size:8.5px}
+  .kr-pt b{font-size:13px}
+}
+
+/* 3) Premium Plus Sezon Ödülleri Vitrini (.paw, .awd, .aw-bdg, .awd.wide) */
+.awd{
+  position:relative;overflow:hidden;border-radius:16px;padding:12px 12px 11px 14px;gap:8px;
+  border:1px solid color-mix(in srgb,var(--ac2) 30%,var(--gbd));
+  background:radial-gradient(100% 95% at 0% 0%,color-mix(in srgb,var(--ac2) 15%,transparent),transparent 66%),var(--gcard);
+  box-shadow:0 4px 14px rgba(15,28,22,.06),inset 0 1px 0 rgba(255,255,255,.35);
+}
+:root[data-theme="dark"] .awd{
+  box-shadow:0 6px 18px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.08);
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .awd{box-shadow:0 6px 18px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.08)}
+}
+.awd::before{
+  content:"";position:absolute;left:0;top:12px;bottom:12px;width:3.5px;
+  border-radius:0 3px 3px 0;background:var(--ac2);opacity:.9;
+}
+.awd.mvp{
+  padding:14px 14px 14px 16px;border-radius:18px;
+  border:1.5px solid color-mix(in srgb,var(--gold) 62%,var(--gbd));
+  background:
+    radial-gradient(90% 130% at 0% 0%,rgba(240,194,75,.28),transparent 64%),
+    radial-gradient(80% 120% at 100% 100%,rgba(15,157,107,.10),transparent 65%),
+    var(--gcard);
+  box-shadow:0 8px 22px rgba(212,160,23,.18),inset 0 1px 0 rgba(255,255,255,.32);
+}
+.awd.mvp::before{top:10px;bottom:10px;width:4px;background:linear-gradient(180deg,#fbeaa8,#d4a017)}
+.awd.mvp .awic{
+  width:44px;height:44px;border-radius:13px;
+  background:linear-gradient(145deg,rgba(251,234,168,.32),rgba(212,160,23,.16));
+  border-color:rgba(212,160,23,.55);box-shadow:0 4px 12px rgba(212,160,23,.22);
+}
+.awd.mvp b{font-size:25px;letter-spacing:.01em}
+.aw-sub{display:inline-flex;align-items:center;gap:5px;margin-top:3px;font-size:11.5px;color:var(--mut);font-weight:600}
+.aw-sub .sqp{width:auto;padding:1px 6px;font-size:10.5px;border-radius:5px}
+.awp{
+  padding:4px 9px;border-radius:10px;gap:2px;
+  background:rgba(127,150,140,.14);border:1px solid var(--gbd);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16);
+}
+.awp b{font-size:18px}
+.awp em{font-style:normal;font-size:10.5px;font-weight:800;color:var(--mut)}
+.awp.gld em{color:var(--gold)}
+
+.awtop{display:flex;align-items:center;gap:6px;min-width:0}
+.awtop .awi{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;letter-spacing:.06em}
+.aw-bdg{
+  flex:0 0 auto;font-family:var(--num);font-size:12.5px;font-weight:700;letter-spacing:.03em;
+  padding:2px 7px;border-radius:99px;line-height:1.25;white-space:nowrap;
+  color:var(--ac2);background:color-mix(in srgb,var(--ac2) 15%,transparent);
+  border:1px solid color-mix(in srgb,var(--ac2) 34%,transparent);
+}
+.awd.gold .aw-bdg{color:#9a6b00}
+:root[data-theme="dark"] .awd.gold .aw-bdg{color:#fbeaa8}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .awd.gold .aw-bdg{color:#fbeaa8}}
+
+.aw-body{display:flex;flex-direction:column;gap:2px;min-width:0}
+.awd:not(.mvp) .aw-body b{font-size:21px;line-height:1.12;margin-top:0}
+.awd.wide{grid-column:1/-1}
+.awd.wide .aw-body b{white-space:normal}

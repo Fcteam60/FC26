@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.18",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="20.19",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -158,7 +158,12 @@ function grpCard(g,gi){
     const sorted=g.slice().sort((x,y)=>{const qx=qL.indexOf(x),qy=qL.indexOf(y);if(qx>=0||qy>=0)return (qx<0?99:qx)-(qy<0?99:qy);return V(RT(s,y))-V(RT(s,x))});
     const hasQ=qL.length>0;
     const head=`<div class="kgh"><span class="kgl">${gl}</span><div class="kgt"><b>${gname(s,gi)}</b><small>${g.length} takım${mn?` · <i class="kgm">★ Senin grubun</i>`:""}</small></div>${dd?`<span class="kg-dead">☠ Ölüm Grubu</span>`:(hasQ?`<span class="xfpill emr">${qL.length} Çıktı</span>`:"")}</div>`+
-      (g.length?`<div class="kgs-wrap"><div class="kgs"><span><em>GEN</em><b>${avg("g")}</b></span><span><em>HÜC</em><b>${avg("a")}</b></span><span><em>DEF</em><b>${avg("d")}</b></span></div><i class="gb kgb"><u style="width:${pc}%"></u></i></div>`:"");
+      (g.length?`<div class="kgs-wrap"><div class="kgs kgs4"><span class="hi"><em>GEN</em><b>${avg("g")}</b></span><span><em>HÜC</em><b>${avg("a")}</b></span><span><em>ORT</em><b>${avg("o")}</b></span><span><em>DEF</em><b>${avg("d")}</b></span></div><i class="gb kgb"><u style="width:${pc}%"></u></i></div>`:"");
+    const statPill=(lbl,val)=>{
+      const tc=val>=85?" s1":val>=80?" s2":"";
+      const bw=Math.max(18,Math.min(100,Math.round((val-64)/28*100)));
+      return `<span class="kr-p${tc}"><span class="kr-pt"><i>${lbl}</i><b>${val}</b></span><u class="kr-pb"><s style="width:${bw}%"></s></u></span>`;
+    };
     const rowsHtml=sorted.map((i,idx)=>{
       const ti=RT(s,i),qr=qL.indexOf(i),isQ=qr>=0,isMe=i===s.my;
       const isCut=hasQ&&isQ&&qr===qL.length-1&&idx<sorted.length-1;
@@ -168,10 +173,10 @@ function grpCard(g,gi){
       const tName=isMe?`<i class="pt-st">★</i> ${esc(ti.n)}`:esc(ti.n);
       return `<button class="row tb kr${isQ?" qrow":""}${isMe?" kme":""}${isCut?" qcut":""}${isElim?" elim":""}" data-a="tinfo" data-i="${i}" aria-label="${esc(ti.n)} kadrosunu incele">`+
         `<span class="kr-rk${rkCls}">${idx+1}</span>`+
-        `<span class="kr-cr">${badge(i,30)}</span>`+
+        `<span class="kr-cr">${badge(i,32)}</span>`+
         `<span class="n kn">`+
-          `<span class="kt-r"><span class="kt">${tName}</span>${qTag}</span>`+
-          `<span class="kr-st" title="${esc(CN[ti.c][0])}"><span class="kr-fl">${fl(ti.c)}</span><span><i>HÜC</i><b>${ti.a}</b></span><em class="kr-dot">·</em><span><i>ORT</i><b>${ti.o}</b></span><em class="kr-dot">·</em><span><i>DEF</i><b>${ti.d}</b></span></span>`+
+          `<span class="kt-r"><span class="kr-fl" title="${esc(CN[ti.c][0])}">${fl(ti.c)}</span><span class="kt">${tName}</span>${qTag}</span>`+
+          `<span class="kr-st" aria-label="Hücum ${ti.a}, Orta saha ${ti.o}, Defans ${ti.d}">${statPill("HÜC",ti.a)}${statPill("ORT",ti.o)}${statPill("DEF",ti.d)}</span>`+
         `</span>`+
         `<span class="kr-r">${rb(ti.g)}<span class="chev" aria-hidden="true">›</span></span>`+
       `</button>`;

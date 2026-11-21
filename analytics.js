@@ -469,17 +469,32 @@ const UICO={
 };
 function awardsCard(s,inFold){
   const aw=seasonAwards(s);if(!aw)return "";
-  const mvpPills=[`<span class="awp"><b>${aw.mvp.g}</b>G</span>`,`<span class="awp"><b>${aw.mvp.a}</b>A</span>`];
-  if(aw.mvp.mom)mvpPills.push(`<span class="awp gld"><b>${aw.mvp.mom}</b>★</span>`);
-  const hero=`<button class="awd mvp tap" data-a="pinfo" data-n="${esc(aw.mvp.n)}" aria-label="${esc(aw.mvp.n)} profilini aç"><span class="awic">${UICO.trophy}</span><div class="awm"><div class="awi">Sezonun MVP’si</div><b>${esc(aw.mvp.n)}</b></div><div class="awps">${mvpPills.join("")}</div></button>`;
-  const mkA=(cls,ic,lbl,nm,stat)=>{const single=!nm.includes(",")&&!nm.includes("&");return single?`<button class="awd ${cls} tap" data-a="pinfo" data-n="${esc(nm)}" aria-label="${esc(nm)} profilini aç"><div class="awtop"><span class="awic sm">${UICO[ic]}</span><span class="awi">${lbl}</span></div><b>${esc(nm)}</b><span class="awst">${stat}</span></button>`:`<div class="awd ${cls}"><div class="awtop"><span class="awic sm">${UICO[ic]}</span><span class="awi">${lbl}</span></div><b>${esc(nm)}</b><span class="awst">${stat}</span></div>`};
+  const mvpInfo=s&&s.my!=null?sqFind(s.my,aw.mvp.n):(sqFindAny(aw.mvp.n)&&sqFindAny(aw.mvp.n).p);
+  const mvpSub=mvpInfo?`<span class="aw-sub"><i class="sqp p-${mvpInfo.g}">${esc(mvpInfo.p)}</i>${mvpInfo.a} yaş · ${mvpInfo.o} GEN</span>`:"";
+  const mvpPills=[`<span class="awp"><b>${aw.mvp.g}</b><em>G</em></span>`,`<span class="awp"><b>${aw.mvp.a}</b><em>A</em></span>`];
+  if(aw.mvp.mom)mvpPills.push(`<span class="awp gld"><b>${aw.mvp.mom}</b><em>★</em></span>`);
+  const hero=`<button class="awd mvp tap" data-a="pinfo" data-n="${esc(aw.mvp.n)}" aria-label="${esc(aw.mvp.n)} profilini aç">`+
+    `<span class="awic">${UICO.trophy}</span>`+
+    `<div class="awm"><div class="awi">★ Sezonun MVP’si</div><b>${esc(aw.mvp.n)}</b>${mvpSub}</div>`+
+    `<div class="awps">${mvpPills.join("")}</div>`+
+  `</button>`;
+  const mkA=(cls,ic,lbl,nm,badgeTxt,subTxt,forceWide)=>{
+    const single=!nm.includes(",")&&!nm.includes("&");
+    const isWide=!!forceWide||nm.length>18||nm.includes("&")||nm.includes(",");
+    const wCls=isWide?" wide":"";
+    const inner=`<div class="awtop"><span class="awic sm">${UICO[ic]}</span><span class="awi">${lbl}</span>${badgeTxt?`<span class="aw-bdg">${badgeTxt}</span>`:""}</div>`+
+      `<div class="aw-body"><b>${esc(nm)}</b>${subTxt?`<span class="awst">${subTxt}</span>`:""}</div>`;
+    return single
+      ? `<button class="awd ${cls}${wCls} tap" data-a="pinfo" data-n="${esc(nm)}" aria-label="${esc(nm)} profilini aç">${inner}</button>`
+      : `<div class="awd ${cls}${wCls}">${inner}</div>`;
+  };
   const items=[];
-  if(aw.boot)items.push(mkA("gold","boot","Altın Ayakkabı",aw.boot.n,`${aw.boot.v} gol`));
-  if(aw.play)items.push(mkA("sky","play","Oyun Kurucu",aw.play.n,`${aw.play.v} asist`));
-  if(aw.ga)items.push(mkA("emr","bolt","Skor Katkısı",aw.ga.n,`${aw.ga.v} katkı (${aw.ga.g}G + ${aw.ga.a}A)`));
-  if(aw.clutch)items.push(mkA("org","flame","Eleme Yıldızı",aw.clutch.n,`Elemede ${aw.clutch.g}G · ${aw.clutch.a}A`));
-  if(aw.wk)items.push(mkA("pur","gem",`Genç Yıldız (${aw.wk.age})`,aw.wk.n,`${aw.wk.g}G · ${aw.wk.a}A${aw.wk.mom?` · ${aw.wk.mom}★`:""}`));
-  if(aw.duo)items.push(mkA("teal","duo","Altın İkili",aw.duo.n,`${aw.duo.m} maçta ${aw.duo.tot} ortak gol`));
+  if(aw.boot)items.push(mkA("gold","boot","Altın Ayakkabı",aw.boot.n,`${aw.boot.v} GOL`,"Sezonun en golcü ismi"));
+  if(aw.play)items.push(mkA("sky","play","Oyun Kurucu",aw.play.n,`${aw.play.v} ASİST`,"En çok gol pası veren"));
+  if(aw.ga)items.push(mkA("emr","bolt","Skor Katkısı",aw.ga.n,`${aw.ga.v} G+A`,`${aw.ga.g} Gol · ${aw.ga.a} Asist`));
+  if(aw.clutch)items.push(mkA("org","flame","Eleme Yıldızı",aw.clutch.n,`${aw.clutch.ga} G+A`,`Elemede ${aw.clutch.g}G · ${aw.clutch.a}A`));
+  if(aw.wk)items.push(mkA("pur","gem",`Genç Yıldız (${aw.wk.age})`,aw.wk.n,`${aw.wk.g}G · ${aw.wk.a}A`,aw.wk.mom?`${aw.wk.mom}★ Maçın Adamı`:"21 yaş altı en etkili"));
+  if(aw.duo)items.push(mkA("teal","duo","Altın İkili",aw.duo.n,`${aw.duo.tot} ORTAK GOL`,`${aw.duo.m} maçta birlikte skor üretti`,true));
   const grid=`<div class="aw-wrap">${hero}${items.length?`<div class="awg">${items.join("")}</div>`:""}</div>`;
   if(inFold)return `<div class="aw-subbar"><span class="lb">${s.res?"Sezon ödülleri kesinleşti":"Canlı sezon liderleri"}</span></div>${grid}`;
   return `<div class="card pglass paw"><h3>Sezon ödülleri<small>${s.res?"kesinleşti":"canlı liderler"}</small></h3>${grid}</div>`}

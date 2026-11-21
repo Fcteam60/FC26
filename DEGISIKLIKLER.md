@@ -1,3 +1,10 @@
+## v20.19 (2026-11-21) — Premium Plus Görsel & Broadcast Poster Yenilemesi (5 Bölüm)
+- **Kura & Grup Kartları Scouting Güç Kapsülleri (`app.js` `grpCard`, `style.css`):** Grup üst telemetrisi 4 sütuna (`GEN · HÜC · ORT · DEF`) çıkarıldı; her takım satırının altındaki düz `HÜC · ORT · DEF` metinleri, değere göre renklenen (85+ altın, 80–84 zümrüt) ve mini güç çubuklu 3'lü scouting kapsüllerine dönüştürüldü.
+- **Sezon Ödülleri Vitrini (`analytics.js` `awardsCard`, `style.css`):** Altın MVP kartına oyuncu mevki/yaş/GEN alt bilgisi ve 3B stat kapsülleri eklendi; tüm ödül kartlarına sağ üstte renkli stat rozeti (`8 GOL`, `4 ASİST`, `9 G+A`) getirildi ve `Altın İkili` (veya çoklu isimler) tam genişlikte açılarak isim kesilmesi tamamen giderildi.
+- **Kariyer Özeti Posteri (`posters.js` `kariyerCv`):** Üst vitrin 3 sütuna (`Şampiyonluk | Toplam Sezon | Dairesel Galibiyet Oranı Halkası`) yükseltildi; her G/B/M kartına kendi yüzdesi ve liderler ızgarasına sağa yaslı renkli stat kapsülleri eklendi.
+- **Maç Kartı Posteri (`posters.js` `macCv`):** Buzlu dairesel arma zemini, çerçeveli Broadcast skor kapsülü (`2 | 3`), daha kalın ve okunaklı analiz çubukları, rakip golcü bandı eklendi; `MAÇ ANALİZİ` başlığındaki mükerrer hak ediş rozeti kaldırıldı.
+- **Sezon Karnesi Sayfa 1 (`posters.js` `karneCv`):** Kulüp armasının arkasına buzlu halo, altına mini güç barlı `HÜC / ORT / DEF` kartları, sağa yaslı renkli ödül stat kapsülleri ve çerçeveli skor kapsülleri eklendi.
+
 ## v20.18 (2026-11-21) — Premium Broadcast Eleme Ağacı Paylaşım Posteri (`koCv`)
 - **Şampiyon Vitrin Kartı (`posters.js` `koCv`):** Turnuva tamamlandığında Final kartının üzerindeki boş alana dev armalı, altın ışıklı **🏆 Turnuva Şampiyonu** vitrin kartı ve sağ üstte metalik altın şampiyon rozeti eklendi.
 - **Koyu Zemin Logo Netliği (`drawCrestPlate`):** Tottenham ve Juventus gibi koyu renkli kulüp logolarının koyu cam üzerinde kaybolması giderildi; her kulüp armasının arkasına zarif buzlu dairesel zemin eklendi.
