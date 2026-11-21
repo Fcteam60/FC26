@@ -1,3 +1,7 @@
+## v20.21 (2026-11-21) — Grup Eleme Sınırı (qcut) Kesik Çizgi Düzeltmesi
+- **Eleme Sınırı Çizgisi (`style.css`):** Kura/grup kartlarında çıkan son takımın üst kenarına kayan kesik çizgi (`qcut`) çakışması giderildi; eski `.row.tb.kr+.row.tb.kr::before` kuralı kaldırılarak çizgi çıkan son takımın altındaki boşluğa tam hizalandı.
+- **PWA Önbellek Yenileme (`index.html`, `sw.js`, `app.js`):** Sürüm `v20.21` ve önbellek anahtarı `fc27-lig-v20-21` olarak güncellendi.
+
 ## v20.20 (2026-11-21) — Grup Kartı Derinlikli Premium UI Yenilemesi
 - **Grup Ortalamaları Telemetri Barı (`app.js`, `style.css`):** Alt kısımdaki kopuk güç çubuğu kaldırıldı. Sol `GEN` sütunu derin zümrüt obsidyen (kendi grubunda yanık altın, ölüm grubunda derin yakut) odak bloğuna, sağdaki `HÜC / ORT / DEF` sütunları ise cam efektli zeminde ince dikey ayırıcılı ve bireysel 2.5px mikro ölçek çizgili mimari şeride dönüştürüldü.
 - **6 Seviyeli Pastel Enamel OVR Rozetleri (`app.js` `rb`, `style.css` `.g.t1..t6`):** Metalik gümüş/kahverengi 3D kutular kaldırılarak tüm uygulamada (Grup, Kadro, Rakip Analizi, Arama) 6 kademeli (`85+`, `82–84`, `80–81`, `78–79`, `75–77`, `≤74`) ışık yansımalı pastel enamel rozet sistemine geçildi; karanlık tema için yarı saydam mücevher cam tonları eklendi.
