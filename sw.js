@@ -1,20 +1,20 @@
-const CACHE = "fc27-lig-v20-27";
+const CACHE = "fc27-lig-v20-28";
 const LOGO_CACHE = "fc27-logos-v1";
 const FILES = [
   "./",
   "./index.html",
-  "./style.css?v=20.27",
-  "./data.js?v=20.27",
-  "./storage.js?v=20.27",
-  "./sim.js?v=20.27",
-  "./analytics.js?v=20.27",
-  "./posters.js?v=20.27",
-  "./app.js?v=20.27",
+  "./style.css?v=20.28",
+  "./data.js?v=20.28",
+  "./storage.js?v=20.28",
+  "./sim.js?v=20.28",
+  "./analytics.js?v=20.28",
+  "./posters.js?v=20.28",
+  "./app.js?v=20.28",
   "./manifest.webmanifest",
-  "./icon-192.png?v=20.27",
-  "./icon-512.png?v=20.27",
-  "./icon-maskable-512.png?v=20.27",
-  "./apple-touch-icon.png?v=20.27"
+  "./icon-192.png?v=20.28",
+  "./icon-512.png?v=20.28",
+  "./icon-maskable-512.png?v=20.28",
+  "./apple-touch-icon.png?v=20.28"
 ];
 
 self.addEventListener("install", e => {
@@ -48,31 +48,56 @@ self.addEventListener("fetch", e => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
-  // HTML, JS, CSS: Network-First (güncellemeler anında yansır, çevrimdışıyken önbellekten açılır)
-  const isCode = req.mode === "navigate" || /\.(html|js|css)$/i.test(url.pathname) || url.pathname.endsWith("/");
-  if (isCode) {
+  // Sürüm etiketli JS ve CSS (?v=...): Cache-First (anında açılış, yeni sürümde URL değişir)
+  const isVersionedAsset = /\.(js|css)$/i.test(url.pathname) && /[?&]v=/.test(url.search);
+  if (isVersionedAsset) {
     e.respondWith(
-      fetch(req.url, { cache: "no-cache" })
-        .then(r => {
-          if (r && r.ok) {
-            const cl1 = r.clone();
-            const cl2 = req.mode === "navigate" ? r.clone() : null;
-            e.waitUntil(
-              caches.open(CACHE).then(c =>
-                Promise.all([
-                  c.put(req, cl1),
-                  cl2 ? c.put("./index.html", cl2) : Promise.resolve()
-                ])
-              ).catch(() => null)
-            );
-          }
-          return r;
+      caches.open(CACHE).then(c =>
+        c.match(req).then(cached => {
+          if (cached) return cached;
+          return fetch(req.url, { cache: "no-cache" }).then(r => {
+            if (r && r.ok) {
+              const cl = r.clone();
+              e.waitUntil(c.put(req, cl).catch(() => null));
+            }
+            return r;
+          });
         })
-        .catch(() =>
-          caches.open(CACHE).then(c =>
-            c.match(req, { ignoreSearch: true }).then(m => m || (req.mode === "navigate" ? c.match("./index.html", { ignoreSearch: true }) : null))
-          )
-        )
+      )
+    );
+    return;
+  }
+
+  // HTML / Navigasyon: Stale-While-Revalidate (önbellekten anında aç, arka planda güncelle)
+  const isNav = req.mode === "navigate" || /\.html$/i.test(url.pathname) || url.pathname.endsWith("/");
+  if (isNav) {
+    e.respondWith(
+      caches.open(CACHE).then(c =>
+        c.match(req, { ignoreSearch: true })
+          .then(m => m || (req.mode === "navigate" ? c.match("./index.html", { ignoreSearch: true }) : null))
+          .then(cached => {
+            const net = fetch(req.url, { cache: "no-cache" })
+              .then(r => {
+                if (r && r.ok) {
+                  const cl1 = r.clone();
+                  const cl2 = req.mode === "navigate" ? r.clone() : null;
+                  e.waitUntil(
+                    Promise.all([
+                      c.put(req, cl1),
+                      cl2 ? c.put("./index.html", cl2) : Promise.resolve()
+                    ]).catch(() => null)
+                  );
+                }
+                return r;
+              })
+              .catch(() => cached);
+            if (cached) {
+              e.waitUntil(net);
+              return cached;
+            }
+            return net;
+          })
+      )
     );
     return;
   }

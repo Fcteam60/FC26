@@ -1,3 +1,7 @@
+## v20.28 (2026-11-21) — Anında Açılış (Cache-First) & Beyaz Ekran Parlaması Kaldırıldı
+- **Sıfır Beyaz Parlama (`index.html`):** `<head>` bölümüne satır içi ön-tema betiği ve kritik koyu zemin stili eklendi. Kullanıcının `fc26lig4_theme` tercihi daha ilk piksel çizilmeden uygulanarak açılışta görünen beyaz ekran parlaması tamamen ortadan kaldırıldı.
+- **Anında Açılış (`sw.js`):** Sürüm etiketli (`?v=20.28`) JS ve CSS dosyaları **Cache-First**, `index.html` navigasyon istekleri ise **Stale-While-Revalidate** stratejisine geçirildi. Uygulama her açılışta ağ yanıtı beklemeden cihaz önbelleğinden anında açılır; yeni sürümler arka planda otomatik denetlenmeye devam eder.
+
 ## v20.27 (2026-11-21) — Yeni Altın Kanatlı FC 27 Uygulama Logosu & Son İnce Ayarlar
 - **Yeni Uygulama İkon Seti (`icon-512.png`, `icon-192.png`, `apple-touch-icon.png`, `icon-maskable-512.png`):** Gönderilen 3B altın kanatlı FC 27 amblemi yüksek çözünürlüklü kaynak üzerinden merkezlenip keskinleştirilerek tüm PWA ve iOS/Android ikon boyutlarına uyarlandı; Android `maskable` güvenli çemberi (%66 doluluk) ve splash ekran arka planı (`#0d1016`) birebir eşleştirildi.
 - **Önbellek Yenileme (`index.html`, `manifest.webmanifest`, `sw.js`):** İkon ve varlık yolları `?v=20.27` ve `fc27-lig-v20-27` önbelleğiyle güncellenerek tarayıcıların eski logoyu tutması engellendi.
