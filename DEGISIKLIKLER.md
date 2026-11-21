@@ -1,3 +1,9 @@
+## v20.18 (2026-11-21) — Premium Broadcast Eleme Ağacı Paylaşım Posteri (`koCv`)
+- **Şampiyon Vitrin Kartı (`posters.js` `koCv`):** Turnuva tamamlandığında Final kartının üzerindeki boş alana dev armalı, altın ışıklı **🏆 Turnuva Şampiyonu** vitrin kartı ve sağ üstte metalik altın şampiyon rozeti eklendi.
+- **Koyu Zemin Logo Netliği (`drawCrestPlate`):** Tottenham ve Juventus gibi koyu renkli kulüp logolarının koyu cam üzerinde kaybolması giderildi; her kulüp armasının arkasına zarif buzlu dairesel zemin eklendi.
+- **Broadcast Skor Kapsülleri & Kart İçi Meta Bandı:** Havada duran düz skor rakamları zümrüt/altın skor kapsüllerine alındı; `PEN 5–4` ve `UZATMA` etiketleri kart kenarına ve alt bilgiye taşmayacak şekilde kart içine entegre edildi.
+- **Yumuşak Dirsekli & Işıltılı Bağlantı Yolları (`drawConnector`):** Keskin 90° çizgiler yuvarlatılmış dirsekli ve birleşim noktalı broadcast hatlarına dönüştürüldü; şampiyonun finale giden yolu altın parıltıyla vurgulanır.
+
 ## v20.17 (2026-11-21) — Premium Broadcast Eleme Ağacı (Bracket Stage)
 - **Broadcast Sahne & Tur Başlıkları (`sim.js` `koTreeHtml`, `style.css`):** Eleme ağacı nokta dokulu derinlikli bir sahneye alındı; tur başlıkları (`SON 16`, `ÇEYREK FİNAL`, `YARI FİNAL`, `🏆 FİNAL`) canlı ilerleme sayaçlı (`8/8`, `4/4`) rozetlere dönüştürüldü.
 - **Skor Kapsülleri & 22px Kulüp Armaları (`.bkt-sc`, `.bkt-cr`):** Havada duran düz skor rakamları kazanan/şampiyon renkli skor kapsüllerine alındı; kulüp armaları `16px`'ten `22px`'e büyütüldü.
