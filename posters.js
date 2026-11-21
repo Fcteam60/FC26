@@ -930,6 +930,9 @@ async function mkImg(kind,x){
         pages=[p1,p2];
       }
     }
+    if(p1&&p1.url&&typeof Image!=="undefined"){
+      await new Promise(res=>{const im=new Image();im.onload=im.onerror=res;im.src=p1.url;if(im.decode)im.decode().then(res).catch(()=>{});setTimeout(res,800)});
+    }
     clrImg();hideToast();
     st.img=Object.assign({},p1,{msg:"",x,pg:0,pages,anim:kind=="karne"&&!rm()});
   }catch(e){hideToast();ask("Görsel oluşturulamadı.")}
@@ -940,7 +943,7 @@ const imgDlg=()=>{
   const pg=st.img.pg||0,hasP=Array.isArray(st.img.pages)&&st.img.pages.length>1,curP=hasP?(st.img.pages[pg]||st.img):st.img;
   const tabs=hasP?`<div class="stabs seg2 pimg-tabs" role="tablist" aria-label="Karne sayfaları"><button class="chip ${pg===0?"on":""}" role="tab" aria-selected="${pg===0}" data-a="imgpg" data-v="0">1 · Sezon Karnesi</button><button class="chip ${pg===1?"on":""}" role="tab" aria-selected="${pg===1}" data-a="imgpg" data-v="1">2 · Menajer Kimliği</button></div>`:"";
   const showAnim=pg===0&&st.img.anim;
-  return `<div class="dlg"><div class="dbox wide pimgdlg" role="dialog" aria-modal="true"><div class="pimg-hd"><span class="aci">${UICO.trophy}</span><div class="pimg-t"><b>${esc(curP.title)}</b><small>${hasP?`Sayfa ${pg+1}/${st.img.pages.length} · `:""}Yüksek çözünürlüklü PNG kartı</small></div><button class="mb sc-ic" data-a="no" aria-label="Kapat">✕</button></div>${tabs}<div class="pimg-stage">${showAnim?`<canvas id="kcv" class="shimg" width="${curP.w||1080}" height="${curP.h||1400}" role="img" aria-label="${esc(curP.title)}"></canvas>`:`<img class="shimg" src="${curP.url}" alt="${esc(curP.title)}">`}</div><div class="pimg-nt">${esc(st.img.msg||"Görsele basılı tutarak da galeriye kaydedebilirsin.")}</div><div class="pimg-acts"><button class="btn p pset-pri" data-a="shimg">${shIc}<span>Paylaş</span></button><a class="btn pset-sec" href="${curP.url}" download="${esc(curP.name)}">${UICO.backup}<span>İndir</span></a></div></div></div>`;
+  return `<div class="dlg"><div class="dbox wide pimgdlg" role="dialog" aria-modal="true"><div class="pimg-hd"><span class="aci">${UICO.trophy}</span><div class="pimg-t"><b>${esc(curP.title)}</b><small>${hasP?`Sayfa ${pg+1}/${st.img.pages.length} · `:""}Yüksek çözünürlüklü PNG kartı</small></div><button class="mb sc-ic" data-a="no" aria-label="Kapat">✕</button></div>${tabs}<div class="pimg-stage">${showAnim?`<canvas id="kcv" class="shimg" width="${curP.w||1080}" height="${curP.h||1400}" role="img" aria-label="${esc(curP.title)}"></canvas>`:`<img class="shimg" src="${curP.url}" width="${curP.w||1080}" height="${curP.h||1400}" style="aspect-ratio:${curP.w||1080}/${curP.h||1400}" decoding="sync" alt="${esc(curP.title)}">`}</div><div class="pimg-nt">${esc(st.img.msg||"Görsele basılı tutarak da galeriye kaydedebilirsin.")}</div><div class="pimg-acts"><button class="btn p pset-pri" data-a="shimg">${shIc}<span>Paylaş</span></button><a class="btn pset-sec" href="${curP.url}" download="${esc(curP.name)}">${UICO.backup}<span>İndir</span></a></div></div></div>`;
 };
 
 async function kariyerCv(){const mode=st.hmod||"all",d=careerData(mode),isL=mode=="lg",isC=mode=="cup",W=1080;

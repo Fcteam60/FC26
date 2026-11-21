@@ -968,8 +968,8 @@ main{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
 .sbtog{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;padding:8px 11px;min-height:38px;border-radius:12px;cursor:pointer;border:1px solid var(--gbd);background:rgba(127,150,140,.08);color:var(--tx);font:600 12.5px inherit;text-align:left;-webkit-tap-highlight-color:transparent}
 .sbtog small{color:var(--mut);font-weight:500}
 .sbtog i{font-style:normal;color:var(--mut);font-size:13px;flex:none}
-.sbtog.on{border-color:color-mix(in srgb,var(--ac) 38%,var(--gbd));color:var(--ac);border-bottom-left-radius:0;border-bottom-right-radius:0}
-.sbtog.on+.sbst{margin-top:0;border-top:0;border-top-left-radius:0;border-top-right-radius:0}
+.sbtog.open{border-color:color-mix(in srgb,var(--ac) 38%,var(--gbd));color:var(--ac);background:color-mix(in srgb,var(--ac) 8%,var(--gcard));border-bottom-left-radius:0;border-bottom-right-radius:0}
+.sbtog.open+.sbst{margin-top:0;border-top:0;border-top-left-radius:0;border-top-right-radius:0}
 details.xfold{margin-top:10px;padding:10px 12px;border-radius:13px;border:1px solid var(--gbd);background:rgba(127,150,140,.06)}
 details.xfold>summary.xsh{list-style:none;cursor:pointer;display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:8px;margin:0}
 details.xfold>summary.xsh::-webkit-details-marker{display:none}
@@ -3768,3 +3768,12 @@ main{padding:14px 13px calc(104px + env(safe-area-inset-bottom,0px))}
 .shelf.pshelf .plq b{font-size:13.5px;color:#f5e7c1;letter-spacing:.02em}
 .shelf.pshelf .plq span{font-size:11.5px;color:#a9b4bf;margin-top:1px}
 .shelf.pshelf .plq em{display:block;font-style:normal;font-size:10.5px;color:#d8aa3d;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+/* ===== v20.29: Son 4 Görsel Cila (sbtog.open, Poster Boyut Sabitleme, Grup Başlığı & Segment Eşitleme) ===== */
+.kgm{white-space:nowrap}
+.pimgdlg .shimg{width:100%;height:auto;max-height:62vh}
+.stabs .chip.on{
+  background:var(--card)!important;
+  color:var(--ac)!important;
+  border-color:color-mix(in srgb,var(--ac) 38%,var(--gbd))!important;
+  box-shadow:0 2px 8px rgba(0,0,0,.16)!important;
+}

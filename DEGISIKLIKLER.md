@@ -1,3 +1,9 @@
+## v20.29 (2026-11-21) — Son 4 Görsel Cila (Maç İstatistikleri Çubuğu, Sıfır Sıçramalı Poster, Gruplar & Segment Eşitleme)
+- **Maç İstatistikleri Açma Çubuğu (`app.js`, `style.css`):** `.sbtog.on` sınıfının genel `.on` kuralıyla çakışıp tüm satırı parlak yeşile boyaması `.sbtog.open` sınıfına geçilerek düzeltildi.
+- **Sıfır Sıçramalı Poster Önizleme (`posters.js`, `style.css`):** `mkImg()` görseli modalı açmadan önce bellekte ön-çözümler (`decode`), `imgDlg()` ise `width`, `height` ve `aspect-ratio` özniteliklerini doğrudan vererek pencerenin açılışta boyut sıçraması yapmasını engeller.
+- **Gruplar Ekranı Hiyerarşisi & Başlık Kırılması (`app.js`, `style.css`):** *Kurayı Görsel Olarak Paylaş* düğmesi altın ana aksiyonla yarışmaması için ikincil cam paylaşım düğmesine (`pset-sec`) alındı; `★ Senin grubun` etiketi `.kgm { white-space: nowrap }` ile tek satıra sabitlendi.
+- **Segmentli Kontrol Eşitlemesi (`style.css`):** Tüm `.stabs .chip.on` segmentli seçicileri koyu cam + zümrüt metin standardında eşitlendi.
+
 ## v20.28 (2026-11-21) — Anında Açılış (Cache-First) & Beyaz Ekran Parlaması Kaldırıldı
 - **Sıfır Beyaz Parlama (`index.html`):** `<head>` bölümüne satır içi ön-tema betiği ve kritik koyu zemin stili eklendi. Kullanıcının `fc26lig4_theme` tercihi daha ilk piksel çizilmeden uygulanarak açılışta görünen beyaz ekran parlaması tamamen ortadan kaldırıldı.
 - **Anında Açılış (`sw.js`):** Sürüm etiketli (`?v=20.28`) JS ve CSS dosyaları **Cache-First**, `index.html` navigasyon istekleri ise **Stale-While-Revalidate** stratejisine geçirildi. Uygulama her açılışta ağ yanıtı beklemeden cihaz önbelleğinden anında açılır; yeni sürümler arka planda otomatik denetlenmeye devam eder.
