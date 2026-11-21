@@ -70,7 +70,7 @@ function xpCard(mode){const D=xpData(mode);
 function powerCard(mode){const D=xpData(mode);if(D.length<2)return "";
   const gs=D.map(o=>o.g),g0=Math.min(...gs)-1,g1=Math.max(...gs)+1,gw=Math.max(4,g1-g0),X=g=>36+(g-g0)/gw*252,Y=v=>140-v/7*128,seen=nob();
   const LRS={0:"Alt",4:"Orta",5:"3.",6:"2.",7:"Şamp."},gKeys=mode=="lg"?[0,4,5,6,7]:[0,3,4,5,6,7],grid=gKeys.map(v=>`<line class="gl" x1="30" x2="294" y1="${Y(v)}" y2="${Y(v)}"/><text x="2" y="${Y(v)+3}">${mode=="lg"?(LRS[v]||RS[v]):RS[v]}</text>`).join("");
-  const pts=D.map(o=>{const k=o.g+"_"+o.ac,j=seen[k]=(seen[k]||0)+1;return `<circle class="${dc(o.d)}" cx="${(X(o.g)+(j-1)*9).toFixed(1)}" cy="${Y(o.ac).toFixed(1)}" r="5.5" style="stroke:var(--card)" stroke-width="1.5"><title>${esc(o.x.name)} · ${esc(T[o.x.my].n)} · güç ${o.g} · ${esc(stTxt(o.x.cfg,o.ac).trim())}</title></circle>`}).join("");
+  const pts=D.map(o=>{const k=o.g+"_"+o.ac,j=seen[k]=(seen[k]||0)+1,px=Math.min(290,Math.max(34,X(o.g)+(j-1)*9));return `<circle class="${dc(o.d)}" cx="${px.toFixed(1)}" cy="${Y(o.ac).toFixed(1)}" r="5.5" style="stroke:var(--card)" stroke-width="1.5"><title>${esc(o.x.name)} · ${esc(T[o.x.my].n)} · güç ${o.g} · ${esc(stTxt(o.x.cfg,o.ac).trim())}</title></circle>`}).join("");
   const xt=[g0+1,Math.round((g0+g1)/2),g1-1].map(g=>`<text x="${X(g).toFixed(1)}" y="158" text-anchor="middle">${g}</text>`).join("");
   const sc=`<svg class="scp" viewBox="0 0 300 164" style="width:100%" role="img" aria-label="Takım gücüne göre ulaşılan derece">${grid}${pts}${xt}</svg><div class="note" style="margin:0 0 6px">Yatay: takımın genel gücü. Dikey: ulaştığın derece. Yeşil beklentinin üstü, kırmızı altı, gri beklenen.</div>`;
   const grp=[["Güçlü takım","ilk üçte biri",o=>o.p<1/3],["Orta takım","orta üçte biri",o=>o.p>=1/3&&o.p<2/3],["Zayıf takım","son üçte biri",o=>o.p>=2/3]];
@@ -402,16 +402,16 @@ function duoStats(seasons){
   const D=nob(),B=nob();
   seasons.forEach(x=>(x.mt||[]).forEach(m=>{
     const sc=Object.entries(m.sc||{}).filter(([n,v])=>v>0&&!isKK(n)),as=Object.entries(m.as||{}).filter(([n,v])=>v>0&&!isKK(n));
-    const asMap=nob();as.forEach(([n,a])=>{asMap[n.toLowerCase()]={n,a}});
+    const asMap=nob();as.forEach(([n,a])=>{asMap[nz(n)]={n,a}});
     sc.forEach(([sn,g])=>{
-      const sk=sn.toLowerCase();
+      const sk=nz(sn);
       if(asMap[sk]){const o=B[sk]=B[sk]||{n:sn,c:0,g:0,a:0};o.c++;o.g+=g;o.a+=asMap[sk].a}
     });
     if(Array.isArray(m.gls)&&m.gls.length){
       const mPairs=new Set();
       m.gls.forEach(g=>{
         if(!g||!g.sc||isKK(g.sc)||!g.as||isKK(g.as))return;
-        const sn=String(g.sc).trim(),an=String(g.as).trim(),sk=sn.toLowerCase(),ak=an.toLowerCase();
+        const sn=String(g.sc).trim(),an=String(g.as).trim(),sk=nz(sn),ak=nz(an);
         if(!sk||!ak||sk===ak)return;
         const k1=sk<ak?sk:ak,k2=sk<ak?ak:sk,key=k1+"|"+k2;
         const n1=sk<ak?sn:an,n2=sk<ak?an:sn;
@@ -421,9 +421,9 @@ function duoStats(seasons){
       mPairs.forEach(key=>{if(D[key])D[key].m+=1});
     }else{
       sc.forEach(([sn,g])=>{
-        const sk=sn.toLowerCase();
+        const sk=nz(sn);
         as.forEach(([an,a])=>{
-          const ak=an.toLowerCase();if(sk==ak)return;
+          const ak=nz(an);if(sk==ak)return;
           const k1=sk<ak?sk:ak,k2=sk<ak?ak:sk,key=k1+"|"+k2;
           const n1=sk<ak?sn:an,n2=sk<ak?an:sn;
           const o=D[key]=D[key]||{n:n1+" & "+n2,m:0,tot:0};
@@ -501,7 +501,7 @@ function awardsCard(s,inFold){
 function careerData(mode){
   const S=store.seasons.filter(x=>!mode||mode=="all"||(mode=="lg"?isLg(x.cfg):!isLg(x.cfg)));
   const f=S.filter(x=>x.res),act=S.filter(x=>x.res||(x.mt||[]).length||(x.ts&&((x.ts.w||0)+(x.ts.d||0)+(x.ts.l||0)))),t={w:0,d:0,l:0,gf:0,ga:0},P=nob();
-  S.forEach(x=>{const q=x.ts||{};for(const k in t)t[k]+=q[k]||0;(x.pl||[]).forEach(p=>{const q=p.n.toLowerCase(),o=P[q]=P[q]||{n:p.n,g:0,a:0,mom:0,ga:0};o.g+=p.g||0;o.a+=p.a||0;o.mom+=p.mom||0;o.ga=(o.g||0)+(o.a||0)})});
+  S.forEach(x=>{const q=x.ts||{};for(const k in t)t[k]+=q[k]||0;(x.pl||[]).forEach(p=>{const q=nz(p.n),o=P[q]=P[q]||{n:p.n,g:0,a:0,mom:0,ga:0};o.g+=p.g||0;o.a+=p.a||0;o.mom+=p.mom||0;o.ga=(o.g||0)+(o.a||0)})});
   const pl=Object.values(P),top=k=>pl.filter(p=>p[k]>0).sort((a,b)=>b[k]-a[k]),topT=k=>{const L=top(k);if(!L.length)return null;const mx=L[0][k],ties=L.filter(p=>p[k]==mx);return{n:ties.map(p=>p.n).join(", "),v:mx}};
   const ds=duoStats(S);
   return{mode:mode||"all",n:f.length||act.length,finN:f.length,ch:f.filter(x=>x.res.st==7).length,fin:f.filter(x=>x.res.st>=6).length,pod:f.filter(x=>x.res.st>=5).length,t,best:f.length?Math.max(...f.map(x=>x.res.st)):-1,g:topT("g"),a:topT("a"),ga:topT("ga"),mom:topT("mom"),duo:ds.duos[0]||null}}
@@ -677,9 +677,11 @@ function calcTacticalDNA(s,opt){
   const aggr=cl(lowPosAggr*0.5+blkRatio*100*0.3+suppScore*0.2);
   // 4. Bitiricilik Verimi (Gol / xG + Şut/Gol dönüşümü)
   const totGf=src.reduce((a,m)=>a+(+m.gf||0),0);
-  const totXg=src.reduce((a,m)=>a+(m.stats.myXg!=null?+m.stats.myXg:(+m.gf||1)),0);
+  const xgSrc=src.filter(m=>m.stats&&m.stats.myXg!=null);
+  const totGfXg=xgSrc.reduce((a,m)=>a+(+m.gf||0),0);
+  const totXg=xgSrc.reduce((a,m)=>a+(+m.stats.myXg||0),0);
   const totSh=src.reduce((a,m)=>a+(m.stats.myShots!=null?+m.stats.myShots:10),0);
-  const gxRatio=totXg>0.2?totGf/totXg:1;
+  const gxRatio=(xgSrc.length&&totXg>0.2)?totGfXg/totXg:1;
   const conv=totSh>0?totGf/totSh:0.15;
   const effRaw=Math.min(100,Math.max(10,55+(gxRatio-1)*45+(conv-0.14)*120));
   const eff=cl(effRaw);
@@ -697,7 +699,7 @@ function calcTacticalDNA(s,opt){
     title="Gegenpressing Mimarı";
     desc="Önde yoğun baskı, yüksek şut temposu ve dikine oyunla rakibi bunaltan hücum presi ekolü.";
     icon="🔥";
-  }else if(eff>=72&&totGf>totXg){
+  }else if(eff>=72&&xgSrc.length&&totGfXg>totXg){
     title="Klinik Bitirici";
     desc="Az pozisyona girse bile bulduğu fırsatları yüksek yüzdeli gole çeviren soğukkanlı bitiricilik uzmanı.";
     icon="🎯";
@@ -714,7 +716,7 @@ function calcTacticalDNA(s,opt){
     desc="Topu ayağında güvenli tutup yüksek pas yüzdesiyle (%"+Math.round(mPass)+") oyunu sakin yönlendiren menajer.";
     icon="🧭";
   }
-  const xgDiff=totGf-totXg;
+  const xgDiff=xgSrc.length?(totGfXg-totXg):0;
   const unluckyCnt=src.filter(m=>{const d=matchDeserve(m);return d&&d.k=="unlucky"}).length;
   const stealCnt=src.filter(m=>{const d=matchDeserve(m);return d&&d.k=="undeserved"}).length;
   const deservedCnt=src.filter(m=>{const d=matchDeserve(m);return d&&d.k=="deserved"}).length;

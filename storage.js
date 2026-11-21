@@ -116,7 +116,10 @@ function openIdb() {
         const db = req.result;
         db.onversionchange = () => {
           try { db.close(); } catch (e) {}
-          idbConn = null;
+          if (idbConn === db) idbConn = null;
+        };
+        db.onclose = () => {
+          if (idbConn === db) idbConn = null;
         };
         resolve(db);
       };
@@ -170,6 +173,34 @@ function idbRawDel(db, key) {
       reject(e);
     }
   });
+}
+
+let idbReopenPromise = null;
+async function ensureIdbConn() {
+  if (idbConn) return idbConn;
+  if (!idbReopenPromise) {
+    idbReopenPromise = openIdb()
+      .then(db => { idbConn = db; return db; })
+      .finally(() => { idbReopenPromise = null; });
+  }
+  return idbReopenPromise;
+}
+
+async function withIdbRetry(fn) {
+  let db = await ensureIdbConn();
+  try {
+    return await fn(db);
+  } catch (e) {
+    const nm = e && e.name ? String(e.name) : "";
+    const msg = e && e.message ? String(e.message) : "";
+    if (nm === "InvalidStateError" || nm === "TransactionInactiveError" || /closing|closed/i.test(msg)) {
+      try { if (db) db.close(); } catch (_) {}
+      idbConn = null;
+      db = await ensureIdbConn();
+      return await fn(db);
+    }
+    throw e;
+  }
 }
 
 async function initStorage() {
@@ -256,9 +287,9 @@ const kv = {
   },
   async get(k) {
     await initStorage();
-    if (idbMode === "idb" && idbConn) {
+    if (idbMode === "idb") {
       try {
-        const val = await idbRawGet(idbConn, mapKey(k));
+        const val = await withIdbRetry(db => idbRawGet(db, mapKey(k)));
         if (k === "fc26lig4") mainReadFailed = false;
         if (val !== null && k === "fc26lig4") lastMainLen = String(val).length;
         return val === null ? null : String(val);
@@ -275,9 +306,9 @@ const kv = {
   async set(k, v) {
     await initStorage();
     const s = String(v);
-    if (idbMode === "idb" && idbConn) {
+    if (idbMode === "idb") {
       try {
-        await idbRawSet(idbConn, mapKey(k), s);
+        await withIdbRetry(db => idbRawSet(db, mapKey(k), s));
         if (k === "fc26lig4") {
           lastMainLen = s.length;
           if (lsGet(IDB_FLAG) !== "1") lsSet(IDB_FLAG, "1");
@@ -301,9 +332,9 @@ const kv = {
   },
   async del(k) {
     await initStorage();
-    if (idbMode === "idb" && idbConn) {
+    if (idbMode === "idb") {
       try {
-        await idbRawDel(idbConn, mapKey(k));
+        await withIdbRetry(db => idbRawDel(db, mapKey(k)));
         if (RCV.some(x => x[0] === k)) delete rcvCache[k];
         return true;
       } catch (e) {
@@ -321,35 +352,43 @@ let qTimer = null;
 let qPendingRaw = null;
 let qWaiters = [];
 let qWriting = false;
+let qActivePromise = null;
 let qStatusCb = null;
 
 function setSaveStatusCallback(cb) {
   qStatusCb = cb;
 }
 
-async function processWriteQueue() {
-  if (qWriting) return;
+function processWriteQueue() {
+  if (qActivePromise) return qActivePromise;
   qWriting = true;
-  try {
-    while (qPendingRaw !== null) {
-      const rawToWrite = qPendingRaw;
-      const waitersBatch = qWaiters.splice(0, qWaiters.length);
-      qPendingRaw = null;
-      let ok = false;
-      try {
-        ok = await kv.set("fc26lig4", rawToWrite);
-      } catch (e) {
-        ok = false;
+  qActivePromise = (async () => {
+    let lastOk = true;
+    try {
+      while (qPendingRaw !== null) {
+        const rawToWrite = qPendingRaw;
+        const waitersBatch = qWaiters.splice(0, qWaiters.length);
+        qPendingRaw = null;
+        let ok = false;
+        try {
+          ok = await kv.set("fc26lig4", rawToWrite);
+        } catch (e) {
+          ok = false;
+        }
+        lastOk = ok;
+        if (typeof qStatusCb === "function") {
+          try { qStatusCb(ok); } catch (e) {}
+        }
+        waitersBatch.forEach(r => r(ok));
       }
-      if (typeof qStatusCb === "function") {
-        try { qStatusCb(ok); } catch (e) {}
-      }
-      waitersBatch.forEach(r => r(ok));
+      return lastOk;
+    } finally {
+      qWriting = false;
+      qActivePromise = null;
+      if (qPendingRaw !== null) processWriteQueue();
     }
-  } finally {
-    qWriting = false;
-    if (qPendingRaw !== null) processWriteQueue();
-  }
+  })();
+  return qActivePromise;
 }
 
 function queueSave(raw, immediate) {
@@ -376,6 +415,9 @@ function flushSaveQueue() {
   if (qTimer !== null) {
     clearTimeout(qTimer);
     qTimer = null;
+  }
+  if (qActivePromise) {
+    return qActivePromise.then(() => (qPendingRaw !== null ? processWriteQueue() : true));
   }
   if (qPendingRaw !== null) {
     return processWriteQueue();
@@ -413,12 +455,12 @@ function legacyLsInfo() {
 
 async function clearLegacyLs() {
   await initStorage();
-  if (idbMode !== "idb" || !idbConn || lsGet(IDB_FLAG) !== "1") {
+  if (idbMode !== "idb" || lsGet(IDB_FLAG) !== "1") {
     return false;
   }
   try {
     // Silmeden önce IndexedDB'de "main" kaydının gerçekten var ve geçerli olduğunu doğrula
-    const mainVal = await idbRawGet(idbConn, IDB_MAIN);
+    const mainVal = await withIdbRetry(db => idbRawGet(db, IDB_MAIN));
     if (!mainVal || typeof mainVal !== "string" || mainVal.length < 10) {
       return false;
     }

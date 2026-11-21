@@ -1,14 +1,15 @@
-const CACHE = "fc27-lig-v20-22";
+const CACHE = "fc27-lig-v20-23";
+const LOGO_CACHE = "fc27-logos-v1";
 const FILES = [
   "./",
   "./index.html",
-  "./style.css?v=20.22",
-  "./data.js?v=20.22",
-  "./storage.js?v=20.22",
-  "./sim.js?v=20.22",
-  "./analytics.js?v=20.22",
-  "./posters.js?v=20.22",
-  "./app.js?v=20.22",
+  "./style.css?v=20.23",
+  "./data.js?v=20.23",
+  "./storage.js?v=20.23",
+  "./sim.js?v=20.23",
+  "./analytics.js?v=20.23",
+  "./posters.js?v=20.23",
+  "./app.js?v=20.23",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png",
@@ -21,9 +22,10 @@ self.addEventListener("install", e => {
     caches.open(CACHE).then(c =>
       Promise.all(
         FILES.map(u =>
-          fetch(new Request(u, { cache: "no-cache" }))
-            .then(r => (r && r.ok ? c.put(u, r) : null))
-            .catch(() => null)
+          fetch(u, { cache: "no-cache" }).then(r => {
+            if (!r || !r.ok) throw new Error("Cache fetch failed: " + u);
+            return c.put(u, r);
+          })
         )
       )
     ).then(() => self.skipWaiting())
@@ -33,7 +35,7 @@ self.addEventListener("install", e => {
 self.addEventListener("activate", e => {
   e.waitUntil(
     caches.keys()
-      .then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== LOGO_CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
       .then(() => self.clients.matchAll({ type: "window" }))
       .then(cs => cs.forEach(cl => cl.postMessage({ type: "SW_UPDATED", cache: CACHE })))
@@ -50,14 +52,19 @@ self.addEventListener("fetch", e => {
   const isCode = req.mode === "navigate" || /\.(html|js|css)$/i.test(url.pathname) || url.pathname.endsWith("/");
   if (isCode) {
     e.respondWith(
-      fetch(new Request(req, { cache: "no-cache" }))
+      fetch(req.url, { cache: "no-cache" })
         .then(r => {
           if (r && r.ok) {
-            const cl = r.clone();
-            caches.open(CACHE).then(c => {
-              c.put(req, cl);
-              if (req.mode === "navigate") c.put("./index.html", r.clone());
-            });
+            const cl1 = r.clone();
+            const cl2 = req.mode === "navigate" ? r.clone() : null;
+            e.waitUntil(
+              caches.open(CACHE).then(c =>
+                Promise.all([
+                  c.put(req, cl1),
+                  cl2 ? c.put("./index.html", cl2) : Promise.resolve()
+                ])
+              ).catch(() => null)
+            );
           }
           return r;
         })
@@ -70,13 +77,17 @@ self.addEventListener("fetch", e => {
     return;
   }
 
-  // Logolar ve ikonlar: Cache-First + arka planda güncelleme
+  // Logolar kalıcı LOGO_CACHE'te, diğer statik varlıklar sürüm önbelleğinde (Cache-First + arka planda güncelleme)
+  const targetCache = /\/logos\//i.test(url.pathname) ? LOGO_CACHE : CACHE;
   e.respondWith(
-    caches.open(CACHE).then(c =>
+    caches.open(targetCache).then(c =>
       c.match(req, { ignoreSearch: true }).then(cached => {
         const net = fetch(req)
           .then(r => {
-            if (r && r.ok) c.put(req, r.clone());
+            if (r && r.ok) {
+              const cl = r.clone();
+              c.put(req, cl).catch(() => null);
+            }
             return r;
           })
           .catch(() => cached);

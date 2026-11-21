@@ -22,7 +22,7 @@ async function kuraCv(s){
   // Header cleanly positioned above y=154 divider
   const lg=isLg(s.cfg);
   drawPill(c,lg?"LİG TABLOSU":"KURA SONUCU",44,40,176,38,"rgba(240,194,75,.16)","rgba(240,194,75,.06)","rgba(240,194,75,.48)","#fbeaa8",20);
-  tx(c,s.name.toUpperCase()+(lg?"":" · GRUPLAR"),44,114,52,"#f8fafc","left",700);
+  tx(c,s.name.toLocaleUpperCase("tr")+(lg?"":" · GRUPLAR"),44,114,52,"#f8fafc","left",700);
   tx(c,s.date,W-44,66,25,"#94a3b8","right",600);
   c.font="600 22px "+NUMF;tx(c,fit(c,fmt(s.cfg),520),W-44,112,22,"#3ee6a8","right",600);
 
@@ -36,7 +36,7 @@ async function kuraCv(s){
     c.fillStyle=mine?grad(c,x+14,x+56,"#f8e08a","#d4a017"):grad(c,x+14,x+56,"#12b886","#0a7c56");
     rr(c,x+14,y+15,40,40,11);c.fill();
     tx(c,gl,x+34,y+36,24,mine?"#2b2000":"#fff","center",700);
-    tx(c,gname(s,gi).toUpperCase(),x+64,y+36,cols==3?25:30,mine?"#fbeaa8":"#f8fafc","left",700);
+    tx(c,gname(s,gi).toLocaleUpperCase("tr"),x+64,y+36,cols==3?25:30,mine?"#fbeaa8":"#f8fafc","left",700);
     drawPill(c,"ORT "+fx(avg(g,"g")),x+cw-104,y+21,90,28,mine?"rgba(240,194,75,.18)":"rgba(255,255,255,.07)",null,mine?"rgba(240,194,75,.45)":"rgba(255,255,255,.14)",mine?"#fbeaa8":"#cbd5e1",17);
     g.slice().sort((a,b)=>V(T[b])-V(T[a])).forEach((i,r)=>{
       const ry=y+hh+r*rh,yy=ry+rh/2,t=T[i],tc=TCOL[tierOf(t.g)],im=imgs[t.c],bw=46,bx=x+cw-14-bw;
@@ -53,7 +53,7 @@ async function kuraCv(s){
       tx(c,t.g,bx+bw/2,yy+1,fs-3,tc[2],"center",700);
     });
   }));
-  drawPosterFooter(c,W,H,s.name.toUpperCase()+" · "+s.P.length+" TAKIM");
+  drawPosterFooter(c,W,H,s.name.toLocaleUpperCase("tr")+" · "+s.P.length+" TAKIM");
   return cv}
 function dkBg(c,W,H,col1,col2,isGold){
   const bg=c.createLinearGradient(0,0,0,H);
@@ -140,7 +140,7 @@ function drawPosterFooter(c,W,H,sub){
   tx(c,"FC 27 GRUP LİGİ",54,fy+16,24,"#f0c24b","left",700);
   tx(c,sub||"BROADCAST EDITION",W-54,fy+16,20,"#64748b","right",600);
 }
-async function karneCv(x,p){p=p==null?1:p;const cu=n=>Math.round(n*p);
+async function karneCv(x,p,targetCv){p=p==null?1:p;const cu=n=>Math.round(n*p);
   if(typeof preloadLogos==="function"&&x&&x.my!=null)await preloadLogos([x.my]);
   const t=RT(x,x.my),W=1080,ts=x.ts,v=k=>ts[k]||0,champ=x.res&&x.res.st==7;
   const cb=bspec(x.my),allMt=x.mt||[],ms=allMt.slice(-5);
@@ -168,12 +168,13 @@ async function karneCv(x,p){p=p==null?1:p;const cu=n=>Math.round(n*p);
   if(mBoxH)H+=mBoxH+24;
   else if(ms.length)H+=88+24;
   H=Math.max(1240,H+84);
-  const cv=mkCv(W,H),c=cv.getContext("2d");
+  const cv=targetCv||mkCv(W,H);if(cv.width!==W)cv.width=W;if(cv.height!==H)cv.height=H;
+  const c=cv.getContext("2d");c.clearRect(0,0,W,H);
   dkBg(c,W,H,cb.c1,cb.c2,champ);
 
   // Header
   drawPill(c,champ?"🏆 ŞAMPİYONLUK KARNESİ":"SEZON KARNESİ",48,40,champ?268:198,38,"rgba(240,194,75,.18)","rgba(240,194,75,.06)","rgba(240,194,75,.52)","#fbeaa8",20);
-  tx(c,x.name.toUpperCase(),48,114,56,"#f8fafc","left",700);
+  tx(c,x.name.toLocaleUpperCase("tr"),48,114,56,"#f8fafc","left",700);
   tx(c,x.date,W-48,66,25,"#94a3b8","right",600);
   const fmtTag=isLg(x.cfg)?"PUAN LİGİ":"KUPA TURNUVASI";
   drawPill(c,fmtTag,W-48-174,92,174,32,"rgba(16,185,129,.16)",null,"rgba(62,230,168,.42)","#3ee6a8",18);
@@ -205,7 +206,7 @@ async function karneCv(x,p){p=p==null?1:p;const cu=n=>Math.round(n*p);
   drawBadge(c,x.my,86,hy+64,136);
   c.restore();
 
-  c.font="700 74px "+NUMF;tx(c,fit(c,t.n.toUpperCase(),520),272,hy+78,74,hCol,"left",700);
+  c.font="700 74px "+NUMF;tx(c,fit(c,t.n.toLocaleUpperCase("tr"),520),272,hy+78,74,hCol,"left",700);
   const im=await flagImg(t.c);if(im)c.drawImage(im,272,hy+122,42,28);
   tx(c,CN[t.c][0],326,hy+136,27,champ?"#3b2a00":"#cbd5e1","left",600);
 
@@ -245,7 +246,7 @@ async function karneCv(x,p){p=p==null?1:p;const cu=n=>Math.round(n*p);
   c.fillStyle=grad(c,44,1036,stC[0],stC[1]);rr(c,44,sy,992,sh,22);c.fill();
   c.lineWidth=1.8;c.strokeStyle=stC[2];c.stroke();
   c.fillStyle="rgba(255,255,255,.22)";c.fillRect(72,sy+1,936,1.5);
-  c.font="700 44px "+NUMF;tx(c,fit(c,(champ?"🏆 ":"")+rt.toUpperCase(),920),540,sy+sh/2+1,44,stC[3],"center",700);
+  c.font="700 44px "+NUMF;tx(c,fit(c,(champ?"🏆 ":"")+rt.toLocaleUpperCase("tr"),920),540,sy+sh/2+1,44,stC[3],"center",700);
   c.restore();
 
   // Row 1 KPI: G / B / M with percentage pills
@@ -345,7 +346,7 @@ async function karneCv(x,p){p=p==null?1:p;const cu=n=>Math.round(n*p);
     drawFormRow(c,ms,1008,curY+42,true);
     curY+=108;
   }
-  drawPosterFooter(c,W,H,x.name.toUpperCase()+" · "+t.n.toUpperCase());
+  drawPosterFooter(c,W,H,x.name.toLocaleUpperCase("tr")+" · "+t.n.toLocaleUpperCase("tr"));
   return cv}
 async function totsCv(s){
   const st2=tourneyStats(s),xi=tourneyTots(s,st2);
@@ -357,7 +358,7 @@ async function totsCv(s){
 
   // Header
   drawPill(c,"TURNUVANIN EN İYİ 11'İ",48,42,272,38,"rgba(240,194,75,.18)","rgba(240,194,75,.06)","rgba(240,194,75,.52)","#fbeaa8",20);
-  tx(c,s.name.toUpperCase()+" · TOTS",48,114,52,"#f8fafc","left",700);
+  tx(c,s.name.toLocaleUpperCase("tr")+" · TOTS",48,114,52,"#f8fafc","left",700);
   tx(c,s.date||today(),W-48,70,25,"#94a3b8","right",600);
   const fmtStr=totsFmtOf(xi);
   drawPill(c,fmtStr+" DİZİLİŞ",W-206,94,158,34,"rgba(62,230,168,.16)",null,"rgba(62,230,168,.42)","#3ee6a8",19);
@@ -469,7 +470,7 @@ async function totsCv(s){
   D.forEach((p,i)=>{const q=lay.D[i]||[540,950,210];drawPlayer(p,q[0],q[1],q[2])});
   K.forEach((p,i)=>{const q=lay.K[i]||[540,1212,242];drawPlayer(p,q[0],q[1],q[2])});
 
-  drawPosterFooter(c,W,H,s.name.toUpperCase()+" · TURNUVANIN EN İYİ 11'İ ("+fmtStr+")");
+  drawPosterFooter(c,W,H,s.name.toLocaleUpperCase("tr")+" · TURNUVANIN EN İYİ 11'İ ("+fmtStr+")");
   return cv}
 async function koCv(s){
   if(isLg(s.cfg)||!s.G)throw new Error("Eleme ağacı yok");
@@ -484,11 +485,13 @@ async function koCv(s){
     await preloadLogos(_ki);
   }
   const firstCnt=(ko[RDs[0]]&&ko[RDs[0]].length)||Math.max(1,Math.floor(adv(s.cfg)/2));
-  const colW=318,colGap=76,padX=56,headH=226,footH=116,slotH=144;
+  const colW=318,colGap=76,padX=56,headH=226,footH=116,slotH=firstCnt>=32?116:firstCnt>=16?130:144;
   const W=Math.max(1140,padX*2+RDs.length*colW+(RDs.length-1)*colGap);
   const bodyH=Math.max(660,firstCnt*slotH);
   const H=headH+bodyH+footH;
-  const cv=mkCv(W,H),c=cv.getContext("2d");
+  const maxDim=4096,sc=Math.min(1,maxDim/W,maxDim/H);
+  const cv=mkCv(Math.round(W*sc),Math.round(H*sc)),c=cv.getContext("2d");
+  if(sc<1)c.scale(sc,sc);
   const refTi=champTi!=null?champTi:(s.my!=null&&T[s.my]?s.my:null);
   const cb=refTi!=null?bspec(refTi):null,isMyChamp=!!(champTi!=null&&champTi===s.my);
   dkBg(c,W,H,cb?cb.c1:"#38bdf8",champTi!=null?"#f0c24b":(cb?cb.c2:"#f0c24b"),isMyChamp);
@@ -505,16 +508,16 @@ async function koCv(s){
 
   // Header
   drawPill(c,"ELEME AĞACI · BRACKET",48,40,268,38,"rgba(240,194,75,.18)","rgba(240,194,75,.06)","rgba(240,194,75,.52)","#fbeaa8",20);
-  tx(c,s.name.toUpperCase()+" · ELEME TURLARI",48,114,52,"#f8fafc","left",700);
+  tx(c,s.name.toLocaleUpperCase("tr")+" · ELEME TURLARI",48,114,52,"#f8fafc","left",700);
   tx(c,s.date||today(),W-48,58,24,"#94a3b8","right",600);
   if(champTi!=null){
-    const chTxt="🏆 ŞAMPİYON: "+T[champTi].n.toUpperCase();
+    const chTxt="🏆 ŞAMPİYON: "+T[champTi].n.toLocaleUpperCase("tr");
     c.font="700 22px "+NUMF;
     const chW=Math.min(460,Math.max(220,Math.ceil(c.measureText(chTxt).width)+44));
     drawPill(c,fit(c,chTxt,420),W-48-chW,84,chW,42,"#fbeaa8","#d4a017","rgba(255,255,255,.55)","#2b2000",22);
   }else{
     c.font="700 22px "+NUMF;
-    tx(c,fit(c,koPath(s.cfg).toUpperCase(),480),W-48,108,22,"#3ee6a8","right",700);
+    tx(c,fit(c,koPath(s.cfg).toLocaleUpperCase("tr"),480),W-48,108,22,"#3ee6a8","right",700);
   }
 
   const totalW=RDs.length*colW+(RDs.length-1)*colGap;
@@ -597,7 +600,7 @@ async function koCv(s){
     const expCnt=centers[rIdx].length;
     const doneCnt=pairs.filter(p=>p&&p.w!=null).length;
     const colDone=doneCnt>=expCnt&&expCnt>0;
-    const hdTxt=(isFin?"🏆 ":"")+rd.toUpperCase()+(isFin?"":` · ${doneCnt}/${expCnt}`);
+    const hdTxt=(isFin?"🏆 ":"")+rd.toLocaleUpperCase("tr")+(isFin?"":` · ${doneCnt}/${expCnt}`);
     drawPill(
       c,hdTxt,x+24,headH-42,colW-48,36,
       isFin?"#fbeaa8":(colDone?"rgba(16,185,129,.16)":"rgba(255,255,255,.07)"),
@@ -718,13 +721,13 @@ async function koCv(s){
     c.restore();
 
     c.font="700 32px "+NUMF;
-    tx(c,fit(c,T[champTi].n.toUpperCase(),colW-32),chX+colW/2,chY+166,32,"#fff7d6","center",700);
+    tx(c,fit(c,T[champTi].n.toLocaleUpperCase("tr"),colW-32),chX+colW/2,chY+166,32,"#fff7d6","center",700);
     const finP=ko[RDs[RDs.length-1]]&&ko[RDs[RDs.length-1]][0];
-    const finSub=finP?`FİNAL SKORU · ${finP.g1}–${finP.g2}${finP.pf!=null?` (PEN ${finP.pf}–${finP.pa})`:finP.et?" (UZ)":""}`:s.name.toUpperCase();
+    const finSub=finP?`FİNAL SKORU · ${finP.g1}–${finP.g2}${finP.pf!=null?` (PEN ${finP.pf}–${finP.pa})`:finP.et?" (UZ)":""}`:s.name.toLocaleUpperCase("tr");
     tx(c,finSub,chX+colW/2,chY+192,16,"#f0c24b","center",700);
   }
 
-  drawPosterFooter(c,W,H,s.name.toUpperCase()+" · ELEME AĞACI");
+  drawPosterFooter(c,W,H,s.name.toLocaleUpperCase("tr")+" · ELEME AĞACI");
   return cv}
 function wrapLines(c,text,maxW,maxLines){
   const words=String(text||"").split(/\s+/).filter(Boolean),lines=[];
@@ -754,8 +757,8 @@ async function karneDnaCv(x){
 
   // Header
   drawPill(c,"MENAJER KİMLİĞİ · SAYFA 2/2",48,42,304,38,"rgba(240,194,75,.18)","rgba(240,194,75,.06)","rgba(240,194,75,.52)","#fbeaa8",20);
-  tx(c,x.name.toUpperCase()+" · TAKTİKSEL DNA",48,114,48,"#f8fafc","left",700);
-  tx(c,t.n.toUpperCase(),W-48,70,26,"#fbeaa8","right",700);
+  tx(c,x.name.toLocaleUpperCase("tr")+" · TAKTİKSEL DNA",48,114,48,"#f8fafc","left",700);
+  tx(c,t.n.toLocaleUpperCase("tr"),W-48,70,26,"#fbeaa8","right",700);
   tx(c,dna.n+" İSTATİSTİKLİ MAÇ",W-48,112,22,"#3ee6a8","right",700);
 
   // Hero Identity Card
@@ -766,7 +769,7 @@ async function karneDnaCv(x){
   c.restore();
   drawPill(c,"SEZONUN MENAJER KİMLİĞİ",236,hy+28,248,32,"rgba(240,194,75,.16)",null,"rgba(240,194,75,.45)","#fbeaa8",17);
   c.font="700 54px "+NUMF;
-  tx(c,fit(c,dna.title.toUpperCase(),750),236,hy+94,54,champ?"#fbeaa8":"#f8fafc","left",700);
+  tx(c,fit(c,dna.title.toLocaleUpperCase("tr"),750),236,hy+94,54,champ?"#fbeaa8":"#f8fafc","left",700);
   c.font="500 22px system-ui,-apple-system,sans-serif";
   const dLines=wrapLines(c,dna.desc,756,2);
   dLines.forEach((ln,idx)=>{
@@ -780,8 +783,8 @@ async function karneDnaCv(x){
     {k:"eff",n:"Bitiricilik Verimi",v:dna.eff,sub:`Gol−xG ${xgS2(dna.xgDiff)} · %${Math.round(dna.conv*100)} Dönüşüm`}
   ];
   const srt=axList.slice().sort((a,b)=>b.v-a.v),best=srt[0],worst=srt[srt.length-1];
-  drawPill(c,`EN GÜÇLÜ: ${DNASH[best.k].toUpperCase()} (${best.v})`,236,hy+198,270,34,"rgba(16,185,129,.18)",null,"rgba(62,230,168,.42)","#3ee6a8",18);
-  drawPill(c,`GELİŞTİRİLECEK: ${DNASH[worst.k].toUpperCase()} (${worst.v})`,520,hy+198,314,34,"rgba(249,115,22,.16)",null,"rgba(249,115,22,.42)","#fb923c",18);
+  drawPill(c,`EN GÜÇLÜ: ${DNASH[best.k].toLocaleUpperCase("tr")} (${best.v})`,236,hy+198,270,34,"rgba(16,185,129,.18)",null,"rgba(62,230,168,.42)","#3ee6a8",18);
+  drawPill(c,`GELİŞTİRİLECEK: ${DNASH[worst.k].toLocaleUpperCase("tr")} (${worst.v})`,520,hy+198,314,34,"rgba(249,115,22,.16)",null,"rgba(249,115,22,.42)","#fb923c",18);
 
   // Middle Card: Radar + 4 Axis Bars
   const my=454,mh=452;
@@ -831,7 +834,7 @@ async function karneDnaCv(x){
     const bx=514,by=my+78+idx*90,bw=492,[c1,c2,lvl]=lvlCol(a.v);
     c.fillStyle="rgba(255,255,255,.038)";rr(c,bx,by,bw,78,14);c.fill();
     c.lineWidth=1.2;c.strokeStyle="rgba(255,255,255,.08)";c.stroke();
-    tx(c,a.n.toUpperCase(),bx+16,by+24,21,"#f8fafc","left",700);
+    tx(c,a.n.toLocaleUpperCase("tr"),bx+16,by+24,21,"#f8fafc","left",700);
     drawPill(c,lvl,bx+292,by+12,110,24,"rgba(255,255,255,.07)",null,c1,c2,13);
     tx(c,String(a.v),bx+bw-16,by+26,34,c1,"right",700);
     // Progress bar
@@ -889,7 +892,7 @@ async function karneDnaCv(x){
     c.restore();
   });
 
-  drawPosterFooter(c,W,H,x.name.toUpperCase()+" · MENAJER KİMLİĞİ (2/2)");
+  drawPosterFooter(c,W,H,x.name.toLocaleUpperCase("tr")+" · MENAJER KİMLİĞİ (2/2)");
   return cv;
 }
 
@@ -963,7 +966,7 @@ async function kariyerCv(){const mode=st.hmod||"all",d=careerData(mode),isL=mode
   // Header
   const pillTxt=isL?"LİG KARİYERİ":isC?"KUPA KARİYERİ":"KARİYER ÖZETİ";
   drawPill(c,pillTxt,48,40,196,38,"rgba(240,194,75,.18)","rgba(240,194,75,.06)","rgba(240,194,75,.52)","#fbeaa8",20);
-  tx(c,(store.owner?store.owner.toUpperCase()+" · ":"")+"MENAJER KARİYERİ",48,114,52,"#f8fafc","left",700);
+  tx(c,(store.owner?store.owner.toLocaleUpperCase("tr")+" · ":"")+"MENAJER KARİYERİ",48,114,52,"#f8fafc","left",700);
   tx(c,today(),W-48,66,25,"#94a3b8","right",600);
   drawPill(c,d.n+" SEZON · "+totM+" MAÇ",W-48-224,92,224,32,"rgba(16,185,129,.16)",null,"rgba(62,230,168,.42)","#3ee6a8",18);
 
@@ -1050,7 +1053,7 @@ async function kariyerCv(){const mode=st.hmod||"all",d=careerData(mode),isL=mode
       rr(c,72,ay,936,70,16);c.fill();
       c.lineWidth=1.6;c.strokeStyle="rgba(240,194,75,.52)";c.stroke();
       drawPill(c,"EN İYİ SONUÇ",90,ay+17,156,36,"#fbeaa8","#d4a017",null,"#2b2000",19);
-      c.font="700 36px "+NUMF;tx(c,fit(c,(bestMap[d.best]||SN[d.best]).trim().toUpperCase(),720),264,ay+36,36,"#fff7d6","left",700);
+      c.font="700 36px "+NUMF;tx(c,fit(c,(bestMap[d.best]||SN[d.best]).trim().toLocaleUpperCase("tr"),720),264,ay+36,36,"#fff7d6","left",700);
       c.restore();
       ay+=86;
     }
@@ -1104,10 +1107,10 @@ async function macCv(q){const x=q.x,m=q.m,r=mres(m),oi=m.opp!=null&&T[m.opp]?m.o
   dkBg(c,W,H,cHome,cAway,false);
 
   // Header
-  const stageTag=(m.rd+(m.lg?" · "+m.lg+". MAÇ":"")).toUpperCase();
+  const stageTag=(m.rd+(m.lg?" · "+m.lg+". MAÇ":"")).toLocaleUpperCase("tr");
   drawPill(c,"MAÇ SONUCU",48,40,164,38,"rgba(240,194,75,.18)","rgba(240,194,75,.06)","rgba(240,194,75,.52)","#fbeaa8",20);
   drawPill(c,stageTag,224,40,Math.min(340,Math.max(120,stageTag.length*15+36)),38,"rgba(255,255,255,.08)",null,"rgba(255,255,255,.18)","#e2e8f0",19);
-  tx(c,x.name.toUpperCase(),48,114,50,"#f8fafc","left",700);
+  tx(c,x.name.toLocaleUpperCase("tr"),48,114,50,"#f8fafc","left",700);
   tx(c,new Date(m.id).toLocaleDateString("tr-TR"),W-48,112,26,"#94a3b8","right",600);
 
   // Hero Broadcast Scoreboard
@@ -1117,7 +1120,7 @@ async function macCv(q){const x=q.x,m=q.m,r=mres(m),oi=m.opp!=null&&T[m.opp]?m.o
   const vBdr=isUnlucky?"#fb923c":isSteal?"#60a5fa":{w:"#3ee6a8",d:"#94a3b8",l:"#ff6b6b"}[r];
   const hasP=m.pf!=null&&m.pa!=null;
   const baseLab=hasP?(r=="w"?"PENALTILARLA GALİBİYET":r=="l"?"PENALTILARLA MAĞLUBİYET":"BERABERLİK"):(m.et?({w:"UZATMADA GALİBİYET",d:"BERABERLİK (UZ)",l:"UZATMADA MAĞLUBİYET"}[r]):({w:"GALİBİYET",d:"BERABERLİK",l:"MAĞLUBİYET"}[r]));
-  const lab=(des&&des.k!="fair"?des.t:baseLab).toUpperCase();
+  const lab=(des&&des.k!="fair"?des.t:baseLab).toLocaleUpperCase("tr");
 
   const hy=178,hh=412;
   glassBox(c,44,hy,992,hh,28,"rgba(255,255,255,.18)");
@@ -1146,8 +1149,8 @@ async function macCv(q){const x=q.x,m=q.m,r=mres(m),oi=m.opp!=null&&T[m.opp]?m.o
   drawHaloCrest(me,204,hy+128);
   drawHaloCrest(oi,876,hy+128);
   c.font="700 42px "+NUMF;
-  tx(c,fit(c,(me!=null?T[me].n:"Takımım").toUpperCase(),284),204,hy+246,42,"#f8fafc","center",700);
-  tx(c,fit(c,(m.on||"Rakip").toUpperCase(),284),876,hy+246,42,"#f8fafc","center",700);
+  tx(c,fit(c,(me!=null?T[me].n:"Takımım").toLocaleUpperCase("tr"),284),204,hy+246,42,"#f8fafc","center",700);
+  tx(c,fit(c,(m.on||"Rakip").toLocaleUpperCase("tr"),284),876,hy+246,42,"#f8fafc","center",700);
   if(me!=null)tx(c,CN[T[me].c][0],204,hy+288,25,"#94a3b8","center",600);
   if(oi!=null&&oi>=0&&T[oi])tx(c,CN[T[oi].c][0],876,hy+288,25,"#94a3b8","center",600);
 
@@ -1234,7 +1237,7 @@ async function macCv(q){const x=q.x,m=q.m,r=mres(m),oi=m.opp!=null&&T[m.opp]?m.o
       c.lineWidth=1;c.strokeStyle="rgba(249,115,22,.28)";c.stroke();
       const ogStr=ogList.map(o=>o.sc+(o.as?" ("+o.as+")":"")).join(", ");
       c.font="600 23px "+NUMF;
-      tx(c,fit(c,(m.on||"RAKİP").toUpperCase()+" GOLLERİ: "+ogStr,904),90,ry+2,23,"#fdba74","left",600);
+      tx(c,fit(c,(m.on||"RAKİP").toLocaleUpperCase("tr")+" GOLLERİ: "+ogStr,904),90,ry+2,23,"#fdba74","left",600);
       ry+=54;
     }
     if(momDisp){
@@ -1255,17 +1258,16 @@ async function macCv(q){const x=q.x,m=q.m,r=mres(m),oi=m.opp!=null&&T[m.opp]?m.o
   glassBox(c,44,y,992,80,20,"rgba(255,255,255,.11)");
   tx(c,"SON 5 MAÇ FORMU",74,y+41,24,"#94a3b8","left",700);
   drawFormRow(c,fm,1006,y+40,true);
-  drawPosterFooter(c,W,H,x.name.toUpperCase()+" · "+stageTag);
+  drawPosterFooter(c,W,H,x.name.toLocaleUpperCase("tr")+" · "+stageTag);
   return cv}
 /* ---------- KARNE: SAYILAR YUKARI SAYAR ---------- */
 async function playKarne(im){
   const t0=performance.now(),D=1100;
   while(st.img===im&&im.anim){
+    const el=$("kcv");if(!el)return;
     const p=Math.min(1,(performance.now()-t0)/D),e=1-Math.pow(1-p,3);
-    if(!$("kcv"))return;
-    const cv=await karneCv(im.x,e);
-    const el=$("kcv");if(st.img!==im||!el)return;
-    el.getContext("2d").drawImage(cv,0,0);
+    await karneCv(im.x,e,el);
+    if(st.img!==im||!$("kcv"))return;
     if(p>=1)break;
     await new Promise(r=>requestAnimationFrame(r))}
   if(st.img===im){im.anim=false;render()}}

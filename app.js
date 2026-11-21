@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.22",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="20.23",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -337,7 +337,7 @@ const norm=()=>store.seasons.forEach(s=>{
   if(s.G&&!s.fxMix&&(s.cfg.gs||isLg(s.cfg))&&(!s.sim||!s.sim.w)&&!(s.mt||[]).some(m=>m.rd==="Grup")){s.G=mixG(s,s.G);s.fxMix=1}
   s.gqs=(s.gqs&&typeof s.gqs=="object")?toNob(s.gqs):nob();ensureSim(s);if(!Object.keys(s.sim.sc||{}).length)rebuildSimScorers(s);
   s.P=s.P||null;s.lk=!!s.lk&&!!s.P;
-  (s.mt||[]).forEach(m=>{const j=ixOf(m.on);if(j!==undefined)m.opp=j;m.sc=toNob(m.sc);m.as=toNob(m.as);if(m.stats===undefined||typeof m.stats!="object")m.stats=null});
+  (s.mt||[]).forEach(m=>{const j=ixOf(m.on);if(j!==undefined){m.opp=j;m.on=T[j].n}else if(m.opp!=null&&T[m.opp]){m.on=T[m.opp].n}m.sc=toNob(m.sc);m.as=toNob(m.as);if(m.stats===undefined||typeof m.stats!="object")m.stats=null});
   if(s.sn!=null&&typeof s.sn!="object")s.sn=null;
   if(s.sn)s.sn=toNob(s.sn);
   if(s.lk&&s.P&&!hasSn(s))s.sn=snapOf(s);
@@ -1227,7 +1227,7 @@ function histView(){
   const cnt=SN.map((_,i)=>fin.filter(x=>x.res.st==i).length),mx=Math.max(1,...cnt);
   const gp=fin.filter(x=>!isLg(x.cfg)&&x.res.st==0&&x.res.pts!=null).map(x=>x.res.pts);
   const lgp=fin.filter(x=>isLg(x.cfg)&&x.res.pts!=null).map(x=>x.res.pts);
-  const P=nob();ss.forEach(x=>x.pl.forEach(p=>{const k=p.n.toLowerCase(),o=P[k]=P[k]||{n:p.n,g:0,a:0,m:0,mom:0,ga:0};o.g+=p.g||0;o.a+=p.a||0;o.m+=p.m||0;o.mom+=p.mom||0;o.ga=(o.g||0)+(o.a||0)}));
+  const P=nob();ss.forEach(x=>x.pl.forEach(p=>{const k=nz(p.n),o=P[k]=P[k]||{n:p.n,g:0,a:0,m:0,mom:0,ga:0};o.g+=p.g||0;o.a+=p.a||0;o.m+=p.m||0;o.mom+=p.mom||0;o.ga=(o.g||0)+(o.a||0)}));
   const pl=Object.values(P);
   const hofRow=(nm,sub,val,i)=>{const isP=!nm.includes("&");const inner=`${i<3?`<span class="mdl m${i+1}">${i+1}</span>`:`<span class="hof-rk">${i+1}</span>`}<span class="hof-nm"><b>${esc(nm)}</b>${sub?`<small>${sub}</small>`:""}</span><span class="hof-v">${val}</span>`;return isP?`<button class="hof-r tap${i===0?" r1":""}" data-a="pinfo" data-n="${esc(nm)}" aria-label="${esc(nm)} profilini aç">${inner}</button>`:`<div class="hof-r${i===0?" r1":""}">${inner}</div>`};
   const topList=(f)=>pl.filter(p=>p[f]>0).sort((a,b)=>b[f]-a[f]);
@@ -2584,7 +2584,7 @@ document.addEventListener("click",async e=>{
   else if(a=="iosok"){store.iosok=1;st.iosWarnDismissed=true}
   else if(a=="rstopen")st.rstopen=!st.rstopen;
   else if(a=="hm"){st.hm=st.hm||nob();st.hm[dk]=!st.hm[dk]}
-  else if(a=="lgchamp"){const pt=grpPts(s),sn=snapshotSeasonAwards(s);s.res={st:7,pts:pt===""?null:pt,ch:s.my,topG:sn.topG,mvp:sn.mvp,tots:sn.tots,note:"",date:today()};st.cel=1;st.tab=7;un="Lig Şampiyonu olarak kaydedildi 🏆"}
+  else if(a=="lgchamp"){const pt=grpPts(s),sn=snapshotSeasonAwards(s);s.res={st:7,pts:pt===""?null:pt,ch:s.my,topG:sn.topG,mvp:sn.mvp,tots:sn.tots,note:"",date:today()};pruneSimDetails(s);st.cel=1;st.tab=7;un="Lig Şampiyonu olarak kaydedildi 🏆"}
   else if(a=="grk")st.grk=+dv;
   else if(a=="gqy"){s.gq=1;s.grk=st.grk||1;if(s.G&&s.my!=null){const gi=s.G.findIndex(g=>g.includes(s.my));if(gi>=0){s.gqs=s.gqs||nob();const l=(s.gqs[gi]=s.gqs[gi]||[]).filter(x=>x!==s.my);l.splice(Math.min(l.length,(s.grk||1)-1),0,s.my);s.gqs[gi]=l.slice(0,s.cfg.q||2)}}initKoBracket(s,true);st.mrd=autoStage(s);un="Gruptan "+s.grk+". sırada çıktın · eleme ağacı kuruldu"}
   else if(a=="gqn"){const pt=grpPts(s),rk=st.grk||Math.min(s.cfg.gs||4,(s.cfg.q||2)+1);ask(`Grupta ${rk}. oldun ve elendin olarak kaydedilsin mi? Grup puanın: ${pt===""?0:pt}.`,()=>{s.grk=rk;const sn=snapshotSeasonAwards(s);s.res={st:0,grk:rk,pts:pt===""?null:pt,topG:sn.topG,mvp:sn.mvp,tots:sn.tots,note:"",date:today()};if(s.G&&s.my!=null){const gi=s.G.findIndex(g=>g.includes(s.my));if(gi>=0&&s.gqs&&s.gqs[gi])s.gqs[gi]=s.gqs[gi].filter(x=>x!==s.my)}return `Sezon kaydedildi · Grupta ${rk}. oldun ve elendin`});render();return}
@@ -2645,7 +2645,7 @@ document.addEventListener("click",async e=>{
     if(oldM)s.mt[s.mt.indexOf(oldM)]=m;else s.mt.push(m);
     const des=matchDeserve(m);
     mApply(s);syncUserMatchesToBracket(s);st.med=null;st.mg=0;st.mo=0;st.mu=0;st.mp=undefined;st.mpf=0;st.mpa=0;st.mgls=[];st.msc=nob();st.mas=nob();st.mmom="";st.mop=null;st.mlg=null;st.qs=false;st.madv=false;st.mst=defMst();un=(oldM?"Güncellendi · ":"Kaydedildi · ")+m.on+" "+mscTxt(m)+(des&&des.k!="fair"?" · "+des.t:"")+(st.stwarn?" ("+st.stwarn+")":"");st.stwarn=null;if(!oldM){const df=m.gf-m.ga,pw=pf!=null&&pa!=null&&pf>pa;st.fw=df>0?(df>=3?3:df==2?2:1):(pw?2:0)}}
-  else if(a=="mdel"){const m=s.mt.find(x=>x.id==id);if(m){s.delM=Array.from(new Set([...(s.delM||[]),m.id]));s.mt=s.mt.filter(x=>x.id!=id);mApply(s);if(s.G&&!isLg(s.cfg))syncUserMatchesToBracket(s);un="Maç silindi"}}
+  else if(a=="mdel"){const m=s.mt.find(x=>x.id==id);if(m){const grpIdx=m.rd==="Grup"?(s.mt||[]).filter(x=>x.rd==="Grup").findIndex(x=>x.id==id):-1;s.delM=Array.from(new Set([...(s.delM||[]),m.id]));s.mt=s.mt.filter(x=>x.id!=id);let rolled=false;if(grpIdx>=0&&s.sim&&s.sim.w>grpIdx){const sim=ensureSim(s),totW=((s.cfg.gs||s.cfg.N)-1)*(s.cfg.gl||1);Object.keys(sim.gm).forEach(gi=>{if(Array.isArray(sim.gm[gi]))sim.gm[gi].length=Math.min(sim.gm[gi].length,grpIdx)});sim.w=grpIdx;sim.ko=nob();if(sim.w<totW){s.gqs=nob();s.gq=null;s.grk=null;st.grk=null}rebuildSimScorers(s);rolled=true}mApply(s);if(s.G&&!isLg(s.cfg))syncUserMatchesToBracket(s);un=rolled?"Maç silindi · ilgili hafta simülasyonu geri alındı":"Maç silindi"}}
   else if(a=="kurag"){mkImg("kura",s);return}
   else if(a=="kog"){mkImg("ko",s);return}
   else if(a=="totsg"){mkImg("tots",store.seasons.find(y=>y.id==id)||s);return}
@@ -2709,7 +2709,7 @@ document.addEventListener("click",async e=>{
   else if(a=="mman")st.mode="man";
   else if(a=="ns"){store.nx=nextNo();const n=mk(Date.now(),store.nx,s);store.seasons.push(n);store.cur=n.id;sync();st.mode=null;st.tab=7}
   else if(a=="pick"){if(tmLock(s)||st.dr){ask("Takım kilitli. Değiştirmek için önce Takımı değiştir ya da Kurayı iptal et’i kullan.");render();return}withSn(s,()=>spin(s));return}
-  else if(a=="fin"){const c=+$("stg").value,p=$("pts").value,fg=$("fgrk"),prevR=s.res||{},was=prevR.st==7,lg=isLg(s.cfg),rk=c==0&&!lg&&fg?+fg.value:(s.grk||null);if(c==0&&rk)s.grk=rk;const snap=snapshotSeasonAwards(s);s.res={st:c,grk:c==0&&!lg?rk:null,pts:(c==0||lg)&&p!==""&&Number.isFinite(+p)?+p:null,ch:prevR.ch!=null?prevR.ch:(c==7?s.my:null),ru:prevR.ru!=null?prevR.ru:null,topG:prevR.topG||snap.topG,mvp:prevR.mvp||snap.mvp,tots:prevR.tots||snap.tots,note:$("note").value.trim().slice(0,200),date:today()};if(c==0){s.gq=null;if(s.G&&s.my!=null){const gi=s.G.findIndex(g=>g.includes(s.my));if(gi>=0&&s.gqs&&s.gqs[gi])s.gqs[gi]=s.gqs[gi].filter(x=>x!==s.my)}}if(c==7&&!was){st.cel=1;st.tab=7}}
+  else if(a=="fin"){const c=+$("stg").value,p=$("pts").value,fg=$("fgrk"),prevR=s.res||{},was=prevR.st==7,lg=isLg(s.cfg),rk=c==0&&!lg&&fg?+fg.value:(s.grk||null);if(c==0&&rk)s.grk=rk;const snap=snapshotSeasonAwards(s);s.res={st:c,grk:c==0&&!lg?rk:null,pts:(c==0||lg)&&p!==""&&Number.isFinite(+p)?+p:null,ch:prevR.ch!=null?prevR.ch:(c==7?s.my:null),ru:prevR.ru!=null?prevR.ru:null,topG:prevR.topG||snap.topG,mvp:prevR.mvp||snap.mvp,tots:prevR.tots||snap.tots,note:$("note").value.trim().slice(0,200),date:today()};if(c==0){s.gq=null;if(s.G&&s.my!=null){const gi=s.G.findIndex(g=>g.includes(s.my));if(gi>=0&&s.gqs&&s.gqs[gi])s.gqs[gi]=s.gqs[gi].filter(x=>x!==s.my)}}pruneSimDetails(s);if(c==7&&!was){st.cel=1;st.tab=7}}
   else if(a=="unfin"){s.res=null;un="Sonuç silindi"}
   else if(a=="skip"){if(st.slot&&st.slot.done)st.slot.done();return}
   else if(a=="open"){store.cur=id;sync();st.mode=null;st.tab=7}
@@ -2722,7 +2722,7 @@ document.addEventListener("click",async e=>{
   else if(a=="exf"){exportFile();return}
   else if(a=="imfb"){const e=$("imf");if(e)e.click();return}
   else if(a=="impm"&&st.imp){const o=st.imp.o;st.imp=null;un=await mergeBk(o)}
-  else if(a=="impr"&&st.imp){const o=st.imp.o;if(!(await snapKeep("fc26lig4_degisim_oncesi"))){st.imp=null;ask("Yedek yüklenmedi: mevcut kayıtlar güvenliğe alınamadı (depolama dolu olabilir). Önce Kurtarma kayıtlarını sil ya da yedek al.")}else{const th=store.theme,mo=store.motion,ow0=store.owner;st.imp=null;DROP=[];store=mig(o);if(!store.owner&&ow0)store.owner=ow0;if(store.theme===undefined&&th!==undefined)store.theme=th;if(store.motion===undefined&&mo!==undefined)store.motion=mo;const dr=[...new Set(DROP)];DROP=[];norm();sync();st.tab=7;un="Yedek yüklendi, mevcut kayıtlar değiştirildi"+(dr.length?" · "+dr.length+" takım güncel listede yok, atlandı":"")}}
+  else if(a=="impr"&&st.imp){const o=st.imp.o;st.imp=null;if(!(await snapKeep("fc26lig4_degisim_oncesi"))){ask("Yedek yüklenmedi: mevcut kayıtlar güvenliğe alınamadı (depolama dolu olabilir). Önce Kurtarma kayıtlarını sil ya da yedek al.")}else{const th=store.theme,mo=store.motion,ow0=store.owner;DROP=[];store=mig(o);if(!store.owner&&ow0)store.owner=ow0;if(store.theme===undefined&&th!==undefined)store.theme=th;if(store.motion===undefined&&mo!==undefined)store.motion=mo;const dr=[...new Set(DROP)];DROP=[];norm();sync();st.tab=7;un="Yedek yüklendi, mevcut kayıtlar değiştirildi"+(dr.length?" · "+dr.length+" takım güncel listede yok, atlandı":"")}}
   else if(a=="trs"){un=restoreSeason(id)}
   else if(a=="trse"){ask("Çöp kutusundaki tüm sezonlar kalıcı olarak silinsin mi?",()=>{store.trash=[]});render();return}
   else if(a=="rcv"){if(RCV.some(x=>x[0]==dk)){st.bk=(await kv.get(dk))||rcvGet(dk)||"";st.bkadv=true}}
@@ -2730,7 +2730,7 @@ document.addEventListener("click",async e=>{
   else if(a=="oldlsx"){const leg=(typeof legacyLsInfo==="function")?legacyLsInfo():{hasLegacy:false,bytes:0};if(!leg.hasLegacy)return;ask("IndexedDB’ye geçiş sırasında güvenlik için tutulan eski localStorage kopyası ("+fmtBytes(leg.bytes)+") kalıcı olarak silinsin mi? Güncel IndexedDB verilerin bundan etkilenmez.",async()=>{const ok=await clearLegacyLs();await refreshQuota(false);return ok?"Eski localStorage kopyası temizlendi":"Temizlenemedi: IndexedDB ana kaydı doğrulanamadı"});render();return}
   else if(a=="rst"){ask("Tüm sezonlar, maçlar ve ayarlar silinecek. Önce yedek almanı öneririm. Devam edilsin mi?",()=>resetAll());render();return}
   else return;
-  if(!uiOnly){s.ut=Date.now();save()}render();if(!uiOnly||un)flush(un,snap);if(st.cel){st.cel=0;scrollTo(0,0);confetti()}if(st.fw){const f=st.fw;st.fw=0;fireworks(f)}if(a=="gofin"){const e=$("fincard");if(e)e.scrollIntoView({block:"start"})}
+  if(!uiOnly){const cs=cur();if(cs)cs.ut=Date.now();save()}render();if(!uiOnly||un)flush(un,snap);if(st.cel){st.cel=0;scrollTo(0,0);confetti()}if(st.fw){const f=st.fw;st.fw=0;fireworks(f)}if(a=="gofin"){const e=$("fincard");if(e)e.scrollIntoView({block:"start"})}
   if(a=="next"){try{const e=document.querySelector(".card.hl");if(e&&e.scrollIntoView)e.scrollIntoView({block:"center",behavior:rm()?"auto":"smooth"})}catch(x){}}});
 document.addEventListener("change",e=>{
   if(st.staleTab){ntfReload("Başka bir sekmede değişiklik yapıldı, veri kaybı yaşamamak için sayfayı yenileyin.");return}
@@ -2855,7 +2855,8 @@ async function initApp(){
       store=null;
       const oldBz=await kv.get("fc26lig4_bozuk");
       const savedOk=(oldBz===r4)||await kv.set("fc26lig4_bozuk",r4);
-      loadWarn=savedOk?"Kayıtlı veri okunamadı. Ham veri silinmedi, Ayarlar › Kurtarma bölümünde saklanıyor. Şimdilik boş bir sezonla başlandı.":"Kayıtlı veri okunamadı ve ham veri saklanamadı (depolama dolu olabilir). Boş bir sezonla başlandı.";
+      if(!savedOk)st.readFail=true;
+      loadWarn=savedOk?"Kayıtlı veri okunamadı. Ham veri silinmedi, Ayarlar › Kurtarma bölümünde saklanıyor. Şimdilik boş bir sezonla başlandı.":"Kayıtlı veri okunamadı ve ham veri kurtarma alanına saklanamadı (depolama dolu olabilir). Mevcut ham kaydın ezilmemesi için yazma koruması açıldı.";
     }
   }else if(r4===null&&typeof hadMainReadFailure==="function"&&hadMainReadFailure()){
     st.readFail=true; // kayıt var olabilir ama okunamadı: hiçbir şey yazma
@@ -2924,8 +2925,6 @@ try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().
   document.addEventListener("gesturestart",noPinch,{passive:false});
   document.addEventListener("gesturechange",noPinch,{passive:false});
   document.addEventListener("gestureend",noPinch,{passive:false});
-  document.addEventListener("touchstart",e=>{if(e.touches&&e.touches.length>1&&e.cancelable)e.preventDefault()},{passive:false});
-  document.addEventListener("touchmove",e=>{if(e.touches&&e.touches.length>1&&e.cancelable)e.preventDefault()},{passive:false});
 })();
 // --- Dinamik PWA theme-color (v20.0) ---
 function syncThemeColor(){

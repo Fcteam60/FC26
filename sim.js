@@ -281,7 +281,7 @@ function rebuildSimScorers(s){
     });
   });
   // Eğer sezon bitip maç bazlı golcü dizileri budandıysa mevcut özet haritalarını koru
-  if(hasMatchScorers||!Object.keys(sim.sc||{}).length||sim.w===0){sim.sc=sc;sim.as=as;sim.mom=mom}
+  const hasAnyKo=Object.values(sim.ko||{}).some(arr=>Array.isArray(arr)&&arr.some(p=>p&&p.w!=null));if(hasMatchScorers||!Object.keys(sim.sc||{}).length||(sim.w===0&&!hasAnyKo)){sim.sc=sc;sim.as=as;sim.mom=mom}
   return sim.sc}
 
 // Bitmiş sezonlarda s.sim.sc özeti oluştuktan sonra alt maçlardaki golcü dizilerini budayarak JSON/IndexedDB boyutunu ~%70 küçültür
@@ -406,7 +406,14 @@ function simWeekPairs(s,gi,w){
     const fnd=baseRnds.find(rnd=>rnd.some(([a,b])=>(a===s.my&&b===opp)||(b===s.my&&a===opp)));
     if(fnd)return fnd.filter(([a,b])=>a!==s.my&&b!==s.my).map(([a,b])=>isSec?[b,a]:[a,b]);
   }
-  const fallback=baseRnds[(w-1)%half]||[];
+  const sim=ensureSim(s),usedPairs=new Set(),startIdx=isSec?half:0;
+  const gSim=Array.isArray(sim.gm[gi])?sim.gm[gi]:[];
+  for(let k=startIdx;k<w-1;k++){
+    const wk=gSim[k];
+    if(Array.isArray(wk))wk.forEach(arr=>{if(Array.isArray(arr)&&arr.length>=2){const a=arr[0],b=arr[1];usedPairs.add(a<b?a+"|"+b:b+"|"+a)}});
+  }
+  const unused=baseRnds.find(rnd=>rnd.filter(([a,b])=>a!==s.my&&b!==s.my).every(([a,b])=>!usedPairs.has(a<b?a+"|"+b:b+"|"+a)));
+  const fallback=unused||baseRnds[(w-1)%half]||[];
   return fallback.filter(([a,b])=>a!==s.my&&b!==s.my).map(([a,b])=>isSec?[b,a]:[a,b])}
 function calcGroupTable(s,gi){
   const g=(s.G&&s.G[gi])||[],tbl=nob();
@@ -550,7 +557,7 @@ function syncUserMatchesToBracket(s){
     pairs.forEach(p=>{
       if(p.t1===s.my||p.t2===s.my){
         const opp=p.t1===s.my?p.t2:p.t1,isT1=p.t1===s.my;
-        const myMs=(s.mt||[]).filter(m=>m.rd===rd&&m.opp===opp);
+        const myMs=(s.mt||[]).filter(m=>m.rd===rd&&m.opp===opp).sort((a,b)=>(+a.lg||0)-(+b.lg||0)||(a.id||0)-(b.id||0));
         const uSc=[],uAs=[],oSc=[],oAs=[];
         myMs.forEach(m=>{
           if(Array.isArray(m.gls)&&m.gls.length){

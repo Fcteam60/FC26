@@ -1,6 +1,6 @@
 :root{--bg:#f4f6f5;--card:#fff;--tx:#14201b;--mut:#66756e;--ac:#0f9d6b;--acx:#fff;--bd:#dde4e0;--hi:#e3f5ec;--wr:#c0392b;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);color-scheme:light}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);touch-action:pan-x pan-y}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100%}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
