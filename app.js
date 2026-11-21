@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.19",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="20.20",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -41,7 +41,7 @@ DEN:'<rect width="24" height="16" fill="#c8102e"/><rect x="7" width="3" height="
 USA:'<rect width="24" height="16" fill="#fff"/>'+[0,4.57,9.14,13.71].map(y=>`<rect y="${y}" width="24" height="2.29" fill="#b22234"/>`).join("")+'<rect width="10" height="9.1" fill="#3c3b6e"/>',
 URU:ST("#fff","#0038a8")+'<rect width="8.9" height="8.9" fill="#fff"/><circle cx="4.4" cy="4.4" r="2" fill="#fcd116"/>',MEX:V3("#006847","#fff","#ce1126")+'<circle cx="12" cy="8" r="1.6" fill="#6b4a00"/>'};
 const fl=c=>`<svg class="fg" viewBox="0 0 24 16" role="img" aria-label="${CN[c][0]}">${FLG[c]||""}</svg>`;
-const rb=v=>`<span class="g ${v>=85?"t1":v>=80?"t2":v>=75?"t3":""}">${v}</span>`;
+const rb=v=>`<span class="g ${v>=85?"t1":v>=82?"t2":v>=80?"t3":v>=78?"t4":v>=75?"t5":"t6"}">${v}</span>`;
 const cn=c=>fl(c)+" "+CN[c][0];
 
 /* ---------- ESKİ SÜRÜMDEN (64 takımlı havuz) GEÇİŞ ---------- */
@@ -157,12 +157,16 @@ function grpCard(g,gi){
     const gl=lg?"★":s.cfg.gs?GL(gi):gi+1,avg=f=>g.length?fx(ravg(f)):"—";
     const sorted=g.slice().sort((x,y)=>{const qx=qL.indexOf(x),qy=qL.indexOf(y);if(qx>=0||qy>=0)return (qx<0?99:qx)-(qy<0?99:qy);return V(RT(s,y))-V(RT(s,x))});
     const hasQ=qL.length>0;
+    const kgsCell=(lbl,f)=>{
+      const v=g.length?ravg(f):0,w=Math.max(20,Math.min(100,Math.round((v-66)/24*100)));
+      const tc=v>=83?" s1":v>=80?" s2":"";
+      return `<span class="kgs-c${tc}"><em>${lbl}</em><b>${avg(f)}</b><i class="kgs-m"><u style="width:${w}%"></u></i></span>`;
+    };
     const head=`<div class="kgh"><span class="kgl">${gl}</span><div class="kgt"><b>${gname(s,gi)}</b><small>${g.length} takım${mn?` · <i class="kgm">★ Senin grubun</i>`:""}</small></div>${dd?`<span class="kg-dead">☠ Ölüm Grubu</span>`:(hasQ?`<span class="xfpill emr">${qL.length} Çıktı</span>`:"")}</div>`+
-      (g.length?`<div class="kgs-wrap"><div class="kgs kgs4"><span class="hi"><em>GEN</em><b>${avg("g")}</b></span><span><em>HÜC</em><b>${avg("a")}</b></span><span><em>ORT</em><b>${avg("o")}</b></span><span><em>DEF</em><b>${avg("d")}</b></span></div><i class="gb kgb"><u style="width:${pc}%"></u></i></div>`:"");
-    const statPill=(lbl,val)=>{
-      const tc=val>=85?" s1":val>=80?" s2":"";
-      const bw=Math.max(18,Math.min(100,Math.round((val-64)/28*100)));
-      return `<span class="kr-p${tc}"><span class="kr-pt"><i>${lbl}</i><b>${val}</b></span><u class="kr-pb"><s style="width:${bw}%"></s></u></span>`;
+      (g.length?`<div class="kgs-wrap"><div class="kgs kgs4"><span class="hi"><em>GEN</em><b>${avg("g")}</b></span>${kgsCell("HÜC","a")}${kgsCell("ORT","o")}${kgsCell("DEF","d")}</div></div>`:"");
+    const statItem=(lbl,val,isBest)=>{
+      const tc=val>=85?" s1":isBest?" s2":"";
+      return `<span class="kr-m${tc}"><i>${lbl}</i><b>${val}</b></span>`;
     };
     const rowsHtml=sorted.map((i,idx)=>{
       const ti=RT(s,i),qr=qL.indexOf(i),isQ=qr>=0,isMe=i===s.my;
@@ -171,12 +175,13 @@ function grpCard(g,gi){
       const qTag=isQ?`<span class="kr-q">✓ Çıktı</span>`:"";
       const rkCls=isQ?(qr===0?" q1":" q"):"";
       const tName=isMe?`<i class="pt-st">★</i> ${esc(ti.n)}`:esc(ti.n);
+      const mx=Math.max(ti.a,ti.o,ti.d);
       return `<button class="row tb kr${isQ?" qrow":""}${isMe?" kme":""}${isCut?" qcut":""}${isElim?" elim":""}" data-a="tinfo" data-i="${i}" aria-label="${esc(ti.n)} kadrosunu incele">`+
         `<span class="kr-rk${rkCls}">${idx+1}</span>`+
         `<span class="kr-cr">${badge(i,32)}</span>`+
         `<span class="n kn">`+
           `<span class="kt-r"><span class="kr-fl" title="${esc(CN[ti.c][0])}">${fl(ti.c)}</span><span class="kt">${tName}</span>${qTag}</span>`+
-          `<span class="kr-st" aria-label="Hücum ${ti.a}, Orta saha ${ti.o}, Defans ${ti.d}">${statPill("HÜC",ti.a)}${statPill("ORT",ti.o)}${statPill("DEF",ti.d)}</span>`+
+          `<span class="kr-st" aria-label="Hücum ${ti.a}, Orta saha ${ti.o}, Defans ${ti.d}">${statItem("HÜC",ti.a,ti.a===mx)}<s class="kr-sep" aria-hidden="true"></s>${statItem("ORT",ti.o,ti.o===mx)}<s class="kr-sep" aria-hidden="true"></s>${statItem("DEF",ti.d,ti.d===mx)}</span>`+
         `</span>`+
         `<span class="kr-r">${rb(ti.g)}<span class="chev" aria-hidden="true">›</span></span>`+
       `</button>`;

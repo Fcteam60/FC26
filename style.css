@@ -3382,3 +3382,203 @@ button.sqr.sqr-btn:active{background:var(--hi)}
 .awd:not(.mvp) .aw-body b{font-size:21px;line-height:1.12;margin-top:0}
 .awd.wide{grid-column:1/-1}
 .awd.wide .aw-body b{white-space:normal}
+
+/* ===== v20.20: Derinlikli Premium Grup Telemetri Barı, Pastel Enamel OVR Rozetleri & Minimalist HÜC/ORT/DEF Şeridi ===== */
+
+/* 1) Grup Ortalamaları Barı — Mimari Cam & Derin Zümrüt GEN Sütunu */
+.kgs-wrap{
+  margin-bottom:12px;border-radius:15px;overflow:hidden;
+  border:1px solid color-mix(in srgb,var(--ac) 18%,var(--gbd));
+  background:linear-gradient(180deg,rgba(255,255,255,.90),rgba(244,249,246,.78));
+  box-shadow:0 8px 20px -10px rgba(9,45,30,.18),0 1px 2px rgba(9,45,30,.05),inset 0 1px 0 rgba(255,255,255,.85);
+}
+.kgs-wrap .kgs.kgs4{
+  display:grid;grid-template-columns:1.08fr 1fr 1fr 1fr;gap:0;margin:0;align-items:stretch;
+}
+.kgs-wrap .kgs.kgs4 > span{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:10px 6px 9px;border:0;border-radius:0;background:transparent;position:relative;
+}
+.kgs-wrap .kgs.kgs4 > span + span::before{
+  content:"";position:absolute;left:0;top:20%;bottom:20%;width:1px;
+  background:linear-gradient(180deg,transparent,var(--bd) 28%,var(--bd) 72%,transparent);
+}
+.kgs-wrap .kgs.kgs4 > span.hi + span::before{display:none}
+
+/* Sol GEN Odak Bloğu — Derin Zümrüt Obsidyen */
+.kgs-wrap .kgs.kgs4 > span.hi{
+  background:
+    radial-gradient(120% 90% at 15% 0%,rgba(62,230,168,.24),transparent 62%),
+    linear-gradient(155deg,#0f6a49 0%,#09442f 62%,#062e20 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.24),inset -1px 0 0 rgba(255,255,255,.10),4px 0 12px -4px rgba(6,46,32,.28);
+  z-index:1;
+}
+.kgs-wrap .kgs.kgs4 > span.hi em{
+  font-size:9.5px;font-weight:800;letter-spacing:.14em;color:rgba(216,252,238,.82);opacity:1;
+}
+.kgs-wrap .kgs.kgs4 > span.hi b{
+  font-size:21.5px;font-weight:800;line-height:1.08;margin-top:2px;color:#ffffff;
+  text-shadow:0 1px 8px rgba(0,0,0,.22);
+}
+
+/* Senin Grubun (.kgc.mine) — Yanık Altın GEN Bloğu */
+.kgc.mine .kgs-wrap{border-color:rgba(212,160,23,.34)}
+.kgc.mine .kgs-wrap .kgs.kgs4 > span.hi{
+  background:
+    radial-gradient(120% 90% at 15% 0%,rgba(253,230,138,.28),transparent 62%),
+    linear-gradient(155deg,#9a6c0b 0%,#6d4a05 62%,#4a3102 100%);
+  box-shadow:inset 0 1px 0 rgba(255,244,200,.28),inset -1px 0 0 rgba(255,255,255,.12),4px 0 12px -4px rgba(74,49,2,.30);
+}
+.kgc.mine .kgs-wrap .kgs.kgs4 > span.hi em{color:rgba(254,243,199,.88)}
+
+/* Ölüm Grubu (.kgc.dead) — Derin Yakut GEN Bloğu */
+.kgc.dead .kgs-wrap{border-color:rgba(224,49,49,.28)}
+.kgc.dead .kgs-wrap .kgs.kgs4 > span.hi{
+  background:
+    radial-gradient(120% 90% at 15% 0%,rgba(252,165,165,.24),transparent 62%),
+    linear-gradient(155deg,#a31c24 0%,#721017 62%,#4c090e 100%);
+}
+.kgc.dead .kgs-wrap .kgs.kgs4 > span.hi em{color:rgba(254,226,226,.88)}
+
+/* Sağ 3 Metrik (HÜC / ORT / DEF) + Hassas Mikro Ölçek Çizgisi */
+.kgs-wrap .kgs.kgs4 > span.kgs-c em{
+  font-size:9.5px;font-weight:800;letter-spacing:.11em;color:var(--mut);opacity:.82;
+}
+.kgs-wrap .kgs.kgs4 > span.kgs-c b{
+  font-size:18.5px;font-weight:800;line-height:1.12;margin-top:2px;color:var(--tx);
+  font-variant-numeric:tabular-nums;
+}
+.kgs-m{
+  display:block;width:28px;height:2.5px;margin-top:5px;border-radius:99px;
+  background:rgba(127,150,140,.20);overflow:hidden;
+}
+.kgs-m u{
+  display:block;height:100%;border-radius:99px;text-decoration:none;
+  background:linear-gradient(90deg,#64748b,#94a3b8);
+}
+.kgs-c.s2 .kgs-m u{background:linear-gradient(90deg,#0f9d6b,#34d399)}
+.kgs-c.s1 .kgs-m u{background:linear-gradient(90deg,#d97706,#fbbf24)}
+
+/* Karanlık Tema — Grup Telemetri Barı */
+:root[data-theme="dark"] .kgs-wrap{
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018));
+  border-color:rgba(255,255,255,.09);
+  box-shadow:0 10px 24px -10px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.07);
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .kgs-wrap{
+    background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018));
+    border-color:rgba(255,255,255,.09);
+    box-shadow:0 10px 24px -10px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.07);
+  }
+}
+
+/* 2) Takım & Oyuncu OVR Rozetleri — 6 Seviyeli Derin Pastel Enamel Sistemi */
+.g{
+  display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid transparent;border-radius:9px;
+  font-family:var(--num);font-weight:800;font-variant-numeric:tabular-nums;
+  letter-spacing:.01em;
+}
+.g.t1{
+  background:linear-gradient(160deg,#10b981 0%,#059669 100%);
+  color:#ffffff;border-color:#047857;
+  box-shadow:0 3px 8px -2px rgba(5,150,105,.38),inset 0 1px 0 rgba(255,255,255,.32);
+}
+.g.t2{
+  background:linear-gradient(165deg,#ecfdf5 0%,#cdfae3 100%);
+  color:#065f46;border-color:#6ee7b7;
+  box-shadow:0 2px 6px -2px rgba(6,95,70,.16),inset 0 1px 0 rgba(255,255,255,.85),inset 0 -1px 0 rgba(6,95,70,.06);
+}
+.g.t3{
+  background:linear-gradient(165deg,#f0f9ff 0%,#d7effe 100%);
+  color:#075985;border-color:#7dd3fc;
+  box-shadow:0 2px 6px -2px rgba(7,89,133,.16),inset 0 1px 0 rgba(255,255,255,.85),inset 0 -1px 0 rgba(7,89,133,.06);
+}
+.g.t4{
+  background:linear-gradient(165deg,#fffbeb 0%,#fef0c3 100%);
+  color:#92400e;border-color:#fcd34d;
+  box-shadow:0 2px 6px -2px rgba(146,64,14,.16),inset 0 1px 0 rgba(255,255,255,.88),inset 0 -1px 0 rgba(146,64,14,.06);
+}
+.g.t5{
+  background:linear-gradient(165deg,#f8fafc 0%,#e9eff5 100%);
+  color:#475569;border-color:#cbd5e1;
+  box-shadow:0 2px 5px -2px rgba(71,85,105,.14),inset 0 1px 0 rgba(255,255,255,.88),inset 0 -1px 0 rgba(15,23,42,.05);
+}
+.g.t6{
+  background:linear-gradient(165deg,#fff1f2 0%,#ffe0e4 100%);
+  color:#9f1239;border-color:#fda4af;
+  box-shadow:0 2px 6px -2px rgba(159,18,57,.16),inset 0 1px 0 rgba(255,255,255,.85),inset 0 -1px 0 rgba(159,18,57,.06);
+}
+.kr .g{
+  min-width:38px;height:30px;padding:0 8px;font-size:16.5px;line-height:1;border-radius:9px;
+}
+
+/* Karanlık Tema — Yarı Saydam Mücevher Cam OVR Rozetleri */
+:root[data-theme="dark"] .g.t1{
+  background:linear-gradient(160deg,#10b981 0%,#047857 100%);color:#ffffff;border-color:rgba(110,231,183,.50);
+  box-shadow:0 4px 12px -3px rgba(16,185,129,.42),inset 0 1px 0 rgba(255,255,255,.28);
+}
+:root[data-theme="dark"] .g.t2{
+  background:linear-gradient(165deg,rgba(16,185,129,.26),rgba(5,150,105,.14));color:#6ee7b7;border-color:rgba(52,211,153,.38);
+  box-shadow:0 2px 8px -2px rgba(0,0,0,.35),inset 0 1px 0 rgba(110,231,183,.18);
+}
+:root[data-theme="dark"] .g.t3{
+  background:linear-gradient(165deg,rgba(56,189,248,.24),rgba(2,132,199,.13));color:#7dd3fc;border-color:rgba(56,189,248,.36);
+  box-shadow:0 2px 8px -2px rgba(0,0,0,.35),inset 0 1px 0 rgba(125,211,252,.18);
+}
+:root[data-theme="dark"] .g.t4{
+  background:linear-gradient(165deg,rgba(251,191,36,.22),rgba(217,119,6,.13));color:#fde68a;border-color:rgba(251,191,36,.36);
+  box-shadow:0 2px 8px -2px rgba(0,0,0,.35),inset 0 1px 0 rgba(253,230,138,.18);
+}
+:root[data-theme="dark"] .g.t5{
+  background:linear-gradient(165deg,rgba(148,163,184,.18),rgba(100,116,139,.11));color:#cbd5e1;border-color:rgba(148,163,184,.30);
+  box-shadow:0 2px 8px -2px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.10);
+}
+:root[data-theme="dark"] .g.t6{
+  background:linear-gradient(165deg,rgba(244,63,94,.22),rgba(190,18,60,.13));color:#fda4af;border-color:rgba(251,113,133,.36);
+  box-shadow:0 2px 8px -2px rgba(0,0,0,.35),inset 0 1px 0 rgba(253,164,175,.16);
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .g.t1{background:linear-gradient(160deg,#10b981 0%,#047857 100%);color:#ffffff;border-color:rgba(110,231,183,.50);box-shadow:0 4px 12px -3px rgba(16,185,129,.42),inset 0 1px 0 rgba(255,255,255,.28)}
+  :root:not([data-theme="light"]) .g.t2{background:linear-gradient(165deg,rgba(16,185,129,.26),rgba(5,150,105,.14));color:#6ee7b7;border-color:rgba(52,211,153,.38);box-shadow:0 2px 8px -2px rgba(0,0,0,.35),inset 0 1px 0 rgba(110,231,183,.18)}
+  :root:not([data-theme="light"]) .g.t3{background:linear-gradient(165deg,rgba(56,189,248,.24),rgba(2,132,199,.13));color:#7dd3fc;border-color:rgba(56,189,248,.36);box-shadow:0 2px 8px -2px rgba(0,0,0,.35),inset 0 1px 0 rgba(125,211,252,.18)}
+  :root:not([data-theme="light"]) .g.t4{background:linear-gradient(165deg,rgba(251,191,36,.22),rgba(217,119,6,.13));color:#fde68a;border-color:rgba(251,191,36,.36);box-shadow:0 2px 8px -2px rgba(0,0,0,.35),inset 0 1px 0 rgba(253,230,138,.18)}
+  :root:not([data-theme="light"]) .g.t5{background:linear-gradient(165deg,rgba(148,163,184,.18),rgba(100,116,139,.11));color:#cbd5e1;border-color:rgba(148,163,184,.30);box-shadow:0 2px 8px -2px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.10)}
+  :root:not([data-theme="light"]) .g.t6{background:linear-gradient(165deg,rgba(244,63,94,.22),rgba(190,18,60,.13));color:#fda4af;border-color:rgba(251,113,133,.36);box-shadow:0 2px 8px -2px rgba(0,0,0,.35),inset 0 1px 0 rgba(253,164,175,.16)}
+}
+
+/* 3) Takım Satırı Altı — Ultra Minimalist HÜC | ORT | DEF Tipografi Şeridi */
+.row.tb.kr{min-height:54px;padding:7px 8px 7px 10px}
+.kr .kn{gap:3px}
+.kr-st{
+  display:inline-flex;align-items:center;gap:7px;max-width:none;width:auto;
+  margin-top:1px;line-height:1;
+}
+.kr-m{
+  display:inline-flex;align-items:baseline;gap:3px;
+}
+.kr-m i{
+  font-style:normal;font-size:9px;font-weight:700;letter-spacing:.07em;
+  color:var(--mut);opacity:.74;
+}
+.kr-m b{
+  font-family:var(--num);font-size:13px;font-weight:700;color:var(--tx);
+  opacity:.86;font-variant-numeric:tabular-nums;
+}
+.kr-m.s2 b{color:var(--ac);opacity:1}
+.kr-m.s1 b{color:#b45309;opacity:1}
+.kr-sep{
+  display:inline-block;width:1px;height:9px;border-radius:1px;
+  background:var(--bd);opacity:.85;text-decoration:none;flex:0 0 1px;
+}
+:root[data-theme="dark"] .kr-m.s1 b{color:#fbbf24}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .kr-m.s1 b{color:#fbbf24}
+}
+@media(max-width:359px){
+  .kr-st{gap:5px}
+  .kr-m i{font-size:8.5px}
+  .kr-m b{font-size:12.5px}
+  .kr .g{min-width:34px;height:28px;font-size:15.5px;padding:0 6px}
+}
