@@ -465,8 +465,24 @@ const UICO={
   bug:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 16.5v.5"/><path d="M10.3 4.3L3.7 16a2 2 0 0 0 1.7 3h13.2a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0z"/></svg>',
   shield:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5.5c0 4.5-3 8.2-7 9.5-4-1.3-7-5-7-9.5V6z"/></svg>',
   trash:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V4.5h4V7M7 7l.8 12.5h8.4L17 7M10.5 11v5M13.5 11v5"/></svg>',
-  chev:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>'
+  chev:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>',
+  ball:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5l3.5 2.5-1.3 4H9.8L8.5 10zM12 3v4.5M15.5 10l4.2-1.5M14.2 14l2.8 4M9.8 14L7 18M8.5 10L4.3 8.5"/></svg>',
+  assist:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17L17 5M17 5h-6M17 5v6"/><circle cx="6.5" cy="17.5" r="2"/></svg>',
+  tree:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h5v5H4M4 13h5v5H4M9 8.5h4v7H9M13 12h7"/></svg>',
+  list:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>',
+  cal:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>',
+  book:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 0 4 22zM4 5.5V20"/></svg>',
+  chart:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16M7 16v-5M12 16V7M17 16v-8"/></svg>',
+  ff:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 6l7 6-7 6V6zM12.5 6l7 6-7 6V6z"/></svg>',
+  phone:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="3" width="12" height="18" rx="2.5"/><path d="M10.5 18h3"/></svg>',
+  dna:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7.5 4.3v8.6L12 20.2l-7.5-4.3V7.3z"/><circle cx="12" cy="12" r="2.5"/></svg>',
+  up:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17l5-5 4 4 7-8M15 8h5v5"/></svg>',
+  wrench:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-5.3 5.3a1.5 1.5 0 0 0 2.1 2.1l5.3-5.3a4 4 0 0 0 5.4-5.4l-2.3 2.3-2.1-2.1z"/></svg>',
+  check:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.3l2.3 2.4 4.8-5"/></svg>',
+  compass:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polygon points="15.5 8.5 13.4 13.4 8.5 15.5 10.6 10.6 15.5 8.5"/></svg>',
+  rocket:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19l4-1 9-9a4 4 0 0 0-5.7-5.7l-9 9-1 4zM14 5l5 5"/></svg>'
 };
+const uiIco=(k,cls)=>`<i class="ui-ic${cls?" "+cls:""}" aria-hidden="true">${UICO[k]||""}</i>`;
 function awardsCard(s,inFold){
   const aw=seasonAwards(s);if(!aw)return "";
   const mvpInfo=s&&s.my!=null?sqFind(s.my,aw.mvp.n):(sqFindAny(aw.mvp.n)&&sqFindAny(aw.mvp.n).p);
@@ -602,11 +618,11 @@ function matchDeserve(m){
   const st=m&&m.stats;if(!st||st.myXg==null||st.oppXg==null)return null;
   const r=mres(m),mx=+st.myXg,ox=+st.oppXg,diff=mx-ox;
   const xp=calcMatchXpts(mx,ox),actPts=r=="w"?3:r=="d"?1:0,pDiff=xp?actPts-xp.xPts:0;
-  if(r=="l"&&diff>=0.35&&pDiff<=-1.15)return{k:"unlucky",t:"Şanssız Mağlubiyet",ic:"⚠️",c:"#f97316",bg:"#ea580c",d:diff,xPts:xp.xPts};
-  if(r=="w"&&diff<=-0.35&&pDiff>=1.15)return{k:"undeserved",t:"Hak Edilmemiş Galibiyet",ic:"🛡️",c:"#3b82f6",bg:"#1e3a8a",d:diff,xPts:xp.xPts};
-  if(r=="w"&&diff>=0.25)return{k:"deserved",t:"Hak Edilmiş Galibiyet",ic:"✓",c:"#12b886",bg:"#0f9d6b",d:diff,xPts:xp.xPts};
-  if(r=="d"&&diff>=0.6)return{k:"unlucky",t:"Kaçan Galibiyet (Şanssız)",ic:"⚠️",c:"#f97316",bg:"#ea580c",d:diff,xPts:xp.xPts};
-  if(r=="d"&&diff<=-0.6)return{k:"undeserved",t:"Kurtarılan Puan",ic:"🛡️",c:"#3b82f6",bg:"#1e3a8a",d:diff,xPts:xp.xPts};
+  if(r=="l"&&diff>=0.35&&pDiff<=-1.15)return{k:"unlucky",t:"Şanssız Mağlubiyet",ic:uiIco("bug"),c:"#f97316",bg:"#ea580c",d:diff,xPts:xp.xPts};
+  if(r=="w"&&diff<=-0.35&&pDiff>=1.15)return{k:"undeserved",t:"Hak Edilmemiş Galibiyet",ic:uiIco("shield"),c:"#3b82f6",bg:"#1e3a8a",d:diff,xPts:xp.xPts};
+  if(r=="w"&&diff>=0.25)return{k:"deserved",t:"Hak Edilmiş Galibiyet",ic:uiIco("check"),c:"#12b886",bg:"#0f9d6b",d:diff,xPts:xp.xPts};
+  if(r=="d"&&diff>=0.6)return{k:"unlucky",t:"Kaçan Galibiyet (Şanssız)",ic:uiIco("bug"),c:"#f97316",bg:"#ea580c",d:diff,xPts:xp.xPts};
+  if(r=="d"&&diff<=-0.6)return{k:"undeserved",t:"Kurtarılan Puan",ic:uiIco("shield"),c:"#3b82f6",bg:"#1e3a8a",d:diff,xPts:xp.xPts};
   return{k:"fair",t:r=="l"&&diff<=-0.25?"Hak Edilmiş Mağlubiyet":"Dengeli Maç",ic:"•",c:"#94a3b8",bg:"#475569",d:diff,xPts:xp?xp.xPts:null};
 }
 function xgEffInfo(m){
@@ -621,7 +637,7 @@ function xgEffInfo(m){
 function advFormUI(s){
   const q=st.mst||defMst(),me=s.my!=null&&T[s.my]?T[s.my].n:"Sen",op=st.mop!=null&&T[st.mop]?T[st.mop].n:"Rakip";
   const hasAny=Object.values(q).some(v=>v!==""&&v!=null);
-  let h=`<button type="button" class="advbtn ${st.madv?"on":""}" data-a="madv"><span>📊 Gelişmiş İstatistik Ekle (Opsiyonel)${hasAny?" ✓":""}</span><span>${st.madv?"▴":"▾"}</span></button>`;
+  let h=`<button type="button" class="advbtn ${st.madv?"on":""}" data-a="madv"><span class="ui-lbl">${uiIco("chart")}<span>Gelişmiş İstatistik Ekle (Opsiyonel)${hasAny?" ✓":""}</span></span><span>${st.madv?"▴":"▾"}</span></button>`;
   if(!st.madv)return h;
   const row=(lbl,sub,k1,k2,ph1,ph2,dec)=>`<div class="advrow"><div class="advinp"><input id="mst_${k1}" class="tin" data-mst="${k1}" inputmode="${dec?"decimal":"numeric"}" maxlength="5" placeholder="${ph1}" value="${esc(q[k1]??"")}"></div><div class="lbl">${lbl}${sub?`<small>${sub}</small>`:""}</div><div class="advinp"><input id="mst_${k2}" class="tin" data-mst="${k2}" inputmode="${dec?"decimal":"numeric"}" maxlength="5" placeholder="${ph2}" value="${esc(q[k2]??"")}"></div></div>`;
   const mp=parseFloat(q.myPos),opP=parseFloat(q.oppPos),pBar=Number.isFinite(mp)&&Number.isFinite(opP)&&mp+opP>0?`<div class="advbar"><i style="width:${mp}%"></i><i style="width:${opP}%"></i></div>`:"";
@@ -686,35 +702,35 @@ function calcTacticalDNA(s,opt){
   const effRaw=Math.min(100,Math.max(10,55+(gxRatio-1)*45+(conv-0.14)*120));
   const eff=cl(effRaw);
   // Menajer Kimliği Ataması (Tutarlı eşikler)
-  let title="Dengeli Taktisyen",desc="Savunma ile hücumu dengede tutan, rakibe ve skora göre strateji değiştirebilen komple menajer.",icon="🧠";
+  let title="Dengeli Taktisyen",desc="Savunma ile hücumu dengede tutan, rakibe ve skora göre strateji değiştirebilen komple menajer.",icon=uiIco("dna");
   if(mPos>=53&&ctrl>=55&&ctrl>=atk){
     title="Tiki-Taka Ustası";
     desc="Topa hükmeden (%"+Math.round(mPos)+"), yüksek pas isabetiyle oyunu rakip yarı sahaya yıkan pas ve pozisyon oyunu ustası.";
-    icon="♟️";
+    icon=uiIco("play");
   }else if(mPos<49&&(atk>=50||eff>=62)){
     title="Kontra Atak Dehası";
     desc="Topu rakibe bırakıp (%"+Math.round(mPos)+") kapılan toplarla saniyeler içinde tehlike ve skor üreten geçiş oyunu uzmanı.";
-    icon="⚡";
+    icon=uiIco("bolt");
   }else if(atk>=68&&aggr>=60){
     title="Gegenpressing Mimarı";
     desc="Önde yoğun baskı, yüksek şut temposu ve dikine oyunla rakibi bunaltan hücum presi ekolü.";
-    icon="🔥";
+    icon=uiIco("flame");
   }else if(eff>=72&&xgSrc.length&&totGfXg>totXg){
     title="Klinik Bitirici";
     desc="Az pozisyona girse bile bulduğu fırsatları yüksek yüzdeli gole çeviren soğukkanlı bitiricilik uzmanı.";
-    icon="🎯";
+    icon=uiIco("boot");
   }else if(aggr>=62&&oShots<=9){
     title="Savunma Bakanı (Katı Defans)";
     desc="Kalesini şuta kapatan, rakibe net fırsat tanımayan disiplinli savunma ve direnç ustası.";
-    icon="🛡️";
+    icon=uiIco("shield");
   }else if(atk>=ctrl+8){
     title="Direkt Hücumcu";
     desc="Pas yapmak yerine doğrudan rakip kaleyi düşünen, sık şut deneyip ceza sahasını zorlayan oyun tarzı.";
-    icon="🚀";
+    icon=uiIco("rocket");
   }else if(mPos>=51&&mPass>=82){
     title="Kontrollü Oyun Kurucu";
     desc="Topu ayağında güvenli tutup yüksek pas yüzdesiyle (%"+Math.round(mPass)+") oyunu sakin yönlendiren menajer.";
-    icon="🧭";
+    icon=uiIco("compass");
   }
   const xgDiff=xgSrc.length?(totGfXg-totXg):0;
   const unluckyCnt=src.filter(m=>{const d=matchDeserve(m);return d&&d.k=="unlucky"}).length;
@@ -824,7 +840,7 @@ function tacticalDnaCard(s,careerOpt){
   const isCareer=!!(careerOpt&&careerOpt.career);
   const dna=calcTacticalDNA(s,isCareer?careerOpt:false);
   if(!dna){
-    return `<div class="dnacard"><div class="dnahd"><h3 style="margin:0">🧬 ${isCareer?"Genel Menajer Profili":"Oyun Tarzın & Menajer Kimliği"}</h3><span class="lb">${isCareer?"Kariyer Analizi":"Taktiksel Analiz"}</span></div><div class="note" style="margin:6px 0">Maç skoru girerken <b>“Gelişmiş İstatistik Ekle”</b> bölümünden girdiğin verilerle (Topla Oynama, Şut, Pas, xG) ${isCareer?"tüm kariyerindeki genel menajer profilini":"nasıl bir futbol oynadığını"} 100 üzerinden puanlar ve menajer kimliğini belirler.</div></div>`;
+    return `<div class="dnacard"><div class="dnahd"><h3 class="ui-lbl" style="margin:0">${uiIco("dna")}<span>${isCareer?"Genel Menajer Profili":"Oyun Tarzın & Menajer Kimliği"}</span></h3><span class="lb">${isCareer?"Kariyer Analizi":"Taktiksel Analiz"}</span></div><div class="note" style="margin:6px 0">Maç skoru girerken <b>“Gelişmiş İstatistik Ekle”</b> bölümünden girdiğin verilerle (Topla Oynama, Şut, Pas, xG) ${isCareer?"tüm kariyerindeki genel menajer profilini":"nasıl bir futbol oynadığını"} 100 üzerinden puanlar ve menajer kimliğini belirler.</div></div>`;
   }
   const xd=xgS2(dna.xgDiff),effCol=dna.xgDiff>=0?"pos":"neg";
   const ax=[
@@ -861,7 +877,7 @@ function tacticalDnaCard(s,careerOpt){
   return `<div class="dnacard">
     <div class="dnahd"><div><div class="lb" style="text-transform:uppercase;letter-spacing:.05em;font-weight:700">${isCareer?"Genel Menajer Profili":"Oyun Tarzın"} · ${esc(dna.scope)}</div><div class="dnabdg" style="margin-top:4px"><span>${dna.icon}</span><span>${esc(dna.title)}</span></div></div><span class="dlv ${cf[1]}" title="Puanların kaç maça dayandığına göre güven düzeyi">${cf[0]} · ${dna.n} maç</span></div>
     <div class="note" style="margin:0 0 10px">${esc(dna.desc)}</div>
-    <div class="dnasum"><span>💪 En güçlü: <b>${DNASH[best.k]}</b> (${best.v})</span><span>🔧 Geliştirilecek: <b>${DNASH[worst.k]}</b> (${worst.v})</span></div>
+    <div class="dnasum"><span class="ui-lbl">${uiIco("up")}<span>En güçlü: <b>${DNASH[best.k]}</b> (${best.v})</span></span><span class="ui-lbl">${uiIco("wrench")}<span>Geliştirilecek: <b>${DNASH[worst.k]}</b> (${worst.v})</span></span></div>
     <div class="dnagrid">
       <div class="dnaradar">${radarSvg(dna)}</div>
       <div class="dnalist">${items}</div>

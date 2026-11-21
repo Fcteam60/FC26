@@ -1,3 +1,7 @@
+## v20.25 (2026-11-21) — Aşama 2: Monokrom Çizgi SVG İkon Sistemi & Koyu Mod Logo Zeminleri
+- **Birleşik Çizgi SVG İkon Sistemi (`analytics.js`, `sim.js`, `app.js`):** Arayüz butonları, segmentli sekmeler (*Eleme Ağacı / Grup Fikstürü*, *Ağaç Görünümü / Detaylı Liste*, *İlk 11 Saha / Tam Kadro*), simülasyon aksiyonları, maç günlüğü rozetleri, hak ediş etiketleri ve Taktiksel DNA kimlik kartlarındaki tüm sistem emojileri (`🏆`, `⚽`, `⚡`, `🌳`, `📋`, `📊`, `📖`, `🔥`, `☠`, `👟`, `🧬` vb.) `1.9px` çizgi kalınlığındaki monokrom SVG ikon setine (`UICO` + `uiIco`) dönüştürüldü.
+- **Koyu Mod Kulüp Logo Görünürlüğü (`style.css`):** Koyu temada koyu renkli kulüp logolarının (`Juventus`, `Tottenham`, `Beşiktaş`, `Newcastle` vb.) arka planda kaybolmasını önlemek için `.bd-img` öğelerine ince dairesel buzlu cam halo ve yumuşak gölge eklendi (altın şampiyonluk kartlarında otomatik devre dışı kalır).
+
 ## v20.24 (2026-11-21) — Aşama 1: Stüdyo Premium İkon, Mat Zemin & Buzlu Cam Üst Çubuk
 - **Yeni Minimalist Uygulama İkonu (`icon-512.png`, `icon-192.png`, `icon-maskable-512.png`, `apple-touch-icon.png`):** Eski neon ve `</>` kod sembollü top görseli kaldırılarak koyu zümrüt-obsidyen zemin üzerinde şampanya-altın çerçeveli, geometrik `27 · FC LİG` kalkan amblemine geçildi.
 - **Çizgisiz Mat Zemin & Nötr Karbon Koyu Tema (`style.css`):** Arka plandaki 44px dikey şeritler ve `.big` kutularındaki çim çizgileri kaldırıldı; koyu tema mavi alt tondan nötr karbon obsidyen (`#090c10`) yüzeyine, açık tema sakin kırık taş beyazına (`#f3f5f4`) çekildi.

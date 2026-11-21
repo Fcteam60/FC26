@@ -3669,3 +3669,52 @@ header .btn{
 .nav button.cur{font-weight:700}
 main{padding:14px 13px calc(104px + env(safe-area-inset-bottom,0px))}
 .card.pglass,.card.pgrp,.card.pstat,.dnacard{padding:15px;margin-top:12px}
+/* ===== v20.25 (Aşama 2): Çizgi SVG İkon Sistemi, Koyu Mod Logo Zeminleri & Mikro Cilalar ===== */
+/* 1) Satır İçi Monokrom Çizgi SVG İkonları (.ui-ic, .ui-btn, .ui-lbl) */
+.ui-ic{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:15px;height:15px;flex:0 0 auto;vertical-align:-2px;color:currentColor;
+}
+.ui-ic svg{
+  width:100%;height:100%;fill:none;stroke:currentColor;
+  stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;
+}
+.ui-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.ui-lbl{display:inline-flex;align-items:center;gap:5px;min-width:0}
+.stabs .chip.ui-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px}
+.stabs .chip.ui-btn .ui-ic{width:14px;height:14px}
+.kg-dead{display:inline-flex;align-items:center;gap:4px}
+.kg-dead .ui-ic{width:12px;height:12px}
+.su-node .ui-ic,.bkt-cpill .ui-ic{width:13px;height:13px;margin-right:2px}
+.bkt-crn.ui-ic{width:13px;height:13px;margin-right:3px;color:var(--gold);vertical-align:-2px}
+.sbev .ui-ic{width:13px;height:13px;opacity:.85}
+.sbev.og .ui-ic{color:var(--wr)}
+.sbev.as .ui-ic,.sbev em .ui-ic{width:12px;height:12px;color:var(--ac)}
+.sbph .ui-ic{width:20px;height:20px;color:var(--mut);opacity:.7}
+.dnabdg .ui-ic{width:19px;height:19px;color:var(--gold)}
+.pgmath{display:flex;align-items:center;gap:7px}
+.pgmath .ui-ic{width:16px;height:16px}
+.desbdg .ui-ic{width:13px;height:13px}
+.sbv b .ui-ic{width:14px;height:14px}
+.dnasum span.ui-lbl{display:inline-flex;align-items:center;gap:6px}
+.dnasum .ui-ic{width:15px;height:15px;color:var(--ac)}
+.dnasum span:last-child .ui-ic{color:var(--gold)}
+
+/* 2) Koyu Modda Koyu Kulüp Logoları İçin Zarif Buzlu Cam Zemin (.bd-img) */
+.bd-img{transition:opacity .18s ease}
+:root[data-theme="dark"] .bd-img{
+  background:radial-gradient(circle,rgba(255,255,255,.15) 0%,rgba(255,255,255,.06) 66%,transparent 74%);
+  border-radius:50%;padding:1.5px;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.48));
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .bd-img{
+    background:radial-gradient(circle,rgba(255,255,255,.15) 0%,rgba(255,255,255,.06) 66%,transparent 74%);
+    border-radius:50%;padding:1.5px;
+    filter:drop-shadow(0 2px 4px rgba(0,0,0,.48));
+  }
+}
+/* Altın şampiyonluk kartı ve saha düğümlerinde logo arka planını sade tut */
+.tc.t1 .bd-img,.hero.gold .bd-img,.lead .bd-img,.gcd.gold .bd-img{
+  background:none!important;padding:0!important;
+}

@@ -853,7 +853,7 @@ function koTreeHtml(s,ko,RDs){
       const tmRow=(ti,g,isW,isL)=>{
         if(ti==null||!T[ti])return `<div class="bkt-tm tbd"><span class="bkt-ph">?</span><span class="n">Bekleniyor</span><b class="bkt-sc">—</b></div>`;
         const isMe=ti===s.my,isChamp=isLast&&isW;
-        const nmStr=`${isChamp?`<i class="bkt-crn" aria-hidden="true">🏆</i> `:""}${isMe?`<i class="bkt-st" aria-hidden="true">★</i> `:""}${esc(T[ti].n)}`;
+        const nmStr=`${isChamp?uiIco("trophy","bkt-crn"):""}${isMe?`<i class="bkt-st" aria-hidden="true">★</i> `:""}${esc(T[ti].n)}`;
         return `<button class="bkt-tm${isW?" w":isL?" l":""}${isMe?" me":""}${isChamp?" ch":""}" data-a="tinfo" data-i="${ti}" aria-label="${esc(T[ti].n)} kadrosunu incele"><span class="bkt-cr">${badge(ti,22)}</span><span class="n">${nmStr}</span><b class="bkt-sc">${done?g:"·"}</b></button>`;
       };
       let meta="";
@@ -871,7 +871,7 @@ function koTreeHtml(s,ko,RDs){
       return `<div class="bkt-slot${isFirst?" fst":""}${isLast?" lst":""}${sideCls}${armCls}">${node}${!isLast?`<i class="bkt-arm" aria-hidden="true"></i>`:""}</div>`;
     }).join("");
     const colDone=doneCnt>=expCnt&&expCnt>0;
-    return `<div class="bkt-col${isLast?" fin":""}${colDone?" cdone":""}"><div class="bkt-chd"><span class="bkt-cpill">${isLast?"🏆 ":""}${esc(rd)}<em>${doneCnt}/${expCnt}</em></span></div><div class="bkt-colb">${slots}</div></div>`;
+    return `<div class="bkt-col${isLast?" fin":""}${colDone?" cdone":""}"><div class="bkt-chd"><span class="bkt-cpill">${isLast?uiIco("trophy"):""}${esc(rd)}<em>${doneCnt}/${expCnt}</em></span></div><div class="bkt-colb">${slots}</div></div>`;
   }).join("");
   return `<div class="bkt-wrap" role="region" aria-label="Eleme ağacı diyagramı"><div class="bkt-tree">${cols}</div></div><div class="note" style="margin:7px 0 0">Yatay kaydırarak tüm eleme turlarını takip edebilir, gol detayları için «Detaylı Liste» görünümüne geçebilirsin.</div>`;
 }
@@ -889,15 +889,15 @@ function koBracketCard(s){
     const needUser=userTie&&userTie.w==null&&!s.res;
     if(needUser){
       const opp=userTie.t1===s.my?userTie.t2:userTie.t1;
-      simBtns=`<div class="bar" style="margin:0 0 10px"><button class="btn p qgo" data-a="qs" style="flex:1">⚽ ${activeRd} Maçını Gir (Rakip: ${esc(T[opp].n)})</button></div>`;
+      simBtns=`<div class="bar" style="margin:0 0 10px"><button class="btn p qgo ui-btn" data-a="qs" style="flex:1">${uiIco("ball")}<span>${activeRd} Maçını Gir (Rakip: ${esc(T[opp].n)})</span></button></div>`;
     }else{
-      simBtns=`<div class="bar" style="margin:0 0 10px"><button class="btn p" data-a="simko" style="flex:1">⚡ ${activeRd} Turunu Simüle Et</button>${RDs.indexOf(activeRd)<RDs.length-1?`<button class="btn" data-a="simallko" style="flex:1">⏩ Finale Kadar Simüle Et</button>`:""}</div>`;
+      simBtns=`<div class="bar" style="margin:0 0 10px"><button class="btn p ui-btn" data-a="simko" style="flex:1">${uiIco("bolt")}<span>${activeRd} Turunu Simüle Et</span></button>${RDs.indexOf(activeRd)<RDs.length-1?`<button class="btn ui-btn" data-a="simallko" style="flex:1">${uiIco("ff")}<span>Finale Kadar Simüle Et</span></button>`:""}</div>`;
     }
   }else if(out&&out.done&&!s.res){
-    simBtns=`<div class="gq" style="margin:0 0 10px;border-color:var(--gold)"><b>🏆 Turnuva Maçları Tamamlandı!</b><div class="note" style="margin:3px 0 8px">Şampiyon: <b>${esc(T[out.ch].n)}</b>${out.ru!=null?` · Finalist: <b>${esc(T[out.ru].n)}</b>`:""}. Turnuvayı sonlandırıp geçmişe ve karneye kaydedebilirsin.</div><button class="btn p cta" data-a="fintrn">🏆 Turnuvayı Sonlandır ve Kaydet</button></div>`;
+    simBtns=`<div class="gq" style="margin:0 0 10px;border-color:var(--gold)"><b class="ui-lbl">${uiIco("trophy")}<span>Turnuva Maçları Tamamlandı!</span></b><div class="note" style="margin:3px 0 8px">Şampiyon: <b>${esc(T[out.ch].n)}</b>${out.ru!=null?` · Finalist: <b>${esc(T[out.ru].n)}</b>`:""}. Turnuvayı sonlandırıp geçmişe ve karneye kaydedebilirsin.</div><button class="btn p cta ui-btn" data-a="fintrn">${uiIco("trophy")}<span>Turnuvayı Sonlandır ve Kaydet</span></button></div>`;
   }
   const canTree=RDs.length>=2,bkv=canTree?(st.bkv==="list"?"list":"tree"):"list";
-  const viewSw=canTree?`<div class="stabs seg2" style="margin:0 0 10px" role="tablist" aria-label="Eleme görünümü"><button class="chip ${bkv==="tree"?"on":""}" role="tab" aria-selected="${bkv==="tree"}" data-a="bkv" data-v="tree">🌳 Ağaç Görünümü</button><button class="chip ${bkv==="list"?"on":""}" role="tab" aria-selected="${bkv==="list"}" data-a="bkv" data-v="list">📋 Detaylı Liste</button></div>`:"";
+  const viewSw=canTree?`<div class="stabs seg2" style="margin:0 0 10px" role="tablist" aria-label="Eleme görünümü"><button class="chip ui-btn ${bkv==="tree"?"on":""}" role="tab" aria-selected="${bkv==="tree"}" data-a="bkv" data-v="tree">${uiIco("tree")}<span>Ağaç Görünümü</span></button><button class="chip ui-btn ${bkv==="list"?"on":""}" role="tab" aria-selected="${bkv==="list"}" data-a="bkv" data-v="list">${uiIco("list")}<span>Detaylı Liste</span></button></div>`:"";
   let content="";
   if(bkv==="tree"){
     content=koTreeHtml(s,ko,RDs);
@@ -918,8 +918,8 @@ function koBracketCard(s){
           `</div>`;
       }).join("");
       const isF=rd===RDs[RDs.length-1],cntTx=`${pairs.filter(p=>p.w!=null).length}/${pairs.length} eşleşme`;
-      return `<div class="bkrd${isF?" fin":""}">${isF?`<div class="bkfh"><b>🏆 FİNAL</b><small>${cntTx}</small></div>`:`<div class="rt" style="margin:6px 0 4px"><b>${rd}</b> <small>${cntTx}</small></div>`}<div class="bkgrid">${items}</div></div>`;
+      return `<div class="bkrd${isF?" fin":""}">${isF?`<div class="bkfh"><b class="ui-lbl">${uiIco("trophy")}<span>FİNAL</span></b><small>${cntTx}</small></div>`:`<div class="rt" style="margin:6px 0 4px"><b>${rd}</b> <small>${cntTx}</small></div>`}<div class="bkgrid">${items}</div></div>`;
     }).join("");
   }
   const shBtn=`<div class="bar" style="margin:10px 0 0"><button class="btn pset-sec" data-a="kog" style="width:100%"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg><span>Eleme Ağacını Görsel Olarak Paylaş</span></button></div>`;
-  return `<div class="card pglass pko" style="margin:0 0 12px"><h3>🏆 Eleme Ağacı (Bracket)<small>${out&&out.done?`Şampiyon: ${esc(T[out.ch].n)}`:(userElim?"Elendin · Turnuva devam ediyor":koPath(s.cfg))}</small></h3>${simBtns}${viewSw}${content}${shBtn}</div>`}
+  return `<div class="card pglass pko" style="margin:0 0 12px"><h3><span class="ui-lbl">${uiIco("trophy")}<span>Eleme Ağacı (Bracket)</span></span><small>${out&&out.done?`Şampiyon: ${esc(T[out.ch].n)}`:(userElim?"Elendin · Turnuva devam ediyor":koPath(s.cfg))}</small></h3>${simBtns}${viewSw}${content}${shBtn}</div>`}
