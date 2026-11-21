@@ -1,3 +1,7 @@
+## v20.22 (2026-11-21) — Ölüm Grubu Mantığı Güncellemesi
+- **Tek Ölüm Grubu (`app.js` `deadGrpIdx`, `grpCard`, `gInfo`):** `☠ Ölüm Grubu` rozeti ve derin yakut vurgu artık yalnızca senin grubunda ve ilk 2'de değil, hangi grup olursa olsun turnuvadaki **1. en güçlü grupta** (GEN ortalaması en yüksek, eşitlikte bileşik güç ortalaması en yüksek grupta) gösterilir.
+- **PWA Önbellek Yenileme (`index.html`, `sw.js`, `app.js`, `package.json`):** Sürüm `v20.22` ve önbellek anahtarı `fc27-lig-v20-22` olarak güncellendi.
+
 ## v20.21 (2026-11-21) — Grup Eleme Sınırı (qcut) Kesik Çizgi Düzeltmesi
 - **Eleme Sınırı Çizgisi (`style.css`):** Kura/grup kartlarında çıkan son takımın üst kenarına kayan kesik çizgi (`qcut`) çakışması giderildi; eski `.row.tb.kr+.row.tb.kr::before` kuralı kaldırılarak çizgi çıkan son takımın altındaki boşluğa tam hizalandı.
 - **PWA Önbellek Yenileme (`index.html`, `sw.js`, `app.js`):** Sürüm `v20.21` ve önbellek anahtarı `fc27-lig-v20-21` olarak güncellendi.

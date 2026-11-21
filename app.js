@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.21",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="20.22",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -149,7 +149,7 @@ function genDraw(s,tries,tight,ms){ms=ms||900;tight=tight||1;const t0=Date.now()
 function grpCard(g,gi){
   const s=cur(),ravg=f=>g.reduce((a,i)=>a+RT(s,i)[f],0)/g.length;
   const d=st.dr,hl=st.tab==2&&d&&st.k>0&&st.k<=d.seq.length&&d.seq[st.k-1][1]==gi,mn=s.my!=null&&g.includes(s.my);
-  const dd=mn&&gInfo(s).includes("☠"),pc=g.length?Math.max(6,Math.min(100,(ravg("g")-70)/18*100)):0;
+  const dd=deadGrpIdx(s)===gi,pc=g.length?Math.max(6,Math.min(100,(ravg("g")-70)/18*100)):0;
   const qL=(s.gqs&&s.gqs[gi])||[],qMax=s.cfg.q||2,lg=isLg(s.cfg);
   const sim=ensureSim(s),rows=(s.cfg.gs||lg)?calcGroupTable(s,gi):[];
   const hasPlayed=rows.some(r=>r.o>0);
@@ -374,12 +374,20 @@ const DIFF=[["Kısıtlama yok (tüm takımlar)",0],["Güçlüleri çıkar",.15],
 const dcut=(s,d)=>Math.min(s.P.length-1,Math.round(s.P.length*(DIFF[d]?DIFF[d][1]:0)));
 const cd=(t,b)=>`<div class="card pglass"><h3>${t}</h3>${b}</div>`;
 const tsT=k=>store.seasons.reduce((a,x)=>a+(x.ts[k]||0),0);
+function deadGrpIdx(s){
+  if(!s||!s.G||!s.cfg||!s.cfg.gs||isLg(s.cfg)||s.G.length<2)return -1;
+  if(s.G.some(g=>!g||!g.length))return -1;
+  const gAvg=g=>g.reduce((a,i)=>a+RT(s,i).g,0)/g.length;
+  const vAvg=g=>g.reduce((a,i)=>a+V(RT(s,i)),0)/g.length;
+  return s.G.map((g,i)=>[gAvg(g),vAvg(g),i]).sort((a,b)=>b[0]-a[0]||b[1]-a[1]||a[2]-b[2])[0][2]}
 function gInfo(s){
   if(!s.G)return "";
   const gi=s.G.findIndex(g=>g.includes(s.my));if(gi<0)return "";
   const rv=s.G[gi].filter(i=>i!==s.my);if(!rv.length)return "";
-  const r=s.G.map(g=>avg(g,"g")).map((v,i)=>[v,i]).sort((a,b)=>b[0]-a[0]).findIndex(x=>x[1]==gi)+1;
-  return "Rakip ortalaması "+fx(rv.reduce((a,i)=>a+T[i].g,0)/rv.length)+" · "+(s.cfg.gs?"Grup":"Eşleşme")+" gücü "+r+"/"+s.G.length+(s.cfg.gs&&s.G.length>=4&&r<=2?" · ☠ Ölüm grubu":"")}
+  const gAvg=g=>g.reduce((a,i)=>a+RT(s,i).g,0)/g.length;
+  const vAvg=g=>g.reduce((a,i)=>a+V(RT(s,i)),0)/g.length;
+  const r=s.G.map((g,i)=>[gAvg(g),vAvg(g),i]).sort((a,b)=>b[0]-a[0]||b[1]-a[1]||a[2]-b[2]).findIndex(x=>x[2]==gi)+1;
+  return "Rakip ortalaması "+fx(rv.reduce((a,i)=>a+RT(s,i).g,0)/rv.length)+" · "+(s.cfg.gs?"Grup":"Eşleşme")+" gücü "+r+"/"+s.G.length+(deadGrpIdx(s)===gi?" · ☠ Ölüm grubu":"")}
 function tsCard(list){const S=list||store.seasons,tK=k=>S.reduce((a,x)=>a+((x.ts||{})[k]||0),0),w=tK("w"),d=tK("d"),l=tK("l"),n=w+d+l;if(!n)return "";
   const gf=tK("gf"),ga=tK("ga"),gd=gf-ga,wr=Math.round(w/n*100);
   const gdStr=(gd>0?"+":gd<0?"−":"")+Math.abs(gd);
