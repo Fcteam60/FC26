@@ -2005,7 +2005,7 @@ function homeView(s){
     if(opp!=null&&T[opp]){
       const me=RT(s,s.my),op=RT(s,opp),df=me.g-op.g,hh=h2h(opp);
       const cbOp=bspec(opp);if(cbOp&&cbOp.c1)opCol=` style="--op1:${cbOp.c1}"`;
-      ey=stg==="Grup"?(isLg(s.cfg)?"SIRADAKİ LİG MAÇI":`SIRADAKİ MAÇ · ${gname(s,gi).toUpperCase()}`):`SIRADAKİ MAÇ · ${stg.toUpperCase()}`;
+      ey=stg==="Grup"?(isLg(s.cfg)?"SIRADAKİ LİG MAÇI":`SIRADAKİ MAÇ · ${gname(s,gi).toLocaleUpperCase("tr")}`):`SIRADAKİ MAÇ · ${stg.toLocaleUpperCase("tr")}`;
       const vsSub=hh?`${hh.o.w}G ${hh.o.d}B ${hh.o.l}M`:(df===0?"Eşit güç":(df>0?`+${df} GEN`:`${df} GEN`));
       mid=`<div class="ph-vs">`+
         `<div class="ph-tm">${badge(s.my,50)}<b>${esc(me.n)}</b><span class="ph-g">${me.g} GEN</span></div>`+
@@ -2403,7 +2403,7 @@ function bspec(i){const n=T[i].n;if(bsp[n])return bsp[n];
   if(CLBC[n]){const [c1,c2,pi,ini]=CLBC[n];return bsp[n]={c1,c2,p:BP[pi],ini}}
   let x=2166136261;for(const ch of n)x=Math.imul(x^ch.charCodeAt(0),16777619)>>>0;
   const h=x%360,h2=(h+[30,60,150,180,210][(x>>>9)%5])%360,li=(x>>>5)&1;
-  const ini=n.split(/[\s.\-']+/).filter(Boolean).map(w=>w[0]).join("").slice(0,3).toUpperCase();
+  const ini=n.split(/[\s.\-']+/).filter(Boolean).map(w=>w[0]).join("").slice(0,3).toLocaleUpperCase("tr");
   return bsp[n]={c1:`hsl(${h},55%,32%)`,c2:li?`hsl(${h2},75%,58%)`:"#f1f1ea",p:BP[(x>>>13)%6],ini}}
 const _lImg=Object.create(null);
 function logoUrl(i){const t=T[i];return(t&&typeof LOGOS!=="undefined"&&LOGOS[t.n])?LOGOS[t.n]:""}
@@ -2624,8 +2624,8 @@ document.addEventListener("click",async e=>{
   else if(a=="glclr"){const gi=+b.dataset.g;ensureMgls(st.mg||0);if(st.mgls[gi]){st.mgls[gi]={sc:"",as:"",na:false};syncGlsToMaps()}}
   else if(a=="glasclr"){const gi=+b.dataset.g;ensureMgls(st.mg||0);if(st.mgls[gi]){st.mgls[gi].as="";st.mgls[gi].na=false;syncGlsToMaps()}}
   else if(a=="msave"){const op=st.mop;if(op==null)return;
-    if(!st.med&&st.mrd==="Grup"){
-      const maxGl=s.cfg.gl||1,playedVsOp=(s.mt||[]).filter(m=>m.rd==="Grup"&&m.opp===op).length;
+    if(st.mrd==="Grup"){
+      const maxGl=s.cfg.gl||1,playedVsOp=(s.mt||[]).filter(m=>m.id!==st.med&&m.rd==="Grup"&&m.opp===op).length;
       if(playedVsOp>=maxGl){ask(`${T[op].n} ile bu gruptaki ${maxGl} maç hakkını zaten tamamladın. Sıradaki grup rakibini seç veya mevcut maçı düzenle.`);render();return}
     }
     ensureMgls(st.mg||0);
@@ -2642,9 +2642,20 @@ document.addEventListener("click",async e=>{
       if(need>0&&sqO.length){const ix=simGoalAssign(op,need),as=simAssistsFor(op,ix);ix.forEach((v,k)=>old.push({sc:sqO[v].n,as:as[k]>=0&&sqO[as[k]]?sqO[as[k]].n:""}))}
       m.og=old;
       m.omom=m.mom?"":(pickOppMom(op,old,m.gf,m.ga)||"")}
+    let editRolled=false;
+    if(oldM&&oldM.rd==="Grup"&&(oldM.opp!==op||st.mrd!=="Grup")){
+      const grpIdx=(s.mt||[]).filter(x=>x.rd==="Grup").findIndex(x=>x.id==oldM.id);
+      if(grpIdx>=0&&s.sim&&s.sim.w>grpIdx){
+        const sim=ensureSim(s),totW=((s.cfg.gs||s.cfg.N)-1)*(s.cfg.gl||1);
+        Object.keys(sim.gm).forEach(gi=>{if(Array.isArray(sim.gm[gi]))sim.gm[gi].length=Math.min(sim.gm[gi].length,grpIdx)});
+        sim.w=grpIdx;sim.ko=nob();
+        if(sim.w<totW){s.gqs=nob();s.gq=null;s.grk=null;st.grk=null}
+        rebuildSimScorers(s);editRolled=true;
+      }
+    }
     if(oldM)s.mt[s.mt.indexOf(oldM)]=m;else s.mt.push(m);
     const des=matchDeserve(m);
-    mApply(s);syncUserMatchesToBracket(s);st.med=null;st.mg=0;st.mo=0;st.mu=0;st.mp=undefined;st.mpf=0;st.mpa=0;st.mgls=[];st.msc=nob();st.mas=nob();st.mmom="";st.mop=null;st.mlg=null;st.qs=false;st.madv=false;st.mst=defMst();un=(oldM?"Güncellendi · ":"Kaydedildi · ")+m.on+" "+mscTxt(m)+(des&&des.k!="fair"?" · "+des.t:"")+(st.stwarn?" ("+st.stwarn+")":"");st.stwarn=null;if(!oldM){const df=m.gf-m.ga,pw=pf!=null&&pa!=null&&pf>pa;st.fw=df>0?(df>=3?3:df==2?2:1):(pw?2:0)}}
+    mApply(s);syncUserMatchesToBracket(s);st.med=null;st.mg=0;st.mo=0;st.mu=0;st.mp=undefined;st.mpf=0;st.mpa=0;st.mgls=[];st.msc=nob();st.mas=nob();st.mmom="";st.mop=null;st.mlg=null;st.qs=false;st.madv=false;st.mst=defMst();un=(oldM?"Güncellendi · ":"Kaydedildi · ")+m.on+" "+mscTxt(m)+(editRolled?" · ilgili hafta simülasyonu geri alındı":"")+(des&&des.k!="fair"?" · "+des.t:"")+(st.stwarn?" ("+st.stwarn+")":"");st.stwarn=null;if(!oldM){const df=m.gf-m.ga,pw=pf!=null&&pa!=null&&pf>pa;st.fw=df>0?(df>=3?3:df==2?2:1):(pw?2:0)}}
   else if(a=="mdel"){const m=s.mt.find(x=>x.id==id);if(m){const grpIdx=m.rd==="Grup"?(s.mt||[]).filter(x=>x.rd==="Grup").findIndex(x=>x.id==id):-1;s.delM=Array.from(new Set([...(s.delM||[]),m.id]));s.mt=s.mt.filter(x=>x.id!=id);let rolled=false;if(grpIdx>=0&&s.sim&&s.sim.w>grpIdx){const sim=ensureSim(s),totW=((s.cfg.gs||s.cfg.N)-1)*(s.cfg.gl||1);Object.keys(sim.gm).forEach(gi=>{if(Array.isArray(sim.gm[gi]))sim.gm[gi].length=Math.min(sim.gm[gi].length,grpIdx)});sim.w=grpIdx;sim.ko=nob();if(sim.w<totW){s.gqs=nob();s.gq=null;s.grk=null;st.grk=null}rebuildSimScorers(s);rolled=true}mApply(s);if(s.G&&!isLg(s.cfg))syncUserMatchesToBracket(s);un=rolled?"Maç silindi · ilgili hafta simülasyonu geri alındı":"Maç silindi"}}
   else if(a=="kurag"){mkImg("kura",s);return}
   else if(a=="kog"){mkImg("ko",s);return}
