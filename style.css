@@ -2897,3 +2897,171 @@ button.sqr.sqr-btn:active{background:var(--hi)}
 
 /* v20.12: 2 Sayfalık Karne Sekme Çubuğu */
 .pimg-tabs{margin:0 0 10px!important}
+
+/* ===== v20.16: Editorial Broadcast Kura & Grup Kartı Tasarımı ===== */
+.grid>.kgc{
+  padding:15px 13px 10px;border-radius:22px;
+  border:1px solid var(--gbd);
+  background:radial-gradient(120% 70% at 0% 0%,color-mix(in srgb,var(--ac) 11%,transparent),transparent 58%),var(--gcard);
+  box-shadow:var(--gsh-hi);
+}
+.kgc::before{height:2.5px;background:linear-gradient(90deg,var(--ac),color-mix(in srgb,var(--ac) 25%,transparent) 65%,transparent)}
+.grid>.kgc.mine{
+  border-color:color-mix(in srgb,var(--gold) 52%,var(--gbd));
+  background:radial-gradient(120% 70% at 0% 0%,rgba(240,194,75,.14),transparent 58%),var(--gcard);
+  box-shadow:var(--gsh-hi),0 0 0 1px rgba(240,194,75,.22);
+}
+.kgc.mine::before{background:linear-gradient(90deg,var(--gold),rgba(240,194,75,.25) 65%,transparent)}
+.grid>.kgc.dead{border-color:color-mix(in srgb,var(--wr) 42%,var(--gbd))}
+.kgc.dead::before{background:linear-gradient(90deg,var(--wr),rgba(224,49,49,.25) 65%,transparent)}
+
+.kgh{gap:11px;margin-bottom:12px}
+.kgl{
+  width:42px;height:42px;border-radius:13px;font-size:24px;
+  box-shadow:0 5px 14px rgba(15,157,107,.28),inset 0 1px 0 rgba(255,255,255,.35);
+}
+.kgt{flex:1;min-width:0}
+.kgt b{font-size:23px;letter-spacing:.01em}
+.kgt small{font-size:12px;margin-top:1px}
+.kg-dead{
+  flex:0 0 auto;font-size:11px;font-weight:700;letter-spacing:.02em;
+  padding:3px 9px;border-radius:99px;white-space:nowrap;
+  background:rgba(224,49,49,.13);color:var(--wr);
+  border:1px solid rgba(224,49,49,.32);
+}
+:root[data-theme="dark"] .kg-dead{color:#ff7b7b}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .kg-dead{color:#ff7b7b}}
+
+/* Birleşik İnce Telemetri Şeridi (.kgs-wrap) */
+.kgs-wrap{
+  margin-bottom:10px;border-radius:14px;overflow:hidden;
+  background:rgba(127,150,140,.08);border:1px solid var(--gbd);
+}
+.kgs-wrap .kgs{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin:0;
+}
+.kgs-wrap .kgs span{
+  padding:8px 6px 7px;border:0;border-radius:0;background:transparent;position:relative;
+}
+.kgs-wrap .kgs span+span::before{
+  content:"";position:absolute;left:0;top:22%;bottom:22%;width:1px;background:var(--bd);
+}
+.kgs-wrap .kgs em{font-size:10px;letter-spacing:.11em;opacity:.85}
+.kgs-wrap .kgs b{font-size:20px;line-height:1.1;margin-top:1px}
+.kgs-wrap .kgb{height:3.5px;margin:0;border-radius:0;background:rgba(127,150,140,.16)}
+.kgs-wrap .kgb u{border-radius:0 3px 3px 0}
+
+/* Takım Satırları (.kr-list, .row.tb.kr) — Sıfır Kesilme, Kusursuz Hiyerarşi */
+.kr-list{display:grid;gap:4px}
+.row.tb.kr{
+  position:relative;display:flex;align-items:center;gap:9px;
+  width:100%;margin:0;padding:8px 8px 8px 10px;min-height:56px;
+  border:1px solid transparent;border-radius:13px;
+  background:rgba(127,150,140,.04);
+  transition:background .15s ease,border-color .15s ease;
+}
+.row.tb.kr+.row.tb.kr::before{display:none}
+.row.tb.kr:active{background:var(--hi)}
+@media(hover:hover){.row.tb.kr:hover{background:rgba(127,150,140,.10)}}
+
+/* Düz, temiz sol vurgu çubuğu (C-şekilli bozulma yok) */
+.row.tb.kr::after{
+  content:"";position:absolute;left:2px;top:9px;bottom:9px;width:3px;
+  border-radius:3px;background:transparent;pointer-events:none;
+}
+.row.tb.kr.qrow{
+  background:linear-gradient(90deg,rgba(15,157,107,.12),rgba(15,157,107,.025) 75%);
+  border-color:rgba(15,157,107,.16);
+}
+.row.tb.kr.qrow::after{background:linear-gradient(180deg,#34d399,#0f9d6b)}
+.row.tb.kr.kme{
+  background:linear-gradient(90deg,rgba(240,194,75,.20),rgba(240,194,75,.04) 80%)!important;
+  border-color:rgba(240,194,75,.38)!important;
+  box-shadow:none!important;
+}
+.row.tb.kr.kme::after{
+  background:linear-gradient(180deg,#fbeaa8,#d4a017)!important;
+  box-shadow:0 0 8px rgba(212,160,23,.45);
+}
+.row.tb.kr.qcut{
+  margin-bottom:7px;
+  position:relative;
+}
+.row.tb.kr.qcut::before{
+  display:block!important;content:"";position:absolute;left:8px;right:8px;bottom:-6px;top:auto;
+  height:0;border-bottom:1.5px dashed color-mix(in srgb,var(--ac) 48%,transparent);
+  background:none;
+}
+.row.tb.kr.elim{opacity:.78}
+
+/* Sıra Rozeti (.kr-rk) & Arma (.kr-cr) */
+.kr-rk{
+  flex:0 0 22px;width:22px;height:22px;border-radius:7px;
+  display:grid;place-items:center;
+  font-family:var(--num);font-size:13.5px;font-weight:700;line-height:1;
+  color:var(--mut);background:rgba(127,150,140,.11);
+}
+.kr-rk.q{background:rgba(15,157,107,.18);color:var(--ac);border:1px solid rgba(15,157,107,.32)}
+.kr-rk.q1{
+  background:linear-gradient(135deg,#f8e08a,#d4a017);color:#2b2000;border:0;
+  box-shadow:0 2px 6px rgba(212,160,23,.30);
+}
+.kr-cr{
+  flex:0 0 auto;width:30px;height:34px;display:grid;place-items:center;
+}
+.kr-cr .bd{filter:drop-shadow(0 2px 5px rgba(0,0,0,.26))}
+
+/* Orta 2 Satırlı Tipografi (.kn, .kt-r, .kr-st) */
+.kr .kn{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.kt-r{display:flex;align-items:center;gap:6px;min-width:0}
+.kr .kn .kt{
+  font-size:15px;font-weight:700;line-height:1.15;color:var(--tx);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;
+}
+.kr-q{
+  flex:0 0 auto;display:inline-flex;align-items:center;gap:2px;
+  padding:1.5px 7px;border-radius:99px;
+  font-size:10.5px;font-weight:800;letter-spacing:.02em;line-height:1.3;
+  background:rgba(15,157,107,.18);color:var(--ac);
+  border:1px solid rgba(15,157,107,.34);white-space:nowrap;
+}
+.row.tb.kr.kme .kr-q{
+  background:rgba(240,194,75,.22);color:#9a6b00;border-color:rgba(212,160,23,.45);
+}
+:root[data-theme="dark"] .row.tb.kr.kme .kr-q{color:#fbeaa8}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .row.tb.kr.kme .kr-q{color:#fbeaa8}}
+
+.kr-st{
+  display:flex;align-items:center;gap:5px;min-width:0;
+  font-size:12px;line-height:1.1;white-space:nowrap;
+}
+.kr-fl{flex:0 0 auto;display:inline-flex;align-items:center;margin-right:2px}
+.kr-fl .fg{width:16px;height:11px;border-radius:2.5px;vertical-align:0;box-shadow:0 0 0 1px rgba(0,0,0,.22)}
+.kr-st span{display:inline-flex;align-items:baseline;gap:3px}
+.kr-st i{
+  font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.06em;
+  color:var(--mut);
+}
+.kr-st b{
+  font-family:var(--num);font-size:14.5px;font-weight:700;color:var(--tx);
+  font-variant-numeric:tabular-nums;
+}
+.kr-dot{font-style:normal;color:var(--mut);opacity:.45;font-size:11px}
+
+/* Sağ Bölge: GEN Puanı + Zarif Ok */
+.kr-r{flex:0 0 auto;display:flex;align-items:center;gap:5px}
+.kr .g{
+  min-width:38px;padding:2px 7px;font-size:17.5px;border-radius:9px;
+  box-shadow:0 2px 6px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.32);
+}
+.kr .chev{font-size:17px;color:var(--mut);opacity:.38;width:10px}
+
+@media(max-width:359px){
+  .row.tb.kr{gap:7px;padding:7px 6px 7px 8px}
+  .kr-rk{flex:0 0 20px;width:20px;height:20px;font-size:12.5px}
+  .kr-cr{width:26px;height:30px}
+  .kr .kn .kt{font-size:14px}
+  .kr-st{gap:4px}
+  .kr-st b{font-size:13.5px}
+  .kr .g{min-width:34px;font-size:16px;padding:2px 5px}
+}

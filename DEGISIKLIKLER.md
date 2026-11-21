@@ -1,3 +1,9 @@
+## v20.16 (2026-11-21) — Premium Kura & Grup Kartları (Sıfır Kesilme, Broadcast Tipografi)
+- **DEF değeri kesilme hatası giderildi (`app.js` `grpCard`, `style.css`):** Geniş `1. Çıktı ✓` hapının orta sütunu sıkıştırıp `DEF 80` rakamını kesmesi düzeltildi. Çıkış rozeti (`✓ Çıktı`) üst satıra takım adının yanına alındı; alt satır (`Bayrak · HÜC · ORT · DEF`) tam genişlikte ve kesilmeden okunur.
+- **3 Bölgeli Editorial Satır Düzeni (`.kr`):** Solda sıra rozeti (`1–8`) + `30px` kulüp arması, ortada 2 satırlı net tipografi, sağda metalik `GEN` rozeti ve hafif ok.
+- **Bozuk C-şekilli altın kenarlık düzeltildi (`.kr.kme`):** `inset box-shadow` kaynaklı köşe bükülmesi kaldırılıp temiz düz dikey vurgu çubuğuna geçildi; kendi takımının altın vurgusunun yeşil `qrow` tarafından ezilmesi engellendi.
+- **Birleşik Telemetri Şeridi & Çıkış Hattı (`.kgs-wrap`, `.qcut`, `.kg-dead`):** 3 ayrı kaba kutu tek cam telemetri şeridinde birleştirildi; çıkan takımlarla elenenler arasına kesikli çıkış hattı eklendi; ölüm grubu için kaba kırmızı dış çerçeve yerine zarif `☠ Ölüm Grubu` rozeti konuldu.
+
 ## v20.15 (2026-11-20) — Tam Denetim Düzeltmeleri (Eleme Posteri Logoları, TOTS/MVP Arşiv Eşitlemesi & Bracket Temizliği)
 - **Eleme Ağacı PNG Posteri Kulüp Logoları (`posters.js` `koCv`):** Eşleşme düğümlerindeki hatalı `m.h / m.a / m.b` referansları `p.t1 / p.t2` olarak düzeltildi; Eleme Ağacı PNG posterinde artık tüm takımların gerçek PNG armaları eksiksiz ön-yüklenip çizilir.
 - **Hızlı Sezon Bitişlerinde TOTS & MVP Arşivi (`app.js` `lgchamp`, `gqn`):** Lig şampiyonluğu (`lgchamp`) ve grupta elenme (`gqn`) kısayol butonları da artık `snapshotSeasonAwards(s)` çağırarak sezonun MVP'sini, Gol Kralı'nı ve En İyi 11'ini (`tots`) arşive kaydeder.

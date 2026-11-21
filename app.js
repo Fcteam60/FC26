@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.15",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="20.16",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -155,13 +155,28 @@ function grpCard(g,gi){
   const hasPlayed=rows.some(r=>r.o>0);
   if(st.tab==2||!hasPlayed){
     const gl=lg?"★":s.cfg.gs?GL(gi):gi+1,avg=f=>g.length?fx(ravg(f)):"—";
-    const head=`<div class="kgh"><span class="kgl">${gl}</span><div class="kgt"><b>${gname(s,gi)}</b><small>${g.length} takım${mn?` · <i class="kgm">★ Senin grubun</i>`:""}</small></div></div>`+
-      (g.length?`<i class="gb kgb"><u style="width:${pc}%"></u></i><div class="kgs"><span><em>GEN</em><b>${avg("g")}</b></span><span><em>HÜC</em><b>${avg("a")}</b></span><span><em>DEF</em><b>${avg("d")}</b></span></div>`:"");
-    return `<div class="card kgc${hl?" hl":""}${mn?" mine":""}${dd?" dead":""}">${head}`+
-    g.slice().sort((x,y)=>{const qx=qL.indexOf(x),qy=qL.indexOf(y);if(qx>=0||qy>=0)return (qx<0?99:qx)-(qy<0?99:qy);return V(RT(s,y))-V(RT(s,x))}).map(i=>{
-      const ti=RT(s,i),qr=qL.indexOf(i),qBadge=qr>=0?`<span class="qbdg">${qr+1}. Çıktı ✓</span>`:"";
-      return `<button class="row tb kr ${qr>=0?"qrow":""}${i===s.my?" kme":""}" data-a="tinfo" data-i="${i}" aria-label="${esc(ti.n)} kadrosunu incele"><span class="cc">${fl(ti.c)}</span>${badge(i,26)}<span class="n kn"><span class="kt">${nm(i)}</span><small title="${esc(CN[ti.c][0])}"><span><i>HÜC</i> ${ti.a}</span><span><i>ORT</i> ${ti.o}</span><span><i>DEF</i> ${ti.d}</span></small></span>${qBadge}${rb(ti.g)}<span class="chev">›</span></button>`;
-    }).join("")+(g.length?"":`<div class="row empty">—</div>`)+`</div>`;
+    const sorted=g.slice().sort((x,y)=>{const qx=qL.indexOf(x),qy=qL.indexOf(y);if(qx>=0||qy>=0)return (qx<0?99:qx)-(qy<0?99:qy);return V(RT(s,y))-V(RT(s,x))});
+    const hasQ=qL.length>0;
+    const head=`<div class="kgh"><span class="kgl">${gl}</span><div class="kgt"><b>${gname(s,gi)}</b><small>${g.length} takım${mn?` · <i class="kgm">★ Senin grubun</i>`:""}</small></div>${dd?`<span class="kg-dead">☠ Ölüm Grubu</span>`:(hasQ?`<span class="xfpill emr">${qL.length} Çıktı</span>`:"")}</div>`+
+      (g.length?`<div class="kgs-wrap"><div class="kgs"><span><em>GEN</em><b>${avg("g")}</b></span><span><em>HÜC</em><b>${avg("a")}</b></span><span><em>DEF</em><b>${avg("d")}</b></span></div><i class="gb kgb"><u style="width:${pc}%"></u></i></div>`:"");
+    const rowsHtml=sorted.map((i,idx)=>{
+      const ti=RT(s,i),qr=qL.indexOf(i),isQ=qr>=0,isMe=i===s.my;
+      const isCut=hasQ&&isQ&&qr===qL.length-1&&idx<sorted.length-1;
+      const isElim=hasQ&&!isQ;
+      const qTag=isQ?`<span class="kr-q">✓ Çıktı</span>`:"";
+      const rkCls=isQ?(qr===0?" q1":" q"):"";
+      const tName=isMe?`<i class="pt-st">★</i> ${esc(ti.n)}`:esc(ti.n);
+      return `<button class="row tb kr${isQ?" qrow":""}${isMe?" kme":""}${isCut?" qcut":""}${isElim?" elim":""}" data-a="tinfo" data-i="${i}" aria-label="${esc(ti.n)} kadrosunu incele">`+
+        `<span class="kr-rk${rkCls}">${idx+1}</span>`+
+        `<span class="kr-cr">${badge(i,30)}</span>`+
+        `<span class="n kn">`+
+          `<span class="kt-r"><span class="kt">${tName}</span>${qTag}</span>`+
+          `<span class="kr-st" title="${esc(CN[ti.c][0])}"><span class="kr-fl">${fl(ti.c)}</span><span><i>HÜC</i><b>${ti.a}</b></span><em class="kr-dot">·</em><span><i>ORT</i><b>${ti.o}</b></span><em class="kr-dot">·</em><span><i>DEF</i><b>${ti.d}</b></span></span>`+
+        `</span>`+
+        `<span class="kr-r">${rb(ti.g)}<span class="chev" aria-hidden="true">›</span></span>`+
+      `</button>`;
+    }).join("");
+    return `<div class="card kgc${hl?" hl":""}${mn?" mine":""}${dd?" dead":""}">${head}<div class="kr-list">${rowsHtml||(g.length?"":`<div class="row empty">—</div>`)}</div></div>`;
   }
   const maxW=Math.max(sim.w,mn?(s.mt||[]).filter(m=>m.rd==="Grup").length:0);
   const gl=lg?"★":s.cfg.gs?GL(gi):gi+1;
