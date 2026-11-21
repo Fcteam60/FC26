@@ -646,14 +646,14 @@ function advFormUI(s){
   const hasAny=Object.values(q).some(v=>v!==""&&v!=null);
   let h=`<button type="button" class="advbtn ${st.madv?"open":""}" data-a="madv"><span class="ui-lbl">${uiIco("chart")}<span>Gelişmiş İstatistik Ekle (Opsiyonel)${hasAny?" ✓":""}</span></span><span>${st.madv?"▴":"▾"}</span></button>`;
   if(!st.madv)return h;
-  const row=(lbl,sub,k1,k2,ph1,ph2,dec)=>`<div class="advrow"><div class="advinp"><input id="mst_${k1}" class="tin" data-mst="${k1}" inputmode="${dec?"decimal":"numeric"}" maxlength="5" placeholder="${ph1}" value="${esc(q[k1]??"")}"></div><div class="lbl">${lbl}${sub?`<small>${sub}</small>`:""}</div><div class="advinp"><input id="mst_${k2}" class="tin" data-mst="${k2}" inputmode="${dec?"decimal":"numeric"}" maxlength="5" placeholder="${ph2}" value="${esc(q[k2]??"")}"></div></div>`;
+  const row=(lbl,sub,k1,k2,ph1,ph2,dec,last)=>`<div class="advrow"><div class="advinp"><input id="mst_${k1}" class="tin" data-mst="${k1}" inputmode="${dec?"decimal":"numeric"}" enterkeyhint="next" maxlength="5" placeholder="${ph1}" value="${esc(q[k1]??"")}"></div><div class="lbl">${lbl}${sub?`<small>${sub}</small>`:""}</div><div class="advinp"><input id="mst_${k2}" class="tin" data-mst="${k2}" inputmode="${dec?"decimal":"numeric"}" enterkeyhint="${last?"done":"next"}" maxlength="5" placeholder="${ph2}" value="${esc(q[k2]??"")}"></div></div>`;
   const mp=parseFloat(q.myPos),opP=parseFloat(q.oppPos),pBar=Number.isFinite(mp)&&Number.isFinite(opP)&&mp+opP>0?`<div class="advbar"><i style="width:${mp}%"></i><i style="width:${opP}%"></i></div>`:"";
   h+=`<div class="advbox"><div class="advhd"><span>★ ${esc(me)}</span><span>5 Altın Veri</span><span>${esc(op)}</span></div>`+
     row("Topla Oynama %","otomatik tamamlar","myPos","oppPos","50","50",false)+pBar+
     row("Toplam Şut","maç boyu","myShots","oppShots","10","8",false)+
     row("İsabetli Şut","kaleyi bulan","mySot","oppSot","6","4",false)+
     row("Pas İsabeti %","yüzde","myPass","oppPass","85","82",false)+
-    row("xG (Gol Beklentisi)","ondalık (örn. 1.8)","myXg","oppXg","1.5","1.1",true)+
+    row("xG (Gol Beklentisi)","ondalık (örn. 1.8)","myXg","oppXg","1.5","1.1",true,true)+
     `<div class="note" style="margin:6px 0 0;text-align:center">Girilen verilerle Hak Ediş, xG Verimliliği ve Taktiksel DNA (Radar) otomatik hesaplanır.</div></div>`;
   return h;
 }

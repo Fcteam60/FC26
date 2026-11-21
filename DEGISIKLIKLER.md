@@ -1,3 +1,10 @@
+## v20.31 (2026-11-21) — Mobil Klavye Akışı, Kompakt Boş Kura Kartları & Okunabilirlik
+- **Mobil Klavye Akışı (`analytics.js`, `app.js`, `style.css`):** Gelişmiş istatistik alanlarına `enterkeyhint="next"` / `"done"` eklendi; Enter tuşuyla bir sonraki alana geçiş, odaklanınca yumuşak ortalama (`scrollIntoView`) ve `#qs .sheet` altına klavye boşluğu eklendi.
+- **Katlanabilir Güç ve Ülke Sınırları (`app.js`, `style.css`):** Kurulumdaki 7 güç/ülke seçicisi varsayılan kapalı `Güç ve Ülke Sınırları` paneline alınarak ekran uzunluğu kısaltıldı (aktif sınır varsa otomatik açılır).
+- **Kırpılmayan MOTM Etiketi (`app.js`):** Maçın Adamı varsayılan seçeneği `"Otomatik (rakip)"` olarak kısaltıldı.
+- **Kompakt Boş Kura Kartları & Buton Hiyerarşisi (`app.js`, `style.css`):** Kura çekilmeden önceki boş grup kartları 2 sütunlu kompakt ızgaraya (`.grid.dr-empty`) alındı; kura üst aksiyonları eşit genişlikte birincil/ikincil cam buton standardına çekildi.
+- **11px+ Kontrast Artışı (`style.css`):** Koyu mod `--mut` rengi `#a0b0bf` tonuna aydınlatıldı; `HÜC/ORT/DEF` etiketleri, tablo başlıkları ve kurulum alt başlıkları en az `11px` boyutuna yükseltildi.
+
 ## v20.30 (2026-11-21) — Final Görsel Cila & Sürüm Kilidi
 - **Gelişmiş İstatistik Açma Şeridi (`analytics.js`, `style.css`):** `.advbtn.on` sınıfının genel `.on` kuralıyla çakışıp tüm şeridi parlak nane yeşiline boyaması `.advbtn.open` ile giderilerek koyu cam + ince zümrüt kenarlık standardına eşitlendi.
 - **Sezon Ödülleri Başlık Düzeni (`style.css`):** 2 sütunlu ödül kartlarında ikon ve değer rozeti üst satırda hizalanıp ödül başlığı (`ALTIN AYAKKABI`, `OYUN KURUCU` vb.) tam genişlikte alt satıra alınarak harf kesilmesi tamamen ortadan kaldırıldı.

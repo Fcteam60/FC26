@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.30",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="20.31",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -944,8 +944,7 @@ function setupView(s){
     `<div class="stabs seg3" style="margin-bottom:11px">${Object.keys(RGN).map(k=>segBtn("rl","rg",k,k=="all"?"Tümü":k=="eu"?"Avrupa":"Avrupa Dışı",r.rg==k)).join("")}</div>`+
     `<div class="su-cthd"><span class="pset-lbl" style="margin:0">Ülkeler <small style="text-transform:none;font-weight:400">(dokunarak çıkar / ekle)</small></span>${r.xc.length?`<button class="sf-clr" data-a="xcall">Hepsini seç</button>`:""}</div>`+
     `<div class="su-cgrid">${cs.map(k=>`<button class="su-cchip${!r.xc.includes(k)?" on":""}" data-a="xc" data-v="${k}">${fl(k)}<span>${CN[k][0]}</span><em>${cc[k]}</em></button>`).join("")}</div>`+
-    `<div class="pset-lbl" style="margin-top:12px">Takım Gücü ve Ülke Sınırları</div>`+
-    `<div class="su-fgrid">`+
+    (()=>{const limCnt=[r.gmin>0,r.gmax<99,r.amin>0,r.mmin>0,r.dmin>0,r.cap>0,r.gcap>0].filter(Boolean).length;return `<details class="xfold su-limfold"${limCnt?" open":""}><summary><span class="ui-lbl">${uiIco("sliders")}<span>Güç ve Ülke Sınırları</span></span><span class="xfpill ${limCnt?"gold":"mut"}">${limCnt?limCnt+" sınır aktif":"Varsayılan"}</span></summary><div class="su-fgrid" style="margin-top:10px">`+
       `<div class="su-fld"><label>Genel En Az</label>${sel("rs","gmin",gmn,r.gmin)}</div>`+
       `<div class="su-fld"><label>Genel En Çok</label>${sel("rs","gmax",gmx,r.gmax)}</div>`+
       `<div class="su-fld"><label>Hücum</label>${sel("rs","amin",sc,r.amin)}</div>`+
@@ -953,7 +952,7 @@ function setupView(s){
       `<div class="su-fld"><label>Defans</label>${sel("rs","dmin",sc,r.dmin)}</div>`+
       `<div class="su-fld"><label>Ülke Limiti (Turnuva)</label>${sel("rs","cap",capO,r.cap)}</div>`+
       `<div class="su-fld full"><label>${c.gs?"Aynı Grupta Aynı Ülkeden":"İlk Turda Aynı Ülke"}</label>${sel("rs","gcap",gcO,r.gcap)}</div>`+
-    `</div>`+
+    `</div></details>`})()+
     `<div class="su-mgrid" style="margin-top:11px">`+
       `<div class="su-mrow"><span>Katılımcı Seçimi</span><div class="stabs seg2">${segBtn("rl","pick","top","En Güçlü",r.pick=="top")}${segBtn("rl","pick","rnd","Rastgele",r.pick=="rnd")}</div></div>`+
       `<div class="su-mrow"><span>Kura Yöntemi</span><div class="stabs seg2">${segBtn("rl","dm","pot","Torbalı",r.dm=="pot")}${segBtn("rl","dm","rnd","Rastgele",r.dm=="rnd")}</div></div>`+
@@ -1031,9 +1030,10 @@ function drawView(s){
   const c=s.cfg,Gn=nG(c),N=s.P.length,d=st.dr,k=st.k,G=s.G&&!d?s.G.map(g=>g.slice()):rg(Gn).map(()=>[]);
   if(d)d.seq.slice(0,k).forEach(([t,g])=>G[g].push(t));
   const last=d&&k>0?d.seq[k-1]:null,done=d&&k>=d.seq.length,pot=s.rl.dm!="rnd";
-  return (s.G&&!d?lockDraw(s):`<div class="bar"><button class="btn p" data-a="new">Yeni kura hazırla</button><button class="btn" data-a="bal">En dengeli kurayı otomatik kur</button></div>`)+(s.dn&&!(s.G&&!d)?`<div class="note" style="margin:0 0 8px">Bu sezon hazırlanan kura sayısı: <b>${s.dn}</b></div>`:"")+
-  (d?`<div class="dock"><div class="big ${last?"":"pop"}">${last?stage(s,k,N,Gn,pot,last):`<div>Kura hazır. Takımları tek tek çek.</div>`}</div><div class="bar">${done?`<button class="btn p" data-a="use">Bu kurayı kullan</button>`:`<button class="btn p" data-a="next">Sıradaki takımı çek</button><button class="btn" data-a="all">Hepsini göster</button>`}</div></div>`:kInfo(s,c,Gn,N,pot))+
-  `<div class="grid">${G.map((g,i)=>grpCard(g,i)).join("")}</div>`}
+  const allEmpty=G.every(g=>!g.length);
+  return (s.G&&!d?lockDraw(s):`<div class="bar dr-acts"><button class="btn p pset-pri" data-a="new" style="flex:1">Yeni kura hazırla</button><button class="btn pset-sec" data-a="bal" style="flex:1">En dengeli kurayı kur</button></div>`)+(s.dn&&!(s.G&&!d)?`<div class="note" style="margin:0 0 8px">Bu sezon hazırlanan kura sayısı: <b>${s.dn}</b></div>`:"")+
+  (d?`<div class="dock"><div class="big ${last?"":"pop"}">${last?stage(s,k,N,Gn,pot,last):`<div>Kura hazır. Takımları tek tek çek.</div>`}</div><div class="bar dr-acts">${done?`<button class="btn p pset-pri" data-a="use" style="flex:1">Bu kurayı kullan</button>`:`<button class="btn p pset-pri" data-a="next" style="flex:1">Sıradaki takımı çek</button><button class="btn pset-sec" data-a="all" style="flex:1">Hepsini göster</button>`}</div></div>`:kInfo(s,c,Gn,N,pot))+
+  `<div class="grid${allEmpty?" dr-empty":""}">${G.map((g,i)=>grpCard(g,i)).join("")}</div>`}
 function kInfo(s,c,Gn,N,pot){
   const gp=s.rl.gcap,un=c.gs?"grup":"eşleşme",lg=isLg(c);
   const chips=[`<span class="kchip"><b>${N}</b> takım</span>`];
@@ -2299,10 +2299,24 @@ function scorerUI(s,gf,sc){
   const customMom=mom&&!allMomNames.has(mom)?`<option value="${esc(mom)}" selected>${esc(mom)} (Transfer)</option>`:"";
   const momOpts=["F","M","D","K"].map(g=>{const G=L.filter(p=>p.g==g);return G.length?`<optgroup label="${SQL[g]}">${G.map(p=>`<option value="${esc(p.n)}" ${mom===p.n?"selected":""}>${esc(p.n)} · ${p.p} ${p.o}</option>`).join("")}</optgroup>`:""}).join("");
   const momEx=ex.length?`<optgroup label="Transferler / Eklenenler">${ex.map(p=>`<option value="${esc(p.n)}" ${mom===p.n?"selected":""}>${esc(p.n)}</option>`).join("")}</optgroup>`:"";
-  h+=`<div class="rr" style="margin-top:8px"><span class="lb">Maçın Adamı (MOTM)</span><select id="mmom" class="sel" style="flex:1"><option value="">Seçilmedi (Otomatik rakipten seçilir)</option>${customMom}${momEx}${momOpts}</select><button class="chip ${st.trm=="mom"?"on":""}" data-a="tropen" data-k="mom" style="padding:6px 10px">+ Başka</button></div>`;
+  h+=`<div class="rr" style="margin-top:8px"><span class="lb">Maçın Adamı (MOTM)</span><select id="mmom" class="sel" style="flex:1"><option value="">Otomatik (rakip)</option>${customMom}${momEx}${momOpts}</select><button class="chip ${st.trm=="mom"?"on":""}" data-a="tropen" data-k="mom" style="padding:6px 10px">+ Başka</button></div>`;
   if(st.trm=="mom")h+=trBox("mom",s);
   return h}
-document.addEventListener("keydown",e=>{
+document.addEventListener("focusin",e=>{
+  const t=e.target;
+  if(t&&t.matches&&t.matches("#qs .sheet input, #qs .sheet select")){
+    setTimeout(()=>{try{t.scrollIntoView({behavior:"smooth",block:"center"})}catch(_){}},220);
+  }
+});
+addEventListener("keydown",e=>{
+  if(e.key=="Enter"&&e.target&&e.target.matches&&e.target.matches("#qs .advbox input.tin")){
+    e.preventDefault();
+    const list=[...document.querySelectorAll("#qs .advbox input.tin")];
+    const idx=list.indexOf(e.target);
+    if(idx>=0&&idx<list.length-1)list[idx+1].focus();
+    else e.target.blur();
+    return;
+  }
   if(e.key=="Tab"){const modal=document.querySelector("#dlg .dbox, #qs .sheet");if(modal){const f=[...modal.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),a[href]')];if(f.length){const first=f[0],last=f[f.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}return}}
   if(e.key=="Escape"){if(st.qs){st.qs=false;st.med=null;render();return}if(st.tpi){st.tpi=null;render();return}if(st.pi||st.totsv||st.guide||st.ti!=null||st.gs||st.ask||st.img||st.ren||st.imp){st.pi=null;st.tpi=null;st.totsv=null;st.guide=false;st.ti=null;st.gs=false;st.ask=null;clrImg();st.ren=null;st.imp=null;st.tiq="";render();return}}
   if(e.target&&e.target.id=="rn"){if(e.key=="Enter"){e.preventDefault();document.querySelector('[data-a="rens"]').click()}else if(e.key=="Escape"){document.querySelector('[data-a="no"]').click()}return}

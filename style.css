@@ -3785,3 +3785,36 @@ main{padding:14px 13px calc(104px + env(safe-area-inset-bottom,0px))}
   order:3;flex:1 0 100%;white-space:normal;overflow:visible;text-overflow:clip;
   font-size:10.5px;letter-spacing:.05em;line-height:1.2;
 }
+/* ===== v20.31: Klavye Akışı, Kompakt Boş Kura Kartları, Katlanabilir Sınırlar & 11px+ Kontrast ===== */
+/* 1) Koyu Mod Kontrast & 11px+ Okunabilirlik Artışı */
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--mut:#a0b0bf}
+}
+:root[data-theme="dark"]{--mut:#a0b0bf}
+.kr-m i,.kgs-wrap .kgs.kgs4 > span.kgs-c em,.ptbl th,.su-fld label,.pset-lbl{
+  font-size:11px!important;
+  color:var(--mut);
+}
+.kchips .kchip,.note{font-size:12px}
+
+/* 2) Maç Giriş Panelinde Klavye Alt Boşluğu (#qs .sheet) */
+#qs .sheet{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
+.advbox{scroll-margin-bottom:140px}
+
+/* 3) Kura Ekranında Boş Kartlar İçin 2 Sütunlu Kompakt Grid (.grid.dr-empty) & Eşit Üst Butonlar */
+.dr-acts{display:flex;gap:8px;align-items:stretch}
+.dr-acts .btn{min-height:44px;font-size:13.5px;padding:10px 10px;line-height:1.2}
+.grid.dr-empty{grid-template-columns:repeat(2,1fr);gap:8px}
+.grid.dr-empty .kcard{padding:10px 11px}
+.grid.dr-empty .kgh{margin-bottom:0;padding-bottom:0;border-bottom:0}
+.grid.dr-empty .kgl{width:28px;height:28px;font-size:14px;border-radius:8px}
+.grid.dr-empty .kgt b{font-size:16px}
+.grid.dr-empty .kgt small{font-size:11px}
+
+/* 4) Kurulum Ekranı Katlanabilir Güç/Ülke Sınırları (.su-limfold) */
+details.su-limfold{margin-top:12px;padding:10px 12px;border-radius:14px}
+details.su-limfold > summary{
+  list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  cursor:pointer;font-weight:700;font-size:13.5px;color:var(--tx);
+}
+details.su-limfold > summary::-webkit-details-marker{display:none}
