@@ -3648,7 +3648,7 @@ h1 img{
 header .sel{
   min-height:38px;padding:6px 10px;border-radius:10px;
   background:var(--hi);color:var(--tx);border:1px solid var(--gbd);
-  font-size:14px;font-weight:600;max-width:148px;
+  font-size:16px;font-weight:600;max-width:148px;
 }
 header .sel option{background:var(--card);color:var(--tx)}
 header .btn{
@@ -3715,7 +3715,7 @@ main{padding:14px 13px calc(104px + env(safe-area-inset-bottom,0px))}
   }
 }
 /* Altın şampiyonluk kartı ve saha düğümlerinde logo arka planını sade tut */
-.tc.t1 .bd-img,.hero.gold .bd-img,.lead .bd-img,.gcd.gold .bd-img{
+.tc .bd-img,.hero.gold .bd-img,.lead .bd-img,.gcd.gold .bd-img{
   background:none!important;padding:0!important;
 }
 /* ===== v20.26 (Aşama 3): Sakin Yüzey Hiyerarşisi, Müze Kupa Dolabı & Modern Grafik Sahnesi ===== */

@@ -1,3 +1,8 @@
+## v20.27 (2026-11-21) — Yeni Altın Kanatlı FC 27 Uygulama Logosu & Son İnce Ayarlar
+- **Yeni Uygulama İkon Seti (`icon-512.png`, `icon-192.png`, `apple-touch-icon.png`, `icon-maskable-512.png`):** Gönderilen 3B altın kanatlı FC 27 amblemi yüksek çözünürlüklü kaynak üzerinden merkezlenip keskinleştirilerek tüm PWA ve iOS/Android ikon boyutlarına uyarlandı; Android `maskable` güvenli çemberi (%66 doluluk) ve splash ekran arka planı (`#0d1016`) birebir eşleştirildi.
+- **Önbellek Yenileme (`index.html`, `manifest.webmanifest`, `sw.js`):** İkon ve varlık yolları `?v=20.27` ve `fc27-lig-v20-27` önbelleğiyle güncellenerek tarayıcıların eski logoyu tutması engellendi.
+- **Son İnce Ayarlar (`style.css`):** iPhone'da üst sezon seçicisinde (`header .sel`) otomatik yakınlaştırmayı önlemek için yazı boyutu `16px` yapıldı; koyu mod logo halosu tüm açık zeminli FUT takım kartlarında (`.tc .bd-img`) kapatıldı.
+
 ## v20.26 (2026-11-21) — Aşama 3: Sakin Kart Hiyerarşisi, Müze Kupa Dolabı & Modern Grafik Sahnesi
 - **Sakin Yüzey Hiyerarşisi (`style.css`):** Ekranda yalnızca ana odak kartlarının (Sıradaki Maç, Kulüp Kartı, MVP, Şampiyonluk) parlaması için ikincil KPI kutuları ve akordeon yüzeylerindeki fazla radyal parlamalar sadeleştirilip ince `1px` saç teli kenarlıklı sakin yüzey katmanına çekildi.
 - **Müze Vitrini Kupa Dolabı (`app.js` `vitrinCard`, `style.css` `.shelf.pshelf`):** Kalın gri metal raf çıtası kaldırıldı; koyu obsidyen zemin, sıcak üst spot, ince ışıklı pirinç alt çizgi ve her kupanın altında pirinç plaket kartı (`.plq`) eklendi.
