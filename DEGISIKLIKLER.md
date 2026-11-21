@@ -1,3 +1,8 @@
+## v20.30 (2026-11-21) — Final Görsel Cila & Sürüm Kilidi
+- **Gelişmiş İstatistik Açma Şeridi (`analytics.js`, `style.css`):** `.advbtn.on` sınıfının genel `.on` kuralıyla çakışıp tüm şeridi parlak nane yeşiline boyaması `.advbtn.open` ile giderilerek koyu cam + ince zümrüt kenarlık standardına eşitlendi.
+- **Sezon Ödülleri Başlık Düzeni (`style.css`):** 2 sütunlu ödül kartlarında ikon ve değer rozeti üst satırda hizalanıp ödül başlığı (`ALTIN AYAKKABI`, `OYUN KURUCU` vb.) tam genişlikte alt satıra alınarak harf kesilmesi tamamen ortadan kaldırıldı.
+- **Takım Gücü ve Sonuç Kartı (`analytics.js`):** `Geçmiş › Özet` altındaki son eski `cd()` kartı da ikonlu `psetCard` cam kart ve kesikli kılavuzlu `.svgbox` grafik sahnesine yükseltildi.
+
 ## v20.29 (2026-11-21) — Son 4 Görsel Cila (Maç İstatistikleri Çubuğu, Sıfır Sıçramalı Poster, Gruplar & Segment Eşitleme)
 - **Maç İstatistikleri Açma Çubuğu (`app.js`, `style.css`):** `.sbtog.on` sınıfının genel `.on` kuralıyla çakışıp tüm satırı parlak yeşile boyaması `.sbtog.open` sınıfına geçilerek düzeltildi.
 - **Sıfır Sıçramalı Poster Önizleme (`posters.js`, `style.css`):** `mkImg()` görseli modalı açmadan önce bellekte ön-çözümler (`decode`), `imgDlg()` ise `width`, `height` ve `aspect-ratio` özniteliklerini doğrudan vererek pencerenin açılışta boyut sıçraması yapmasını engeller.
