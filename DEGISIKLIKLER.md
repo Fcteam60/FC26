@@ -1,3 +1,9 @@
+## v20.24 (2026-11-21) — Aşama 1: Stüdyo Premium İkon, Mat Zemin & Buzlu Cam Üst Çubuk
+- **Yeni Minimalist Uygulama İkonu (`icon-512.png`, `icon-192.png`, `icon-maskable-512.png`, `apple-touch-icon.png`):** Eski neon ve `</>` kod sembollü top görseli kaldırılarak koyu zümrüt-obsidyen zemin üzerinde şampanya-altın çerçeveli, geometrik `27 · FC LİG` kalkan amblemine geçildi.
+- **Çizgisiz Mat Zemin & Nötr Karbon Koyu Tema (`style.css`):** Arka plandaki 44px dikey şeritler ve `.big` kutularındaki çim çizgileri kaldırıldı; koyu tema mavi alt tondan nötr karbon obsidyen (`#090c10`) yüzeyine, açık tema sakin kırık taş beyazına (`#f3f5f4`) çekildi.
+- **Buzlu Cam Üst Çubuk (`style.css`, `app.js`, `index.html`, `manifest.webmanifest`):** Yeşil şeritli üst çubuk kaldırılıp alttaki yüzen cam dock (`.nav`) ile birebir uyumlu yarı saydam buzlu cam üst çubuk ve 1px saç teli ayırıcıya geçildi; mobil durum çubuğu (`theme-color`) yeni zemin renkleriyle senkronize edildi.
+- **Tipografi & Nefes Alanı (`style.css`):** Alt navigasyon etiketleri sıkışık yoğun fonttan temiz sistem sans-serif yazı tipine alındı; ana kart iç/dış boşlukları ferahlatıldı.
+
 ## v20.23 (2026-11-21) — Derin Denetim, Uzun Vadeli Kararlılık & Bellek Güvenliği
 - **IndexedDB Otomatik Yeniden Bağlanma & Kuyruk Garantisi (`storage.js`):** Tarayıcının arka planda IndexedDB bağlantısını kapatması (`db.onclose` / `onversionchange`) durumunda sessizce `localStorage` koluna düşme riski kapatıldı; `ensureIdbConn()` ve `withIdbRetry()` ile otomatik yeniden bağlanma eklendi. `flushSaveQueue()` yarış durumu `qActivePromise` ile giderildi.
 - **Service Worker Önbellek Güvenliği & Kalıcı Logo Önbelleği (`sw.js`):** `fetch` içinde `r.clone()` zamanlama hatası ve `new Request(req, { cache: "no-cache" })` uyumluluk riski düzeltildi; `install` aşamasında eksik dosya yutulması engellendi. Kulüp logoları ayrı `fc27-logos-v1` önbelleğine alınarak sürüm güncellemelerinde tekrar indirilmesi önlendi.

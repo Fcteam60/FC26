@@ -3582,3 +3582,90 @@ button.sqr.sqr-btn:active{background:var(--hi)}
   .kr-m b{font-size:12.5px}
   .kr .g{min-width:34px;height:28px;font-size:15.5px;padding:0 6px}
 }
+/* ===== v20.24 (Aşama 1): Stüdyo Premium Zemin, Buzlu Cam Üst Çubuk & Tipografi Cilası ===== */
+:root{
+  --bg:#f3f5f4;--bg2:#f3f5f4;--card:#ffffff;--gcard:rgba(255,255,255,.92);
+  --tx:#101815;--mut:#5c6b64;--ac:#0d9464;--acx:#ffffff;--gold:#c8961e;
+  --bd:rgba(15,23,20,.09);--gbd:rgba(15,23,20,.085);
+  --hi:rgba(15,23,20,.045);--hi2:rgba(15,23,20,.025);
+  --hdr-bg:rgba(243,245,244,.82);--hdr-bd:rgba(15,23,20,.08);
+  --gsh-lo:0 1px 2px rgba(15,23,20,.05),0 4px 12px rgba(15,23,20,.03);
+  --gsh-hi:0 8px 24px rgba(15,23,20,.08),inset 0 1px 0 rgba(255,255,255,.85);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#090c10;--bg2:#090c10;--card:#11161d;--gcard:rgba(18,23,30,.88);
+    --tx:#f0f4f8;--mut:#8b98a5;--ac:#2dd496;--acx:#041d14;--gold:#e8be54;--wr:#f26464;
+    --bd:rgba(255,255,255,.08);--gbd:rgba(255,255,255,.09);
+    --hi:rgba(255,255,255,.055);--hi2:rgba(255,255,255,.03);
+    --hdr-bg:rgba(9,12,16,.78);--hdr-bd:rgba(255,255,255,.08);
+    --nvBg:rgba(17,22,29,.88);--nvBd:rgba(255,255,255,.10);
+    --nvA:rgba(45,212,150,.14);--nvRing:rgba(45,212,150,.30);
+    --gnav:rgba(17,22,29,.84);--gsheet:rgba(17,22,29,.97);
+    --gsh-lo:0 2px 10px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.05);
+    --gsh-hi:0 10px 28px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.07);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#090c10;--bg2:#090c10;--card:#11161d;--gcard:rgba(18,23,30,.88);
+  --tx:#f0f4f8;--mut:#8b98a5;--ac:#2dd496;--acx:#041d14;--gold:#e8be54;--wr:#f26464;
+  --bd:rgba(255,255,255,.08);--gbd:rgba(255,255,255,.09);
+  --hi:rgba(255,255,255,.055);--hi2:rgba(255,255,255,.03);
+  --hdr-bg:rgba(9,12,16,.78);--hdr-bd:rgba(255,255,255,.08);
+  --nvBg:rgba(17,22,29,.88);--nvBd:rgba(255,255,255,.10);
+  --nvA:rgba(45,212,150,.14);--nvRing:rgba(45,212,150,.30);
+  --gnav:rgba(17,22,29,.84);--gsheet:rgba(17,22,29,.97);
+  --gsh-lo:0 2px 10px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.05);
+  --gsh-hi:0 10px 28px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.07);
+}
+
+/* 1) Çizgisiz Mat Zemin */
+body{background:var(--bg)}
+body::before{background:var(--bg)}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) body{background:radial-gradient(ellipse 85% 240px at 50% -110px,rgba(45,212,150,.065),transparent) no-repeat,var(--bg)}
+}
+:root[data-theme="dark"] body{background:radial-gradient(ellipse 85% 240px at 50% -110px,rgba(45,212,150,.065),transparent) no-repeat,var(--bg)}
+
+/* 2) Buzlu Cam Üst Çubuk (Alt Dock ile Birebir Tasarım Dili) */
+header{
+  background:var(--hdr-bg)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(180%);
+  backdrop-filter:blur(22px) saturate(180%);
+  border-bottom:1px solid var(--hdr-bd);
+  box-shadow:none;
+  padding:8px 14px;
+}
+html[data-club] header::before{
+  opacity:.14;
+  background:radial-gradient(ellipse 55% 150% at 6% -50%,var(--club1),transparent 65%),radial-gradient(ellipse 55% 150% at 94% -50%,var(--club2),transparent 65%);
+}
+h1{color:var(--tx);font-size:21px;letter-spacing:.02em;gap:9px}
+h1 img{
+  width:30px;height:30px;border-radius:8px;
+  box-shadow:0 2px 8px rgba(0,0,0,.22),0 0 0 1px rgba(232,190,84,.28);
+}
+header .sel{
+  min-height:38px;padding:6px 10px;border-radius:10px;
+  background:var(--hi);color:var(--tx);border:1px solid var(--gbd);
+  font-size:14px;font-weight:600;max-width:148px;
+}
+header .sel option{background:var(--card);color:var(--tx)}
+header .btn{
+  min-height:38px;width:38px;padding:0;border-radius:10px;
+  background:var(--hi);color:var(--tx);border:1px solid var(--gbd);
+  font-size:19px;display:inline-flex;align-items:center;justify-content:center;
+}
+.dock{top:calc(env(safe-area-inset-top,0px) + 55px)}
+
+/* 3) Eski Çizgili .big Kutularını Mat Cam Yüzeye Çek */
+.big{background:var(--gcard);border:1px solid var(--gbd);box-shadow:var(--gsh-lo)}
+
+/* 4) Tipografi & Nefes Alanı Cilası */
+.nav button{
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:11px;font-weight:600;letter-spacing:-.01em;gap:4px;
+}
+.nav button.cur{font-weight:700}
+main{padding:14px 13px calc(104px + env(safe-area-inset-bottom,0px))}
+.card.pglass,.card.pgrp,.card.pstat,.dnacard{padding:15px;margin-top:12px}

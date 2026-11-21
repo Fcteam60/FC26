@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.23",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="20.24",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -2942,7 +2942,7 @@ function syncThemeColor(){
   try{
     const dark=store.theme==="dark"||(!store.theme&&typeof matchMedia==="function"&&matchMedia("(prefers-color-scheme:dark)").matches);
     const m=document.querySelector('meta[name="theme-color"]');
-    if(m)m.setAttribute("content",dark?"#0b1622":"#2f8f5b");
+    if(m)m.setAttribute("content",dark?"#090c10":"#f3f5f4");
   }catch(e){}
 }
 try{
