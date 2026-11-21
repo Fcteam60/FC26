@@ -3065,3 +3065,212 @@ button.sqr.sqr-btn:active{background:var(--hi)}
   .kr-st b{font-size:13.5px}
   .kr .g{min-width:34px;font-size:16px;padding:2px 5px}
 }
+
+/* ===== v20.17: Premium Broadcast Eleme Ağacı (Bracket Stage) ===== */
+.bkt-wrap{
+  position:relative;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  margin:2px -2px 0;padding:12px 10px 14px;border-radius:16px;
+  border:1px solid var(--gbd);
+  background:
+    radial-gradient(90% 55% at 50% 0%,color-mix(in srgb,var(--ac) 10%,transparent),transparent 65%),
+    radial-gradient(circle,rgba(127,150,140,.16) 1px,transparent 1px) 0 0/18px 18px,
+    rgba(127,150,140,.06);
+  box-shadow:inset 0 2px 10px rgba(0,0,0,.06);
+}
+:root[data-theme="dark"] .bkt-wrap{
+  background:
+    radial-gradient(90% 55% at 50% 0%,rgba(62,230,168,.10),transparent 65%),
+    radial-gradient(circle,rgba(255,255,255,.06) 1px,transparent 1px) 0 0/18px 18px,
+    rgba(4,10,18,.52);
+  box-shadow:inset 0 2px 14px rgba(0,0,0,.42);
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .bkt-wrap{
+    background:
+      radial-gradient(90% 55% at 50% 0%,rgba(62,230,168,.10),transparent 65%),
+      radial-gradient(circle,rgba(255,255,255,.06) 1px,transparent 1px) 0 0/18px 18px,
+      rgba(4,10,18,.52);
+    box-shadow:inset 0 2px 14px rgba(0,0,0,.42);
+  }
+}
+
+.bkt-col{width:214px;flex:0 0 214px}
+.bkt-chd{padding:0 12px 12px;display:flex;justify-content:center}
+.bkt-cpill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 11px;border-radius:99px;
+  font-family:var(--num);font-size:14px;font-weight:700;letter-spacing:.06em;
+  color:var(--tx);background:var(--card);border:1px solid var(--gbd);
+  box-shadow:0 2px 6px rgba(0,0,0,.08);
+}
+.bkt-cpill em{
+  font-style:normal;font-size:11.5px;font-weight:700;
+  padding:1px 6px;border-radius:99px;
+  background:rgba(127,150,140,.14);color:var(--mut);
+}
+.bkt-col.cdone .bkt-cpill{
+  border-color:color-mix(in srgb,var(--ac) 36%,var(--gbd));
+}
+.bkt-col.cdone .bkt-cpill em{
+  background:rgba(15,157,107,.16);color:var(--ac);
+}
+.bkt-col.fin .bkt-cpill{
+  background:linear-gradient(135deg,#fbeaa8,#d4a017);
+  border-color:#c99a1c;color:#2b2000;
+  box-shadow:0 4px 12px rgba(212,160,23,.28);
+}
+.bkt-col.fin .bkt-cpill em{
+  background:rgba(43,32,0,.16);color:#2b2000;
+}
+
+/* Bağlantı Çizgileri & Birleşim Noktaları */
+.bkt-slot{padding:7px 15px}
+.bkt-slot.fst{padding-left:2px}
+.bkt-slot.lst{padding-right:2px}
+.bkt-slot:not(.fst)::before{width:15px;height:2px}
+.bkt-slot:not(.lst)::after{width:15px;height:2px}
+.bkt-slot.top .bkt-arm{top:calc(50% - 1px);bottom:0}
+.bkt-slot.bot .bkt-arm{top:0;bottom:calc(50% - 1px)}
+.bkt-slot.dn:not(.fst)::before,.bkt-slot.dn:not(.lst)::after,.bkt-slot.dn .bkt-arm{
+  background:color-mix(in srgb,var(--ac) 72%,var(--bd));
+}
+.bkt-slot.mine:not(.fst)::before,.bkt-slot.mine:not(.lst)::after,.bkt-slot.mine .bkt-arm{
+  background:var(--gold);
+  box-shadow:0 0 6px rgba(212,160,23,.35);
+}
+
+/* Maç Kartı (.bkt-node) */
+.bkt-node{
+  border-radius:14px;overflow:hidden;
+  border:1px solid var(--gbd);background:var(--card);
+  box-shadow:0 4px 14px rgba(15,28,22,.08),inset 0 1px 0 rgba(255,255,255,.35);
+}
+:root[data-theme="dark"] .bkt-node{
+  background:linear-gradient(180deg,rgba(19,33,49,.94),rgba(12,22,34,.96));
+  box-shadow:0 6px 18px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.08);
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .bkt-node{
+    background:linear-gradient(180deg,rgba(19,33,49,.94),rgba(12,22,34,.96));
+    box-shadow:0 6px 18px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.08);
+  }
+}
+.bkt-node.mine{
+  border-color:color-mix(in srgb,var(--gold) 78%,var(--gbd));
+  box-shadow:0 0 0 1px rgba(212,160,23,.28),0 8px 20px rgba(212,160,23,.18);
+}
+.bkt-node.fin{
+  border-color:var(--gold);
+  box-shadow:0 0 0 1px rgba(240,194,75,.42),0 10px 24px rgba(212,160,23,.24);
+}
+
+/* Takım Satırları (.bkt-tm) */
+.bkt-tm{
+  position:relative;display:flex;align-items:center;gap:8px;
+  min-height:40px;padding:6px 8px 6px 10px;font-size:13px;
+  transition:background .14s ease;
+}
+.bkt-tm::before{
+  content:"";position:absolute;left:0;top:6px;bottom:6px;width:3px;
+  border-radius:0 3px 3px 0;background:transparent;
+}
+.bkt-tm+.bkt-tm{border-top:1px solid var(--bd)}
+.bkt-tm:active{background:var(--hi)}
+
+.bkt-cr{
+  flex:0 0 22px;width:22px;height:24px;display:grid;place-items:center;
+}
+.bkt-cr .bd{filter:drop-shadow(0 1px 3px rgba(0,0,0,.22))}
+.bkt-tm .n{font-size:13px;font-weight:600;color:var(--tx);line-height:1.15}
+.bkt-st,.bkt-crn{font-style:normal;font-size:11px;margin-right:1px}
+.bkt-st{color:#b8860b}
+:root[data-theme="dark"] .bkt-st{color:#fbeaa8}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .bkt-st{color:#fbeaa8}}
+
+/* Kazanan Satırı */
+.bkt-tm.w{
+  background:linear-gradient(90deg,rgba(15,157,107,.13),rgba(15,157,107,.02) 78%);
+}
+.bkt-tm.w::before{background:linear-gradient(180deg,#34d399,#0f9d6b)}
+.bkt-tm.w .n{font-weight:700;color:var(--tx)}
+
+/* Şampiyon Satırı (Final Kazananı) */
+.bkt-tm.ch{
+  background:linear-gradient(90deg,rgba(240,194,75,.24),rgba(240,194,75,.04) 82%);
+}
+.bkt-tm.ch::before{background:linear-gradient(180deg,#fbeaa8,#d4a017)}
+
+/* Elenen Satırı — Okunaklı ama İkincil */
+.bkt-tm.l{opacity:1}
+.bkt-tm.l .bkt-cr{opacity:.48;filter:grayscale(.35)}
+.bkt-tm.l .n{color:var(--mut);font-weight:500}
+
+/* Senin Takımın — Açık ve Koyu Temada Yüksek Kontrast (Elense Bile Okunaklı) */
+.bkt-tm.me{
+  background:linear-gradient(90deg,rgba(240,194,75,.18),rgba(240,194,75,.03) 82%);
+}
+.bkt-tm.me::before{background:linear-gradient(180deg,#fbeaa8,#d4a017)}
+.bkt-tm.me .n{color:#8a5a00;font-weight:700}
+.bkt-tm.me.l .bkt-cr{opacity:.75;filter:none}
+.bkt-tm.me.l .n{color:#9a6b00;font-weight:600}
+:root[data-theme="dark"] .bkt-tm.me .n{color:#fbeaa8}
+:root[data-theme="dark"] .bkt-tm.me.l .n{color:#e6c465}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .bkt-tm.me .n{color:#fbeaa8}
+  :root:not([data-theme="light"]) .bkt-tm.me.l .n{color:#e6c465}
+}
+
+/* Broadcast Skor Kapsülü (.bkt-sc) */
+.bkt-tm .bkt-sc{
+  flex:0 0 auto;min-width:26px;height:24px;padding:0 6px;border-radius:7px;
+  display:grid;place-items:center;
+  font-family:var(--num);font-size:15.5px;font-weight:700;line-height:1;
+  color:var(--mut);background:rgba(127,150,140,.11);
+  border:1px solid transparent;font-variant-numeric:tabular-nums;
+}
+.bkt-tm.w .bkt-sc{
+  background:rgba(15,157,107,.18);color:var(--ac);
+  border-color:rgba(15,157,107,.32);
+}
+.bkt-tm.ch .bkt-sc{
+  background:linear-gradient(135deg,#f8e08a,#d4a017);color:#2b2000;
+  border-color:#c99a1c;box-shadow:0 2px 6px rgba(212,160,23,.30);
+}
+.bkt-tm.me.l .bkt-sc{
+  background:rgba(240,194,75,.14);color:#9a6b00;border-color:rgba(212,160,23,.28);
+}
+:root[data-theme="dark"] .bkt-tm.me.l .bkt-sc{color:#fbeaa8}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .bkt-tm.me.l .bkt-sc{color:#fbeaa8}}
+
+/* Penaltı / Uzatma / Çift Maç Alt Bandı (.bkt-ft, .bkt-tag) */
+.bkt-ft{
+  display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px;
+  padding:5px 8px;border-top:1px dashed var(--bd);
+  background:rgba(127,150,140,.06);
+}
+.bkt-tag{
+  display:inline-flex;align-items:center;padding:1.5px 7px;border-radius:99px;
+  font-family:var(--num);font-size:11.5px;font-weight:700;letter-spacing:.04em;
+  background:rgba(127,150,140,.15);color:var(--mut);
+}
+.bkt-tag.pk{
+  background:rgba(240,194,75,.20);color:#9a6b00;
+  border:1px solid rgba(212,160,23,.40);
+}
+.bkt-tag.et{
+  background:rgba(56,189,248,.16);color:#0284c7;
+  border:1px solid rgba(56,189,248,.35);
+}
+:root[data-theme="dark"] .bkt-tag.pk{color:#fbeaa8}
+:root[data-theme="dark"] .bkt-tag.et{color:#38bdf8}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .bkt-tag.pk{color:#fbeaa8}
+  :root:not([data-theme="light"]) .bkt-tag.et{color:#38bdf8}
+}
+
+@media(max-width:359px){
+  .bkt-col{width:190px;flex:0 0 190px}
+  .bkt-tm{min-height:38px;padding:5px 7px 5px 9px;gap:6px}
+  .bkt-tm .n{font-size:12.5px}
+  .bkt-tm .bkt-sc{min-width:24px;height:22px;font-size:14.5px}
+}

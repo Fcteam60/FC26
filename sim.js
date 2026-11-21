@@ -835,6 +835,7 @@ function koTreeHtml(s,ko,RDs){
   const cols=RDs.map((rd,rIdx)=>{
     const expCnt=Math.max(1,Math.round(firstCnt/Math.pow(2,rIdx)));
     const pairs=Array.isArray(ko[rd])?ko[rd]:[];
+    const doneCnt=pairs.filter(p=>p&&p.w!=null).length;
     const isFirst=rIdx===0,isLast=rIdx===RDs.length-1;
     const slots=rg(expCnt).map(pIdx=>{
       const p=pairs[pIdx]||null;
@@ -843,16 +844,18 @@ function koTreeHtml(s,ko,RDs){
       const sideCls=isLast?"":(pIdx%2===0?" top":" bot");
       const armCls=mine?" mine":done?" dn":"";
       const tmRow=(ti,g,isW,isL)=>{
-        if(ti==null||!T[ti])return `<div class="bkt-tm tbd"><span class="bkt-ph">?</span><span class="n">Bekleniyor</span><b>—</b></div>`;
-        return `<button class="bkt-tm${isW?" w":isL?" l":""}${ti===s.my?" me":""}" data-a="tinfo" data-i="${ti}" aria-label="${esc(T[ti].n)} kadrosunu incele">${badge(ti,16)}<span class="n">${esc(T[ti].n)}</span><b>${done?g:"·"}</b></button>`;
+        if(ti==null||!T[ti])return `<div class="bkt-tm tbd"><span class="bkt-ph">?</span><span class="n">Bekleniyor</span><b class="bkt-sc">—</b></div>`;
+        const isMe=ti===s.my,isChamp=isLast&&isW;
+        const nmStr=`${isChamp?`<i class="bkt-crn" aria-hidden="true">🏆</i> `:""}${isMe?`<i class="bkt-st" aria-hidden="true">★</i> `:""}${esc(T[ti].n)}`;
+        return `<button class="bkt-tm${isW?" w":isL?" l":""}${isMe?" me":""}${isChamp?" ch":""}" data-a="tinfo" data-i="${ti}" aria-label="${esc(T[ti].n)} kadrosunu incele"><span class="bkt-cr">${badge(ti,22)}</span><span class="n">${nmStr}</span><b class="bkt-sc">${done?g:"·"}</b></button>`;
       };
       let meta="";
       if(done){
-        const parts=[];
-        if(Array.isArray(p.leg1)&&Array.isArray(p.leg2)&&p.leg1.length>=2&&p.leg2.length>=2)parts.push(`${p.leg1[0]}-${p.leg1[1]} · ${p.leg2[0]}-${p.leg2[1]}`);
-        if(p.pf!=null&&p.pa!=null)parts.push(`P ${p.pf}-${p.pa}`);
-        else if(p.et)parts.push("UZ");
-        if(parts.length)meta=`<div class="bkt-ft">${parts.join(" · ")}</div>`;
+        const tags=[];
+        if(Array.isArray(p.leg1)&&Array.isArray(p.leg2)&&p.leg1.length>=2&&p.leg2.length>=2)tags.push(`<span class="bkt-tag">${p.leg1[0]}–${p.leg1[1]} · ${p.leg2[0]}–${p.leg2[1]}</span>`);
+        if(p.pf!=null&&p.pa!=null)tags.push(`<span class="bkt-tag pk">PEN ${p.pf}–${p.pa}</span>`);
+        else if(p.et)tags.push(`<span class="bkt-tag et">UZATMA</span>`);
+        if(tags.length)meta=`<div class="bkt-ft">${tags.join("")}</div>`;
       }
       const node=`<div class="bkt-node${mine?" mine":""}${done?" dn":""}${isLast?" fin":""}">`+
         tmRow(p?p.t1:null,p?p.g1:null,w1,done&&!w1)+
@@ -860,9 +863,10 @@ function koTreeHtml(s,ko,RDs){
         meta+`</div>`;
       return `<div class="bkt-slot${isFirst?" fst":""}${isLast?" lst":""}${sideCls}${armCls}">${node}${!isLast?`<i class="bkt-arm" aria-hidden="true"></i>`:""}</div>`;
     }).join("");
-    return `<div class="bkt-col${isLast?" fin":""}"><div class="bkt-chd">${isLast?"🏆 ":""}${esc(rd)}</div><div class="bkt-colb">${slots}</div></div>`;
+    const colDone=doneCnt>=expCnt&&expCnt>0;
+    return `<div class="bkt-col${isLast?" fin":""}${colDone?" cdone":""}"><div class="bkt-chd"><span class="bkt-cpill">${isLast?"🏆 ":""}${esc(rd)}<em>${doneCnt}/${expCnt}</em></span></div><div class="bkt-colb">${slots}</div></div>`;
   }).join("");
-  return `<div class="bkt-wrap" role="region" aria-label="Eleme ağacı diyagramı"><div class="bkt-tree">${cols}</div></div><div class="note" style="margin:6px 0 0">Yatay kaydırarak tüm eleme turlarını takip edebilir, gol detayları için «Liste» görünümüne geçebilirsin.</div>`;
+  return `<div class="bkt-wrap" role="region" aria-label="Eleme ağacı diyagramı"><div class="bkt-tree">${cols}</div></div><div class="note" style="margin:7px 0 0">Yatay kaydırarak tüm eleme turlarını takip edebilir, gol detayları için «Detaylı Liste» görünümüne geçebilirsin.</div>`;
 }
 function koBracketCard(s){
   if(isLg(s.cfg)||!s.G)return "";

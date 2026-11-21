@@ -1,3 +1,9 @@
+## v20.17 (2026-11-21) — Premium Broadcast Eleme Ağacı (Bracket Stage)
+- **Broadcast Sahne & Tur Başlıkları (`sim.js` `koTreeHtml`, `style.css`):** Eleme ağacı nokta dokulu derinlikli bir sahneye alındı; tur başlıkları (`SON 16`, `ÇEYREK FİNAL`, `YARI FİNAL`, `🏆 FİNAL`) canlı ilerleme sayaçlı (`8/8`, `4/4`) rozetlere dönüştürüldü.
+- **Skor Kapsülleri & 22px Kulüp Armaları (`.bkt-sc`, `.bkt-cr`):** Havada duran düz skor rakamları kazanan/şampiyon renkli skor kapsüllerine alındı; kulüp armaları `16px`'ten `22px`'e büyütüldü.
+- **Açık Tema Kontrast & Elenen Takım Düzeltmesi (`.bkt-tm.me`, `.bkt-tm.l`):** Açık temada elenen kullanıcı takımının (`Real Madrid`) soluk sarı metin yüzünden okunamaz hale gelmesi giderildi; yüksek kontrastlı kehribar/altın ton ve `★` yıldız işareti eklendi.
+- **Penaltı, Uzatma & Rövanş Rozetleri (`.bkt-tag`):** Alt satırdaki soluk `P 5-4` metni, altın `PEN 5–4` ve gök mavisi `UZATMA` broadcast rozetlerine dönüştürüldü.
+
 ## v20.16 (2026-11-21) — Premium Kura & Grup Kartları (Sıfır Kesilme, Broadcast Tipografi)
 - **DEF değeri kesilme hatası giderildi (`app.js` `grpCard`, `style.css`):** Geniş `1. Çıktı ✓` hapının orta sütunu sıkıştırıp `DEF 80` rakamını kesmesi düzeltildi. Çıkış rozeti (`✓ Çıktı`) üst satıra takım adının yanına alındı; alt satır (`Bayrak · HÜC · ORT · DEF`) tam genişlikte ve kesilmeden okunur.
 - **3 Bölgeli Editorial Satır Düzeni (`.kr`):** Solda sıra rozeti (`1–8`) + `30px` kulüp arması, ortada 2 satırlı net tipografi, sağda metalik `GEN` rozeti ve hafif ok.
