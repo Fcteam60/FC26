@@ -124,33 +124,40 @@ const tile=(v,l,sub)=>`<div><b>${v}</b><span>${l}</span>${sub?`<small>${sub}</sm
 function formCard(ML){const L=ML.slice(-10),n=L.length;if(n<2)return "";
   const pt=m=>({w:3,d:1,l:0})[mres(m)],all=ML.map(pt),base=ML.length-n;
   const ma=L.map((m,i)=>{const k=base+i,a=all.slice(Math.max(0,k-2),k+1);return a.reduce((x,y)=>x+y,0)/a.length});
-  const cx=i=>(i+.5)*300/n,y=v=>100-v/3*88;
-  const gr=[0,1,2,3].map(v=>`<line x1="14" x2="300" y1="${y(v)}" y2="${y(v)}" style="stroke:var(--bd)" stroke-dasharray="${v?"3 3":"0"}"/><text x="2" y="${y(v)+3}" font-size="9" style="fill:var(--mut)">${v}</text>`).join("");
+  const cx=i=>16+(i+.5)*280/n,y=v=>100-v/3*86;
+  const gr=[0,1,2,3].map(v=>`<line x1="16" x2="296" y1="${y(v)}" y2="${y(v)}" style="stroke:var(--bd)" ${v?'stroke-dasharray="3 3" opacity=".75"':""}/><text x="2" y="${y(v)+3}" font-size="9" style="fill:var(--mut)">${v}</text>`).join("");
   const ln=ma.map((v,i)=>(i?"L":"M")+cx(i).toFixed(1)+" "+y(v).toFixed(1)).join("");
+  const area=`${ln} L${cx(n-1).toFixed(1)} 100 L${cx(0).toFixed(1)} 100 Z`;
+  const defs=`<defs><linearGradient id="fmArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--ac)" stop-opacity=".28"/><stop offset="100%" stop-color="var(--ac)" stop-opacity="0"/></linearGradient></defs>`;
   const col=r=>r=="w"?"var(--ac)":r=="l"?"var(--wr)":"var(--mut)";
-  const dots=L.map((m,i)=>`<circle cx="${cx(i).toFixed(1)}" cy="${y(ma[i]).toFixed(1)}" r="5" style="fill:${col(mres(m))};stroke:var(--card)" stroke-width="2"><title>${esc(m.on)} ${m.gf}-${m.ga}</title></circle>`).join("");
+  const dots=L.map((m,i)=>`<circle cx="${cx(i).toFixed(1)}" cy="${y(ma[i]).toFixed(1)}" r="4.5" style="fill:${col(mres(m))};stroke:var(--card)" stroke-width="2"><title>${esc(m.on)} ${m.gf}-${m.ga}</title></circle>`).join("");
   const LT={w:"G",d:"B",l:"M"},tot=L.reduce((a,m)=>a+pt(m),0);
   let tr="";if(n>=6){const r=ma.slice(-3).reduce((a,b)=>a+b,0)/3,e=L.slice(0,-3).reduce((a,m)=>a+pt(m),0)/(n-3),d=r-e;tr=d>=.5?" Form yükselişte.":d<=-.5?" Form düşüşte.":""}
-  return cd(`Form<small>son ${n} maç</small>`,`<div class="note" style="margin:0 0 4px">Maç başı <b>${f2(tot,n)}</b> puan.${tr}</div><svg viewBox="0 0 300 108" style="width:100%" role="img" aria-label="Hareketli ortalama puan"><g>${gr}</g><path d="${ln}" fill="none" stroke-width="2.5" style="stroke:var(--ac)"/>${dots}</svg><div class="mfr">${L.map(m=>`<div class="mfc"><i class="${mres(m)}">${LT[mres(m)]}</i><span>${m.gf}-${m.ga}</span></div>`).join("")}</div><div class="note">Çizgi: son 3 maçın ortalama puanı (G=3, B=1, M=0).</div>`)}
+  return psetCard("up","emr","Form Eğrisi",`Son ${n} maç hareketli puan ortalaması`,`${f2(tot,n)} p/M`,
+    `${tr?`<div class="note" style="margin:0 0 8px"><b>${tr.trim()}</b></div>`:""}`+
+    `<div class="svgbox"><svg viewBox="0 0 300 108" style="width:100%" role="img" aria-label="Hareketli ortalama puan">${defs}<g>${gr}</g><path d="${area}" fill="url(#fmArea)"/><path d="${ln}" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--ac)"/>${dots}</svg></div>`+
+    `<div class="mfr" style="margin-top:8px">${L.map(m=>`<div class="mfc"><i class="${mres(m)}">${LT[mres(m)]}</i><span>${m.gf}-${m.ga}</span></div>`).join("")}</div>`+
+    `<div class="note" style="margin:8px 0 0">Çizgi: son 3 maçın ortalama puanı (G=3, B=1, M=0).</div>`
+  )}
 function matchTab(){const A0=allM(),ds=new Set(A0.map(dOf)),fd=ds.has(st.sfd)?st.sfd:"",A=fd?A0.filter(e=>dOf(e)==fd):A0,ML=A.map(e=>e.m),fb=oyFilter(A0,fd);
-  if(!ML.length)return fb+cd("Maç istatistikleri",emp("Maç sonuçları girildikçe ortalamalar, form ve skorlar burada görünür."));
+  if(!ML.length)return fb+psetCard("chart","sky","Maç İstatistikleri","Kariyer maç ortalamaları",null,emp("Maç sonuçları girildikçe ortalamalar, form ve skorlar burada görünür."));
   const curS=store.seasons.find(x=>x.id==store.cur),C=tally(ML),S=tally((curS&&curS.mt)||[]),ad=C.gf-C.ga;
-  const c1=cd("Genel görünüm<small>kariyer</small>",`<div class="mtl">${tile(C.n,"maç")}${tile(pct(C.w,C.n),"galibiyet")}${tile((ad>0?"+":"")+ad,"averaj",C.gf+" - "+C.ga)}</div>`+sbar(C)+`<div class="mgl"><span class="w">${C.w} G</span><span class="d">${C.d} B</span><span class="l">${C.l} M</span></div>`);
+  const c1=psetCard("shield","emr","Genel Görünüm","Kariyer maç özeti",`${C.n} maç`,`<div class="mtl">${tile(C.n,"maç")}${tile(pct(C.w,C.n),"galibiyet")}${tile((ad>0?"+":"")+ad,"averaj",C.gf+" - "+C.ga)}</div>`+sbar(C)+`<div class="mgl"><span class="w">${C.w} G</span><span class="d">${C.d} B</span><span class="l">${C.l} M</span></div>`);
   const sv=f=>S.n?"bu sezon "+f(S):"";
-  const c3=cd("Maç başına",`<div class="mtl c2">${tile(f2(C.gf,C.n),"atılan gol",sv(o=>f2(o.gf,o.n)))}${tile(f2(C.ga,C.n),"yenen gol",sv(o=>f2(o.ga,o.n)))}${tile(pct(C.cs,C.n),"temiz kasa",sv(o=>pct(o.cs,o.n)))}${tile(f2(C.w*3+C.d,C.n),"puan",sv(o=>f2(o.w*3+o.d,o.n)))}</div>`);
+  const c3=psetCard("chart","sky","Maç Başına","Kariyer ve bu sezon ortalamaları",`${C.n} maç`,`<div class="mtl c2" style="margin-bottom:0">${tile(f2(C.gf,C.n),"atılan gol",sv(o=>f2(o.gf,o.n)))}${tile(f2(C.ga,C.n),"yenen gol",sv(o=>f2(o.ga,o.n)))}${tile(pct(C.cs,C.n),"temiz kasa",sv(o=>pct(o.cs,o.n)))}${tile(f2(C.w*3+C.d,C.n),"puan",sv(o=>f2(o.w*3+o.d,o.n)))}</div>`);
   const grp=[["Grup maçları",m=>m.rd=="Grup"],["Eleme maçları",m=>m.rd!="Grup"&&m.rd!=RN[2]],["Final",m=>m.rd==RN[2]]];
   const st1=grp.map(([t,f])=>{const o=tally(ML.filter(f));return o.n?`<div class="mstg"><div class="mstt"><b>${t}</b><span class="lb">${o.n} maç · ${gbmT(o)} · %${Math.round(o.w/o.n*100)}</span></div>${sbar(o)}</div>`:""}).join("");
   const go=tally(ML.filter(grp[0][1])),ko=tally(ML.filter(grp[1][1]));
   const tip=go.n>=3&&ko.n>=3?(go.w/go.n-ko.w/ko.n>=.15?"Grupta daha iyisin, eleme maçlarında düşüyorsun.":ko.w/ko.n-go.w/go.n>=.15?"Eleme maçlarında grup maçlarından daha iyisin.":""):"";
-  const c4=cd("Aşamaya göre başarı",st1+(tip?`<div class="note">${tip}</div>`:""));
-  const k=streaks(ML),c5=cd("Seriler",`<div class="mtl c2">${tile(k.u,"maçtır yenilmiyorsun","en uzun "+k.bu)}${tile(k.w,"galibiyet serisi","en uzun "+k.bw)}</div>`);
+  const c4=psetCard("trophy","gold","Aşamaya Göre Başarı","Grup, eleme ve final verimi",null,st1+(tip?`<div class="note" style="margin:8px 0 0">${tip}</div>`:""));
+  const k=streaks(ML),c5=psetCard("flame","emr","Seriler","Aktif ve rekor seriler",null,`<div class="mtl c2" style="margin-bottom:0">${tile(k.u,"maçtır yenilmiyorsun","en uzun "+k.bu)}${tile(k.w,"galibiyet serisi","en uzun "+k.bw)}</div>`);
   const SC=nob();ML.forEach(m=>{const q=m.gf+"–"+m.ga;SC[q]=SC[q]||{n:0,r:mres(m)};SC[q].n++});
   const sl=Object.entries(SC).sort((a,b)=>b[1].n-a[1].n).slice(0,6),mx=sl[0][1].n;
-  const c6=cd("En sık biten skorlar",sl.map(([q,o])=>`<div class="row"><span class="n" style="flex:0 0 48px">${q}</span><div class="bk mbr"><i class="${o.r}" style="width:${o.n/mx*100}%"></i></div><b>${o.n}</b></div>`).join("")+`<div class="note">Yeşil: galibiyet, gri: beraberlik, kırmızı: mağlubiyet.</div>`);
+  const c6=psetCard("list","sky","En Sık Biten Skorlar","Maç sonuç dağılımı",`ilk ${sl.length}`,sl.map(([q,o])=>`<div class="row"><span class="n" style="flex:0 0 48px"><b>${q}</b></span><div class="bk mbr"><i class="${o.r}" style="width:${o.n/mx*100}%"></i></div><b>${o.n}</b></div>`).join("")+`<div class="note" style="margin:8px 0 0">Yeşil: galibiyet, gri: beraberlik, kırmızı: mağlubiyet.</div>`);
   const CO=nob();ML.forEach(m=>{const ti=T.findIndex(t=>t.n==m.on);if(ti<0)return;(CO[T[ti].c]=CO[T[ti].c]||[]).push(m)});
   const cl=Object.entries(CO).map(([c,L])=>({c:c,o:tally(L)})).sort((a,b)=>b.o.n-a.o.n),cm=cl[0]?cl[0].o.n:1;
   const bst=cl.filter(x=>x.o.n>=3).sort((a,b)=>b.o.w/b.o.n-a.o.w/a.o.n)[0];
-  const c7=cl.length?cd("Rakip ülkeler",(bst?`<div class="note" style="margin:0 0 6px">En başarılı olduğun ülke: <b>${CN[bst.c][0]}</b> (%${Math.round(bst.o.w/bst.o.n*100)} galibiyet)</div>`:"")+cl.slice(0,8).map(x=>`<div class="row"><span class="n" style="flex:0 0 110px">${fl(x.c)} ${CN[x.c][0]}</span><div class="bk"><i style="width:${x.o.n/cm*100}%"></i></div><b>${x.o.n}</b><span class="lb" style="min-width:38px;text-align:right">%${Math.round(x.o.w/x.o.n*100)}</span></div>`).join("")+`<div class="note">Sağdaki: o ülkeye karşı galibiyet oranı.</div>`):"";
+  const c7=cl.length?psetCard("compass","emr","Rakip Ülkeler","Ülke bazlı karşılaşma geçmişi",`${cl.length} ülke`,(bst?`<div class="note" style="margin:0 0 8px">En başarılı olduğun ülke: <b>${CN[bst.c][0]}</b> (%${Math.round(bst.o.w/bst.o.n*100)} galibiyet)</div>`:"")+cl.slice(0,8).map(x=>`<div class="row"><span class="n" style="flex:0 0 116px">${fl(x.c)} ${CN[x.c][0]}</span><div class="bk"><i style="width:${x.o.n/cm*100}%"></i></div><b>${x.o.n}</b><span class="lb" style="min-width:38px;text-align:right">%${Math.round(x.o.w/x.o.n*100)}</span></div>`).join("")+`<div class="note" style="margin:8px 0 0">Sağdaki: o ülkeye karşı galibiyet oranı.</div>`):"";
   return fb+tacticalDnaCard(null,{career:true,matches:ML,fd:fd})+xgSummaryCard(ML)+c1+formCard(ML)+c3+oppTierCard(A)+marginCard(ML)+c4+c5+twoLegCard(A)+etPkCard(ML)+c6+surCard(ML)+oyDiff(A0)+c7}
 
 /* ---------- v18.43 (Paket 3): Derin Analitik Motoru (Rakip Katmanı, Yakın Maç/Clutch, Rövanş, Oyuncu Profili) ---------- */
@@ -363,7 +370,7 @@ function etPkCard(ML){
   const pkN=pkW+pkLcnt;
   let h=`<div class="mtl c2">${tile(etL.length,"uzatma maçı",`${etO.w}G ${etO.d}B ${etO.l}M · %${Math.round(etO.w/etL.length*100)}`)}${tile(pkN?pct(pkW,pkN):"—","penaltı kazanma",pkN?`${pkW}G ${pkLcnt}M (${pfTot}–${paTot})`:"seri penaltı yok")}</div>`;
   const rec=etL.slice(-5).reverse().map(m=>`<div class="row"><i class="fd ${mres(m)}"></i><span class="n">${esc(m.rd)} · ${esc(m.on)}</span><b>${mscTxt(m)}</b></div>`).join("");
-  return cd("Uzatma ve penaltı karnesi<small>kırılma anları</small>",h+rec)}
+  return psetCard("bolt","gold","Uzatma ve Penaltı Karnesi","Kırılma anları",`${etL.length} maç`,h+rec)}
 function clutchStats(seasons){
   const C=nob();
   seasons.forEach(x=>(x.mt||[]).filter(m=>m.rd&&m.rd!="Grup").forEach(m=>{
@@ -563,12 +570,12 @@ function predLine(s,i){const p=predict(s,i);if(!p)return "";
   const fav=p.w>=55?"favori sensin":p.l>=55?"rakip favori":"dengeli maç";
   return `<div class="pbx" style="margin:0 0 8px"><div class="mstt"><b>Tahmin: %${p.w} galibiyet</b><span class="lb">${fav}</span></div><div class="msb" role="img" aria-label="Galibiyet %${p.w}, beraberlik %${p.d}, mağlubiyet %${p.l}">${[["w",p.w],["d",p.d],["l",p.l]].map(([k,v])=>v?`<i class="${k}" style="flex:${v}"></i>`:"").join("")}</div><div class="note" style="margin:4px 0 0">Beraberlik %${p.d} · mağlubiyet %${p.l}. Güç farkına${p.n?" ve son "+p.n+" maçına":""} dayanır${p.same?" (aynı zorlukta)":""}${p.hn>=2?"; bu rakiple "+p.hn+" maçın da hesaba katıldı":""}.</div></div>`}
 function surCard(ML){const ids=new Set(ML.map(m=>m.id)),L=pastM().filter(e=>ids.has(e.m.id)).map(e=>{const pr=e.m.pr||e.b.map(v=>Math.round(v*100)),pw=pr[0],pl=pr[2],po=e.r=="w"?pw:e.r=="l"?pl:null;return Object.assign({pr,pw,pl,po},e)});
-  if(L.length<3)return cd("Sürpriz maçlar",emp("En az 3 maç girildikten sonra tahmine ters sonuçlar burada listelenir."));
+  if(L.length<3)return psetCard("spark","org","Sürpriz Maçlar","Tahmine ters sonuçlar",null,emp("En az 3 maç girildikten sonra tahmine ters sonuçlar burada listelenir."));
   const dec=L.filter(e=>e.r!="d"&&Math.abs(e.pw-e.pl)>=10),hit=dec.filter(e=>(e.pw>e.pl)==(e.r=="w")).length,E=L.reduce((a,e)=>a+e.pw/100,0),A=L.filter(e=>e.r=="w").length;
   const udog=L.filter(e=>e.pl>e.pw+5),udogW=udog.filter(e=>e.r=="w").length;
   const S=L.filter(e=>e.po!=null&&e.po<=30).sort((a,b)=>a.po-b.po).slice(0,8);
   const rows=S.map(e=>`<div class="row"><i class="fd ${e.r}" role="img" aria-label="${e.r=="w"?"Beklenmedik galibiyet":"Beklenmedik mağlubiyet"}"></i><span class="n">${esc(e.x.name)} · ${esc(e.m.rd)} · ${esc(e.m.on)} ${e.m.gf}–${e.m.ga}</span><b>%${e.po}</b></div>`).join("");
-  return cd("Sürpriz maçlar<small>tahmine ters sonuçlar</small>",`<div class="mtl">${tile(dec.length?pct(hit,dec.length):"—","tahmin isabeti",dec.length?dec.length+" net maç":"net favori yok")}${tile(fx(E),"beklenen galibiyet","gerçekte "+A)}${tile(udog.length?pct(udogW,udog.length):"—","underdog galibiyet",udog.length?udogW+"/"+udog.length+" zor maç":"rakip favori yok")}</div>`+(rows?`<div class="rt">En büyük sürprizler</div>${rows}<div class="note">Sağdaki yüzde, o sonucun maç öncesi tahminidir. Underdog: maç öncesi rakibin favori olduğu maçlar.</div>`:`<div class="note">Henüz sürpriz yok: sonuçların çoğu tahminle uyumlu.</div>`))}
+  return psetCard("spark","org","Sürpriz Maçlar","Tahmine ters sonuçlar",S.length?`${S.length} sürpriz`:"Normal",`<div class="mtl">${tile(dec.length?pct(hit,dec.length):"—","tahmin isabeti",dec.length?dec.length+" net maç":"net favori yok")}${tile(fx(E),"beklenen galibiyet","gerçekte "+A)}${tile(udog.length?pct(udogW,udog.length):"—","underdog galibiyet",udog.length?udogW+"/"+udog.length+" zor maç":"rakip favori yok")}</div>`+(rows?`<div class="rt">En büyük sürprizler</div>${rows}<div class="note" style="margin:8px 0 0">Sağdaki yüzde, o sonucun maç öncesi tahminidir. Underdog: maç öncesi rakibin favori olduğu maçlar.</div>`:`<div class="note" style="margin:8px 0 0">Henüz sürpriz yok: sonuçların çoğu tahminle uyumlu.</div>`))}
 
 /* ---------- v14: TAKTİKSEL ANALİZ, HAK EDİŞ, xG VERİMLİLİĞİ VE RADAR MOTORU ---------- */
 const XGMAX=7,XPC=new Map();
@@ -906,13 +913,15 @@ function tacticalDnaCard(s,careerOpt){
 }
 
 function xgTrendSvg(arr){
-  const W=300,H=132,pl=6,pr=6,pt=12,pb=24,n=arr.length;
-  const mx=Math.max(1,...arr.flatMap(m=>[+m.stats.myXg||0,+m.stats.oppXg||0])),sl=(W-pl-pr)/n,bw=Math.max(4,Math.min(14,sl*.34)),hh=H-pt-pb;
+  const W=300,H=136,pl=6,pr=6,pt=16,pb=24,n=arr.length;
+  const mx=Math.max(1,...arr.flatMap(m=>[+m.stats.myXg||0,+m.stats.oppXg||0])),sl=(W-pl-pr)/n,bw=Math.max(5,Math.min(14,sl*.34)),hh=H-pt-pb;
+  const defs=`<defs><linearGradient id="xgA" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--ac)"/><stop offset="100%" stop-color="var(--ac)" stop-opacity=".42"/></linearGradient><linearGradient id="xgB" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f97316"/><stop offset="100%" stop-color="#f97316" stop-opacity=".42"/></linearGradient></defs>`;
+  const midY=(pt+hh/2).toFixed(1);
   const bars=arr.map((m,i)=>{
     const cx=pl+sl*(i+.5),a=(+m.stats.myXg||0),b=(+m.stats.oppXg||0),ha=a/mx*hh,hb=b/mx*hh,r=mres(m),L={w:"G",d:"B",l:"M"}[r];
-    return `<g><title>${esc(m.on)} ${m.gf}–${m.ga} · xG ${xgN2(a)} – ${xgN2(b)}</title><rect class="ba" x="${(cx-bw-1).toFixed(1)}" y="${(pt+hh-ha).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1,ha).toFixed(1)}" rx="2"/><rect class="bb" x="${(cx+1).toFixed(1)}" y="${(pt+hh-hb).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1,hb).toFixed(1)}" rx="2"/><text class="${r}" x="${cx.toFixed(1)}" y="${H-8}" text-anchor="middle" font-weight="700">${L}</text></g>`;
+    return `<g><title>${esc(m.on)} ${m.gf}–${m.ga} · xG ${xgN2(a)} – ${xgN2(b)}</title><rect x="${(cx-bw-1).toFixed(1)}" y="${(pt+hh-ha).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(2,ha).toFixed(1)}" rx="3" fill="url(#xgA)"/><rect x="${(cx+1).toFixed(1)}" y="${(pt+hh-hb).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(2,hb).toFixed(1)}" rx="3" fill="url(#xgB)"/><text class="${r}" x="${cx.toFixed(1)}" y="${H-8}" text-anchor="middle" font-weight="700">${L}</text></g>`;
   }).join("");
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Maç maç xG karşılaştırması"><line x1="${pl}" y1="${pt+hh}" x2="${W-pr}" y2="${pt+hh}"/><text x="${pl}" y="9" text-anchor="start">en yüksek ${xgN1(mx)} xG</text>${bars}</svg>`;
+  return `<div class="svgbox"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Maç maç xG karşılaştırması">${defs}<line x1="${pl}" y1="${midY}" x2="${W-pr}" y2="${midY}" stroke-dasharray="3 3" opacity=".6"/><line x1="${pl}" y1="${pt+hh}" x2="${W-pr}" y2="${pt+hh}"/><text x="${pl}" y="10" text-anchor="start">en yüksek ${xgN1(mx)} xG</text>${bars}</svg></div>`;
 }
 
 function xgSummaryCard(ML){

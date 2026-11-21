@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.25",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="20.26",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -475,17 +475,25 @@ function achCard(){
   }).join("");
   return hd+`<div class="ach-list">${cards}</div>`}
 function chartCard(list){const f=(list||store.seasons).filter(x=>x.res);
-  if(f.length<2)return cd("Grafikler",`<div class="note">Grafik için bu kategoride en az 2 biten sezon gerekli.</div>`);
-  const n=f.length,L=46,R=294,B=118,Hh=100,slot=(R-L)/n,cx=i=>L+slot*(i+.5),ev=Math.ceil(n/10);
+  if(f.length<2)return psetCard("chart","emr","Sezon Grafikleri","Derece ve gol/asist gelişimi",null,`<div class="note" style="margin:0">Grafik için bu kategoride en az 2 biten sezon gerekli.</div>`);
+  const n=f.length,L=46,R=294,B=118,Hh=98,slot=(R-L)/n,cx=i=>L+slot*(i+.5),ev=Math.ceil(n/10);
   const ax=f.map((x,i)=>i%ev?"":`<text x="${cx(i)}" y="134" font-size="10" text-anchor="middle" style="fill:var(--mut)">${esc(x.name.replace("Sezon ","S"))}</text>`).join("");
-  const gl=(y,t)=>`<line x1="${L}" x2="${R}" y1="${y}" y2="${y}" style="stroke:var(--bd)"/><text x="${L-4}" y="${y+3}" font-size="9" text-anchor="end" style="fill:var(--mut)">${t}</text>`;
-  const rk=[...new Set(f.flatMap(x=>resRanks(x.cfg).concat([x.res.st])))].sort((a,b)=>a-b),yk=r=>B-rk.indexOf(r)/Math.max(1,rk.length-1)*Hh,bw=Math.min(34,slot*.62);
-  const allLg=f.every(x=>isLg(x.cfg)),LRS={0:"Alt",4:"Orta",5:"3.",6:"2.",7:"Şamp."};const c1=rk.map(r=>gl(yk(r),allLg?(LRS[r]||RS[r]):RS[r])).join("")+f.map((x,i)=>{const h=Math.max(3,B-yk(x.res.st));return `<rect x="${cx(i)-bw/2}" y="${B-h}" width="${bw}" height="${h}" rx="3" style="fill:${x.res.st==7?"var(--gold)":"var(--ac)"}"><title>${esc(x.name)}: ${stTxt(x.cfg,x.res.st)}</title></rect>`}).join("");
-  const gv=f.map(x=>sum(x.pl,"g")),av=f.map(x=>sum(x.pl,"a")),mx=Math.max(5,...gv,...av),yv=v=>B-v/mx*Hh,bw2=Math.min(16,slot*.34),tk=[...new Set([0,Math.round(mx/2),mx])];
-  const bar=(x,v,c)=>`<rect x="${x}" y="${yv(v)}" width="${bw2}" height="${v>0?B-yv(v):0}" rx="2" style="fill:${c}"/>`;
-  const lab=(v,x)=>n<=8&&v>0?`<text x="${x}" y="${yv(v)-3}" font-size="8" text-anchor="middle" style="fill:var(--tx)">${v}</text>`:"";
-  const c2=tk.map(v=>gl(yv(v),v)).join("")+f.map((x,i)=>{const xa=cx(i)-bw2-1,xb=cx(i)+1;return bar(xa,gv[i],"var(--ac)")+bar(xb,av[i],"var(--mut)")+lab(gv[i],xa+bw2/2)+lab(av[i],xb+bw2/2)}).join("");
-  return cd("Grafikler",`<div class="lb">Ulaşılan derece (altın çubuk: şampiyonluk)</div><svg viewBox="0 0 300 140" style="width:100%" role="img" aria-label="Sezonlara göre ulaşılan derece">${c1}${ax}</svg><div class="lb">Gol (renkli) ve asist (gri)</div><svg viewBox="0 0 300 140" style="width:100%" role="img" aria-label="Sezonlara göre gol ve asist">${c2}${ax}</svg>`)}
+  const gl=(y,t,solid)=>`<line x1="${L}" x2="${R}" y1="${y}" y2="${y}" style="stroke:var(--bd)" ${solid?"":'stroke-dasharray="3 3" opacity=".75"'}/><text x="${L-5}" y="${y+3}" font-size="9" text-anchor="end" style="fill:var(--mut)">${t}</text>`;
+  const defs1=`<defs><linearGradient id="chGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f6d876"/><stop offset="100%" stop-color="#c8961e" stop-opacity=".75"/></linearGradient><linearGradient id="chAc" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--ac)"/><stop offset="100%" stop-color="var(--ac)" stop-opacity=".45"/></linearGradient></defs>`;
+  const rk=[...new Set(f.flatMap(x=>resRanks(x.cfg).concat([x.res.st])))].sort((a,b)=>a-b),yk=r=>B-rk.indexOf(r)/Math.max(1,rk.length-1)*Hh,bw=Math.min(30,slot*.58);
+  const allLg=f.every(x=>isLg(x.cfg)),LRS={0:"Alt",4:"Orta",5:"3.",6:"2.",7:"Şamp."};
+  const c1=defs1+rk.map((r,idx)=>gl(yk(r),allLg?(LRS[r]||RS[r]):RS[r],idx===0)).join("")+f.map((x,i)=>{const h=Math.max(4,B-yk(x.res.st));return `<rect x="${(cx(i)-bw/2).toFixed(1)}" y="${(B-h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="4" fill="url(#${x.res.st==7?"chGold":"chAc"})"><title>${esc(x.name)}: ${stTxt(x.cfg,x.res.st)}</title></rect>`}).join("");
+  const defs2=`<defs><linearGradient id="chG2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--ac)"/><stop offset="100%" stop-color="var(--ac)" stop-opacity=".42"/></linearGradient><linearGradient id="chA2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--mut)" stop-opacity=".85"/><stop offset="100%" stop-color="var(--mut)" stop-opacity=".35"/></linearGradient></defs>`;
+  const gv=f.map(x=>sum(x.pl,"g")),av=f.map(x=>sum(x.pl,"a")),mx=Math.max(5,...gv,...av),yv=v=>B-v/mx*Hh,bw2=Math.min(15,slot*.34),tk=[...new Set([0,Math.round(mx/2),mx])];
+  const bar=(x,v,id)=>`<rect x="${x.toFixed(1)}" y="${yv(v).toFixed(1)}" width="${bw2.toFixed(1)}" height="${(v>0?Math.max(3,B-yv(v)):0).toFixed(1)}" rx="3" fill="url(#${id})"/>`;
+  const lab=(v,x)=>n<=8&&v>0?`<text x="${x.toFixed(1)}" y="${(yv(v)-4).toFixed(1)}" font-size="8.5" font-weight="700" text-anchor="middle" style="fill:var(--tx)">${v}</text>`:"";
+  const c2=defs2+tk.map((v,idx)=>gl(yv(v),v,idx===0)).join("")+f.map((x,i)=>{const xa=cx(i)-bw2-1,xb=cx(i)+1;return bar(xa,gv[i],"chG2")+bar(xb,av[i],"chA2")+lab(gv[i],xa+bw2/2)+lab(av[i],xb+bw2/2)}).join("");
+  return psetCard("chart","emr","Sezon Grafikleri","Derece ve gol/asist gelişimi",`${n} sezon`,
+    `<div class="pset-lbl" style="margin:0 0 4px">Ulaşılan Derece <small style="text-transform:none;font-weight:400">(altın: şampiyonluk)</small></div>`+
+    `<div class="svgbox"><svg viewBox="0 0 300 140" style="width:100%" role="img" aria-label="Sezonlara göre ulaşılan derece">${c1}${ax}</svg></div>`+
+    `<div class="pset-lbl" style="margin:12px 0 4px">Gol ve Asist Üretimi</div>`+
+    `<div class="svgbox"><svg viewBox="0 0 300 140" style="width:100%" role="img" aria-label="Sezonlara göre gol ve asist">${c2}${ax}</svg></div>`
+  )}
 function cmpCard(){
   const S=store.seasons;if(S.length<2)return "";
   const a=S.find(x=>x.id==st.ca)||S[0],b=S.find(x=>x.id==st.cb)||S.find(x=>x.id!==a.id)||S[1];
@@ -1214,12 +1222,12 @@ const cupSvg=on=>{const k=on?'fill="#e0b43a" stroke="#b8860b" stroke-width="1"':
 function vitrinCard(){
   const ch=store.seasons.filter(x=>x.res&&x.res.st==7&&x.my!=null).reverse();
   const showCh=(st.vitall||ch.length<=3)?ch:ch.slice(0,3);
-  const its=showCh.map(x=>{const t=T[x.my],w=x.ts;return `<div class="it"><span class="cupw">${cupSvg(true)}</span><b>${esc(x.name)}</b><span>${esc(t.n)}</span>${(w.w||w.d||w.l)?`<span>${w.w||0}-${w.d||0}-${w.l||0}</span>`:""}</div>`});
+  const its=showCh.map(x=>{const t=T[x.my],w=x.ts;return `<div class="it"><span class="cupw">${cupSvg(true)}</span><div class="plq"><b>${esc(x.name)}</b><span>${esc(t.n)}</span>${(w.w||w.d||w.l)?`<em>${w.w||0}G ${w.d||0}B ${w.l||0}M</em>`:""}</div></div>`});
   const tot=Math.max(3,Math.ceil(its.length/3)*3);
-  while(its.length<tot)its.push(`<div class="it gh">${cupSvg(false)}<span>Boş raf</span></div>`);
-  let rows="";for(let i=0;i<its.length;i+=3)rows+=`<div class="shelf">${its.slice(i,i+3).join("")}</div>`;
-  const moreBtn=ch.length>3?`<div class="bar" style="margin:8px 0 0"><button class="chip" data-a="vitall" style="width:100%">${st.vitall?"Sadece son 3 kupayı göster":"Tüm kupaları göster ("+ch.length+" kupa)"}</button></div>`:"";
-  return cd(`Kupa dolabı <small>${ch.length} kupa</small>`,rows+moreBtn+(ch.length?"":`<div class="note">İlk şampiyonlukta kupa buraya dizilir.</div>`))}
+  while(its.length<tot)its.push(`<div class="it gh">${cupSvg(false)}<div class="plq"><span>Boş raf</span></div></div>`);
+  let rows="";for(let i=0;i<its.length;i+=3)rows+=`<div class="shelf pshelf">${its.slice(i,i+3).join("")}</div>`;
+  const moreBtn=ch.length>3?`<div class="bar" style="margin:10px 0 0"><button class="btn pset-sec" data-a="vitall" style="width:100%">${st.vitall?"Sadece son 3 kupayı göster":"Tüm kupaları göster ("+ch.length+" kupa)"}</button></div>`:"";
+  return psetCard("trophy","gold","Kupa Dolabı","Kariyer şampiyonluk vitrini",`${ch.length} kupa`,rows+moreBtn+(ch.length?"":`<div class="note" style="margin:8px 0 0">İlk şampiyonlukta kupa buraya dizilir.</div>`))}
 function histView(){
   const ss=store.seasons.slice().reverse(),hmod=st.hmod||"all";
   const filtS=ss.filter(x=>hmod=="all"||(hmod=="lg"?isLg(x.cfg):!isLg(x.cfg)));
@@ -2789,9 +2797,9 @@ function oyCard(s){const o=oyOf(s),op=a=>[["","Seçilmedi"]].concat(a.map(v=>[v,
   return cd(`Oyun ayarları<small>${esc(s.name)}</small>`,`<div class="note" style="margin:0 0 6px">Zorluk, yarı süresi ve kontrol sonuçları etkiler. İstatistikleri zorluğa göre süzebilirsin.</div>`+rrow("Zorluk",sel("sg","d",op(OYD),o.d||""))+rrow("Yarı süresi",sel("sg","h",[["","Seçilmedi"]].concat(OYH.map(v=>[v,v+" dk"])),o.h||""))+rrow("Kontrol",sel("sg","c",op(OYC),o.c||"")))}
 const dOf=e=>oyOf(e.x).d||"—";
 function oyFilter(A0,fd){if(!A0.some(e=>oyOf(e.x).d))return "";const set=[...new Set(A0.map(dOf))];
-  return cd("Zorluğa göre süz",`<div class="cw" style="margin:0">${[["","Tümü"]].concat(set.map(v=>[v,v=="—"?"Seçilmedi":v])).map(([v,l])=>`<button class="chip ${fd==v?"on":""}" data-a="sfd" data-v="${esc(v)}">${esc(l)}</button>`).join("")}</div>`)}
+  return psetCard("sliders","sky","Zorluğa Göre Süz","Maç istatistiklerini oyun zorluğuna göre filtrele",fd||( "Tümü"),`<div class="cw" style="margin:0">${[["","Tümü"]].concat(set.map(v=>[v,v=="—"?"Seçilmedi":v])).map(([v,l])=>`<button class="chip ${fd==v?"on":""}" data-a="sfd" data-v="${esc(v)}">${esc(l)}</button>`).join("")}</div>`)}
 function oyDiff(A0){const set=[...new Set(A0.map(dOf))].filter(v=>v!="—");if(set.length<2)return "";
-  return cd("Zorluğa göre başarı",set.sort((a,b)=>OYD.indexOf(a)-OYD.indexOf(b)).map(d=>{const o=tally(A0.filter(e=>dOf(e)==d).map(e=>e.m));return `<div class="mstg"><div class="mstt"><b>${esc(d)}</b><span class="lb">${o.n} maç · ${gbmT(o)} · %${Math.round(o.w/o.n*100)}</span></div>${sbar(o)}</div>`}).join("")+`<div class="note">Aynı takımla farklı zorlukta galibiyet oranın nasıl değişiyor, buradan görebilirsin.</div>`)}
+  return psetCard("sliders","emr","Zorluğa Göre Başarı","Farklı zorluk seviyelerindeki galibiyet oranın",`${set.length} seviye`,set.sort((a,b)=>OYD.indexOf(a)-OYD.indexOf(b)).map(d=>{const o=tally(A0.filter(e=>dOf(e)==d).map(e=>e.m));return `<div class="mstg"><div class="mstt"><b>${esc(d)}</b><span class="lb">${o.n} maç · ${gbmT(o)} · %${Math.round(o.w/o.n*100)}</span></div>${sbar(o)}</div>`}).join("")+`<div class="note" style="margin:8px 0 0">Aynı takımla farklı zorlukta galibiyet oranın nasıl değişiyor, buradan görebilirsin.</div>`)}
 
 /* Rekabet: seri, eleyen, intikam */
 function rivBlk(o){const L=o.m.map(q=>q.m),n=L.length;if(!n)return "";let cw=0,cl=0,bw=0,bl=0;
