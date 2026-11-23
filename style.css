@@ -3825,99 +3825,518 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
   background:var(--hi);border:1px solid var(--gbd);color:var(--mut);
 }
 .dnasub b{color:var(--tx);font-weight:700}
-/* ===== v20.34: Canlı Menajer Düellosu (VS) & 6'lı Geçmiş Sekmeleri ===== */
+/* ===== v20.41: Flagship Broadcast Menajer Düellosu (Obsidian & Champagne Gold) ===== */
 .stabs.htabs.htabs6{grid-template-columns:repeat(3,1fr);gap:4px}
 @media(min-width:520px){.stabs.htabs.htabs6{grid-template-columns:repeat(6,1fr)}}
 
-.dl-barcard{padding:12px 14px;margin-top:0}
-.dl-barh{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.dl-binfo{display:flex;flex-direction:column;gap:3px;min-width:0}
-.dl-binfo small{font-size:11.5px;color:var(--mut)}
-.dl-bacts{display:flex;align-items:center;gap:6px}
-.dl-bacts .btn{min-height:38px;padding:7px 12px;font-size:13px}
+@keyframes dlBeacon{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.38;transform:scale(.8)}}
+@keyframes dlSpin{to{transform:rotate(360deg)}}
 
-.dl-hero{padding:15px}
-.dl-vshead{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
-.dl-side{display:flex;flex-direction:column;gap:2px;min-width:0}
-.dl-side.op{text-align:right;align-items:flex-end}
-.dl-side b{font-family:var(--num);font-size:21px;line-height:1.1;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
-.dl-side small{font-size:11.5px;color:var(--mut)}
-.dl-dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-bottom:2px}
-.dl-dot.me{background:#2dd496;box-shadow:0 0 8px rgba(45,212,150,.55)}
-.dl-dot.op{background:#e8be54;box-shadow:0 0 8px rgba(232,190,84,.55)}
-.dl-mid{display:flex;flex-direction:column;align-items:center;gap:2px}
-.dl-vs{font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--mut);padding:2px 8px;border-radius:99px;background:var(--hi);border:1px solid var(--gbd)}
-.dl-sc{display:flex;align-items:baseline;gap:5px;font-family:var(--num);font-size:26px;line-height:1}
-.dl-sc .me{color:var(--ac)}.dl-sc .op{color:var(--gold)}.dl-sc span{color:var(--mut);font-size:18px}
-.dl-meta{display:flex;justify-content:space-between;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid var(--bd);font-size:11.5px;color:var(--mut)}
+.dl-wrap{display:flex;flex-direction:column;gap:10px}
+.dl-svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
 
-.dl-row{margin-bottom:10px}
-.dl-row:last-child{margin-bottom:0}
-.dl-top{display:grid;grid-template-columns:64px 1fr 64px;align-items:center;gap:6px;margin-bottom:4px}
-.dl-lbl{text-align:center;font-size:11.5px;font-weight:600;color:var(--mut)}
-.dl-v{font-family:var(--num);font-size:17px;line-height:1;color:var(--tx);opacity:.78}
-.dl-v.op{text-align:right}
-.dl-v.me.win{color:var(--ac);opacity:1}
-.dl-v.op.win{color:var(--gold);opacity:1}
-.dl-bars{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.dl-bL,.dl-bR{height:7px;border-radius:99px;background:var(--hi);overflow:hidden;display:flex}
-.dl-bL{justify-content:flex-end}
-.dl-bL i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,rgba(45,212,150,.55),#2dd496)}
-.dl-bR i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#e8be54,rgba(232,190,84,.55))}
+/* 1) Kompakt Canlı Oda Telemetri Şeridi (.dl-strip) */
+.dl-strip{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:8px 10px 8px 12px;border-radius:14px;
+  background:var(--gcard);border:1px solid var(--gbd);
+  box-shadow:0 4px 14px rgba(0,0,0,.05),inset 0 1px 0 rgba(255,255,255,.16);
+}
+.dl-strip-l{display:flex;align-items:center;gap:9px;min-width:0;flex:1}
+.dl-beacon{
+  width:8px;height:8px;border-radius:50%;flex:0 0 auto;
+  background:#2ee59d;box-shadow:0 0 0 3px rgba(46,229,157,.22),0 0 10px rgba(46,229,157,.65);
+  animation:dlBeacon 2.2s ease-in-out infinite;
+}
+.dl-beacon.warn{background:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.24)}
+.dl-strip-t{display:flex;flex-direction:column;gap:1px;min-width:0}
+.dl-strip-top{display:flex;align-items:center;gap:6px;min-width:0}
+.dl-roomcode{
+  font-family:var(--num);font-size:15px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.dl-sbadge{
+  display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:99px;
+  font-size:10px;font-weight:700;letter-spacing:.03em;flex:0 0 auto;
+}
+.dl-sbadge svg{width:11px;height:11px;stroke-width:2.5}
+.dl-sbadge.ok{background:rgba(15,157,107,.13);color:var(--ac)}
+.dl-sbadge.wr{background:rgba(245,158,11,.16);color:#d97706}
+.dl-strip-t small{font-size:11px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dl-strip-r{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.dl-syncbtn{
+  display:inline-flex;align-items:center;gap:5px;min-height:34px;padding:0 11px;border-radius:10px;
+  border:1px solid color-mix(in srgb,var(--ac) 40%,var(--gbd));
+  background:color-mix(in srgb,var(--ac) 13%,var(--gcard));color:var(--ac);
+  font:700 12.5px inherit;cursor:pointer;transition:transform .12s,background .15s;
+}
+.dl-syncbtn:active{transform:scale(.96)}
+.dl-syncbtn:disabled{opacity:.6;cursor:wait}
+.dl-syncbtn svg{width:14px;height:14px}
+.dl-syncbtn.busy svg{animation:dlSpin .85s linear infinite}
+.dl-icbtn{
+  width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid var(--gbd);background:var(--hi);color:var(--tx);cursor:pointer;padding:0;
+}
+.dl-icbtn svg{width:16px;height:16px}
+.dl-errbar{
+  display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:12px;
+  background:rgba(224,49,49,.10);border:1px solid rgba(224,49,49,.30);color:var(--wr);
+  font-size:12px;font-weight:600;line-height:1.35;
+}
+.dl-errbar.warn{background:rgba(245,158,11,.10);border-color:rgba(245,158,11,.34);color:#b45309}
+[data-theme="dark"] .dl-errbar.warn{color:#fbbf24}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .dl-errbar.warn{color:#fbbf24}}
+.dl-errbar svg{width:15px;height:15px}
 
-.dl-leg{display:flex;justify-content:center;gap:16px;font-size:12px;font-weight:600;color:var(--tx);margin-bottom:4px}
-.dl-leg span{display:inline-flex;align-items:center;gap:6px}
-.dl-leg i{width:10px;height:10px;border-radius:3px;display:inline-block}
-.dl-leg i.me{background:#2dd496}.dl-leg i.op{background:#e8be54}
-.dl-radar{max-width:290px;margin:0 auto}
-.dl-radar svg{width:100%;height:auto;display:block}
-.dl-ids{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
-.dl-id{padding:9px 10px;border-radius:12px;background:var(--hi);border:1px solid var(--gbd);display:flex;flex-direction:column;gap:2px}
-.dl-id.me{border-left:3px solid #2dd496}
-.dl-id.op{border-left:3px solid #e8be54}
-.dl-id small{font-size:11px;color:var(--mut);font-weight:600}
-.dl-id b{font-size:13.5px;color:var(--tx);line-height:1.2}
-.dl-id em{font-style:normal;font-size:11px;color:var(--mut)}
+/* 2) OBSIDIAN STADIUM BROADCAST HERO STAGE (.dl-stage) */
+.dl-stage{
+  position:relative;overflow:hidden;border-radius:22px;padding:15px 15px 13px;
+  color:#f8fafc;
+  background:
+    radial-gradient(85% 95% at 6% 4%,rgba(46,229,157,.22) 0%,transparent 56%),
+    radial-gradient(85% 95% at 94% 4%,rgba(240,194,75,.22) 0%,transparent 56%),
+    radial-gradient(60% 45% at 50% 100%,rgba(56,189,248,.10) 0%,transparent 70%),
+    linear-gradient(165deg,#0c131d 0%,#080d14 55%,#0e1622 100%);
+  border:1px solid rgba(240,194,75,.26);
+  box-shadow:
+    0 20px 42px -14px rgba(5,10,18,.52),
+    0 4px 14px rgba(5,10,18,.26),
+    inset 0 1px 0 rgba(255,255,255,.16);
+}
+.dl-stage-bg{
+  position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(90deg,transparent calc(50% - .5px),rgba(255,255,255,.045) 50%,transparent calc(50% + .5px)),
+    radial-gradient(circle at 50% 41%,transparent 52px,rgba(255,255,255,.048) 53px,rgba(255,255,255,.048) 54px,transparent 55px);
+}
+.dl-stage-hd{
+  position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  margin-bottom:14px;
+}
+.dl-htag{
+  font-size:10px;font-weight:800;letter-spacing:.14em;color:rgba(203,213,225,.68);
+  text-transform:uppercase;
+}
+.dl-lead{
+  display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:99px;
+  font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+}
+.dl-lead svg{width:12px;height:12px}
+.dl-lead.me{background:rgba(46,229,157,.16);color:#3ee6a8;border:1px solid rgba(46,229,157,.42);box-shadow:0 0 16px rgba(46,229,157,.18)}
+.dl-lead.op{background:rgba(240,194,75,.16);color:#f8d477;border:1px solid rgba(240,194,75,.44);box-shadow:0 0 16px rgba(240,194,75,.18)}
+.dl-lead.eq{background:rgba(255,255,255,.08);color:#cbd5e1;border:1px solid rgba(255,255,255,.16)}
 
+.dl-stage-vs{
+  position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;gap:8px;
+}
+.dl-fighter{display:flex;flex-direction:column;gap:2px;min-width:0}
+.dl-fighter.me{align-items:flex-start;text-align:left}
+.dl-fighter.op{align-items:flex-end;text-align:right}
+.dl-fcrest{
+  width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+  margin-bottom:6px;background:rgba(255,255,255,.05);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18);
+}
+.dl-fcrest.me{border:1px solid rgba(46,229,157,.48);box-shadow:0 8px 22px -6px rgba(46,229,157,.38),inset 0 1px 0 rgba(255,255,255,.18)}
+.dl-fcrest.op{border:1px solid rgba(240,194,75,.50);box-shadow:0 8px 22px -6px rgba(240,194,75,.38),inset 0 1px 0 rgba(255,255,255,.18)}
+.dl-av{font-family:var(--num);font-size:24px;font-weight:800;color:#f8fafc;line-height:1}
+.dl-av.sm{font-size:19px}
+.dl-fname{
+  font-family:var(--num);font-size:24px;line-height:1.05;letter-spacing:.01em;color:#f8fafc;
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.dl-fsub{font-size:11px;color:rgba(148,163,184,.88);font-variant-numeric:tabular-nums}
+.dl-fclub{
+  margin-top:4px;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.dl-fclub.me{background:rgba(46,229,157,.14);color:#6ee7b7;border:1px solid rgba(46,229,157,.24)}
+.dl-fclub.op{background:rgba(240,194,75,.14);color:#fde68a;border:1px solid rgba(240,194,75,.24)}
+
+.dl-center{display:flex;flex-direction:column;align-items:center;gap:3px;padding:0 4px}
+.dl-vsp{
+  font-size:9.5px;font-weight:800;letter-spacing:.16em;color:rgba(226,232,240,.8);
+  padding:2px 9px;border-radius:99px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);
+}
+.dl-score{
+  display:flex;align-items:baseline;gap:6px;
+  font-family:var(--num);font-size:44px;line-height:.95;font-variant-numeric:tabular-nums;
+  margin-top:2px;
+}
+.dl-score .me{color:#2ee59d}
+.dl-score .op{color:#f0c24b}
+.dl-score .me.lead{text-shadow:0 0 24px rgba(46,229,157,.55)}
+.dl-score .op.lead{text-shadow:0 0 24px rgba(240,194,75,.55)}
+.dl-score span{font-size:24px;color:rgba(148,163,184,.48)}
+.dl-scnote{font-size:10.5px;color:rgba(148,163,184,.72);font-weight:600;letter-spacing:.03em}
+
+.dl-dom{position:relative;z-index:1;margin-top:14px}
+.dl-domlbl{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;
+  font-size:10px;font-weight:700;letter-spacing:.10em;color:rgba(148,163,184,.72);
+  font-variant-numeric:tabular-nums;
+}
+.dl-domlbl .me{font-family:var(--num);font-size:13px;color:#3ee6a8;letter-spacing:0}
+.dl-domlbl .op{font-family:var(--num);font-size:13px;color:#f8d477;letter-spacing:0}
+.dl-dombar{
+  position:relative;height:6px;border-radius:99px;overflow:hidden;
+  display:flex;gap:3px;padding:1px;background:rgba(255,255,255,.07);
+}
+.dl-dombar i{display:block;height:100%;border-radius:99px;transition:width .35s ease}
+.dl-dombar i.me{background:linear-gradient(90deg,#10b981,#3ee6a8)}
+.dl-dombar i.op{background:linear-gradient(90deg,#f8d477,#d97706)}
+
+.dl-hkpi{
+  position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;
+  margin-top:12px;
+}
+.dl-hk{
+  padding:8px 6px;border-radius:12px;text-align:center;
+  background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);
+}
+.dl-hk small{display:block;font-size:9px;font-weight:800;letter-spacing:.10em;color:rgba(148,163,184,.78);margin-bottom:3px}
+.dl-hk div{display:flex;align-items:baseline;justify-content:center;gap:4px;font-family:var(--num);font-size:18px;line-height:1;font-variant-numeric:tabular-nums}
+.dl-hk .me{color:rgba(110,231,183,.72)}.dl-hk .me.lead{color:#2ee59d}
+.dl-hk .op{color:rgba(253,230,138,.72)}.dl-hk .op.lead{color:#f0c24b}
+.dl-hk span{font-size:13px;color:rgba(148,163,184,.36)}
+
+.dl-hacts{position:relative;z-index:1;display:flex;gap:7px;margin-top:12px}
+.dl-hbtn{
+  flex:1;min-height:40px;padding:0 12px;border-radius:12px;border:1px solid transparent;
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  font:700 13px inherit;cursor:pointer;transition:transform .12s,background .15s;
+}
+.dl-hbtn:active{transform:scale(.97)}
+.dl-hbtn svg{width:15px;height:15px}
+.dl-hbtn.pri{
+  background:linear-gradient(135deg,#10b981,#0f9d6b);color:#041f16;
+  border-color:rgba(110,231,183,.45);box-shadow:0 6px 18px -4px rgba(16,185,129,.45);
+}
+.dl-hbtn.sec{
+  background:rgba(240,194,75,.12);color:#fbe39b;
+  border-color:rgba(240,194,75,.36);
+}
+.dl-hbtn.dgr{flex:0 0 40px;padding:0;background:rgba(242,100,100,.14);color:#fca5a5;border-color:rgba(242,100,100,.34)}
+
+.dl-hfoot{
+  position:relative;z-index:1;display:flex;justify-content:space-between;gap:8px;
+  margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);
+  font-size:11px;color:rgba(148,163,184,.72);
+}
+
+/* 3) 4-SEKMELİ DÜELLO STÜDYOSU GEZİNME & MOD FİLTRESİ */
+.dl-nav{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;
+  padding:4px;border-radius:15px;
+  background:var(--gcard);border:1px solid var(--gbd);
+  box-shadow:0 4px 12px rgba(0,0,0,.04);
+}
+.dl-ntab{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  padding:7px 2px;border-radius:11px;border:1px solid transparent;background:transparent;
+  color:var(--mut);font:700 11.5px inherit;cursor:pointer;transition:all .16s;
+}
+.dl-ntab svg{width:16px;height:16px}
+.dl-ntab.on{
+  background:#0e1722;color:#f8fafc;border-color:rgba(240,194,75,.34);
+  box-shadow:0 4px 12px rgba(7,12,20,.24);
+}
+[data-theme="dark"] .dl-ntab.on{background:linear-gradient(135deg,rgba(46,229,157,.18),rgba(240,194,75,.12));color:#f8fafc;border-color:rgba(46,229,157,.38)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .dl-ntab.on{background:linear-gradient(135deg,rgba(46,229,157,.18),rgba(240,194,75,.12));color:#f8fafc;border-color:rgba(46,229,157,.38)}}
+
+.dl-mbar{
+  display:inline-grid;grid-template-columns:repeat(3,1fr);gap:3px;width:100%;
+  padding:3px;border-radius:12px;
+  background:rgba(127,150,140,.11);border:1px solid var(--gbd);
+}
+.dl-mbtn{
+  padding:6px 4px;border-radius:9px;border:0;background:transparent;
+  color:var(--mut);font:700 12px inherit;cursor:pointer;transition:all .15s;
+}
+.dl-mbtn.on{
+  background:var(--card);color:var(--tx);
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+/* 4) BESPOKE FLAGSHIP PANELLER (.dl-panel) */
+.dl-panel{
+  border-radius:18px;padding:14px;
+  background:var(--gcard);border:1px solid var(--gbd);
+  box-shadow:0 8px 22px -8px rgba(0,0,0,.07),inset 0 1px 0 rgba(255,255,255,.16);
+}
+.dl-ph{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--bd)}
+.dl-pico{
+  width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;
+}
+.dl-pico svg{width:17px;height:17px}
+.dl-pico.emr{background:rgba(15,157,107,.13);color:var(--ac);border:1px solid rgba(15,157,107,.24)}
+.dl-pico.gold{background:rgba(212,160,23,.14);color:var(--gold);border:1px solid rgba(212,160,23,.28)}
+.dl-pico.sky{background:rgba(14,165,233,.13);color:#0ea5e9;border:1px solid rgba(14,165,233,.24)}
+.dl-pico.org{background:rgba(245,158,11,.13);color:#f59e0b;border:1px solid rgba(245,158,11,.24)}
+.dl-pt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.dl-pt b{font-family:var(--num);font-size:18px;line-height:1.1;color:var(--tx);letter-spacing:.01em}
+.dl-pt small{font-size:11.5px;color:var(--mut)}
+.dl-ppill{
+  flex:0 0 auto;font-family:var(--num);font-size:14px;font-weight:700;padding:3px 9px;border-radius:99px;
+  background:var(--hi);border:1px solid var(--gbd);color:var(--tx);font-variant-numeric:tabular-nums;
+}
+.dl-ppill.emr{background:rgba(15,157,107,.12);color:var(--ac);border-color:rgba(15,157,107,.28)}
+.dl-ppill.gold{background:rgba(212,160,23,.14);color:var(--gold);border-color:rgba(212,160,23,.32)}
+.dl-ppill.sky{background:rgba(14,165,233,.12);color:#0ea5e9;border-color:rgba(14,165,233,.28)}
+
+/* Telemetri Satırları (.dl-tlist & .dl-trow) */
+.dl-tlist{display:flex;flex-direction:column;gap:11px}
+.dl-grp{
+  font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);
+  padding-top:4px;margin-bottom:-2px;
+}
+.dl-grp:not(:first-child){margin-top:4px;padding-top:10px;border-top:1px dashed var(--bd)}
+.dl-trow{display:flex;flex-direction:column;gap:5px}
+.dl-ttop{display:grid;grid-template-columns:minmax(62px,auto) 1fr minmax(62px,auto);align-items:center;gap:6px}
+.dl-tlbl{text-align:center;font-size:11.5px;font-weight:600;color:var(--mut);line-height:1.2}
+.dl-tv{
+  display:inline-flex;align-items:center;gap:5px;font-family:var(--num);font-size:18px;line-height:1;
+  color:var(--mut);font-variant-numeric:tabular-nums;
+}
+.dl-tv.op{justify-content:flex-end}
+.dl-tv b{font-weight:700}
+.dl-tv.me.win{color:var(--ac)}
+.dl-tv.op.win{color:var(--gold)}
+.dl-wdot{width:6px;height:6px;border-radius:50%;flex:0 0 auto}
+.dl-wdot.me{background:#10b981;box-shadow:0 0 8px rgba(16,185,129,.6)}
+.dl-wdot.op{background:#e8be54;box-shadow:0 0 8px rgba(232,190,84,.6)}
+
+.dl-ttrack{display:grid;grid-template-columns:1fr 2px 1fr;align-items:center;gap:4px}
+.dl-tmid{width:2px;height:10px;border-radius:2px;background:var(--bd)}
+.dl-tbL,.dl-tbR{height:6px;border-radius:99px;background:rgba(127,150,140,.14);overflow:hidden;display:flex}
+.dl-tbL{justify-content:flex-end}
+.dl-tbL i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,rgba(16,185,129,.42),#10b981);transition:width .35s ease}
+.dl-tbR i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#e8be54,rgba(217,119,6,.42));transition:width .35s ease}
+.dl-trow.w1 .dl-tbL i{background:linear-gradient(90deg,#10b981,#2ee59d);box-shadow:0 0 10px rgba(46,229,157,.45)}
+.dl-trow.w2 .dl-tbR i{background:linear-gradient(90deg,#f8d477,#d97706);box-shadow:0 0 10px rgba(240,194,75,.45)}
+.dl-trow.w1 .dl-tbR i,.dl-trow.w2 .dl-tbL i{opacity:.42}
+
+.dl-hint{
+  margin-top:10px;padding:8px 10px;border-radius:10px;font-size:11.5px;color:var(--mut);
+  background:var(--hi);border:1px solid var(--gbd);line-height:1.4;
+}
+
+/* Kariyer & Sezon Yıldız Plaketleri */
+.dl-stargrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dl-starcard{
+  display:flex;align-items:center;gap:9px;padding:10px;border-radius:14px;
+  background:var(--hi);border:1px solid var(--gbd);min-width:0;
+}
+.dl-starcard.me{border-top:2px solid #10b981}
+.dl-starcard.op{border-top:2px solid #e8be54}
+.dl-stic{
+  width:30px;height:30px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;
+}
+.dl-stic svg{width:15px;height:15px}
+.dl-stic.me{background:rgba(16,185,129,.14);color:var(--ac)}
+.dl-stic.op{background:rgba(212,160,23,.16);color:var(--gold)}
+.dl-sttxt{display:flex;flex-direction:column;gap:1px;min-width:0}
+.dl-sttxt small{font-size:10.5px;color:var(--mut);font-weight:600}
+.dl-sttxt b{font-size:13.5px;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dl-sttxt em{font-style:normal;font-size:11px;font-weight:700;color:var(--mut)}
+
+/* Canlı Sezon Nabzı */
 .dl-curgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.dl-cs{padding:10px;border-radius:12px;background:var(--hi);border:1px solid var(--gbd);display:flex;flex-direction:column;gap:5px;min-width:0}
-.dl-cs.me{border-top:2px solid #2dd496}
-.dl-cs.op{border-top:2px solid #e8be54}
+.dl-cs{
+  padding:11px;border-radius:14px;background:var(--hi);border:1px solid var(--gbd);
+  display:flex;flex-direction:column;gap:5px;min-width:0;
+}
+.dl-cs.me{border-top:2.5px solid #10b981}
+.dl-cs.op{border-top:2.5px solid #e8be54}
 .dl-csh{display:flex;align-items:center;gap:7px;min-width:0}
-.dl-csh small{display:block;font-size:11px;color:var(--mut)}
+.dl-csh small{display:block;font-size:10.5px;color:var(--mut);font-weight:600}
 .dl-csh b{display:block;font-size:13.5px;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dl-csm{font-size:11.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dl-csm{font-size:11.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-variant-numeric:tabular-nums}
+.dl-gen{
+  flex:0 0 auto;font-family:var(--num);font-size:12.5px;font-weight:700;
+  padding:2px 6px;border-radius:6px;line-height:1.15;
+  background:var(--gcard);border:1px solid var(--gbd);color:var(--tx);
+}
 .dl-form{display:flex;gap:4px;margin-top:2px}
-.dl-form i{width:20px;height:20px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:11px;font-weight:800}
-.dl-form i.w{background:rgba(45,212,150,.18);color:#2dd496}
+.dl-form i{
+  width:21px;height:21px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;
+  font-style:normal;font-size:10.5px;font-weight:800;
+}
+.dl-form i.w{background:rgba(16,185,129,.18);color:var(--ac)}
 .dl-form i.d{background:rgba(148,163,184,.18);color:var(--mut)}
-.dl-form i.l{background:rgba(242,100,100,.18);color:#f26464}
+.dl-form i.l{background:rgba(242,100,100,.18);color:var(--wr)}
+.dl-livego{
+  width:100%;margin-top:10px;min-height:40px;padding:8px 12px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  background:#0e1722;color:#f8fafc;border:1px solid rgba(46,229,157,.32);
+  font:700 12.5px inherit;cursor:pointer;box-shadow:0 6px 16px -6px rgba(7,12,20,.38);
+}
+.dl-livego svg{width:15px;height:15px;color:#2ee59d}
 
+/* 5) SEZON vs. SEZON & KULÜP vs. KULÜP OBSİDİYEN MİNİ SAHNE */
+.dl-seldock{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:end;gap:7px;margin-bottom:11px}
+.dl-selcol{display:flex;flex-direction:column;gap:4px;min-width:0}
+.dl-selcol label{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)}
+.dl-selcol.me label{color:var(--ac)}.dl-selcol.op label{color:var(--gold)}
+.dl-selcol .sel{width:100%;font-size:12.5px;padding:7px 8px;border-radius:10px}
+.dl-swbtn{
+  width:34px;height:34px;border-radius:10px;border:1px solid var(--gbd);background:var(--hi);color:var(--tx);
+  display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;
+}
+.dl-swbtn svg{width:16px;height:16px}
+.dl-swsep{
+  align-self:end;margin-bottom:8px;font-size:10px;font-weight:800;letter-spacing:.12em;
+  color:var(--mut);padding:3px 7px;border-radius:99px;background:var(--hi);border:1px solid var(--gbd);
+}
+
+.dl-ministage{
+  display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;
+  padding:13px 12px;border-radius:16px;margin-bottom:12px;color:#f8fafc;
+  background:
+    radial-gradient(80% 90% at 8% 10%,rgba(46,229,157,.18),transparent 58%),
+    radial-gradient(80% 90% at 92% 10%,rgba(240,194,75,.18),transparent 58%),
+    linear-gradient(165deg,#0c131d,#090e15);
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 10px 24px -10px rgba(5,10,18,.44);
+}
+.dl-mside{display:flex;flex-direction:column;gap:3px;min-width:0}
+.dl-mside.me{align-items:flex-start;text-align:left}
+.dl-mside.op{align-items:flex-end;text-align:right}
+.dl-mcrest{
+  width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;
+  margin-bottom:4px;background:rgba(255,255,255,.05);
+}
+.dl-mcrest.me{border:1px solid rgba(46,229,157,.44)}.dl-mcrest.op{border:1px solid rgba(240,194,75,.44)}
+.dl-msnm{font-size:10.5px;color:rgba(148,163,184,.82);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dl-mtm{font-family:var(--num);font-size:18px;line-height:1.1;color:#f8fafc;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dl-mtm em{font-style:normal;font-size:13px;color:#f8d477;margin-left:3px}
+.dl-msres{
+  display:inline-flex;align-items:center;gap:4px;margin-top:2px;
+  font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;
+  background:rgba(255,255,255,.08);color:#e2e8f0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.dl-msres.gold{background:rgba(240,194,75,.20);color:#fde68a;border:1px solid rgba(240,194,75,.42)}
+.dl-msres.emr{background:rgba(46,229,157,.16);color:#6ee7b7;border:1px solid rgba(46,229,157,.36)}
+.dl-mini-ic{display:inline-flex}.dl-mini-ic svg{width:11px;height:11px}
+.dl-mgbm{font-size:11px;color:rgba(148,163,184,.78);font-variant-numeric:tabular-nums;margin-top:1px}
+.dl-mmid{display:flex;flex-direction:column;align-items:center;gap:3px}
+.dl-msscore{display:flex;align-items:baseline;gap:4px;font-family:var(--num);font-size:28px;line-height:1;font-variant-numeric:tabular-nums}
+.dl-msscore .me{color:#2ee59d}.dl-msscore .op{color:#f0c24b}.dl-msscore span{font-size:16px;color:rgba(148,163,184,.45)}
+
+/* 6) TAKIMLAR & KADEME DOSSIER */
+.dl-tierlist{display:flex;flex-direction:column;gap:8px}
+.dl-tiercard,.dl-shcard{
+  padding:11px;border-radius:14px;background:var(--hi);border:1px solid var(--gbd);
+}
+.dl-tierhd,.dl-shhd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.dl-shhd{justify-content:flex-start}
+.dl-tierhd b,.dl-shhd b{font-size:14px;color:var(--tx)}
+.dl-tierpill{
+  font-size:10.5px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:99px;
+}
+.dl-tierpill.gold{background:rgba(212,160,23,.16);color:var(--gold);border:1px solid rgba(212,160,23,.32)}
+.dl-tierpill.emr{background:rgba(15,157,107,.14);color:var(--ac);border:1px solid rgba(15,157,107,.28)}
+.dl-tierpill.sky{background:rgba(14,165,233,.14);color:#0ea5e9;border:1px solid rgba(14,165,233,.28)}
+.dl-tiervs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dl-tcell{
+  padding:8px 9px;border-radius:11px;background:var(--gcard);border:1px solid var(--gbd);
+  display:flex;flex-direction:column;gap:2px;min-width:0;
+}
+.dl-tcell.op{text-align:right;align-items:flex-end}
+.dl-tcell.me.win{border-color:rgba(16,185,129,.45);background:color-mix(in srgb,var(--ac) 7%,var(--gcard))}
+.dl-tcell.op.win{border-color:rgba(212,160,23,.48);background:color-mix(in srgb,var(--gold) 8%,var(--gcard))}
+.dl-tcell.empty{opacity:.65}
+.dl-tcname{font-size:10.5px;font-weight:700;color:var(--mut)}
+.dl-tcmain{display:flex;align-items:baseline;gap:3px;font-family:var(--num);font-size:21px;line-height:1.05;color:var(--tx);font-variant-numeric:tabular-nums}
+.dl-tcell.me.win .dl-tcmain b{color:var(--ac)}
+.dl-tcell.op.win .dl-tcmain b{color:var(--gold)}
+.dl-tcmain em{font-style:normal;font-size:11px;color:var(--mut);font-family:inherit;font-weight:700}
+.dl-tcsub{font-size:11px;color:var(--mut);font-variant-numeric:tabular-nums}
+
+/* 7) OBSİDİYEN TAKTİKSEL DNA LABORATUVARI (.dl-dnastage) */
+.dl-dnastage{
+  border-radius:20px;padding:15px;color:#f8fafc;
+  background:
+    radial-gradient(70% 70% at 50% 42%,rgba(46,229,157,.11) 0%,rgba(240,194,75,.07) 48%,transparent 78%),
+    linear-gradient(165deg,#0c131d 0%,#080d14 100%);
+  border:1px solid rgba(56,189,248,.24);
+  box-shadow:0 16px 34px -12px rgba(5,10,18,.48),inset 0 1px 0 rgba(255,255,255,.14);
+}
+.dl-dnapill{
+  font-family:var(--num);font-size:14px;font-weight:700;padding:2px 9px;border-radius:99px;
+  background:rgba(56,189,248,.16);color:#7dd3fc;border:1px solid rgba(56,189,248,.34);
+}
+.dl-dnaleg{display:flex;justify-content:center;gap:18px;font-size:12px;font-weight:700;color:#e2e8f0;margin-bottom:4px}
+.dl-dnaleg span{display:inline-flex;align-items:center;gap:6px}
+.dl-dnaleg i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.dl-dnaleg i.me{background:#2ee59d;box-shadow:0 0 8px rgba(46,229,157,.6)}
+.dl-dnaleg i.op{background:#f0c24b;box-shadow:0 0 8px rgba(240,194,75,.6)}
+.dl-radarbox{max-width:300px;margin:0 auto}
+.dl-radarbox svg{width:100%;height:auto;display:block}
+.dl-axgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:8px}
+.dl-axchip{
+  padding:7px 4px;border-radius:10px;text-align:center;
+  background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);
+}
+.dl-axchip small{display:block;font-size:8.5px;font-weight:800;letter-spacing:.08em;color:rgba(148,163,184,.78);margin-bottom:2px}
+.dl-axchip div{display:flex;align-items:baseline;justify-content:center;gap:3px;font-family:var(--num);font-size:15px;font-variant-numeric:tabular-nums}
+.dl-axchip .me{color:rgba(110,231,183,.72)}.dl-axchip .me.win{color:#2ee59d}
+.dl-axchip .op{color:rgba(253,230,138,.72)}.dl-axchip .op.win{color:#f0c24b}
+.dl-axchip span{font-size:11px;color:rgba(148,163,184,.36)}
+
+.dl-idgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.dl-idcard{
+  padding:10px 11px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);
+  display:flex;flex-direction:column;gap:2px;min-width:0;
+}
+.dl-idcard.me{border-left:3px solid #2ee59d}
+.dl-idcard.op{border-left:3px solid #f0c24b}
+.dl-idcard small{font-size:10.5px;color:rgba(148,163,184,.82);font-weight:700}
+.dl-idcard b{font-size:13.5px;color:#f8fafc;line-height:1.2}
+.dl-idcard em{font-style:normal;font-size:11px;color:rgba(148,163,184,.82)}
+.dl-idcard.dark{background:#0e1722;border-color:rgba(255,255,255,.12)}
+
+/* 8) ODA SIRALAMASI & YEDEK MANUEL KOD */
 .dl-lb{display:flex;flex-direction:column;gap:6px}
-.dl-lbr{width:100%;display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:12px;background:var(--hi);border:1px solid var(--gbd);color:var(--tx);text-align:left;cursor:pointer;font:inherit}
-.dl-lbr.me{cursor:default;border-color:color-mix(in srgb,var(--ac) 36%,var(--gbd))}
-.dl-lbr.sel{border-color:color-mix(in srgb,var(--gold) 52%,var(--gbd));background:color-mix(in srgb,var(--gold) 10%,var(--hi))}
-.dl-rk{width:22px;font-family:var(--num);font-size:17px;color:var(--mut);text-align:center}
+.dl-lbr{
+  width:100%;display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:12px;
+  background:var(--hi);border:1px solid var(--gbd);color:var(--tx);text-align:left;cursor:pointer;font:inherit;
+}
+.dl-lbr.me{cursor:default;border-color:color-mix(in srgb,var(--ac) 38%,var(--gbd))}
+.dl-lbr.sel{border-color:color-mix(in srgb,var(--gold) 55%,var(--gbd));background:color-mix(in srgb,var(--gold) 10%,var(--hi))}
+.dl-rk{width:24px;font-family:var(--num);font-size:17px;color:var(--mut);text-align:center}
+.dl-rk.r1{color:var(--gold)}
 .dl-pnm{flex:1;min-width:0;display:flex;flex-direction:column}
 .dl-pnm b{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dl-pnm small{font-size:11.5px;color:var(--mut)}
 .dl-pkpi{text-align:right;display:flex;flex-direction:column}
-.dl-pkpi b{font-family:var(--num);font-size:16px;color:var(--gold)}
+.dl-pkpi b{font-family:var(--num);font-size:15px;color:var(--gold)}
 .dl-pkpi small{font-size:11px;color:var(--mut)}
-/* ===== v20.35: Düello Aktif Kulüp GEN Rozeti ===== */
-.dl-gen{
-  flex:0 0 auto;font-family:var(--num);font-size:13px;font-weight:700;
-  padding:2px 7px;border-radius:7px;line-height:1.2;
-  background:var(--gcard);border:1px solid var(--gbd);color:var(--tx);
+.dl-manfold{margin-top:2px}
+
+/* 9) CANLI SEZON İNCELEME MODALI (.dl-lvbox) */
+.dl-lvhead{
+  padding:13px;border-radius:16px;margin-bottom:10px;color:#f8fafc;
+  background:linear-gradient(165deg,#0c131d,#080d14);border:1px solid rgba(255,255,255,.12);
 }
-/* ===== v20.36: Canlı Sezon İnceleme Modalı (.dl-lvbox) ===== */
-.dl-lvhead{padding:11px 12px;border-radius:14px;background:var(--hi);border:1px solid var(--gbd);margin-bottom:10px}
-.dl-lvhead.me{border-left:3px solid #2dd496}
-.dl-lvhead.op{border-left:3px solid #e8be54}
-.dl-lvkpi{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--bd);text-align:center}
+.dl-lvhead.me{border-left:3px solid #2ee59d}
+.dl-lvhead.op{border-left:3px solid #f0c24b}
+.dl-lvhead .dl-csh b{color:#f8fafc;font-size:15px}
+.dl-lvhead .dl-csh small{color:rgba(148,163,184,.85)}
+.dl-lvgen{
+  flex:0 0 auto;font-family:var(--num);font-size:13px;font-weight:700;padding:3px 8px;border-radius:7px;
+  background:rgba(240,194,75,.16);color:#fde68a;border:1px solid rgba(240,194,75,.36);
+}
+.dl-lvkpi{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;padding-top:9px;
+  border-top:1px solid rgba(255,255,255,.10);text-align:center;
+}
 .dl-lvkpi span{display:flex;flex-direction:column;gap:1px}
-.dl-lvkpi b{font-family:var(--num);font-size:15px;color:var(--tx)}
-.dl-lvkpi em{font-style:normal;font-size:11px;color:var(--mut)}
+.dl-lvkpi b{font-family:var(--num);font-size:16px;color:#f8fafc;font-variant-numeric:tabular-nums}
+.dl-lvkpi em{font-style:normal;font-size:10.5px;color:rgba(148,163,184,.78)}
+.dl-lvfmt{margin-top:7px;font-size:11px;color:rgba(148,163,184,.78)}
 
 .stabs.dl-lvtbs{grid-template-columns:repeat(4,1fr);margin:0 0 10px}
 .stabs.dl-lvtbs .chip{font-size:11.5px;padding:7px 2px}
@@ -3928,18 +4347,18 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
 .dl-lvsh b{font-size:13.5px;color:var(--tx)}
 
 .dl-tblwrap{overflow-x:auto;border-radius:12px;border:1px solid var(--gbd);background:var(--hi)}
-.dl-ptbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.dl-ptbl{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
 .dl-ptbl th,.dl-ptbl td{padding:7px 5px;text-align:center;border-bottom:1px solid var(--bd)}
 .dl-ptbl th.tm,.dl-ptbl td.tm{text-align:left;padding-left:8px}
 .dl-ptbl td.tm{vertical-align:middle;white-space:nowrap}
 .dl-tmcell{display:flex;align-items:center;gap:6px;min-width:0}
 .dl-ptbl td.rk{font-family:var(--num);color:var(--mut);width:24px}
 .dl-ptbl td.pt{font-family:var(--num);font-size:14px;color:var(--tx)}
-.dl-ptbl td.pos{color:#2dd496;font-weight:700}
-.dl-ptbl td.neg{color:#f26464;font-weight:700}
-.dl-ptbl tr.me{background:rgba(45,212,150,.12)}
+.dl-ptbl td.pos{color:#10b981;font-weight:700}
+.dl-ptbl td.neg{color:var(--wr);font-weight:700}
+.dl-ptbl tr.me{background:rgba(16,185,129,.12)}
 .dl-ptbl tr.me td.tm{font-weight:700;color:var(--ac)}
-.dl-ptbl tr.qcut td{border-bottom:2px dashed rgba(45,212,150,.55)}
+.dl-ptbl tr.qcut td{border-bottom:2px dashed rgba(16,185,129,.55)}
 .dl-ptbl tbody tr:last-child td{border-bottom:0}
 
 .dl-remwrap{display:flex;flex-wrap:wrap;gap:6px}
@@ -3948,23 +4367,23 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
 
 .dl-mlist{display:flex;flex-direction:column;gap:6px}
 .dl-mrow{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:var(--hi);border:1px solid var(--gbd)}
-.dl-mres{width:24px;height:24px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;flex:0 0 auto}
-.dl-mres.w{background:rgba(45,212,150,.18);color:#2dd496}
+.dl-mres.w,.dl-mres.d,.dl-mres.l{width:24px;height:24px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;flex:0 0 auto;padding:0;margin:0;border:0}
+.dl-mres.w{background:rgba(16,185,129,.18);color:var(--ac)}
 .dl-mres.d{background:rgba(148,163,184,.18);color:var(--mut)}
-.dl-mres.l{background:rgba(242,100,100,.18);color:#f26464}
+.dl-mres.l{background:rgba(242,100,100,.18);color:var(--wr)}
 .dl-mmain{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .dl-mtop{display:flex;align-items:center;gap:6px;min-width:0}
 .dl-mtop b{font-size:13.5px;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dl-mrd{font-size:11px;color:var(--mut);padding:1px 6px;border-radius:6px;background:var(--gcard);flex:0 0 auto}
 .dl-mxg{font-size:11px;color:var(--mut)}
-.dl-msc{font-family:var(--num);font-size:16px;font-weight:700;flex:0 0 auto}
-.dl-msc.w{color:#2dd496}.dl-msc.l{color:#f26464}.dl-msc.d{color:var(--tx)}
+.dl-msc.w,.dl-msc.d,.dl-msc.l{font-family:var(--num);font-size:16px;font-weight:700;flex:0 0 auto}
+.dl-msc.w{color:var(--ac)}.dl-msc.l{color:var(--wr)}.dl-msc.d{color:var(--tx)}
 
 .dl-kolist{display:flex;flex-direction:column;gap:5px}
 .dl-kor{display:flex;flex-direction:column;gap:4px;padding:8px 10px;border-radius:11px;background:var(--hi);border:1px solid var(--gbd);font-size:12.5px}
 .dl-komain{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
 .dl-koleg{text-align:center;font-size:11px;color:var(--mut);padding-top:3px;border-top:1px dashed var(--bd)}
-.dl-kor.mine{border-color:rgba(232,190,84,.55);background:rgba(232,190,84,.08)}
+.dl-kor.mine{border-color:rgba(212,160,23,.55);background:rgba(212,160,23,.08)}
 .dl-kot{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--mut)}
 .dl-kot.r{text-align:right}
 .dl-kot.w{color:var(--tx);font-weight:700}
@@ -3980,116 +4399,11 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
 .dl-sdrow span{color:var(--mut)}
 .dl-sdrow b{font-family:var(--num);text-align:right;color:var(--tx)}
 .dl-sdbar{height:7px;border-radius:99px;background:var(--gcard);overflow:hidden}
-.dl-sdbar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#2dd496,#e8be54)}
-/* ===== v20.40: Broadcast Elite Düello Tasarımı & Sezon / Kulüp Kıyaslama ===== */
-@keyframes dlBeacon{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.42;transform:scale(.82)}}
-.dl-barcard{
-  background:linear-gradient(135deg,color-mix(in srgb,var(--ac) 10%,var(--gcard)),var(--gcard));
-  border-color:color-mix(in srgb,var(--ac) 34%,var(--gbd));
+.dl-sdbar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#2ee59d,#f0c24b)}
+
+@media(max-width:360px){
+  .dl-score{font-size:36px}
+  .dl-fname{font-size:20px}
+  .dl-hk div{font-size:16px}
+  .dl-ntab{font-size:10.5px}
 }
-.dl-barcard .ph-dot{animation:dlBeacon 2.2s ease-in-out infinite}
-
-.dl-hero{
-  position:relative;overflow:hidden;padding:16px;
-  background:
-    radial-gradient(circle at 10% 14%,rgba(45,212,150,.18),transparent 48%),
-    radial-gradient(circle at 90% 14%,rgba(232,190,84,.18),transparent 48%),
-    linear-gradient(180deg,color-mix(in srgb,var(--tx) 4%,var(--gcard)),var(--gcard));
-  border:1px solid color-mix(in srgb,var(--gold) 34%,var(--gbd));
-  box-shadow:0 12px 28px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.16);
-}
-.dl-herotop{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
-.dl-htag{font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--mut)}
-.dl-lead{font-size:10.5px;font-weight:800;letter-spacing:.05em;padding:3px 9px;border-radius:99px}
-.dl-lead.me{background:rgba(45,212,150,.16);color:#2dd496;border:1px solid rgba(45,212,150,.38)}
-.dl-lead.op{background:rgba(232,190,84,.16);color:#e8be54;border:1px solid rgba(232,190,84,.38)}
-.dl-lead.eq{background:var(--hi);color:var(--mut);border:1px solid var(--gbd)}
-
-.dl-crest{
-  width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;
-  margin-bottom:5px;background:var(--hi);border:1px solid var(--gbd);
-}
-.dl-crest.me{border-color:rgba(45,212,150,.48);box-shadow:0 4px 14px rgba(45,212,150,.22)}
-.dl-crest.op{border-color:rgba(232,190,84,.48);box-shadow:0 4px 14px rgba(232,190,84,.22)}
-.dl-av{font-family:var(--num);font-size:21px;font-weight:800;color:var(--tx)}
-.dl-cteam{
-  margin-top:3px;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;
-  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-}
-.dl-cteam.me{background:rgba(45,212,150,.14);color:var(--ac)}
-.dl-cteam.op{background:rgba(232,190,84,.14);color:var(--gold)}
-
-.dl-sc{font-size:34px}
-.dl-sc .me.lead{text-shadow:0 0 18px rgba(45,212,150,.42)}
-.dl-sc .op.lead{text-shadow:0 0 18px rgba(232,190,84,.42)}
-.dl-scsub{font-size:10.5px;color:var(--mut);font-weight:600}
-
-.dl-domwrap{margin-top:11px}
-.dl-dombar{
-  height:6px;border-radius:99px;background:var(--hi);overflow:hidden;
-  display:flex;gap:3px;padding:1px;border:1px solid var(--gbd);
-}
-.dl-dombar i{display:block;height:100%;border-radius:99px;transition:width .35s ease}
-.dl-dombar i.me{background:linear-gradient(90deg,#10b981,#2dd496)}
-.dl-dombar i.op{background:linear-gradient(90deg,#e8be54,#d97706)}
-
-.dl-bL,.dl-bR{height:8px}
-.dl-bL i,.dl-bR i{transition:width .35s ease}
-.dl-v.me.win+.dl-lbl+.dl-v+.dl-bars .dl-bL i,.dl-row:has(.dl-v.me.win) .dl-bL i{box-shadow:0 0 10px rgba(45,212,150,.45)}
-.dl-row:has(.dl-v.op.win) .dl-bR i{box-shadow:0 0 10px rgba(232,190,84,.45)}
-
-.dl-radar{
-  padding:8px;border-radius:16px;
-  background:radial-gradient(circle,rgba(45,212,150,.08) 0%,rgba(232,190,84,.05) 55%,transparent 80%);
-}
-.dl-id.me{background:linear-gradient(135deg,rgba(45,212,150,.10),var(--hi))}
-.dl-id.op{background:linear-gradient(135deg,rgba(232,190,84,.10),var(--hi))}
-.dl-cs.me{background:linear-gradient(180deg,rgba(45,212,150,.09),var(--hi))}
-.dl-cs.op{background:linear-gradient(180deg,rgba(232,190,84,.09),var(--hi))}
-
-/* Sezon vs. Sezon & Kulüp Kıyaslama Bileşenleri */
-.dl-ssel{margin-bottom:10px}
-.dl-scface{
-  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;
-  padding:11px;border-radius:14px;background:var(--hi);border:1px solid var(--gbd);
-}
-.dl-scside{display:flex;flex-direction:column;gap:5px;min-width:0}
-.dl-scside.op{align-items:flex-end;text-align:right}
-.dl-scstop{display:flex;align-items:center;gap:7px;min-width:0;max-width:100%}
-.dl-scside.op .dl-scstop{flex-direction:row-reverse}
-.dl-scstxt{min-width:0;display:flex;flex-direction:column}
-.dl-scstxt small{font-size:10.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dl-scstxt b{font-size:13.5px;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dl-scstxt em{font-style:normal;font-family:var(--num);font-size:12px;color:var(--gold);margin-left:3px}
-.dl-scres{
-  display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;
-  background:var(--gcard);border:1px solid var(--gbd);color:var(--tx);max-width:100%;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-}
-.dl-scres.gold{background:rgba(232,190,84,.18);border-color:rgba(232,190,84,.48);color:var(--gold)}
-.dl-scres.emr{background:rgba(45,212,150,.15);border-color:rgba(45,212,150,.42);color:var(--ac)}
-.dl-scgbm{font-size:11px;color:var(--mut);font-family:var(--num)}
-.dl-scvs{display:flex;flex-direction:column;align-items:center;gap:3px}
-.dl-scvs span{font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--mut);padding:2px 6px;border-radius:99px;background:var(--gcard);border:1px solid var(--gbd)}
-.dl-scvs b{font-family:var(--num);font-size:16px;color:var(--tx)}
-
-.dl-subhd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--bd)}
-.dl-subhd b{font-size:12.5px;color:var(--tx);letter-spacing:.01em}
-.dl-subhd span{font-size:11px;color:var(--mut);font-weight:600}
-
-.dl-tiers{display:flex;flex-direction:column;gap:8px}
-.dl-tier{padding:9px 10px;border-radius:12px;background:var(--hi);border:1px solid var(--gbd)}
-.dl-tierh{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
-.dl-tierh b{font-size:13px;color:var(--tx)}
-.dl-tiergrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.dl-tside{display:flex;flex-direction:column;gap:2px;min-width:0}
-.dl-tside.op{text-align:right}
-.dl-tside small{font-size:11px;color:var(--mut);font-weight:600}
-.dl-tside span{font-size:12px;color:var(--tx);opacity:.84}
-.dl-tside.me.win span{color:var(--ac);font-weight:700;opacity:1}
-.dl-tside.op.win span{color:var(--gold);font-weight:700;opacity:1}
-
-.dl-shlist{display:flex;flex-direction:column;gap:7px}
-.dl-shrow{padding:9px 10px;border-radius:12px;background:var(--hi);border:1px solid var(--gbd)}
-.dl-shhd{display:flex;align-items:center;gap:7px;margin-bottom:6px}
-.dl-shhd b{font-size:13.5px;color:var(--tx)}
