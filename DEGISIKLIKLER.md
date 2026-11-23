@@ -1,3 +1,12 @@
+## v20.40 (2026-11-23) — Broadcast Arena Tasarımı, Sezon vs. Sezon & Alınan Takımlara Göre Kıyaslama
+- **Sezonları Kıyasla (`duel.js` `duelSeasonCompareCard`, `app.js`):** İki açılır menüyle kendi istediğin sezonunu arkadaşının istediğin sezonuyla (varsayılan son sezonlar) yan yana çarpıştır: takım armaları, GEN gücü, turnuva bitiş derecesi, Beklenti Üstü farkı, galibiyet/puan/gol/averaj oranları, xG metrikleri ve sezon MVP/yıldızları.
+- **Alınan Takımlara Göre Kıyas (`duel.js` `duelClubCompareCard`):** Alınan kulüpleri **Elit Devler (83+ GEN)**, **Güçlü Kadrolar (79–82 GEN)** ve **Orta & Sürpriz (≤78 GEN)** kademelerine göre kıyaslar; iki menajerin de yönettiği **Ortak Alınan Kulüpleri** otomatik bulup yan yana getirir ve özel **Kulüp vs. Kulüp** seçicisi sunar.
+- **Broadcast Arena Elit Görsel Yükseltme (`duel.js`, `style.css`):** Stadyum spot ışıklı hero kartı, aktif kulüp arması çerçeveleri, `LİDER` taç rozeti, canlı çekişme çubuğu (Dominance Bar), parlayan kazanan barları ve zenginleştirilmiş DNA/Canlı Nabız kartları eklendi.
+
+## v20.39 (2026-11-23) — Tutarlı Düello VS Skoru & Ayrı DNA Skoru
+- **Ana VS Skoru Sadeleştirildi (`duel.js` `duelScoreboard`):** Ana kafa kafaya skor artık yalnızca **Kariyer & Kupa Düellosu** kartındaki satırlardan (Şampiyonluk, Kupa Oranı, Final/İlk 2, Yarı Final+, Galibiyet %, Puan/Maç, Atılan/Yenilen Gol, Averaj, Temiz Kasa %, En Uzun Seri) hesaplanır. Böylece Lig sezonu yokken **Tümü** ve **Kupa** sekmeleri birebir aynı skoru gösterir ve karttaki kazanan satır sayıları skorla tam örtüşür.
+- **Ayrı DNA Kıyaslama Rozeti (`duel.js` `duelDnaScore`):** Taktiksel DNA kıyaslaması ana skordan ayrılarak kendi kartının başlığında (`DNA X–Y`, 4 eksen üzerinden) bağımsız olarak gösterilir.
+
 ## v20.38 (2026-11-23) — Düello Eşitleme Hata Koruması & iOS Önbellek Kırıcı
 - **Sessiz Gönderim Hatası Düzeltmesi (`duel.js`):** `duelPush` başarısız olduğunda ardından gelen `duelPull` işleminin hata mesajını silmesi giderildi; artık Firebase'in döndürdüğü gerçek HTTP hata detayı ekranda net olarak gösterilir ve `buildDuelSummary` tam `try/catch` korumasına alındı.
 - **Sunucu Kayıt Durumu Göstergesi (`duel.js`):** Canlı Oda üst çubuğunda *"Senin kaydın sunucuda ✓"* / *"Kaydın henüz sunucuda değil!"* bilgisi görünür.
