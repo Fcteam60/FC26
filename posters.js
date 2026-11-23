@@ -1319,7 +1319,7 @@ function duelloCv(x){
     ["KUPA ORANI",c1.chRate,c2.chRate,pctF(c1.chRate),pctF(c2.chRate),false],
     ["GALİBİYET ORANI",c1.wr,c2.wr,pctF(c1.wr),pctF(c2.wr),false],
     ["MAÇ BAŞI PUAN",c1.ppm,c2.ppm,fxF(c1.ppm),fxF(c2.ppm),false],
-    ["ATILAN / YENİLEN",c1.gpm,c2.gpm,c1.m?`${fx(c1.gpm)} / ${fx(c1.gapm)}`:"—",c2.m?`${fx(c2.gpm)} / ${fx(c2.gapm)}`:"—",false],
+    ["ATILAN / YENİLEN",c1.m?Math.round((c1.gpm-c1.gapm)*100)/100:null,c2.m?Math.round((c2.gpm-c2.gapm)*100)/100:null,c1.m?`${fx(c1.gpm)} / ${fx(c1.gapm)}`:"—",c2.m?`${fx(c2.gpm)} / ${fx(c2.gapm)}`:"—",false],
     ["TEMİZ KASA (CS %)",c1.csPct,c2.csPct,pctF(c1.csPct),pctF(c2.csPct),false],
     ["EN UZUN GALİBİYET SERİSİ",c1.maxW,c2.maxW,c1.maxW!=null?c1.maxW+" MAÇ":"—",c2.maxW!=null?c2.maxW+" MAÇ":"—",false],
     ["ORT. TAKIM GEN",m1.xp.avgG,m2.xp.avgG,fxF(m1.xp.avgG),fxF(m2.xp.avgG),false],

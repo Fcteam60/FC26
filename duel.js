@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — Canlı Menajer Düellosu (VS), Canlı Sezon İnceleme & Firebase REST (duel.js · v20.36)
+   FC 27 Grup Ligi — Canlı Menajer Düellosu (VS), Canlı Sezon İnceleme & Firebase REST (duel.js · v20.37)
    - Sıfır harici SDK: doğrudan fetch() ile Firebase Realtime Database REST API kullanır.
    - Çevrimdışı öncelikli: ana veriler IndexedDB'de kalır, yalnızca ~2 KB özet eşitlenir.
    - Tümü / Kupa / Lig kırılımı, Temiz Kasa %, Galibiyet Serisi, Averaj, Kariyer Yıldızı ve
@@ -136,7 +136,9 @@ function buildDuelLiveSeason(cs){
         const n2=p.t2!=null&&T[p.t2]?T[p.t2].n:"?";
         const wi=p.w==null?0:(p.w===p.t1?1:(p.w===p.t2?2:0));
         const mine=(my!=null&&(p.t1===my||p.t2===my))?1:0;
-        return [n1,n2,p.g1!=null?+p.g1:null,p.g2!=null?+p.g2:null,wi,p.pf!=null?+p.pf:null,p.pa!=null?+p.pa:null,p.et?1:0,mine];
+        const l1=Array.isArray(p.leg1)&&p.leg1.length>=2?[+p.leg1[0]||0,+p.leg1[1]||0]:null;
+        const l2=Array.isArray(p.leg2)&&p.leg2.length>=2?[+p.leg2[0]||0,+p.leg2[1]||0]:null;
+        return [n1,n2,p.g1!=null?+p.g1:null,p.g2!=null?+p.g2:null,wi,p.pf!=null?+p.pf:null,p.pa!=null?+p.pa:null,p.et?1:0,mine,l1,l2];
       });
       ko.push([rd,list]);
     });
@@ -630,17 +632,18 @@ function duelLiveDlg(){
   const rivals=Object.values(cache.peers||{}).filter(p=>p&&p.uid&&p.uid!==cfg.uid);
   const targetUid=st.dlLive.uid||"";
   const isMe=targetUid===cfg.uid;
-  const p=isMe?me:(rivals.find(r=>r.uid===targetUid)||rivals[0]||me);
-  const other=isMe?(rivals.find(r=>r.uid===cache.sel)||rivals[0]||null):me;
-  const tab=st.dlLive.tab||"tbl";
+  const oppRef=rivals.find(r=>r.uid===(st.dlLive.oppUid||(!isMe?targetUid:cache.sel)))||rivals[0]||null;
+  const p=isMe?me:(oppRef||me);
   const c=p.cur||{},lv=p.live||null;
+  const defTab=lv?(lv.tbl&&lv.tbl.length?"tbl":(lv.ko&&lv.ko.length?"ko":"mt")):"tbl";
+  const tab=st.dlLive.tab||defTab;
   const ti=c.team&&IX[c.team]!=null?IX[c.team]:null;
   const gd=(c.gf||0)-(c.ga||0),gdS=(gd>0?"+"+gd:gd<0?"−"+Math.abs(gd):"0");
 
-  // Üst kişi değiştirici (Sen / Rakip)
-  const whoSwitch=other?`<div class="stabs seg2" style="margin:0 0 10px">`+
+  // Üst kişi değiştirici (Sen / İncelenen Rakip — 3+ kişilik odada rakip sabit kalır)
+  const whoSwitch=oppRef?`<div class="stabs seg2" style="margin:0 0 10px">`+
     `<button class="chip ${p.uid===me.uid?"on":""}" data-a="dllivewho" data-v="${esc(me.uid)}">${esc(me.name)} (Sen)</button>`+
-    `<button class="chip ${p.uid!==me.uid?"on":""}" data-a="dllivewho" data-v="${esc((p.uid!==me.uid?p:other).uid)}">${esc((p.uid!==me.uid?p:other).name)}</button>`+
+    `<button class="chip ${p.uid!==me.uid?"on":""}" data-a="dllivewho" data-v="${esc(oppRef.uid)}">${esc(oppRef.name)}</button>`+
   `</div>`:"";
 
   const headCard=`<div class="dl-lvhead ${p.uid===me.uid?"me":"op"}">`+
@@ -651,7 +654,7 @@ function duelLiveDlg(){
 
   let body="";
   if(!lv){
-    body=`<div class="note wr" style="margin:8px 0"><b>${esc(p.name)}</b> henüz <b>v20.36</b> sürümüne geçip eşitleme yapmadığı için detaylı canlı sezon verisi (puan durumu, fikstür, eleme yolu) henüz paylaşılmadı. Güncelleyip <b>Şimdi Eşitle</b> dediğinde burada otomatik görünecek.</div>`;
+    body=`<div class="note wr" style="margin:8px 0"><b>${esc(p.name)}</b> henüz <b>güncel sürüme</b> geçip eşitleme yapmadığı için detaylı canlı sezon verisi (puan durumu, fikstür, eleme yolu) henüz paylaşılmadı. Güncelleyip <b>Şimdi Eşitle</b> dediğinde burada otomatik görünecek.</div>`;
   }else{
     const nav=`<div class="stabs dl-lvtbs" role="tablist" aria-label="Canlı sezon bölümleri">${[["tbl","Puan Durumu"],["mt","Maçlar"],["ko","Eleme"],["st","Yıldız & DNA"]].map(([k,l])=>`<button class="chip ${tab==k?"on":""}" role="tab" aria-selected="${tab==k}" data-a="dllivetab" data-v="${k}">${l}</button>`).join("")}</div>`;
     let content="";
@@ -664,7 +667,7 @@ function duelLiveDlg(){
           const isCut=qCut>0&&idx===qCut-1&&idx<lv.tbl.length-1;
           return `<tr class="${mine?"me":""}${isCut?" qcut":""}">`+
             `<td class="rk">${idx+1}</td>`+
-            `<td class="tm">${rti!=null?badge(rti,18):""}<span>${esc(nm)}</span></td>`+
+            `<td class="tm"><div class="dl-tmcell">${rti!=null?badge(rti,18):""}<span>${esc(nm)}</span></div></td>`+
             `<td>${o}</td><td>${w}</td><td>${d}</td><td>${l}</td>`+
             `<td class="${av>0?"pos":av<0?"neg":""}">${avS}</td>`+
             `<td class="pt"><b>${pts}</b></td>`+
@@ -700,9 +703,10 @@ function duelLiveDlg(){
       }else if(lv.ko&&lv.ko.length){
         content=lv.ko.map(([rd,pairs])=>{
           const rows=pairs.map(pr=>{
-            const [n1,n2,g1,g2,wi,pf,pa,et,mine]=pr;
+            const [n1,n2,g1,g2,wi,pf,pa,et,mine,l1,l2]=pr;
             const sc=(g1!=null&&g2!=null)?`${g1}–${g2}${pf!=null&&pa!=null?` (P ${pf}–${pa})`:et?" (UZ)":""}`:"—";
-            return `<div class="dl-kor${mine?" mine":""}"><span class="dl-kot l${wi===1?" w":""}">${esc(n1)}</span><span class="dl-kosc">${sc}</span><span class="dl-kot r${wi===2?" w":""}">${esc(n2)}</span></div>`;
+            const legSub=(Array.isArray(l1)&&Array.isArray(l2))?`<div class="dl-koleg">1.M: ${l1[0]}–${l1[1]} · 2.M: ${l2[0]}–${l2[1]}</div>`:"";
+            return `<div class="dl-kor${mine?" mine":""}"><div class="dl-komain"><span class="dl-kot l${wi===1?" w":""}">${esc(n1)}</span><span class="dl-kosc">${sc}</span><span class="dl-kot r${wi===2?" w":""}">${esc(n2)}</span></div>${legSub}</div>`;
           }).join("");
           return `<div class="dl-lvsec"><div class="dl-lvsh"><b>${esc(rd)}</b><span class="xfpill">${pairs.length} eşleşme</span></div><div class="dl-kolist">${rows}</div></div>`;
         }).join("");
@@ -746,13 +750,13 @@ async function handleDuelAction(a,dv){
     st.dlmod=dv||"all";render();return true;
   }
   if(a=="dllive"){
-    st.dlLive={uid:dv||"",tab:"tbl"};render();return true;
+    st.dlLive={uid:dv||"",oppUid:dv||"",tab:""};render();return true;
   }
   if(a=="dllivetab"){
     if(st.dlLive){st.dlLive.tab=dv||"tbl";render()}return true;
   }
   if(a=="dllivewho"){
-    if(st.dlLive){st.dlLive.uid=dv||"";render()}return true;
+    if(st.dlLive){st.dlLive.uid=dv||"";st.dlLive.tab="";render()}return true;
   }
   if(a=="dljoin"){
     const nmEl=$("dl_nm"),rmEl=$("dl_rm");

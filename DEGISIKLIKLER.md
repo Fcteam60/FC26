@@ -1,3 +1,10 @@
+## v20.37 (2026-11-23) — Canlı Sezon & Düello Son Cilalama (5 Uç Durum Düzeltmesi)
+- **iOS Safari Tablo Hizalaması (`duel.js`, `style.css`):** Canlı Puan Durumu tablosunda `td.tm` hücresindeki `display: flex` kaldırılarak iç `.dl-tmcell` sarmalayıcısına taşındı; satır çizgileri ve hücre yükseklikleri tüm tarayıcılarda hizalandı.
+- **Akıllı Açılış Sekmesi (`duel.js`):** Canlı Sezon İnceleme artık Direkt Eleme sezonlarında boş puan tablosu yerine otomatik olarak **Eleme** (veya **Maçlar**) sekmesiyle açılır.
+- **3+ Kişilik Oda Kişi Anahtarı Sabitleme (`duel.js`):** İncelenen rakibin kimliği (`oppUid`) sabit tutularak üst anahtarda Sen ↔ Rakip geçişinde başka rakibe kayma engellendi.
+- **PNG Poster Averaj Bar Tutarlılığı (`posters.js`):** `duelloCv` içindeki `ATILAN / YENİLEN` satırının çubuk genişliği yalnızca atılan gole değil maç başı gol averajına (`gpm − gapm`) bağlandı.
+- **Klavye Enter & Çift Maçlı Ayak Skorları (`app.js`, `duel.js`, `style.css`):** Oda kodu/ad alanında Enter tuşuyla anında bağlanma ve çift maçlı eleme eşleşmelerinde `1.M / 2.M` ayak skorları eklendi.
+
 ## v20.36 (2026-11-23) — Canlı Sezon İnceleme (Puan Durumu, Fikstür, Eleme Yolu & Sezon DNA)
 - **Canlı Sezon Paketi (`duel.js` `buildDuelLiveSeason`, şema `v:3`):** Firebase’e gönderilen özete aktif sezonun canlı puan tablosu (kendi grubu veya tüm lig), oynanan maç geçmişi (skor, uzatma/penaltı, xG), kalan rakipler, eleme ağacı eşleşmeleri, sezon yıldızları (ilk 3 gol/asist/MOTM) ve bu sezona ait Menajer DNA özeti kompakt biçimde (~4–5 KB) eklendi.
 - **4 Sekmeli Canlı Sezon İnceleme Modalı (`duel.js` `duelLiveDlg`, `app.js`, `style.css`):** Düello ekranındaki *Canlı Sezon Nabzı* kartından açılan tam ekran panelle arkadaşının (veya kendinin) aktif sezonu 4 sekmede incelenebilir: **Puan Durumu** (çıkış çizgisi ve takım vurgulu), **Maçlar & Kalan Fikstür**, **Eleme Yolu** ve **Yıldız & DNA**.
