@@ -1,61 +1,57 @@
-# FC 27 Grup Ligi & Turnuva Takip (PWA)
+# FC 27 Grup Ligi & Turnuva Takip (PWA · v20.48)
 
-Arkadaş grupları ve bireysel turnuvalar için tasarlanmış, tamamen sunucusuz (serverless), çevrimdışı çalışabilen Progressive Web App (PWA) turnuva ve lig takip uygulaması.
+Arkadaş grupları ve bireysel turnuvalar için tasarlanmış, sıfır bağımlılıklı, çevrimdışı çalışabilen Progressive Web App (PWA) turnuva ve menajerlik takip uygulaması.
 
-Kura çekimi, grup/eleme veya puan ligi kurulumu, adım adım gol ve asist eşleştirmesi, Opta/StatsBomb tarzı xG/xPts ve Taktiksel DNA (Radar) analizi, paylaşılabilir yüksek çözünürlüklü görseller (Karne, Kura, Maç Kartı, Kariyer Özeti), rozetler ve yedekleme özelliklerini içerir. Veriler yalnızca kullanıcının cihazında (**IndexedDB** üzerinde, hiçbir sunucuya ağ isteği yapılmadan) saklanır.
+Kura çekimi, grup/eleme veya puan usulü lig kurulumu, gerçekçi maç simülasyonu, adım adım gol ve asist eşleştirmesi, Opta/StatsBomb tarzı xG/xPts ve Taktiksel DNA (Radar) analizi, **Firebase Realtime Database REST tabanlı Canlı Menajer Düellosu (VS)**, 9 farklı 1080px+ Broadcast PNG poster üreticisi, rozetler ve JSON yedekleme özelliklerini içerir.
+
+Ana turnuva verileri tamamen kullanıcının cihazında (**IndexedDB**) saklanır; yalnızca kullanıcı ortak bir Düello Oda Kodu girdiğinde hafif kariyer/sezon özeti isteğe bağlı olarak buluta eşitlenir.
 
 ## Dosya Yapısı (Sıfır Bağımlılık & Doğal Modülerlik)
 
-Proje hiçbir derleyiciye (Vite, Webpack vb.) veya harici kütüphaneye ihtiyaç duymaz; doğrudan statik dosya olarak çalışır. Betikler klasik `<script defer>` ile yüklenir (ES modülü değildir); sıra önemlidir: önce `data.js`, sonra `storage.js`, en son `app.js`.
+Proje hiçbir derleyiciye (Vite, Webpack vb.) veya harici SDK'ya ihtiyaç duymaz; doğrudan statik dosya olarak çalışır. Betikler klasik `<script defer>` ile yüklenir; yükleme sırası önemlidir (`data → storage → sim → analytics → duel → posters → app`).
 
 | Dosya | Görev |
 |---|---|
-| `index.html` | Yalnızca arayüz iskeleti (HTML kabuğu); `style.css`, `data.js`, `storage.js` ve `app.js` dosyalarını yükler |
-| `style.css` | Tüm stiller (gömülü "FC Sayi" yazı tipi dahil) |
-| `storage.js` | Asenkron depolama katmanı (`kv`), IndexedDB arka ucu, doğrulamalı taşıma protokolü, sıralı yazma kuyruğu (`queueSave`), `BroadcastChannel` çoklu sekme senkronizasyonu ve kota ölçümü (`estimateStorage`) |
-| `app.js` | Tüm uygulama mantığı (Vanilla JS); `async initApp()` ile başlatılır |
-| `data.js` | 108 takım (`RAW`) ve ~3.200+ oyuncu (`SQ`) veritabanı (bakım kolaylığı için ayrılmıştır) |
-| `sw.js` | Service Worker (çevrimdışı çalışma ve arka plan güncelleme mekanizması) |
-| `manifest.webmanifest` | PWA kurulum ve ana ekran bilgileri |
-| `icon-*.png`, `apple-touch-icon.png` | Uygulama ikonları |
+| `index.html` | Arayüz iskeleti (HTML kabuğu), tema/hareket ön yükleyicisi ve sürüm etiketli varlık bağları |
+| `style.css` | Tüm stiller, 3 katmanlı navigasyon (obsidiyen alt dock · alt çizgili sekmeler · ince filtreler) ve gömülü "FC Sayi" yazı tipi |
+| `data.js` | 108 kulüp (`RAW`), 3.200+ oyuncu kadrosu (`SQ`) ve 99 kulüp arması eşleme haritası (`LOGOS`) |
+| `storage.js` | Asenkron depolama katmanı (`kv`), IndexedDB arka ucu, doğrulamalı taşıma protokolü, sıralı yazma kuyruğu (`queueSave`), `BroadcastChannel` çoklu sekme kilidi ve kurtarma kopyaları |
+| `sim.js` | Gerçekçi, Dengeli ve Sürprizli maç simülasyon motoru, puan tablosu ve eleme ağacı eşleştiricisi |
+| `analytics.js` | xG/xPts analitiği, hak ediş sınıflandırması, 4 eksenli Taktiksel DNA radarı, kariyer ve ödül istatistikleri |
+| `duel.js` | Canlı Menajer Düellosu (VS), tek kaynaklı 10 kriterli değerlendirme motoru, 100 sezonluk arşiv, Sezon/Kulüp stüdyoları, Canlı Sezon inceleme modalı ve zaman aşımı korumalı (`AbortController`) Firebase REST istemcisi |
+| `posters.js` | 9 farklı 1080px+ Canvas PNG poster üreticisi (Kura, Eleme Ağacı, TOTS, Maç Kartı, Sezon Karnesi, Kariyer Özeti, 1v1 Düello, Sezon vs. Sezon, Kulüp vs. Kulüp) |
+| `app.js` | Ana uygulama orkestrasyonu, yönlendirme, olay yöneticileri ve `async initApp()` başlatıcısı |
+| `sw.js` | Service Worker (çevrimdışı önbellekleme, kalıcı `LOGO_CACHE` ve arka plan güncelleme mekanizması) |
+| `logos/` | 99 kulübün PNG armaları |
+| `manifest.webmanifest` | PWA kurulum, ikon ve ana ekran kısayol tanımları |
+| `KILAVUZ.md` | Son kullanıcı için güncel kullanım kılavuzu |
 | `DEGISIKLIKLER.md` | Sürüm geçmişi ve yapılan iyileştirmeler |
 
-## Depolama Mimarisi (`storage.js` ve IndexedDB)
+## Depolama & Senkronizasyon Mimarisi
 
-Uygulama v18.0+ itibarıyla 5 MB `localStorage` sınırına takılmamak ve yüzlerce sezonluk veriyi güvenle saklamak için **IndexedDB** kullanır:
-
-1. **Veritabanı ve `kv` Katmanı:**
-   - Veritabanı adı `fc26lig4`, nesne deposu (object store) adı `kv` olarak yapılandırılmıştır.
-   - `kv.get(k)`, `kv.set(k, v)` ve `kv.del(k)` metodları Promise döndürür. Ana uygulama verisi (`fc26lig4`) IndexedDB içinde tek kayıtta (`main`) tutulur.
-   - Yıkıcı işlemlerden (birleştirme, yedekle değiştirme, sıfırlama, takım listesi güncellemesi ve bozuk veri yakalama) önce alınan 5 ayrı kurtarma kopyası (`RCV`) doğrudan IndexedDB'de saklanır ve bellek içi `rcvCache` ile senkronize edilir.
-2. **Doğrulamalı Taşıma Protokolü (`fc26lig4_idb=1`):**
-   - İlk açılışta IndexedDB'de `main` kaydı yoksa ve `localStorage`'da eski `fc26lig4` kaydı varsa veri IndexedDB'ye kopyalanır, geri okunup karakter karakter doğrulanır ve ancak doğrulama başarılı olduğunda `localStorage`'a `fc26lig4_idb=1` bayrağı konulur.
-   - Bayrak varken eski `localStorage` kopyası bir daha okunmaz. Kullanıcı dilerse `Ayarlar › Depolama ve kota` kartından eski `localStorage` taşıma yedeğini onay vererek silebilir (`clearLegacyLs`).
-3. **Yazma Kuyruğu ve Kapanış Garantisi:**
-   - `save()` bellekteki `store` nesnesini anında günceller ve disk yazımını `queueSave()` üzerinden ~200 ms biriktirmeli (batching) sıralı kuyruğa alır.
-   - Sekme kapatılırken (`pagehide`) veya arka plana giderken (`visibilitychange`) bekleyen yazma işlemi `flushSaveQueue()` ile beklemeden diske yazılır.
-4. **Çoklu Sekme Koruması ve Yedek Plan (Fallback):**
-   - Sekmeler arası veri ezilmesini (race condition) önlemek için `BroadcastChannel("fc26lig4_sync")` kullanılır; başka bir sekmede kayıt yapıldığında eski sekmede `st.staleTab` kilidi devreye girer.
-   - Tarayıcıda IndexedDB kullanılamıyorsa `storage.js` otomatik olarak `localStorage` moduna düşer. Hata günlüğü (`fc26lig4_log`) ve tema/hareket tercihleri (`fc26lig4_theme`, `fc26lig4_motion`) hızlı erişim için `localStorage`'da tutulur.
+1. **Cihaz İçi Depolama (`storage.js` · IndexedDB):**
+   - Veritabanı adı `fc26lig4`, nesne deposu `kv` olarak yapılandırılmıştır; 5 MB `localStorage` sınırına takılmadan yüzlerce sezonu güvenle saklar.
+   - Yıkıcı işlemlerden önce otomatik 5 kurtarma kopyası (`RCV`) alınır; çoklu sekme veri ezilmelerine karşı `BroadcastChannel("fc26lig4_sync")` kilidi aktiftir.
+2. **İsteğe Bağlı Canlı Düello Eşitlemesi (`duel.js` · Firebase REST):**
+   - Harici Firebase SDK kullanılmadan doğrudan REST API (`PUT`/`GET`/`DELETE`) ve 8 saniyelik `AbortController` zaman aşımı ile çalışır.
+   - Her menajerin özeti (~8–12 KB, son 100 sezon dahil) ortak oda kodu altında tutulur; ekran içi etkileşimler önbellekli `buildDuelSummary()` üzerinden sıfır gecikmeyle çalışır.
 
 ## Yeni Oyun Çıktığında (Örn. FC 28) Kadroları Güncelleme
 
-Takım ve oyuncu veritabanı `app.js` kodundan bağımsız olarak **`data.js`** dosyasında tutulur:
-1. **Takım Güçleri (`RAW`):** `TakımAdı,ÜlkeKodu,Genel,Hücum,OrtaSaha,Defans` biçiminde noktalı virgülle (`;`) ayrılmış metindir.
-2. **Takım Kadroları (`SQ`):** Her takım anahtarı altında `OyuncuAdı,Mevki,Genel,Yaş,FormaNo,Durum` (`S`: İlk 11, `B`: Yedek, `R`: Rezerv) biçiminde noktalı virgülle (`;`) ayrılmış metindir.
+Takım ve oyuncu veritabanı **`data.js`** dosyasında tutulur:
+1. **Takım Güçleri (`RAW`):** `TakımAdı,ÜlkeKodu,Genel,Hücum,OrtaSaha,Defans` biçiminde `;` ile ayrılmış metindir.
+2. **Takım Kadroları (`SQ`):** `OyuncuAdı,Mevki,Genel,Yaş,FormaNo,Durum` (`S`: İlk 11, `B`: Yedek, `R`: Rezerv).
 3. Takım adları değiştiyse eski sezon yedeklerinin sorunsuz eşleşmesi için `app.js` içindeki `ALIAS` nesnesine `"Eski Ad": "Yeni Ad"` eklenmesi yeterlidir.
 
 ## Yeni Sürüm Yayınlama
 
-1. `app.js` içindeki `VER` değerini artır (örn. `"18.30"`).
-2. `sw.js` içindeki `CACHE` adını artır (örn. `"fc27-lig-v18-30"`).
-3. Yeni bir dosya eklediysen `sw.js` içindeki `FILES` listesine ve `index.html` içerisine ekle (aksi halde çevrimdışı modda eksik kalır).
-4. Değişiklikleri GitHub'a (`git push`) gönder. Kullanıcılar uygulamayı açtığında **"Yeni sürüm var — Yenile"** bildirimi alır ve verileri korunarak güncellenir.
+1. `app.js` (`VER`), `duel.js` başlığı, `package.json` (`version`), `index.html` (`?v=...`), `manifest.webmanifest` (`?v=...`) ve `sw.js` (`CACHE` + `FILES`) içindeki sürüm etiketlerini güncelleyin.
+2. Değişiklikleri GitHub'a gönderin; kullanıcılar uygulamayı açtığında **"Yeni sürüm var — Yenile"** bildirimi ile verileri korunarak güncellenir.
 
 ## Önemli Teknik Not
 
-Tarayıcı depolama ve veritabanı anahtarları (`fc26lig4`, `fc26lig4_idb` vb.) geriye dönük veri uyumluluğu için **değiştirilmemelidir**; değiştirilirse mevcut kullanıcıların önceki sezon kayıtları görünmez olur.
+Tarayıcı depolama ve veritabanı anahtarları (`fc26lig4`, `fc26lig4_idb`, `fc27lig_duel_cfg` vb.) geriye dönük veri uyumluluğu için **değiştirilmemelidir**.
 
 ## Yasal Uyarı (Disclaimer)
 
-Bu proje ticari olmayan, reklamsız, açık kaynaklı ve eğitim/hobi amaçlı geliştirilmiş bağımsız bir topluluk aracıdır. **Electronic Arts Inc. (EA Sports), EA SPORTS FC, FIFA, UEFA** veya uygulamada adı geçen herhangi bir futbol kulübü ya da spor federasyonu ile **hiçbir resmi bağlantısı, ortaklığı, sponsorluğu veya onayı yoktur**. Uygulamadaki kulüp armaları telifli logolar içermez; takım renkleri ve harflerinden jenerik SVG kalkanlar olarak çalışma zamanında üretilir. Tüm ticari markalar ve kulüp/oyuncu adları ilgili sahiplerinin mülkiyetindedir ve yalnızca bilgi/takip amacıyla kullanılmıştır.
+Bu proje ticari olmayan, reklamsız, bağımsız bir hobi/takip uygulamasıdır. **Electronic Arts Inc. (EA Sports), EA SPORTS FC, FIFA, UEFA** veya adı geçen kulüp/federasyonlarla hiçbir resmi bağlantısı yoktur. Tüm ticari markalar ilgili sahiplerinin mülkiyetindedir.

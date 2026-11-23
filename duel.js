@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v20.47)
+   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v20.48)
    - Obsidian Broadcast Arena, 4 sekmeli Düello Stüdyosu (Genel · Sezonlar · Takımlar · DNA & xG)
    - Sıfır harici SDK: Firebase Realtime Database REST API + çevrimdışı IndexedDB uyumu
    - Canlı Sezon İnceleme (Puan Durumu, Maçlar, Eleme, Sezon DNA) & Yedek Manuel Kıyas Kodu
@@ -56,8 +56,15 @@ function duelLoadCfg(){
   if(c.auto===undefined)c.auto=true;
   return c;
 }
+let _duelSumCache=null,_duelSumKey="",_duelSumRev=0;
+function duelInvalidateSummary(){
+  _duelSumRev++;
+  _duelSumCache=null;
+  _duelSumKey="";
+}
 function duelSaveCfg(c){
   try{localStorage.setItem(DUEL_CFG_K,JSON.stringify(c))}catch(e){}
+  duelInvalidateSummary();
 }
 function duelLoadCache(){
   let d=null;
@@ -284,9 +291,12 @@ function duelClubAnalytics(me,opp,mode){
   return{has1,has2,tiers,shared,clubs1,clubs2};
 }
 
-// Mevcut cihazdaki tüm sezonlardan kompakt Menajer Düellosu + Sezon Arşivi + Canlı Sezon özeti üretir (v:4)
-function buildDuelSummary(){
+// Mevcut cihazdaki tüm sezonlardan kompakt Menajer Düellosu + Sezon Arşivi + Canlı Sezon özeti üretir (v:4 · önbellekli)
+function buildDuelSummary(force){
   const cfg=duelLoadCfg();
+  const csRef=cur();
+  const key=`${_duelSumRev}|${cfg.uid}|${cfg.name||""}|${store.owner||""}|${store.cur}|${store.seasons.length}|${csRef?(csRef.ut||0):0}|${csRef&&csRef.mt?csRef.mt.length:0}|${typeof lastSavedRaw==="string"?lastSavedRaw.length:0}`;
+  if(!force&&_duelSumCache&&_duelSumKey===key)return _duelSumCache;
   const allS=duelModeStats("all"),cupS=duelModeStats("cup"),lgS=duelModeStats("lg");
 
   const dnaRaw=typeof calcTacticalDNA==="function"?calcTacticalDNA(null,{career:true}):null;
@@ -338,7 +348,7 @@ function buildDuelSummary(){
   }
 
   const nm=(cfg.name||store.owner||"Menajer").replace(/\s+/g," ").trim().slice(0,32)||"Menajer";
-  return{
+  const res={
     v:4,
     uid:cfg.uid,
     name:nm,
@@ -353,6 +363,9 @@ function buildDuelSummary(){
     cur:active,
     live:buildDuelLiveSeason(cs)
   };
+  _duelSumCache=res;
+  _duelSumKey=key;
+  return res;
 }
 
 // Eski (v1) veya yeni özetlerden seçili moda göre güvenli veri okuma
@@ -385,6 +398,21 @@ function duelPickMode(p,mode){
 }
 
 let duelPushTimer=null;
+const DUEL_FETCH_MS=8000;
+async function duelFetch(url,opts,ms){
+  const limit=ms||DUEL_FETCH_MS;
+  if(typeof AbortController==="undefined")return fetch(url,opts);
+  const ctrl=new AbortController();
+  const tid=setTimeout(()=>ctrl.abort(),limit);
+  try{
+    return await fetch(url,Object.assign({},opts,{signal:ctrl.signal}));
+  }catch(e){
+    if(e&&e.name==="AbortError")throw new Error("zaman aşımı ("+Math.round(limit/1000)+" sn)");
+    throw e;
+  }finally{
+    clearTimeout(tid);
+  }
+}
 async function duelPush(silent){
   const cfg=duelLoadCfg();
   if(!cfg.room||cfg.room.length<6)return false;
@@ -393,11 +421,11 @@ async function duelPush(silent){
     return false;
   }
   try{
-    const payload=buildDuelSummary();
+    const payload=buildDuelSummary(true);
     if(!payload.name)payload.name="Menajer";
     if(!payload.ut)payload.ut=Date.now();
     const url=`${duelBaseUrl(cfg)}/rooms/${encodeURIComponent(cfg.room)}/${encodeURIComponent(cfg.uid)}.json`;
-    const r=await fetch(url,{
+    const r=await duelFetch(url,{
       method:"PUT",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify(payload)
@@ -432,7 +460,7 @@ async function duelPull(silent){
   }
   const url=`${duelBaseUrl(cfg)}/rooms/${encodeURIComponent(cfg.room)}.json?t=${Date.now()}`;
   try{
-    const r=await fetch(url,{cache:"no-store"});
+    const r=await duelFetch(url,{cache:"no-store"});
     if(!r.ok){
       let detail="";
       try{detail=String(await r.text()).slice(0,120)}catch(_){}
@@ -469,7 +497,7 @@ async function duelDeleteRemote(cfg){
   if(typeof navigator!=="undefined"&&navigator.onLine===false)return false;
   const url=`${duelBaseUrl(cfg)}/rooms/${encodeURIComponent(cfg.room)}/${encodeURIComponent(cfg.uid)}.json`;
   try{
-    const r=await fetch(url,{method:"DELETE"});
+    const r=await duelFetch(url,{method:"DELETE"});
     return r.ok;
   }catch(e){return false}
 }

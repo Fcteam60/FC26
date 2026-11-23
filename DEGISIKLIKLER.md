@@ -1,3 +1,8 @@
+## v20.48 (2026-11-23) — Teknik Dayanıklılık, Önbellekleme & Dokümantasyon Güncellemesi
+- **Firebase Ağ Zaman Aşımı (`duel.js` `duelFetch`):** Tüm bulut isteklerine (`duelPush`, `duelPull`, `duelDeleteRemote`) 8 saniyelik `AbortController` zaman aşımı eklendi; yarı kopuk mobil bağlantılarda eşitleme düğmesinin kilitli kalması önlendi.
+- **Düello Özeti Önbelleklemesi (`duel.js` `buildDuelSummary`, `app.js` `save`):** `buildDuelSummary()` çıktısı `store` değişikliklerine bağlı olarak önbelleklendi; 50–100 sezonluk arşivlerde sekme ve filtre geçişleri sıfır yeniden tarama yüküyle anında çalışır.
+- **Güncel Dokümantasyon (`README.md`, `KILAVUZ.md`):** Tüm 8 JS modülü, 99 kulüp arması, Canlı Menajer Düellosu, 100 sezonluk arşiv ve 9 PNG poster türü eksiksiz belgelendi.
+
 ## v20.47 (2026-11-23) — 3 Katmanlı Navigasyon Hiyerarşisi (Obsidiyen Alt Dock · Alt Çizgili Sekmeler · İnce Filtreler)
 - **Katman 1 — Obsidiyen Yüzen Alt Dock (`style.css` `.nav`):** En alttaki ana menü (*Sezon · Turnuva · İstat. · Geçmiş · Ayarlar*) yarı saydam beyaz kutudan çıkarılarak koyu obsidiyen yüzen dock tasarımına geçirildi; aktif sekme zümrüt yeşili ışık ve üst altın-zümrüt çizgiyle vurgulanır.
 - **Katman 2 — Alt Çizgili Sayfa Sekmeleri (`app.js`, `style.css` `.ptabs`):** *Turnuva*, *İstat.* ve *Geçmiş* sayfa alt sekmeleri kutu tasarımından çıkarılıp ince alt çizgili (underline) modern sekme şeridine dönüştürüldü; *Geçmiş* ekranındaki 6 sekme 2 satırlık blok yerine tek satırlık yatay kaydırmalı şerit oldu.

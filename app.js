@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.47",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="20.48",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -364,6 +364,7 @@ const save=(immediate)=>{
   achScan(true);store.v=4;store.tn=TN;
   const raw=lastSavedRaw=JSON.stringify(store);
   try{if(store.theme!==undefined)localStorage.setItem("fc26lig4_theme",store.theme);if(store.motion!==undefined)localStorage.setItem("fc26lig4_motion",String(store.motion))}catch(e){}
+  if(typeof duelInvalidateSummary==="function")duelInvalidateSummary();
   if(typeof duelSchedulePush==="function")duelSchedulePush();
   if(typeof queueSave==="function")return queueSave(raw,!!immediate);
   return kv.set("fc26lig4",raw).then(ok=>{const prev=!!st.sf;st.sf=!ok;if(prev!==st.sf)render();return ok})};
