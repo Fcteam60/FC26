@@ -3967,8 +3967,8 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
 }
 .dl-score .me{color:#2ee59d}
 .dl-score .op{color:#f0c24b}
-.dl-score .me.lead{text-shadow:0 0 24px rgba(46,229,157,.55)}
-.dl-score .op.lead{text-shadow:0 0 24px rgba(240,194,75,.55)}
+.dl-score .me.dlhi{text-shadow:0 0 24px rgba(46,229,157,.55)}
+.dl-score .op.dlhi{text-shadow:0 0 24px rgba(240,194,75,.55)}
 .dl-score span{font-size:24px;color:rgba(148,163,184,.48)}
 .dl-scnote{font-size:10.5px;color:rgba(148,163,184,.72);font-weight:600;letter-spacing:.03em}
 
@@ -3998,8 +3998,8 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
 }
 .dl-hk small{display:block;font-size:9px;font-weight:800;letter-spacing:.10em;color:rgba(148,163,184,.78);margin-bottom:3px}
 .dl-hk div{display:flex;align-items:baseline;justify-content:center;gap:4px;font-family:var(--num);font-size:18px;line-height:1;font-variant-numeric:tabular-nums}
-.dl-hk .me{color:rgba(110,231,183,.72)}.dl-hk .me.lead{color:#2ee59d}
-.dl-hk .op{color:rgba(253,230,138,.72)}.dl-hk .op.lead{color:#f0c24b}
+.dl-hk .me{color:rgba(110,231,183,.72)}.dl-hk .me.dlhi{color:#2ee59d}
+.dl-hk .op{color:rgba(253,230,138,.72)}.dl-hk .op.dlhi{color:#f0c24b}
 .dl-hk span{font-size:13px;color:rgba(148,163,184,.36)}
 
 .dl-hacts{position:relative;z-index:1;display:flex;gap:7px;margin-top:12px}
@@ -4273,7 +4273,7 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
 .dl-dnaleg i{width:10px;height:10px;border-radius:3px;display:inline-block}
 .dl-dnaleg i.me{background:#2ee59d;box-shadow:0 0 8px rgba(46,229,157,.6)}
 .dl-dnaleg i.op{background:#f0c24b;box-shadow:0 0 8px rgba(240,194,75,.6)}
-.dl-radarbox{max-width:300px;margin:0 auto}
+.dl-radarbox{max-width:344px;margin:0 auto}
 .dl-radarbox svg{width:100%;height:auto;display:block}
 .dl-axgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:8px}
 .dl-axchip{
@@ -4521,9 +4521,12 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
 .dl-trs small{font-size:10.5px;font-weight:700;color:var(--mut)}
 .dl-trs>div{display:flex;gap:4px;flex-wrap:wrap}
 .dl-trp{
-  width:24px;height:24px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;
-  font-size:10.5px;font-weight:800;background:var(--gcard);border:1px solid var(--gbd);color:var(--mut);
+  display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border-radius:8px;
+  font-size:10.5px;font-weight:700;background:var(--gcard);border:1px solid var(--gbd);color:var(--mut);
+  white-space:nowrap;
 }
+.dl-trp b{font-family:var(--num);font-size:12px;color:var(--tx)}
+.dl-trp em{font-style:normal;font-size:10px;opacity:.88}
 .dl-trp.ch{background:rgba(240,194,75,.20);border-color:rgba(240,194,75,.52);color:var(--gold)}
 .dl-trp.hi{background:rgba(16,185,129,.16);border-color:rgba(16,185,129,.42);color:var(--ac)}
 .dl-trp.lv{background:rgba(14,165,233,.14);border-color:rgba(14,165,233,.36);color:#0ea5e9}
@@ -4533,3 +4536,20 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
   border-color:rgba(240,194,75,.38);color:#fbe39b;
 }
 .dl-livego.sec svg{color:#f0c24b}
+/* ===== v20.44: Koyu Zemin Arma Okunurluğu & Mini Sahne Skor Vurgusu ===== */
+.dl-fcrest.has-b,.dl-mcrest.has-b,.dl-lvcrest{
+  background:radial-gradient(circle at 50% 42%,rgba(248,250,252,.94) 0%,rgba(226,232,240,.84) 72%,rgba(203,213,225,.72) 100%);
+}
+.dl-fcrest.has-b img,.dl-mcrest.has-b img,.dl-lvcrest img{
+  filter:drop-shadow(0 2px 4px rgba(15,23,42,.26));
+}
+.dl-lvcrest{
+  width:42px;height:42px;border-radius:12px;flex:0 0 auto;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid rgba(255,255,255,.28);box-shadow:0 4px 12px rgba(0,0,0,.28);
+}
+.dl-msscore .me.dlhi{text-shadow:0 0 18px rgba(46,229,157,.52)}
+.dl-msscore .op.dlhi{text-shadow:0 0 18px rgba(240,194,75,.52)}
+.dbox.slotbox .rl img.bd-img{
+  filter:drop-shadow(0 0 6px rgba(255,255,255,.35));
+}

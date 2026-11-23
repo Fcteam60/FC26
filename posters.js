@@ -1297,8 +1297,12 @@ async function duelloCv(x){
   glassBox(c,44,hy,992,hh,26,"rgba(240,194,75,.30)","#2dd496");
   const drawCrest=(ti,nm,bx,by,strokeCol,glowCol)=>{
     c.save();
-    c.fillStyle="rgba(255,255,255,.06)";
-    c.strokeStyle=strokeCol;c.lineWidth=2;
+    if(ti!=null){
+      const cg=c.createLinearGradient(bx,by,bx,by+86);
+      cg.addColorStop(0,"rgba(248,250,252,.94)");cg.addColorStop(1,"rgba(203,213,225,.80)");
+      c.fillStyle=cg;
+    }else c.fillStyle="rgba(255,255,255,.06)";
+    c.strokeStyle=strokeCol;c.lineWidth=2.5;
     c.shadowColor=glowCol;c.shadowBlur=18;
     rr(c,bx,by,86,86,20);c.fill();c.stroke();
     c.restore();
@@ -1430,7 +1434,13 @@ async function duelloSezonCv(x){
   const hy=174,hh=224;
   glassBox(c,44,hy,992,hh,26,"rgba(56,189,248,.34)","#2dd496");
   const drawCrest=(ti,nm,bx,by,scol,gcol)=>{
-    c.save();c.fillStyle="rgba(255,255,255,.06)";c.strokeStyle=scol;c.lineWidth=2;c.shadowColor=gcol;c.shadowBlur=18;
+    c.save();
+    if(ti!=null){
+      const cg=c.createLinearGradient(bx,by,bx,by+86);
+      cg.addColorStop(0,"rgba(248,250,252,.94)");cg.addColorStop(1,"rgba(203,213,225,.80)");
+      c.fillStyle=cg;
+    }else c.fillStyle="rgba(255,255,255,.06)";
+    c.strokeStyle=scol;c.lineWidth=2.5;c.shadowColor=gcol;c.shadowBlur=18;
     rr(c,bx,by,86,86,20);c.fill();c.stroke();c.restore();
     if(ti!=null&&typeof drawBadge==="function")drawBadge(c,ti,bx+12,by+8,62);
     else tx(c,(nm||"?").slice(0,1).toLocaleUpperCase("tr"),bx+43,by+46,38,"#f8fafc","center",700);
@@ -1514,7 +1524,13 @@ async function duelloKulupCv(x){
   const hy=174,hh=210;
   glassBox(c,44,hy,992,hh,26,"rgba(240,194,75,.34)","#2dd496");
   const drawCrest=(ti,nm,bx,by,scol,gcol)=>{
-    c.save();c.fillStyle="rgba(255,255,255,.06)";c.strokeStyle=scol;c.lineWidth=2;c.shadowColor=gcol;c.shadowBlur=18;
+    c.save();
+    if(ti!=null){
+      const cg=c.createLinearGradient(bx,by,bx,by+86);
+      cg.addColorStop(0,"rgba(248,250,252,.94)");cg.addColorStop(1,"rgba(203,213,225,.80)");
+      c.fillStyle=cg;
+    }else c.fillStyle="rgba(255,255,255,.06)";
+    c.strokeStyle=scol;c.lineWidth=2.5;c.shadowColor=gcol;c.shadowBlur=18;
     rr(c,bx,by,86,86,20);c.fill();c.stroke();c.restore();
     if(ti!=null&&typeof drawBadge==="function")drawBadge(c,ti,bx+12,by+8,62);
     else tx(c,(nm||"?").slice(0,1).toLocaleUpperCase("tr"),bx+43,by+46,38,"#f8fafc","center",700);

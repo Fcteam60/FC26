@@ -1,3 +1,9 @@
+## v20.44 (2026-11-23) — Düello Okunurluk & Kontrast Düzeltmeleri
+- **Sarı Zemin / `.lead` Sınıf Çakışması Giderildi (`duel.js`, `style.css`):** Düello skorları ve KPI şeridindeki kazanan vurgusu küresel `.lead` sınıfından ayrılarak `.dlhi` sınıfına taşındı; sarı zemin üzerinde sarı rakam çıkması tamamen bitti.
+- **Koyu Zeminde Siyah Kulüp Arması Kontrastı (`duel.js`, `style.css`, `posters.js`):** Hero sahnesi, Sezon/Kulüp mini sahneleri, Canlı Sezon başlığı ve tüm 1v1 PNG posterlerindeki arma yuvalarına yumuşak platin-buzlu zemin eklendi; Juventus, Newcastle gibi koyu armalar artık net görünür.
+- **DNA Radar Etiket Kırpılması (`duel.js`, `style.css`):** `duelRadarSvg` genişliği `344px` yapılarak sol eksendeki `BİTİRİCİLİK` yazısının kesilmesi giderildi.
+- **Sezon Yıldızı, Kulüp Skoru & Son Dönem Formu (`duel.js`, `style.css`):** Sezon yıldızı kartında oyuncu adı ile istatistik iki ayrı satıra bölündü; **Kulüp vs. Kulüp** kartına canlı `X–Y` kategori skoru eklendi; **Son Dönem Formu** çipleri `S1 · Bitti`, `S2 · Devam`, `S3 · 🏆` şeklinde okunur etiketlere geçirildi.
+
 ## v20.43 (2026-11-23) — Final Sürüm: Uzun Ömürlü Düello, Yeni Posterler & Kapsamlı Estetik Cilalama
 - **100 Sezonluk Arşiv & Son 5 Sezon Trendi (`duel.js`, `style.css`):** Buluta eşitlenen sezon arşivi sınırı 36’dan **100 sezona** çıkarıldı; Düello › Genel sekmesine son 5 sezonun P/M trend grafiğini, kupa, galibiyet % ve puan/maç kıyasını gösteren **Son Dönem Formu** paneli eklendi.
 - **Sezon vs. Sezon & Kulüp vs. Kulüp PNG Posterleri (`posters.js`, `duel.js`, `app.js`):** Sezonlar ve Takımlar stüdyolarından seçili iki sezonu (`duelloSezonCv`) veya iki kulübü (`duelloKulupCv`) gerçek kulüp armalarıyla tek tıkla 1080px PNG poster olarak paylaşma eklendi.
