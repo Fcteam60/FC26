@@ -1,3 +1,15 @@
+## v20.42 (2026-11-23) — Final Denetim Düzeltmeleri, Kulüp Armalı 1v1 Poster & Rehber Güncellemesi
+- **6 Uç Durum Düzeltmesi (`duel.js`, `app.js`):**
+  - `Lig` filtresinde sezon yokken **Sezonlar** sekmesinin gizlice Kupa sezonlarını göstermesi giderildi (`duelFilterSeasons`); **Takımlar** sekmesine açıklayıcı boş durum paneli eklendi.
+  - Güncel olmayan rakip uyarısı ile seçili modda sezon bulunmaması durumu ayrıştırıldı (`Array.isArray(opp.seasons)`).
+  - 0 maçlı yeni sezonlarda GEN kademeleri ve Ortak Kulüpler kartlarında `0,00 P/M` / `%0G` yerine `—` / `0 maç` gösterilmesi sağlandı.
+  - Hero 3'lü KPI şeridinde **Şampiyonluk** kazanan parlaması iki tarafın da sezonu olması koşuluna (`c1.n && c2.n`) bağlandı.
+  - 1v1 PNG poster üretilirken **1v1 Poster** düğmesinin kilitlenmesi (`actMap.duello = "dlposter"`) eklendi.
+- **3 Tamamlayıcı İyileştirme (`posters.js`, `app.js`):**
+  - 1v1 Düello PNG posteri (`duelloCv`) `async` yapılarak `preloadLogos` ve `drawBadge` ile gerçek kulüp armalarını obsidiyen çerçeveler içinde çizecek şekilde güncellendi.
+  - *Ayarlar › Kayıt Sahibi* adı değiştirildiğinde Düello odasındaki menajer adı (`cfg.name`) otomatik eşitlenir.
+  - Uygulama içi *Kullanım Kılavuzu* (`guideDlg`) içine **Canlı Menajer Düellosu (VS)** ve 7. poster türü eklendi.
+
 ## v20.41 (2026-11-23) — Flagship Broadcast Düello Stüdyosu (Obsidiyen & Şampanya Altın)
 - **Obsidiyen Broadcast Hero Sahnesi (`duel.js`, `style.css`):** Açık temada dahi yüksek kontrastlı ve yayın kalitesinde duran derin obsidiyen skor tabelası tasarlandı: saha orta yuvarlak filigranı, zümrüt yeşili & şampanya altın spot ışıkları, kulüp arması çerçeveleri, özel vektör lider tacı, büyütülmüş `tabular-nums` VS skoru, kategori hakimiyet göstergesi, 3'lü anlık KPI şeridi ve doğrudan sahne içi **Canlı Sezon** + **1v1 Poster** eylem barı.
 - **4 Sekmeli Düello Stüdyosu (`Genel · Sezonlar · Takımlar · DNA & xG`):** Uzun dikey kart yığını yerine her biri kendi amacına göre tasarlanmış 4 özel stüdyo sekmesi kuruldu; **Sezon vs. Sezon** ve **Kulüp vs. Kulüp** ekranları kendi obsidiyen mini sahneleriyle, **DNA & xG** ise karanlık telemetri radar laboratuvarıyla yenilendi.

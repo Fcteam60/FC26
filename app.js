@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.41",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="20.42",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -2588,8 +2588,8 @@ function render(){
   const qsAfter=document.querySelector("#qs .sheet");if(qsAfter&&qsTop)qsAfter.scrollTop=qsTop;
   const tiAfter=document.querySelector("#dlg .tisheet");if(tiAfter&&tiTop)tiAfter.scrollTop=tiTop;
   if(st.isGenerating){
-    const actMap={kura:"kurag",karne:"karne",mac:"mkart",kariyer:"kariyer",tots:"totsg",ko:"kog"},targetAct=actMap[st.isGenerating];
-    document.querySelectorAll('[data-a="kurag"],[data-a="karne"],[data-a="mkart"],[data-a="kariyer"],[data-a="totsg"],[data-a="kog"]').forEach(btn=>{
+    const actMap={kura:"kurag",karne:"karne",mac:"mkart",kariyer:"kariyer",tots:"totsg",ko:"kog",duello:"dlposter"},targetAct=actMap[st.isGenerating];
+    document.querySelectorAll('[data-a="kurag"],[data-a="karne"],[data-a="mkart"],[data-a="kariyer"],[data-a="totsg"],[data-a="kog"],[data-a="dlposter"]').forEach(btn=>{
       btn.disabled=true;
       const bid=btn.dataset.id!=null?+btn.dataset.id:null;
       if(btn.dataset.a===targetAct&&(st.genId==null||bid==null||bid===st.genId)){
@@ -2751,7 +2751,7 @@ document.addEventListener("click",async e=>{
   else if(a=="ren"){const x=store.seasons.find(q=>q.id==id);if(!x)return;st.ren={id:x.id,v:x.name};setTimeout(()=>{const e=$("rn");if(e){e.focus();e.select()}},30)}
   else if(a=="own"){st.own=1}
   else if(a=="owno"){st.own=0}
-  else if(a=="owns"){const v=($("ow").value||"").replace(/\s+/g," ").trim().slice(0,20);if(!v){$("ow").focus();return}store.owner=v;st.own=0;un="Kayıtlar "+v+" adına"}
+  else if(a=="owns"){const v=($("ow").value||"").replace(/\s+/g," ").trim().slice(0,20);if(!v){$("ow").focus();return}store.owner=v;if(typeof duelLoadCfg==="function"&&typeof duelSaveCfg==="function"){const dc=duelLoadCfg();dc.name=v;duelSaveCfg(dc)}st.own=0;un="Kayıtlar "+v+" adına"}
   else if(a=="rens"){const v=($("rn").value||"").replace(/\s+/g," ").trim().slice(0,24),x=st.ren?store.seasons.find(q=>q.id==st.ren.id):null;if(!v){$("rn").focus();return}if(x){x.name=v;un="Sezon adı değiştirildi"}st.ren=null}
   else if(a=="mman")st.mode="man";
   else if(a=="ns"){store.nx=nextNo();const n=mk(Date.now(),store.nx,s);store.seasons.push(n);store.cur=n.id;sync();st.mode=null;st.tab=7}
@@ -2871,11 +2871,13 @@ function guideDlg(){
       `<ul class="glist"><li><b>3 Simülasyon Modu:</b> <i>Gerçekçi</i> (gerçek futbol skorları ve İlk 11/kaleci etkisi), <i>Dengeli</i> ve <i>Sürprizli</i>.</li><li><b>Haftalık İlerleme:</b> Kendi hafta maçını girdikten sonra <b>Haftayı Simüle Et</b> açılır; hata yaparsan <b>↩ Geri Al</b> ile son haftayı geri alabilirsin.</li><li><b>Eleme Ağacı:</b> Gruplar bitince çapraz eşleşmeler otomatik kurulur. Elensen bile <b>Finale Kadar Simüle Et</b> ile turnuvanın şampiyonunu görebilirsin.</li><li><b>Görünüm:</b> <i>Ağaç Görünümü</i> yatay kaydırılabilir diyagram sunar; gol/asist detayları için <i>Detaylı Liste</i>’ye geçebilirsin.</li></ul>`)+
     sec("3. Maç Girişi & Gelişmiş Analitik",
       `<ul class="glist"><li><b>Gol & Asist:</b> Her gol için golcüyü ve isteğe bağlı asistçiyi seç; rakibin kendi kalesine golü için <b>KK</b> kullan.</li><li><b>5 Altın Veri (Opsiyonel):</b> Topla Oynama, Toplam/İsabetli Şut, Pas İsabeti ve xG girerek <b>xG/xPts</b>, <b>Hak Ediş</b> ve <b>Taktiksel DNA</b> radarını aç.</li><li><b>Otomatik MOTM:</b> Kendi takımından Maçın Adamı seçmezsen sistem rakipten en etkili oyuncuyu otomatik belirler.</li></ul>`)+
-    sec("4. Paylaşılabilir PNG Posterler (6 Tür)",
-      `<ul class="glist"><li><b>Kura / Lig Tablosu:</b> <i>Turnuva › Gruplar</i> ekranından.</li><li><b>Eleme Ağacı (Bracket):</b> <i>Turnuva › Fikstür › Eleme Ağacı</i> altından.</li><li><b>Turnuvanın En İyi 11’i (TOTS):</b> <i>Turnuva › İstatistik</i> veya <i>Geçmiş › Sezonlar</i> arşivinden.</li><li><b>Maç Kartı:</b> <i>İstat. › Maçlar</i> içindeki her maçın görsel ikonundan.</li><li><b>Sezon Karnesi & Kariyer Özeti:</b> <i>Takımım</i> veya <i>Geçmiş</i> ekranlarından.</li></ul>`)+
+    sec("4. Paylaşılabilir PNG Posterler (7 Tür)",
+      `<ul class="glist"><li><b>Kura / Lig Tablosu:</b> <i>Turnuva › Gruplar</i> ekranından.</li><li><b>Eleme Ağacı (Bracket):</b> <i>Turnuva › Fikstür › Eleme Ağacı</i> altından.</li><li><b>Turnuvanın En İyi 11’i (TOTS):</b> <i>Turnuva › İstatistik</i> veya <i>Geçmiş › Sezonlar</i> arşivinden.</li><li><b>Maç Kartı:</b> <i>İstat. › Maçlar</i> içindeki her maçın görsel ikonundan.</li><li><b>Sezon Karnesi & Kariyer Özeti:</b> <i>Takımım</i> veya <i>Geçmiş</i> ekranlarından.</li><li><b>1v1 Menajer Düellosu Posteri:</b> <i>Geçmiş › Düello</i> sahnesinden.</li></ul>`)+
     sec("5. Kadro, Oyuncu Profili & Arama",
       `<ul class="glist"><li><b>Kadro İnceleme:</b> Uygulamadaki herhangi bir takım adına dokunarak İlk 11, yedekler, mevki rozetleri ve sezon gol/asist sayılarını görebilirsin.</li><li><b>Oyuncu Profili:</b> <i>Sezon Ödülleri</i>, <i>Kariyer Yıldızları</i> ve <i>TOTS</i> kartlarında kendi oyuncularına dokunarak kariyer grafiği, en çok gol attığı rakipler ve asist partnerlerini incele.</li><li><b>Global Arama:</b> Sağ üstteki büyüteçten 108 kulüp ve 3.200+ oyuncu içinde anında ara.</li></ul>`)+
-    sec("6. Yedekleme & Telefon Kurulumu (PWA)",
+    sec("6. Canlı Menajer Düellosu (VS)",
+      `<ul class="glist"><li><b>Ortak Oda:</b> <i>Geçmiş › Düello</i> ekranında arkadaşınla aynı 6+ karakterli oda kodunu gir; maç kaydettikçe yalnızca hafif özetin otomatik eşitlenir, ana verilerin cihazında kalır.</li><li><b>4 Sekmeli Stüdyo:</b> <i>Genel</i> (kariyer & kupa karnesi), <i>Sezonlar</i> (sezon vs. sezon), <i>Takımlar</i> (GEN kademeleri, ortak kulüpler ve kulüp vs. kulüp) ve <i>DNA & xG</i> (çift renkli radar).</li><li><b>Canlı Sezon İnceleme:</b> Arkadaşının aktif sezonundaki puan durumunu, fikstürünü, eleme eşleşmelerini ve sezon DNA’sını tek dokunuşla aç.</li></ul>`)+
+    sec("7. Yedekleme & Telefon Kurulumu (PWA)",
       `<ul class="glist"><li><b>Ana Ekrana Ekle:</b> iOS Safari’de <i>Paylaş › Ana Ekrana Ekle</i>, Android Chrome’da <i>Uygulamayı Yükle</i> ile tam ekran yerel uygulama deneyimi ve 7 günlük veri silinmesine karşı koruma sağla.</li><li><b>Kısayollar:</b> Ana ekrandaki uygulama ikonuna uzun basarak <i>Maç Merkezi</i>, <i>İstatistikler</i> veya <i>Yeni Sezon</i>’a doğrudan geç.</li><li><b>Yedekleme:</b> Tüm veriler cihazında (IndexedDB) tutulur. <i>Ayarlar › Yedeği İndir</i> ile düzenli JSON yedeği al; başka cihazda <i>Birleştir</i> seçeneğiyle güvenle eşitle.</li></ul>`)+
     `<div class="bar" style="margin:12px 0 0"><button class="btn p" data-a="no" style="flex:1">Kapat</button></div>`+
   `</div></div>`;

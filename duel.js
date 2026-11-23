@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v20.41)
+   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v20.42)
    - Obsidian Broadcast Arena, 4 sekmeli Düello Stüdyosu (Genel · Sezonlar · Takımlar · DNA & xG)
    - Sıfır harici SDK: Firebase Realtime Database REST API + çevrimdışı IndexedDB uyumu
    - Canlı Sezon İnceleme (Puan Durumu, Maçlar, Eleme, Sezon DNA) & Yedek Manuel Kıyas Kodu
@@ -217,16 +217,15 @@ function buildDuelSeasonList(){
 function duelFilterSeasons(p,mode){
   const list=Array.isArray(p&&p.seasons)?p.seasons:[];
   if(!mode||mode=="all")return list;
-  const f=list.filter(s=>mode=="lg"?!!s.lg:!s.lg);
-  return f.length?f:list;
+  return list.filter(s=>mode=="lg"?!!s.lg:!s.lg);
 }
 
 // Alınan takımlara göre GEN kademeleri, ortak kulüpler ve kulüp bazlı toplu istatistikler
 function duelClubAnalytics(me,opp,mode){
   const s1=(Array.isArray(me&&me.seasons)?me.seasons:[]).filter(s=>!mode||mode=="all"||(mode=="lg"?!!s.lg:!s.lg));
   const s2=(Array.isArray(opp&&opp.seasons)?opp.seasons:[]).filter(s=>!mode||mode=="all"||(mode=="lg"?!!s.lg:!s.lg));
-  const has1=Array.isArray(me&&me.seasons)&&me.seasons.length>0;
-  const has2=Array.isArray(opp&&opp.seasons)&&opp.seasons.length>0;
+  const has1=Array.isArray(me&&me.seasons);
+  const has2=Array.isArray(opp&&opp.seasons);
 
   const agg=arr=>{
     let n=arr.length,finN=0,ch=0,fin=0,pod=0,m=0,w=0,d=0,l=0,gf=0,ga=0,bestSt=-1,bestRes="";
@@ -627,11 +626,17 @@ function duelCodeDecode(raw){
 // STÜDYO SEKME 2: SEZON vs. SEZON STÜDYOSU
 // =========================================================================
 function duelSeasonStudio(me,opp,mode){
-  const l1=duelFilterSeasons(me,mode),l2=duelFilterSeasons(opp,mode);
-  if(!l1.length&&!l2.length)return duelPanel("se","sky","Sezonları Kıyasla","Henüz karşılaştırılacak sezon yok",null,`<div class="note" style="margin:0">İki tarafta sezon kaydı oluştuğunda burada karşılaştırabilirsin.</div>`);
-  if(!l2.length){
-    return duelPanel("se","sky","Sezonları Kıyasla","Sezon arşivleri bekleniyor",null,
+  const modeLbl=mode=="cup"?"Kupa":mode=="lg"?"Lig":"Tüm Sezonlar";
+  if(!Array.isArray(opp&&opp.seasons)){
+    return duelPanel("se","sky","Sezon vs. Sezon Stüdyosu","Sezon arşivleri bekleniyor",null,
       `<div class="note" style="margin:0"><b>${esc(opp.name)}</b> henüz güncel sürüme geçip eşitleme yapmadığı için sezon listesi paylaşılmadı. Güncelleyip <b>Eşitle</b> dediğinde tüm sezonları burada açılacak.</div>`
+    );
+  }
+  const l1=duelFilterSeasons(me,mode),l2=duelFilterSeasons(opp,mode);
+  if(!l1.length||!l2.length){
+    const who=!l1.length&&!l2.length?"İki tarafta da":(!l1.length?"Senin arşivinde":`<b>${esc(opp.name)}</b> arşivinde`);
+    return duelPanel("se","sky","Sezon vs. Sezon Stüdyosu",`${modeLbl} kategorisinde eşleşme yok`,modeLbl,
+      `<div class="note" style="margin:0">${who} henüz <b>${esc(modeLbl)}</b> kategorisinde sezon bulunmuyor. Üstten başka bir turnuva filtresi seçebilirsin.</div>`
     );
   }
   const s1=l1.find(x=>x.id===st.dlS1)||l1[0];
@@ -741,7 +746,7 @@ function duelClubStudio(me,opp,mode){
     const cards=ca.tiers.map(t=>{
       const b=duelBarCalc(t.a.ppm,t.b.ppm,false);
       const cell=(mgr,o,cls,win)=>o.n
-        ? `<div class="dl-tcell ${cls}${win?" win":""}"><div class="dl-tcname">${esc(mgr)}</div><div class="dl-tcmain"><b>${fx(o.ppm||0)}</b><em>P/M</em></div><div class="dl-tcsub">${o.n}S · ${o.ch} kupa · %${Math.round(o.wr||0)}G</div></div>`
+        ? `<div class="dl-tcell ${cls}${win?" win":""}"><div class="dl-tcname">${esc(mgr)}</div><div class="dl-tcmain"><b>${o.m?fx(o.ppm):"—"}</b>${o.m?`<em>P/M</em>`:""}</div><div class="dl-tcsub">${o.n}S · ${o.ch} kupa · ${o.m?`%${Math.round(o.wr)}G`:"0 maç"}</div></div>`
         : `<div class="dl-tcell ${cls} empty"><div class="dl-tcname">${esc(mgr)}</div><div class="dl-tcmain"><b>—</b></div><div class="dl-tcsub">Bu kademede sezon yok</div></div>`;
       return `<div class="dl-tiercard">`+
         `<div class="dl-tierhd"><b>${esc(t.title)}</b><span class="dl-tierpill ${t.tone}">${esc(t.sub)}</span></div>`+
@@ -761,8 +766,8 @@ function duelClubStudio(me,opp,mode){
       return `<div class="dl-shcard">`+
         `<div class="dl-shhd">${ti!=null?badge(ti,26):""}<b>${esc(sh.tm)}</b>${sh.g?`<span class="dl-gen">${sh.g} GEN</span>`:""}</div>`+
         `<div class="dl-tiervs">`+
-          `<div class="dl-tcell me${b.w1?" win":""}"><div class="dl-tcname">${esc(me.name)}</div><div class="dl-tcmain"><b>${fx(sh.a.ppm||0)}</b><em>P/M</em></div><div class="dl-tcsub">${sh.a.n}S · ${sh.a.ch} kupa · %${Math.round(sh.a.wr||0)}G · Av ${sgnI(sh.a.gd)}</div></div>`+
-          `<div class="dl-tcell op${b.w2?" win":""}"><div class="dl-tcname">${esc(opp.name)}</div><div class="dl-tcmain"><b>${fx(sh.b.ppm||0)}</b><em>P/M</em></div><div class="dl-tcsub">${sh.b.n}S · ${sh.b.ch} kupa · %${Math.round(sh.b.wr||0)}G · Av ${sgnI(sh.b.gd)}</div></div>`+
+          `<div class="dl-tcell me${b.w1?" win":""}"><div class="dl-tcname">${esc(me.name)}</div><div class="dl-tcmain"><b>${sh.a.m?fx(sh.a.ppm):"—"}</b>${sh.a.m?`<em>P/M</em>`:""}</div><div class="dl-tcsub">${sh.a.n}S · ${sh.a.ch} kupa · ${sh.a.m?`%${Math.round(sh.a.wr)}G · Av ${sgnI(sh.a.gd)}`:"0 maç"}</div></div>`+
+          `<div class="dl-tcell op${b.w2?" win":""}"><div class="dl-tcname">${esc(opp.name)}</div><div class="dl-tcmain"><b>${sh.b.m?fx(sh.b.ppm):"—"}</b>${sh.b.m?`<em>P/M</em>`:""}</div><div class="dl-tcsub">${sh.b.n}S · ${sh.b.ch} kupa · ${sh.b.m?`%${Math.round(sh.b.wr)}G · Av ${sgnI(sh.b.gd)}`:"0 maç"}</div></div>`+
         `</div>`+
       `</div>`;
     }).join("");
@@ -803,7 +808,10 @@ function duelClubStudio(me,opp,mode){
     );
   }
 
-  return fairHtml+tierPanel+sharedPanel+customPanel;
+  const out=fairHtml+tierPanel+sharedPanel+customPanel;
+  return out||duelPanel("cl","gold","Alınan Takımlara Göre Kıyas",`${modeLbl} kategorisinde henüz takım kaydı yok`,modeLbl,
+    `<div class="note" style="margin:0">İki tarafta da <b>${esc(modeLbl)}</b> kategorisinde takım seçilmiş sezon oluştuğunda GEN kademeleri, ortak kulüpler ve Kulüp vs. Kulüp düellosu burada görünecek.</div>`
+  );
 }
 
 // =========================================================================
@@ -972,7 +980,7 @@ function duelView(){
         `<div class="dl-dombar"><i class="me" style="width:${dom1}%"></i><i class="op" style="width:${dom2}%"></i></div>`+
       `</div>`+
       `<div class="dl-hkpi">`+
-        `<div class="dl-hk"><small>ŞAMPİYONLUK</small><div><b class="me${c1.ch>c2.ch?" lead":""}">${c1.n?c1.ch:"—"}</b><span>:</span><b class="op${c2.ch>c1.ch?" lead":""}">${c2.n?c2.ch:"—"}</b></div></div>`+
+        `<div class="dl-hk"><small>ŞAMPİYONLUK</small><div><b class="me${c1.n&&c2.n&&c1.ch>c2.ch?" lead":""}">${c1.n?c1.ch:"—"}</b><span>:</span><b class="op${c1.n&&c2.n&&c2.ch>c1.ch?" lead":""}">${c2.n?c2.ch:"—"}</b></div></div>`+
         `<div class="dl-hk"><small>GALİBİYET</small><div><b class="me${c1.wr!=null&&c2.wr!=null&&c1.wr>c2.wr?" lead":""}">${pctF(c1.wr)}</b><span>:</span><b class="op${c1.wr!=null&&c2.wr!=null&&c2.wr>c1.wr?" lead":""}">${pctF(c2.wr)}</b></div></div>`+
         `<div class="dl-hk"><small>PUAN / MAÇ</small><div><b class="me${c1.ppm!=null&&c2.ppm!=null&&c1.ppm>c2.ppm?" lead":""}">${fxF(c1.ppm)}</b><span>:</span><b class="op${c1.ppm!=null&&c2.ppm!=null&&c2.ppm>c1.ppm?" lead":""}">${fxF(c2.ppm)}</b></div></div>`+
       `</div>`+

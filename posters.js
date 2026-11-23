@@ -1274,10 +1274,13 @@ async function playKarne(im){
     if(p>=1)break;
     await new Promise(r=>requestAnimationFrame(r))}
   if(st.img===im){im.anim=false;render()}}
-function duelloCv(x){
+async function duelloCv(x){
   const me=x.me,opp=x.opp,mode=x.mode||"all",W=1080,H=1520;
   const m1=duelPickMode(me,mode),m2=duelPickMode(opp,mode);
   const c1=m1.car,c2=m2.car;
+  const tiMe=me.cur&&me.cur.team&&IX[me.cur.team]!=null?IX[me.cur.team]:null;
+  const tiOp=opp.cur&&opp.cur.team&&IX[opp.cur.team]!=null?IX[opp.cur.team]:null;
+  if(typeof preloadLogos==="function")await preloadLogos([tiMe,tiOp].filter(i=>i!=null));
   const modeLbl=mode=="cup"?"KUPA DÜELLOSU":mode=="lg"?"LİG DÜELLOSU":"MENAJER DÜELLOSU · 1V1";
   const cv=mkCv(W,H),c=cv.getContext("2d");
   dkBg(c,W,H,"#2dd496","#e8be54",false);
@@ -1288,27 +1291,43 @@ function duelloCv(x){
   tx(c,today(),W-48,66,24,"#94a3b8","right",600);
   drawPill(c,"FC 27 LİG · CANLI VS",W-48-216,92,216,32,"rgba(240,194,75,.16)",null,"rgba(240,194,75,.45)","#fbeaa8",17);
 
-  // Hero VS Panel
+  // Hero VS Panel (Obsidian Crest Frames + Club Badges)
   const sb=duelScoreboard(me,opp,mode);
   const hy=174,hh=204;
-  glassBox(c,44,hy,992,hh,26,"rgba(255,255,255,.16)","#2dd496");
+  glassBox(c,44,hy,992,hh,26,"rgba(240,194,75,.30)","#2dd496");
+  const drawCrest=(ti,nm,bx,by,strokeCol,glowCol)=>{
+    c.save();
+    c.fillStyle="rgba(255,255,255,.06)";
+    c.strokeStyle=strokeCol;c.lineWidth=2;
+    c.shadowColor=glowCol;c.shadowBlur=18;
+    rr(c,bx,by,86,86,20);c.fill();c.stroke();
+    c.restore();
+    if(ti!=null&&typeof drawBadge==="function")drawBadge(c,ti,bx+12,by+8,62);
+    else tx(c,(nm||"?").slice(0,1).toLocaleUpperCase("tr"),bx+43,by+46,38,"#f8fafc","center",700);
+  };
   // Left (Me - Emerald)
-  c.fillStyle="#2dd496";c.beginPath();c.arc(92,hy+66,10,0,Math.PI*2);c.fill();
-  c.font="700 44px "+NUMF;
-  tx(c,fit(c,me.name.toLocaleUpperCase("tr"),330),114,hy+68,44,"#f8fafc","left",700);
-  tx(c,`${c1.n} SEZON · ${c1.m} MAÇ`,114,hy+110,21,"#94a3b8","left",600);
-  if(me.cur&&me.cur.team)tx(c,me.cur.team+(me.cur.teamG?" · "+me.cur.teamG+" GEN":""),114,hy+146,21,"#3ee6a8","left",700);
+  drawCrest(tiMe,me.name,72,hy+54,"rgba(46,229,157,.62)","rgba(46,229,157,.32)");
+  c.font="700 40px "+NUMF;
+  tx(c,fit(c,me.name.toLocaleUpperCase("tr"),255),176,hy+72,40,"#f8fafc","left",700);
+  tx(c,`${c1.n} SEZON · ${c1.m} MAÇ`,176,hy+112,20,"#94a3b8","left",600);
+  if(me.cur&&me.cur.team){
+    c.font="700 20px "+NUMF;
+    tx(c,fit(c,me.cur.team+(me.cur.teamG?" · "+me.cur.teamG+" GEN":""),255),176,hy+146,20,"#3ee6a8","left",700);
+  }
   // Center VS & Score
   drawPill(c,"VS",W/2-38,hy+30,76,34,"rgba(255,255,255,.10)",null,"rgba(255,255,255,.22)","#e2e8f0",18);
-  tx(c,String(sb.s1),W/2-46,hy+122,78,"#2dd496","right",700);
+  tx(c,String(sb.s1),W/2-44,hy+122,78,"#2dd496","right",700);
   tx(c,"–",W/2,hy+118,54,"#64748b","center",700);
-  tx(c,String(sb.s2),W/2+46,hy+122,78,"#e8be54","left",700);
+  tx(c,String(sb.s2),W/2+44,hy+122,78,"#e8be54","left",700);
   // Right (Opp - Gold)
-  c.fillStyle="#e8be54";c.beginPath();c.arc(W-92,hy+66,10,0,Math.PI*2);c.fill();
-  c.font="700 44px "+NUMF;
-  tx(c,fit(c,opp.name.toLocaleUpperCase("tr"),330),W-114,hy+68,44,"#f8fafc","right",700);
-  tx(c,`${c2.n} SEZON · ${c2.m} MAÇ`,W-114,hy+110,21,"#94a3b8","right",600);
-  if(opp.cur&&opp.cur.team)tx(c,opp.cur.team+(opp.cur.teamG?" · "+opp.cur.teamG+" GEN":""),W-114,hy+146,21,"#fbeaa8","right",700);
+  drawCrest(tiOp,opp.name,W-72-86,hy+54,"rgba(240,194,75,.64)","rgba(240,194,75,.32)");
+  c.font="700 40px "+NUMF;
+  tx(c,fit(c,opp.name.toLocaleUpperCase("tr"),255),W-176,hy+72,40,"#f8fafc","right",700);
+  tx(c,`${c2.n} SEZON · ${c2.m} MAÇ`,W-176,hy+112,20,"#94a3b8","right",600);
+  if(opp.cur&&opp.cur.team){
+    c.font="700 20px "+NUMF;
+    tx(c,fit(c,opp.cur.team+(opp.cur.teamG?" · "+opp.cur.teamG+" GEN":""),255),W-176,hy+146,20,"#fbeaa8","right",700);
+  }
 
   // Comparison Bars Box (negatif/verisiz korumalı duelBarCalc ile)
   const by=402,bh=548;
