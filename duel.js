@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v20.45)
+   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v20.46)
    - Obsidian Broadcast Arena, 4 sekmeli Düello Stüdyosu (Genel · Sezonlar · Takımlar · DNA & xG)
    - Sıfır harici SDK: Firebase Realtime Database REST API + çevrimdışı IndexedDB uyumu
    - Canlı Sezon İnceleme (Puan Durumu, Maçlar, Eleme, Sezon DNA) & Yedek Manuel Kıyas Kodu
@@ -105,8 +105,9 @@ function duelModeStats(mode){
   const xpAvgD=xpL.length?Math.round(xpTotD/xpL.length*100)/100:null;
   const xpUp=xpL.filter(o=>o.d>0).length;
 
+  const actN=S.filter(x=>x.res||(x.mt&&x.mt.length)||(x.ts&&((x.ts.w||0)+(x.ts.d||0)+(x.ts.l||0)))).length;
   return{
-    car:{n:d.n,finN:d.finN,ch:d.ch,chRate,fin:d.fin,pod:d.pod,w:d.t.w||0,d:d.t.d||0,l:d.t.l||0,gf,ga,gd,m:totM,wr,ppm,gpm,gapm,csPct,maxW:mtAll.length?maxW:null},
+    car:{n:actN,finN:d.finN,ch:d.ch,chRate,fin:d.fin,pod:d.pod,w:d.t.w||0,d:d.t.d||0,l:d.t.l||0,gf,ga,gd,m:totM,wr,ppm,gpm,gapm,csPct,maxW:mtAll.length?maxW:null},
     xp:{n:xpL.length,avgG:xpAvgG,totD:xpTotD,avgD:xpAvgD,up:xpUp},
     star:d.ga?{n:d.ga.n,v:d.ga.v,g:d.g?d.g.v:null,gn:d.g?d.g.n:""}:null
   };
@@ -207,7 +208,7 @@ function buildDuelSeasonList(){
       g:tm?tm.g:0,
       fin:x.res?1:0,
       st:x.res?x.res.st:-1,
-      res:x.res?rlb(x.res,x.cfg,x.grk).split(" · ")[0]:"Devam ediyor",
+      res:x.res?duelShortRes(rlb(x.res,x.cfg,x.grk),x.res.st):"Devam ediyor",
       xpD:xpMap[x.id]!=null?xpMap[x.id]:null,
       w,d,l,gf,ga,m,wr,ppm,gpm,gapm,xgM,oXgM,xgDiff,mvp
     };
@@ -330,7 +331,7 @@ function buildDuelSummary(){
       sName:cs.name||"",
       team:tm?tm.n:"",
       teamG:tm?tm.g:0,
-      stage:cs.res?rlb(cs.res,cs.cfg,cs.grk):(typeof autoStage==="function"?autoStage(cs):"Devam ediyor"),
+      stage:cs.res?duelShortRes(rlb(cs.res,cs.cfg,cs.grk),cs.res.st):(typeof autoStage==="function"?autoStage(cs):"Devam ediyor"),
       w:g.w||0,d:g.d||0,l:g.l||0,gf:g.gf||0,ga:g.ga||0,
       form:last5
     };
@@ -357,12 +358,18 @@ function buildDuelSummary(){
 // Eski (v1) veya yeni özetlerden seçili moda göre güvenli veri okuma
 function duelPickMode(p,mode){
   if(!p)return{car:{n:0,finN:0,ch:0,fin:0,pod:0,m:0},xp:{n:0},compat:true};
+  const actFromSeasons=Array.isArray(p.seasons)?p.seasons.filter(s=>(!mode||mode=="all"||(mode=="lg"?!!s.lg:!s.lg))&&(s.fin||s.m>0)).length:0;
   if(mode=="cup"||mode=="lg"){
-    if(p.modes&&p.modes[mode])return{car:p.modes[mode].car,xp:p.modes[mode].xp,compat:true};
+    if(p.modes&&p.modes[mode]){
+      const mc=p.modes[mode].car||{};
+      const fixedCar=actFromSeasons>(mc.n||0)?Object.assign({},mc,{n:actFromSeasons}):mc;
+      return{car:fixedCar,xp:p.modes[mode].xp,compat:true};
+    }
     return{car:{n:0,finN:0,ch:0,fin:0,pod:0,m:0},xp:{n:0},compat:false};
   }
   const c=p.car||{},m=c.m||0;
   const normCar=Object.assign({},c,{
+    n:Math.max(c.n||0,actFromSeasons),
     gd:c.gd!=null?c.gd:((c.gf||0)-(c.ga||0)),
     chRate:c.chRate!=null?c.chRate:(c.finN?Math.round((c.ch||0)/c.finN*1000)/10:null),
     wr:m>0?c.wr:null,
@@ -571,31 +578,94 @@ function duelPanel(icoKey,tone,title,sub,pill,body){
   `</section>`;
 }
 
-// Ana VS skoru: yalnızca Kariyer & Kupa Düellosu kartındaki satırlardan hesaplanır
-function duelScoreboard(me,opp,mode){
+// Kısa, tarafsız ve kesilmeyen derece etiketi (eski 2. tekil şahıs metinleri de temizler)
+function duelShortRes(raw,stCode){
+  const t=String(raw||"").split(" · ")[0].trim();
+  if(!t)return stCode===7?"Şampiyon":"Devam ediyor";
+  const gm=t.match(/Grupta\s+(\d+)\./i);
+  if(gm)return `Grup ${gm[1]}. Sıra`;
+  if(/Lig Şampiyonu/i.test(t))return "Lig Şampiyonu";
+  if(/Şampiyon/i.test(t))return "Şampiyon";
+  if(/Finalde/i.test(t))return "Finalist";
+  if(/Yarı final/i.test(t))return "Yarı Final";
+  if(/Çeyrek final/i.test(t))return "Çeyrek Final";
+  if(/Son 16/i.test(t))return "Son 16";
+  if(/Son 32/i.test(t))return "Son 32";
+  if(/Son 64/i.test(t))return "Son 64";
+  if(/Grup aşama/i.test(t))return "Grup Aşaması";
+  if(/Ligi 2\./i.test(t))return "Lig 2.si";
+  if(/Ligi 3\./i.test(t))return "Lig 3.sü";
+  if(/orta sıra/i.test(t))return "Orta Sıralar";
+  if(/alt sıra/i.test(t))return "Alt Sıralar";
+  return t;
+}
+
+// TEK KAYNAK: Kariyer & Kupa 10 Kriteri + Nötr GEN Bağlam Satırı (Hero, Ekran ve 1v1 Poster birebir aynı)
+function duelCareerCriteria(me,opp,mode){
   const m1=duelPickMode(me,mode||"all"),m2=duelPickMode(opp,mode||"all");
   const c1=m1.car,c2=m2.car;
+  const pctF=v=>v==null?"—":"%"+Math.round(v);
+  const fxF=v=>v==null?"—":fx(v);
+  const dFmt=v=>v==null?"—":(v>0?"+":"")+fx(v);
+  const rows=[
+    {grp:"cup",lbl:"Şampiyonluk",v1:c1.n?c1.ch:null,v2:c2.n?c2.ch:null,f1:c1.n?String(c1.ch):"—",f2:c2.n?String(c2.ch):"—",low:false,neu:false},
+    {grp:"cup",lbl:"Kupa Oranı",v1:c1.chRate,v2:c2.chRate,f1:pctF(c1.chRate),f2:pctF(c2.chRate),low:false,neu:false},
+    {grp:"cup",lbl:mode=="lg"?"İlk 2":"Final / İlk 2",v1:c1.n?c1.fin:null,v2:c2.n?c2.fin:null,f1:c1.n?String(c1.fin):"—",f2:c2.n?String(c2.fin):"—",low:false,neu:false},
+    {grp:"perf",lbl:"Galibiyet Oranı",v1:c1.wr,v2:c2.wr,f1:pctF(c1.wr),f2:pctF(c2.wr),low:false,neu:false},
+    {grp:"perf",lbl:"Maç Başı Puan",v1:c1.ppm,v2:c2.ppm,f1:fxF(c1.ppm),f2:fxF(c2.ppm),low:false,neu:false},
+    {grp:"perf",lbl:"Atılan Gol / Maç",v1:c1.gpm,v2:c2.gpm,f1:fxF(c1.gpm),f2:fxF(c2.gpm),low:false,neu:false},
+    {grp:"perf",lbl:"Yenilen Gol / Maç",v1:c1.gapm,v2:c2.gapm,f1:fxF(c1.gapm),f2:fxF(c2.gapm),low:true,neu:false},
+    {grp:"perf",lbl:"Temiz Kasa (CS %)",v1:c1.csPct,v2:c2.csPct,f1:pctF(c1.csPct),f2:pctF(c2.csPct),low:false,neu:false},
+    {grp:"perf",lbl:"En Uzun Galibiyet Serisi",v1:c1.maxW,v2:c2.maxW,f1:c1.maxW!=null?c1.maxW+" maç":"—",f2:c2.maxW!=null?c2.maxW+" maç":"—",low:false,neu:false},
+    {grp:"perf",lbl:"Beklenti Üstü (Ort.)",v1:m1.xp.avgD,v2:m2.xp.avgD,f1:dFmt(m1.xp.avgD),f2:dFmt(m2.xp.avgD),low:false,neu:false},
+    {grp:"perf",lbl:"Ort. Takım GEN",v1:m1.xp.avgG,v2:m2.xp.avgG,f1:fxF(m1.xp.avgG),f2:fxF(m2.xp.avgG),low:false,neu:true}
+  ];
   let s1=0,s2=0;
-  const cmp=(a,b,low)=>{
-    if(a==null||b==null||!Number.isFinite(+a)||!Number.isFinite(+b))return;
-    if(low){if(+a<+b)s1++;else if(+b<+a)s2++}else{if(+a>+b)s1++;else if(+b>+a)s2++}
-  };
-  if(c1.n>0&&c2.n>0){
-    cmp(c1.ch,c2.ch,false);
-    cmp(c1.chRate,c2.chRate,false);
-    cmp(c1.fin,c2.fin,false);
-    cmp(c1.pod,c2.pod,false);
+  rows.forEach(r=>{
+    if(r.neu)return;
+    const b=duelBarCalc(r.v1,r.v2,r.low);
+    if(b.w1)s1++;else if(b.w2)s2++;
+  });
+  return{rows,s1,s2,m1,m2,c1,c2};
+}
+
+// TEK KAYNAK: Sezon vs. Sezon Kriterleri (Maç Başı Averaj + Nötr GEN; Ekran ve Sezon Posteri birebir aynı)
+function duelSeasonCriteria(s1,s2){
+  const pctF=v=>v==null?"—":"%"+Math.round(v);
+  const fxF=v=>v==null?"—":fx(v);
+  const sgnF=v=>v==null?"—":(v>0?"+"+fx(v):v<0?"−"+fx(Math.abs(v)):fx(0));
+  const gdpm1=s1.m?Math.round((s1.gf-s1.ga)/s1.m*100)/100:null;
+  const gdpm2=s2.m?Math.round((s2.gf-s2.ga)/s2.m*100)/100:null;
+  const rows=[
+    {grp:"main",lbl:"Takım Gücü (GEN)",v1:s1.g||null,v2:s2.g||null,f1:s1.g?s1.g+" GEN":"—",f2:s2.g?s2.g+" GEN":"—",low:false,neu:true}
+  ];
+  if(s1.xpD!=null||s2.xpD!=null){
+    rows.push({grp:"main",lbl:"Beklenti Üstü",v1:s1.xpD,v2:s2.xpD,f1:sgnF(s1.xpD),f2:sgnF(s2.xpD),low:false,neu:false});
   }
-  if(c1.m>0&&c2.m>0){
-    cmp(c1.wr,c2.wr,false);
-    cmp(c1.ppm,c2.ppm,false);
-    cmp(c1.gpm,c2.gpm,false);
-    cmp(c1.gapm,c2.gapm,true);
-    cmp(c1.gd,c2.gd,false);
-    cmp(c1.csPct,c2.csPct,false);
-    cmp(c1.maxW,c2.maxW,false);
-  }
-  return{s1,s2};
+  rows.push(
+    {grp:"main",lbl:"Galibiyet Oranı",v1:s1.wr,v2:s2.wr,f1:pctF(s1.wr),f2:pctF(s2.wr),low:false,neu:false},
+    {grp:"main",lbl:"Maç Başı Puan",v1:s1.ppm,v2:s2.ppm,f1:fxF(s1.ppm),f2:fxF(s2.ppm),low:false,neu:false},
+    {grp:"main",lbl:"Atılan Gol / Maç",v1:s1.gpm,v2:s2.gpm,f1:fxF(s1.gpm),f2:fxF(s2.gpm),low:false,neu:false},
+    {grp:"main",lbl:"Yenilen Gol / Maç",v1:s1.gapm,v2:s2.gapm,f1:fxF(s1.gapm),f2:fxF(s2.gapm),low:true,neu:false},
+    {grp:"main",lbl:"Maç Başı Averaj",v1:gdpm1,v2:gdpm2,f1:sgnF(gdpm1),f2:sgnF(gdpm2),low:false,neu:false}
+  );
+  if(s1.xgM!=null||s2.xgM!=null)rows.push({grp:"xg",lbl:"Üretilen xG / Maç",v1:s1.xgM,v2:s2.xgM,f1:s1.xgM!=null?xgN2(s1.xgM):"—",f2:s2.xgM!=null?xgN2(s2.xgM):"—",low:false,neu:false});
+  if(s1.oXgM!=null||s2.oXgM!=null)rows.push({grp:"xg",lbl:"Rakip xG / Maç",v1:s1.oXgM,v2:s2.oXgM,f1:s1.oXgM!=null?xgN2(s1.oXgM):"—",f2:s2.oXgM!=null?xgN2(s2.oXgM):"—",low:true,neu:false});
+  if(s1.xgDiff!=null||s2.xgDiff!=null)rows.push({grp:"xg",lbl:"Bitiricilik (Gol − xG)",v1:s1.xgDiff,v2:s2.xgDiff,f1:s1.xgDiff!=null?xgS2(s1.xgDiff):"—",f2:s2.xgDiff!=null?xgS2(s2.xgDiff):"—",low:false,neu:false});
+
+  let sc1=0,sc2=0;
+  rows.forEach(r=>{
+    if(r.neu)return;
+    const b=duelBarCalc(r.v1,r.v2,r.low);
+    if(b.w1)sc1++;else if(b.w2)sc2++;
+  });
+  return{rows,sc1,sc2};
+}
+
+// Ana VS skoru: duelCareerCriteria tek kaynağından okunur
+function duelScoreboard(me,opp,mode){
+  const res=duelCareerCriteria(me,opp,mode);
+  return{s1:res.s1,s2:res.s2};
 }
 
 function duelDnaScore(md,od){
@@ -651,18 +721,7 @@ function duelSeasonStudio(me,opp,mode){
     `<div class="dl-selcol op"><label for="dl_s2">${esc(opp.name)}</label><select id="dl_s2" class="sel">${optHtml(l2,s2.id)}</select></div>`+
   `</div>`;
 
-  let sc1=0,sc2=0;
-  const cmp=(a,b,low)=>{
-    if(a==null||b==null||!Number.isFinite(+a)||!Number.isFinite(+b))return;
-    if(low){if(+a<+b)sc1++;else if(+b<+a)sc2++}else{if(+a>+b)sc1++;else if(+b>+a)sc2++}
-  };
-  if(s1.xpD!=null&&s2.xpD!=null)cmp(s1.xpD,s2.xpD,false);
-  if(s1.m>0&&s2.m>0){
-    cmp(s1.wr,s2.wr,false);cmp(s1.ppm,s2.ppm,false);cmp(s1.gpm,s2.gpm,false);cmp(s1.gapm,s2.gapm,true);cmp(s1.gf-s1.ga,s2.gf-s2.ga,false);
-  }
-  if(s1.xgM!=null&&s2.xgM!=null)cmp(s1.xgM,s2.xgM,false);
-  if(s1.oXgM!=null&&s2.oXgM!=null)cmp(s1.oXgM,s2.oXgM,true);
-  if(s1.xgDiff!=null&&s2.xgDiff!=null)cmp(s1.xgDiff,s2.xgDiff,false);
+  const sc=duelSeasonCriteria(s1,s2),sc1=sc.sc1,sc2=sc.sc2;
 
   const sideStage=(mgr,s,cls)=>{
     const ti=s.tm&&IX[s.tm]!=null?IX[s.tm]:null;
@@ -671,7 +730,7 @@ function duelSeasonStudio(me,opp,mode){
       `<div class="dl-mcrest ${cls}${ti!=null?" has-b":""}">${ti!=null?badge(ti,38):`<span class="dl-av sm">${esc((s.tm||mgr).slice(0,1).toLocaleUpperCase("tr"))}</span>`}</div>`+
       `<small class="dl-msnm">${esc(mgr)} · ${esc(s.n)}</small>`+
       `<b class="dl-mtm">${esc(s.tm||"Takım seçilmedi")}${s.g?` <em>${s.g}</em>`:""}</b>`+
-      `<span class="dl-msres ${rCls}">${s.st==7?`<i class="dl-mini-ic">${DLI.trophy}</i>`:""}${esc(s.res)}</span>`+
+      `<span class="dl-msres ${rCls}">${s.st==7?`<i class="dl-mini-ic">${DLI.trophy}</i>`:""}${esc(duelShortRes(s.res,s.st))}</span>`+
       `<span class="dl-mgbm">${s.w}G ${s.d}B ${s.l}M · ${s.gf}:${s.ga}</span>`+
     `</div>`;
   };
@@ -682,26 +741,9 @@ function duelSeasonStudio(me,opp,mode){
     sideStage(opp.name,s2,"op")+
   `</div>`;
 
-  const pctF=v=>v==null?"—":"%"+Math.round(v),fxF=v=>v==null?"—":fx(v),sgnI=v=>v==null?"—":(v>0?"+"+v:v<0?"−"+Math.abs(v):"0");
-  const dFmt=v=>v==null?"—":(v>0?"+":"")+fx(v);
-  const gd1=s1.gf-s1.ga,gd2=s2.gf-s2.ga;
-
-  let rows=
-    duelCompareRow("Takım Gücü (GEN)",s1.g||null,s2.g||null,s1.g?s1.g+" GEN":"—",s2.g?s2.g+" GEN":"—",false,true)+
-    (s1.xpD!=null||s2.xpD!=null?duelCompareRow("Beklenti Üstü",s1.xpD,s2.xpD,dFmt(s1.xpD),dFmt(s2.xpD),false):"")+
-    duelCompareRow("Galibiyet Oranı",s1.wr,s2.wr,pctF(s1.wr),pctF(s2.wr),false)+
-    duelCompareRow("Maç Başı Puan",s1.ppm,s2.ppm,fxF(s1.ppm),fxF(s2.ppm),false)+
-    duelCompareRow("Atılan Gol / Maç",s1.gpm,s2.gpm,fxF(s1.gpm),fxF(s2.gpm),false)+
-    duelCompareRow("Yenilen Gol / Maç",s1.gapm,s2.gapm,fxF(s1.gapm),fxF(s2.gapm),true)+
-    duelCompareRow("Sezon Averajı",s1.m?gd1:null,s2.m?gd2:null,s1.m?sgnI(gd1):"—",s2.m?sgnI(gd2):"—",false);
-
-  let xgBlock="";
-  if(s1.xgM!=null||s2.xgM!=null||s1.oXgM!=null||s2.oXgM!=null||s1.xgDiff!=null||s2.xgDiff!=null){
-    xgBlock=`<div class="dl-grp">Gelişmiş xG Metrikleri</div>`+
-      (s1.xgM!=null||s2.xgM!=null?duelCompareRow("Üretilen xG / Maç",s1.xgM,s2.xgM,s1.xgM!=null?xgN2(s1.xgM):"—",s2.xgM!=null?xgN2(s2.xgM):"—",false):"")+
-      (s1.oXgM!=null||s2.oXgM!=null?duelCompareRow("Rakip xG / Maç",s1.oXgM,s2.oXgM,s1.oXgM!=null?xgN2(s1.oXgM):"—",s2.oXgM!=null?xgN2(s2.oXgM):"—",true):"")+
-      (s1.xgDiff!=null||s2.xgDiff!=null?duelCompareRow("Bitiricilik (Gol − xG)",s1.xgDiff,s2.xgDiff,s1.xgDiff!=null?xgS2(s1.xgDiff):"—",s2.xgDiff!=null?xgS2(s2.xgDiff):"—",false):"");
-  }
+  const rows=sc.rows.filter(r=>r.grp==="main").map(r=>duelCompareRow(r.lbl,r.v1,r.v2,r.f1,r.f2,r.low,r.neu)).join("");
+  const xgList=sc.rows.filter(r=>r.grp==="xg");
+  const xgBlock=xgList.length?`<div class="dl-grp">Gelişmiş xG Metrikleri</div>`+xgList.map(r=>duelCompareRow(r.lbl,r.v1,r.v2,r.f1,r.f2,r.low,r.neu)).join(""):"";
 
   const mvpCard=(s,cls)=>{
     const raw=String(s.mvp||"").trim();
@@ -992,9 +1034,9 @@ function duelView(){
         : `<div class="note" style="margin:0">Yukarıdan ortak bir oda koduyla bağlanabilir veya aşağıdaki <b>Çevrimdışı Manuel Kıyas Kodu</b> alanından tek seferlik karşılaştırma yapabilirsin.</div>`
     );
   }else{
-    const m1=duelPickMode(me,mode),m2=duelPickMode(opp,mode);
-    const c1=m1.car,c2=m2.car;
-    const sb=duelScoreboard(me,opp,mode);
+    const crit=duelCareerCriteria(me,opp,mode);
+    const m1=crit.m1,m2=crit.m2,c1=crit.c1,c2=crit.c2;
+    const sb={s1:crit.s1,s2:crit.s2};
     const modeLbl=mode=="cup"?"Kupa":mode=="lg"?"Lig":"Tüm Sezonlar";
     const tiMe=me.cur&&me.cur.team&&IX[me.cur.team]!=null?IX[me.cur.team]:null;
     const tiOp=opp.cur&&opp.cur.team&&IX[opp.cur.team]!=null?IX[opp.cur.team]:null;
@@ -1064,22 +1106,11 @@ function duelView(){
     // AKTİF STÜDYO SEKMESİ İÇERİĞİ
     let tabBody="";
     if(dtab=="ov"){
-      const carRows=
-        `<div class="dl-grp">Kupalar & Dereceler</div>`+
-        duelCompareRow("Şampiyonluk",c1.n?c1.ch:null,c2.n?c2.ch:null,c1.n?String(c1.ch):"—",c2.n?String(c2.ch):"—",false)+
-        duelCompareRow("Kupa Oranı",c1.chRate,c2.chRate,pctF(c1.chRate),pctF(c2.chRate),false)+
-        duelCompareRow(mode=="lg"?"İlk 2":"Final / İlk 2",c1.n?c1.fin:null,c2.n?c2.fin:null,c1.n?String(c1.fin):"—",c2.n?String(c2.fin):"—",false)+
-        duelCompareRow(mode=="lg"?"İlk 3 (Podyum)":"Yarı Final+",c1.n?c1.pod:null,c2.n?c2.pod:null,c1.n?String(c1.pod):"—",c2.n?String(c2.pod):"—",false)+
-        `<div class="dl-grp">Maç Performansı</div>`+
-        duelCompareRow("Galibiyet Oranı",c1.wr,c2.wr,pctF(c1.wr),pctF(c2.wr),false)+
-        duelCompareRow("Maç Başı Puan",c1.ppm,c2.ppm,fxF(c1.ppm),fxF(c2.ppm),false)+
-        duelCompareRow("Atılan Gol / Maç",c1.gpm,c2.gpm,fxF(c1.gpm),fxF(c2.gpm),false)+
-        duelCompareRow("Yenilen Gol / Maç",c1.gapm,c2.gapm,fxF(c1.gapm),fxF(c2.gapm),true)+
-        duelCompareRow("Toplam Averaj",c1.m?c1.gd:null,c2.m?c2.gd:null,c1.m?sgnI(c1.gd):"—",c2.m?sgnI(c2.gd):"—",false)+
-        duelCompareRow("Temiz Kasa (Clean Sheet)",c1.csPct,c2.csPct,pctF(c1.csPct),pctF(c2.csPct),false)+
-        duelCompareRow("En Uzun Galibiyet Serisi",c1.maxW,c2.maxW,c1.maxW!=null?c1.maxW+" maç":"—",c2.maxW!=null?c2.maxW+" maç":"—",false);
+      const cupRows=crit.rows.filter(r=>r.grp==="cup").map(r=>duelCompareRow(r.lbl,r.v1,r.v2,r.f1,r.f2,r.low,r.neu)).join("");
+      const perfRows=crit.rows.filter(r=>r.grp==="perf").map(r=>duelCompareRow(r.lbl,r.v1,r.v2,r.f1,r.f2,r.low,r.neu)).join("");
+      const carRows=`<div class="dl-grp">Kupalar & Dereceler</div>${cupRows}<div class="dl-grp">Maç Performansı & Adil Verim</div>${perfRows}`;
 
-      const carPanel=duelPanel("trophy","emr","Kariyer & Kupa Karnesi",`${modeLbl} · ${c1.m} vs ${c2.m} maç`,`${sb.s1}–${sb.s2}`,`<div class="dl-tlist">${carRows}</div>`);
+      const carPanel=duelPanel("trophy","emr","Kariyer & Kupa Karnesi",`${modeLbl} · 10 kriter · ${c1.m} vs ${c2.m} maç`,`${sb.s1}–${sb.s2}`,`<div class="dl-tlist">${carRows}</div>`);
 
       let starPanel="";
       if(me.star||opp.star){
@@ -1096,7 +1127,7 @@ function duelView(){
         const ti=c.team&&IX[c.team]!=null?IX[c.team]:null;
         const gTag=c.teamG?`<span class="dl-gen">${c.teamG}</span>`:"";
         const gd=(c.gf||0)-(c.ga||0),gdS=(gd>0?"+"+gd:gd<0?"−"+Math.abs(gd):"0");
-        return `<div class="dl-cs ${cls}"><div class="dl-csh">${ti!=null?badge(ti,26):""}<div style="min-width:0;flex:1"><small>${esc(p.name)}</small><b>${esc(c.team||"Takım seçilmedi")}</b></div>${gTag}</div><div class="dl-csm">${esc(c.stage||"")} · ${c.w}G ${c.d}B ${c.l}M</div><div class="dl-csm">Gol ${c.gf||0}:${c.ga||0} · Av ${gdS}</div>${formDots(c.form)}</div>`;
+        return `<div class="dl-cs ${cls}"><div class="dl-csh">${ti!=null?badge(ti,26):""}<div style="min-width:0;flex:1"><small>${esc(p.name)}</small><b>${esc(c.team||"Takım seçilmedi")}</b></div>${gTag}</div><div class="dl-csm">${esc(duelShortRes(c.stage||""))} · ${c.w}G ${c.d}B ${c.l}M</div><div class="dl-csm">Gol ${c.gf||0}:${c.ga||0} · Av ${gdS}</div>${formDots(c.form)}</div>`;
       };
       const pulsePanel=duelPanel("flame","org","Canlı Sezon Nabzı","Aktif sezondaki kulüp, averaj ve son 5 maç formu",null,
         `<div class="dl-curgrid">${curSide(me,"me")}${curSide(opp,"op")}</div>`+
@@ -1150,7 +1181,7 @@ function duelLiveDlg(){
   `</div>`:"";
 
   const headCard=`<div class="dl-lvhead ${p.uid===me.uid?"me":"op"}">`+
-    `<div class="dl-csh">${ti!=null?`<span class="dl-lvcrest">${badge(ti,32)}</span>`:""}<div style="min-width:0;flex:1"><b>${esc(c.team||"Takım seçilmedi")}</b><small>${esc(c.sName||"Aktif Sezon")}${c.stage?" · "+esc(c.stage):""}</small></div>${c.teamG?`<span class="dl-lvgen">${c.teamG} GEN</span>`:""}</div>`+
+    `<div class="dl-csh">${ti!=null?`<span class="dl-lvcrest">${badge(ti,32)}</span>`:""}<div style="min-width:0;flex:1"><b>${esc(c.team||"Takım seçilmedi")}</b><small>${esc(c.sName||"Aktif Sezon")}${c.stage?" · "+esc(duelShortRes(c.stage)):""}</small></div>${c.teamG?`<span class="dl-lvgen">${c.teamG} GEN</span>`:""}</div>`+
     `<div class="dl-lvkpi"><span><b>${c.w||0}G ${c.d||0}B ${c.l||0}M</b><em>Karne</em></span><span><b>${c.gf||0}:${c.ga||0}</b><em>Gol (Av ${gdS})</em></span><span><b>${lv&&lv.mt?lv.mt.length:((c.w||0)+(c.d||0)+(c.l||0))}</b><em>Maç</em></span></div>`+
     (lv&&lv.fmt?`<div class="dl-lvfmt">${esc(lv.fmt)}</div>`:"")+
   `</div>`;

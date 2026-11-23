@@ -1276,8 +1276,8 @@ async function playKarne(im){
   if(st.img===im){im.anim=false;render()}}
 async function duelloCv(x){
   const me=x.me,opp=x.opp,mode=x.mode||"all",W=1080,H=1520;
-  const m1=duelPickMode(me,mode),m2=duelPickMode(opp,mode);
-  const c1=m1.car,c2=m2.car;
+  const crit=duelCareerCriteria(me,opp,mode);
+  const c1=crit.c1,c2=crit.c2;
   const tiMe=me.cur&&me.cur.team&&IX[me.cur.team]!=null?IX[me.cur.team]:null;
   const tiOp=opp.cur&&opp.cur.team&&IX[opp.cur.team]!=null?IX[opp.cur.team]:null;
   if(typeof preloadLogos==="function")await preloadLogos([tiMe,tiOp].filter(i=>i!=null));
@@ -1292,7 +1292,7 @@ async function duelloCv(x){
   drawPill(c,"FC 27 LİG · CANLI VS",W-48-216,92,216,32,"rgba(240,194,75,.16)",null,"rgba(240,194,75,.45)","#fbeaa8",17);
 
   // Hero VS Panel (Obsidian Crest Frames + Club Badges)
-  const sb=duelScoreboard(me,opp,mode);
+  const sb={s1:crit.s1,s2:crit.s2};
   const hy=174,hh=204;
   glassBox(c,44,hy,992,hh,26,"rgba(240,194,75,.30)","#2dd496");
   const drawCrest=(ti,nm,bx,by,strokeCol,glowCol)=>{
@@ -1333,34 +1333,22 @@ async function duelloCv(x){
     tx(c,fit(c,opp.cur.team+(opp.cur.teamG?" · "+opp.cur.teamG+" GEN":""),255),W-176,hy+146,20,"#fbeaa8","right",700);
   }
 
-  // Comparison Bars Box (negatif/verisiz korumalı duelBarCalc ile)
-  const by=402,bh=548;
+  // Comparison Bars Box — TEK KAYNAK (duelCareerCriteria: 10 puanlı kriter + 1 nötr GEN satırı)
+  const by=396,bh=560;
   glassBox(c,44,by,992,bh,24,"rgba(255,255,255,.12)",null);
-  const pctF=v=>v==null?"—":"%"+Math.round(v),fxF=v=>v==null?"—":fx(v),sgnF=v=>v==null?"—":(v>0?"+":"")+fx(v);
-  const rows=[
-    ["ŞAMPİYONLUK",c1.n?c1.ch:null,c2.n?c2.ch:null,c1.n?c1.ch+"":"—",c2.n?c2.ch+"":"—",false],
-    ["KUPA ORANI",c1.chRate,c2.chRate,pctF(c1.chRate),pctF(c2.chRate),false],
-    ["GALİBİYET ORANI",c1.wr,c2.wr,pctF(c1.wr),pctF(c2.wr),false],
-    ["MAÇ BAŞI PUAN",c1.ppm,c2.ppm,fxF(c1.ppm),fxF(c2.ppm),false],
-    ["ATILAN / YENİLEN",c1.m?Math.round((c1.gpm-c1.gapm)*100)/100:null,c2.m?Math.round((c2.gpm-c2.gapm)*100)/100:null,c1.m?`${fx(c1.gpm)} / ${fx(c1.gapm)}`:"—",c2.m?`${fx(c2.gpm)} / ${fx(c2.gapm)}`:"—",false],
-    ["TEMİZ KASA (CS %)",c1.csPct,c2.csPct,pctF(c1.csPct),pctF(c2.csPct),false],
-    ["EN UZUN GALİBİYET SERİSİ",c1.maxW,c2.maxW,c1.maxW!=null?c1.maxW+" MAÇ":"—",c2.maxW!=null?c2.maxW+" MAÇ":"—",false],
-    ["ORT. TAKIM GEN",m1.xp.avgG,m2.xp.avgG,fxF(m1.xp.avgG),fxF(m2.xp.avgG),false,true],
-    ["BEKLENTİ ÜSTÜ",m1.xp.avgD,m2.xp.avgD,sgnF(m1.xp.avgD),sgnF(m2.xp.avgD),false]
-  ];
-  rows.forEach(([lbl,v1,v2,f1,f2,low,neu],idx)=>{
-    const ry=by+42+idx*57;
-    const b=duelBarCalc(v1,v2,low);
-    const w1=!neu&&b.w1,w2=!neu&&b.w2;
-    tx(c,f1,82,ry,26,w1?"#2dd496":"#cbd5e1","left",700);
-    tx(c,lbl,W/2,ry,17,"#94a3b8","center",700);
-    tx(c,f2,W-82,ry,26,w2?"#e8be54":"#cbd5e1","right",700);
+  crit.rows.forEach((r,idx)=>{
+    const ry=by+34+idx*48.5;
+    const b=duelBarCalc(r.v1,r.v2,r.low);
+    const w1=!r.neu&&b.w1,w2=!r.neu&&b.w2;
+    tx(c,String(r.f1).toLocaleUpperCase("tr"),82,ry,23,w1?"#2dd496":"#cbd5e1","left",700);
+    tx(c,r.lbl.toLocaleUpperCase("tr"),W/2,ry,15.5,"#94a3b8","center",700);
+    tx(c,String(r.f2).toLocaleUpperCase("tr"),W-82,ry,23,w2?"#e8be54":"#cbd5e1","right",700);
     const bw1=Math.round(b.p1/100*430),bw2=Math.round(b.p2/100*430);
     c.fillStyle="rgba(255,255,255,.07)";
-    rr(c,82,ry+17,430,8,4);c.fill();
-    rr(c,W-82-430,ry+17,430,8,4);c.fill();
-    if(bw1>0){c.fillStyle=neu?"rgba(148,163,184,.52)":(w1?"#2dd496":"rgba(45,212,150,.48)");rr(c,82+(430-bw1),ry+17,bw1,8,4);c.fill()}
-    if(bw2>0){c.fillStyle=neu?"rgba(148,163,184,.52)":(w2?"#e8be54":"rgba(232,190,84,.48)");rr(c,W-82-430,ry+17,bw2,8,4);c.fill()}
+    rr(c,82,ry+15,430,7,3.5);c.fill();
+    rr(c,W-82-430,ry+15,430,7,3.5);c.fill();
+    if(bw1>0){c.fillStyle=r.neu?"rgba(148,163,184,.52)":(w1?"#2dd496":"rgba(45,212,150,.48)");rr(c,82+(430-bw1),ry+15,bw1,7,3.5);c.fill()}
+    if(bw2>0){c.fillStyle=r.neu?"rgba(148,163,184,.52)":(w2?"#e8be54":"rgba(232,190,84,.48)");rr(c,W-82-430,ry+15,bw2,7,3.5);c.fill()}
   });
 
   // Dual Tactical DNA Radar + Identities + Career Star Box
@@ -1423,13 +1411,7 @@ async function duelloSezonCv(x){
   tx(c,today(),W-48,66,24,"#94a3b8","right",600);
   drawPill(c,"FC 27 LİG · DÜELLO",W-48-210,92,210,32,"rgba(240,194,75,.16)",null,"rgba(240,194,75,.45)","#fbeaa8",17);
 
-  let sc1=0,sc2=0;
-  const cmp=(a,b,low)=>{if(a==null||b==null||!Number.isFinite(+a)||!Number.isFinite(+b))return;if(low){if(+a<+b)sc1++;else if(+b<+a)sc2++}else{if(+a>+b)sc1++;else if(+b>+a)sc2++}};
-  if(s1.xpD!=null&&s2.xpD!=null)cmp(s1.xpD,s2.xpD,false);
-  if(s1.m>0&&s2.m>0){cmp(s1.wr,s2.wr,false);cmp(s1.ppm,s2.ppm,false);cmp(s1.gpm,s2.gpm,false);cmp(s1.gapm,s2.gapm,true);cmp(s1.gf-s1.ga,s2.gf-s2.ga,false)}
-  if(s1.xgM!=null&&s2.xgM!=null)cmp(s1.xgM,s2.xgM,false);
-  if(s1.oXgM!=null&&s2.oXgM!=null)cmp(s1.oXgM,s2.oXgM,true);
-  if(s1.xgDiff!=null&&s2.xgDiff!=null)cmp(s1.xgDiff,s2.xgDiff,false);
+  const sc=duelSeasonCriteria(s1,s2),sc1=sc.sc1,sc2=sc.sc2;
 
   const hy=174,hh=224;
   glassBox(c,44,hy,992,hh,26,"rgba(56,189,248,.34)","#2dd496");
@@ -1449,7 +1431,7 @@ async function duelloSezonCv(x){
   c.font="700 36px "+NUMF;
   tx(c,fit(c,(s1.tm||"TAKIM YOK").toLocaleUpperCase("tr"),255),176,hy+68,36,"#f8fafc","left",700);
   tx(c,`${me.name.toLocaleUpperCase("tr")} · ${s1.n}`,176,hy+106,20,"#94a3b8","left",600);
-  tx(c,fit(c,s1.res,255),176,hy+140,20,"#3ee6a8","left",700);
+  tx(c,fit(c,duelShortRes(s1.res,s1.st),255),176,hy+140,20,"#3ee6a8","left",700);
   tx(c,`${s1.w}G ${s1.d}B ${s1.l}M · ${s1.gf}:${s1.ga}`,176,hy+172,18,"#cbd5e1","left",600);
 
   drawPill(c,"VS",W/2-38,hy+36,76,34,"rgba(255,255,255,.10)",null,"rgba(255,255,255,.22)","#e2e8f0",18);
@@ -1461,38 +1443,24 @@ async function duelloSezonCv(x){
   c.font="700 36px "+NUMF;
   tx(c,fit(c,(s2.tm||"TAKIM YOK").toLocaleUpperCase("tr"),255),W-176,hy+68,36,"#f8fafc","right",700);
   tx(c,`${opp.name.toLocaleUpperCase("tr")} · ${s2.n}`,W-176,hy+106,20,"#94a3b8","right",600);
-  tx(c,fit(c,s2.res,255),W-176,hy+140,20,"#fbeaa8","right",700);
+  tx(c,fit(c,duelShortRes(s2.res,s2.st),255),W-176,hy+140,20,"#fbeaa8","right",700);
   tx(c,`${s2.w}G ${s2.d}B ${s2.l}M · ${s2.gf}:${s2.ga}`,W-176,hy+172,18,"#cbd5e1","right",600);
 
   const by=424,bh=650;
   glassBox(c,44,by,992,bh,24,"rgba(255,255,255,.12)",null);
-  const pctF=v=>v==null?"—":"%"+Math.round(v),fxF=v=>v==null?"—":fx(v),sgnI=v=>v==null?"—":(v>0?"+"+v:v<0?"−"+Math.abs(v):"0");
-  const dFmt=v=>v==null?"—":(v>0?"+":"")+fx(v);
-  const gd1=s1.gf-s1.ga,gd2=s2.gf-s2.ga;
-  const rows=[
-    ["TAKIM GÜCÜ (GEN)",s1.g||null,s2.g||null,s1.g?s1.g+" GEN":"—",s2.g?s2.g+" GEN":"—",false,true],
-    ["BEKLENTİ ÜSTÜ",s1.xpD,s2.xpD,dFmt(s1.xpD),dFmt(s2.xpD),false],
-    ["GALİBİYET ORANI",s1.wr,s2.wr,pctF(s1.wr),pctF(s2.wr),false],
-    ["MAÇ BAŞI PUAN",s1.ppm,s2.ppm,fxF(s1.ppm),fxF(s2.ppm),false],
-    ["ATILAN GOL / MAÇ",s1.gpm,s2.gpm,fxF(s1.gpm),fxF(s2.gpm),false],
-    ["YENİLEN GOL / MAÇ",s1.gapm,s2.gapm,fxF(s1.gapm),fxF(s2.gapm),true],
-    ["SEZON AVERAJI",s1.m?gd1:null,s2.m?gd2:null,s1.m?sgnI(gd1):"—",s2.m?sgnI(gd2):"—",false],
-    ["ÜRETİLEN xG / MAÇ",s1.xgM,s2.xgM,s1.xgM!=null?xgN2(s1.xgM):"—",s2.xgM!=null?xgN2(s2.xgM):"—",false],
-    ["RAKİP xG / MAÇ",s1.oXgM,s2.oXgM,s1.oXgM!=null?xgN2(s1.oXgM):"—",s2.oXgM!=null?xgN2(s2.oXgM):"—",true],
-    ["BİTİRİCİLİK (GOL−xG)",s1.xgDiff,s2.xgDiff,s1.xgDiff!=null?xgS2(s1.xgDiff):"—",s2.xgDiff!=null?xgS2(s2.xgDiff):"—",false]
-  ];
-  rows.forEach(([lbl,v1,v2,f1,f2,low,neu],idx)=>{
-    const ry=by+42+idx*60;
-    const b=duelBarCalc(v1,v2,low);
-    const w1=!neu&&b.w1,w2=!neu&&b.w2;
-    tx(c,f1,82,ry,26,w1?"#2dd496":"#cbd5e1","left",700);
-    tx(c,lbl,W/2,ry,17,"#94a3b8","center",700);
-    tx(c,f2,W-82,ry,26,w2?"#e8be54":"#cbd5e1","right",700);
+  const step=sc.rows.length>1?Math.min(68,Math.floor((bh-64)/sc.rows.length)):60;
+  sc.rows.forEach((r,idx)=>{
+    const ry=by+42+idx*step;
+    const b=duelBarCalc(r.v1,r.v2,r.low);
+    const w1=!r.neu&&b.w1,w2=!r.neu&&b.w2;
+    tx(c,String(r.f1).toLocaleUpperCase("tr"),82,ry,25,w1?"#2dd496":"#cbd5e1","left",700);
+    tx(c,r.lbl.toLocaleUpperCase("tr"),W/2,ry,16.5,"#94a3b8","center",700);
+    tx(c,String(r.f2).toLocaleUpperCase("tr"),W-82,ry,25,w2?"#e8be54":"#cbd5e1","right",700);
     const bw1=Math.round(b.p1/100*430),bw2=Math.round(b.p2/100*430);
     c.fillStyle="rgba(255,255,255,.07)";
     rr(c,82,ry+17,430,8,4);c.fill();rr(c,W-82-430,ry+17,430,8,4);c.fill();
-    if(bw1>0){c.fillStyle=neu?"rgba(148,163,184,.52)":(w1?"#2dd496":"rgba(45,212,150,.48)");rr(c,82+(430-bw1),ry+17,bw1,8,4);c.fill()}
-    if(bw2>0){c.fillStyle=neu?"rgba(148,163,184,.52)":(w2?"#e8be54":"rgba(232,190,84,.48)");rr(c,W-82-430,ry+17,bw2,8,4);c.fill()}
+    if(bw1>0){c.fillStyle=r.neu?"rgba(148,163,184,.52)":(w1?"#2dd496":"rgba(45,212,150,.48)");rr(c,82+(430-bw1),ry+17,bw1,8,4);c.fill()}
+    if(bw2>0){c.fillStyle=r.neu?"rgba(148,163,184,.52)":(w2?"#e8be54":"rgba(232,190,84,.48)");rr(c,W-82-430,ry+17,bw2,8,4);c.fill()}
   });
 
   const my=1098,mh=134;
