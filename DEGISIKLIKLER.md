@@ -1,3 +1,9 @@
+## v20.34 (2026-11-23) — Canlı Menajer Düellosu (VS), Firebase REST Eşitleme & 1v1 Düello Posteri
+- **Yeni Modül (`duel.js`):** Sıfır harici SDK ile doğrudan Firebase Realtime Database REST API’sine bağlanan çevrimdışı öncelikli canlı düello motoru eklendi. Maç kaydedildikçe arka planda yalnızca ~1,5 KB’lık kariyer özeti eşitlenir; ana kayıtlar tamamen cihazdaki IndexedDB’de kalır.
+- **Geçmiş › Düello Sekmesi (`app.js`, `style.css`):** Geçmiş ekranına 6. sekme olarak **Düello** eklendi. Ortak **Oda Kodu** ile 2 veya daha fazla arkadaşın kariyerini canlı kıyaslar: Kafa Kafaya Skor, Kariyer & Kupa Barları, Adil Güç (Ortalama GEN & Beklenti Üstü), Çift Renkli Taktiksel DNA Radarı, xG/xPts & Kaleci Kurtarış kıyaslaması ve Canlı Sezon Nabzı (son 5 maç formu).
+- **Çevrimdışı Manuel Kıyas Kodu (`duel.js`):** Oda kullanmadan tek seferlik kod kopyala/yapıştır ile çevrimdışı karşılaştırma desteği eklendi.
+- **1v1 Düello Posteri (`posters.js` `duelloCv`):** Çift renkli DNA radarı, kafa kafaya kategori skoru ve karşılaştırma barlarıyla WhatsApp’a atmalık yüksek çözünürlüklü PNG poster eklendi.
+
 ## v20.33 (2026-11-23) — 16 Profilli Menajer DNA Motoru, Rakip xG Savunma Direnci & Tam Sezon Analizi
 - **Tam Sezon Kapsamı (`analytics.js` `calcTacticalDNA`):** Sezonluk Menajer Profili’ndeki son 15 maç sınırı kaldırıldı; artık o sezondaki istatistik girilmiş tüm maçlar (genel kariyerde tüm sezonlar) eksiksiz analiz edilir.
 - **Rakip xG Tabanlı Savunma Direnci (`analytics.js`):** Savunma puanı düşük topla oynama yerine **Rakip xG (%50)**, **Rakip Şut Kalitesi (%25)** ve **Rakip İsabetli Şut (%25)** metriklerine bağlandı.

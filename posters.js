@@ -912,14 +912,14 @@ async function mkImg(kind,x){
   await new Promise(r=>{if(typeof requestAnimationFrame=="function")requestAnimationFrame(()=>setTimeout(r,16));else setTimeout(r,16)});
   try{
     try{await document.fonts.load('700 30px "FC Sayi"')}catch(e){}
-    const cv=kind=="kura"?await kuraCv(x):kind=="tots"?await totsCv(x):kind=="ko"?await koCv(x):kind=="kariyer"?await kariyerCv():kind=="mac"?await macCv(x):await karneCv(x);
+    const cv=kind=="kura"?await kuraCv(x):kind=="tots"?await totsCv(x):kind=="ko"?await koCv(x):kind=="kariyer"?await kariyerCv():kind=="mac"?await macCv(x):kind=="duello"?await duelloCv(x):await karneCv(x);
     const toImgObj=async(canvas,ttl,fn)=>{
       const blob=await new Promise(r=>canvas.toBlob(r,"image/png"));
       const url=blob&&typeof URL!="undefined"&&URL.createObjectURL?URL.createObjectURL(blob):canvas.toDataURL("image/png");
       return{title:ttl,name:fn,url,blob,w:canvas.width,h:canvas.height};
     };
     const baseSlug=x.name.replace(/[^\wÀ-ɏ]+/g,"-").replace(/^-+|-+$/g,"").toLowerCase();
-    const mainTitle=kind=="kariyer"?"Kariyer özeti":kind=="mac"?"Maç kartı":kind=="tots"?x.name+" · En İyi 11 (TOTS)":kind=="ko"?x.name+" · Eleme Ağacı":x.name+(kind=="kura"?" kurası":" karnesi");
+    const mainTitle=kind=="kariyer"?"Kariyer özeti":kind=="mac"?"Maç kartı":kind=="duello"?"Menajer Düellosu (1v1)":kind=="tots"?x.name+" · En İyi 11 (TOTS)":kind=="ko"?x.name+" · Eleme Ağacı":x.name+(kind=="kura"?" kurası":" karnesi");
     const mainName="fc27-"+kind+"-"+baseSlug+".png";
     const p1=await toImgObj(cv,mainTitle,mainName);
     let pages=null;
@@ -1274,3 +1274,112 @@ async function playKarne(im){
     if(p>=1)break;
     await new Promise(r=>requestAnimationFrame(r))}
   if(st.img===im){im.anim=false;render()}}
+function duelloCv(x){
+  const me=x.me,opp=x.opp,W=1080,H=1420;
+  const cv=mkCv(W,H),c=cv.getContext("2d");
+  dkBg(c,W,H,"#2dd496","#e8be54",false);
+
+  // Header
+  drawPill(c,"MENAJER DÜELLOSU · 1V1",48,40,264,38,"rgba(45,212,150,.18)","rgba(45,212,150,.06)","rgba(45,212,150,.52)","#3ee6a8",20);
+  tx(c,"KAFA KAFAYA KARŞILAŞTIRMA",48,114,48,"#f8fafc","left",700);
+  tx(c,today(),W-48,66,24,"#94a3b8","right",600);
+  drawPill(c,"FC 27 LİG · CANLI VS",W-48-216,92,216,32,"rgba(240,194,75,.16)",null,"rgba(240,194,75,.45)","#fbeaa8",17);
+
+  // Hero VS Panel
+  const sb=duelScoreboard(me,opp);
+  const hy=176,hh=210;
+  glassBox(c,44,hy,992,hh,26,"rgba(255,255,255,.16)","#2dd496");
+  // Left (Me - Emerald)
+  c.fillStyle="#2dd496";c.beginPath();c.arc(92,hy+68,10,0,Math.PI*2);c.fill();
+  c.font="700 44px "+NUMF;
+  tx(c,fit(c,me.name.toLocaleUpperCase("tr"),330),114,hy+70,44,"#f8fafc","left",700);
+  tx(c,`${me.car.n} SEZON · ${me.car.m} MAÇ`,114,hy+114,22,"#94a3b8","left",600);
+  if(me.cur&&me.cur.team)tx(c,me.cur.team,114,hy+150,22,"#3ee6a8","left",700);
+  // Center VS & Score
+  drawPill(c,"VS",W/2-38,hy+32,76,34,"rgba(255,255,255,.10)",null,"rgba(255,255,255,.22)","#e2e8f0",18);
+  tx(c,String(sb.s1),W/2-46,hy+124,78,"#2dd496","right",700);
+  tx(c,"–",W/2,hy+120,54,"#64748b","center",700);
+  tx(c,String(sb.s2),W/2+46,hy+124,78,"#e8be54","left",700);
+  // Right (Opp - Gold)
+  c.fillStyle="#e8be54";c.beginPath();c.arc(W-92,hy+68,10,0,Math.PI*2);c.fill();
+  c.font="700 44px "+NUMF;
+  tx(c,fit(c,opp.name.toLocaleUpperCase("tr"),330),W-114,hy+70,44,"#f8fafc","right",700);
+  tx(c,`${opp.car.n} SEZON · ${opp.car.m} MAÇ`,W-114,hy+114,22,"#94a3b8","right",600);
+  if(opp.cur&&opp.cur.team)tx(c,opp.cur.team,W-114,hy+150,22,"#fbeaa8","right",700);
+
+  // Comparison Bars Box
+  const by=412,bh=454;
+  glassBox(c,44,by,992,bh,24,"rgba(255,255,255,.12)",null);
+  const rows=[
+    ["ŞAMPİYONLUK",me.car.ch,opp.car.ch,me.car.ch+"",opp.car.ch+"",false],
+    ["FİNAL / İLK 2",me.car.fin,opp.car.fin,me.car.fin+"",opp.car.fin+"",false],
+    ["GALİBİYET ORANI",me.car.wr,opp.car.wr,"%"+Math.round(me.car.wr),"%"+Math.round(opp.car.wr),false],
+    ["MAÇ BAŞI PUAN",me.car.ppm,opp.car.ppm,fx(me.car.ppm),fx(opp.car.ppm),false],
+    ["ATILAN GOL / MAÇ",me.car.gpm,opp.car.gpm,fx(me.car.gpm),fx(opp.car.gpm),false],
+    ["ORT. TAKIM GEN",me.xp.avgG,opp.xp.avgG,me.xp.n?fx(me.xp.avgG):"—",opp.xp.n?fx(opp.xp.avgG):"—",false],
+    ["BEKLENTİ ÜSTÜ",me.xp.avgD,opp.xp.avgD,me.xp.n?(me.xp.avgD>0?"+":"")+fx(me.xp.avgD):"—",opp.xp.n?(opp.xp.avgD>0?"+":"")+fx(opp.xp.avgD):"—",false]
+  ];
+  rows.forEach(([lbl,v1,v2,f1,f2,low],idx)=>{
+    const ry=by+42+idx*58;
+    const w1=low?(v1<v2):(v1>v2),w2=low?(v2<v1):(v2>v1);
+    tx(c,f1,82,ry,28,w1?"#2dd496":"#cbd5e1","left",700);
+    tx(c,lbl,W/2,ry,18,"#94a3b8","center",700);
+    tx(c,f2,W-82,ry,28,w2?"#e8be54":"#cbd5e1","right",700);
+    const mx=Math.max(0.01,Math.abs(v1||0),Math.abs(v2||0));
+    const bw1=Math.max(18,Math.min(430,Math.round(Math.abs(v1||0)/mx*430)));
+    const bw2=Math.max(18,Math.min(430,Math.round(Math.abs(v2||0)/mx*430)));
+    c.fillStyle="rgba(255,255,255,.07)";
+    rr(c,82,ry+18,430,9,4);c.fill();
+    rr(c,W-82-430,ry+18,430,9,4);c.fill();
+    c.fillStyle=w1?"#2dd496":"rgba(45,212,150,.48)";
+    rr(c,82+(430-bw1),ry+18,bw1,9,4);c.fill();
+    c.fillStyle=w2?"#e8be54":"rgba(232,190,84,.48)";
+    rr(c,W-82-430,ry+18,bw2,9,4);c.fill();
+  });
+
+  // Dual Tactical DNA Radar + Identities Box
+  const dy=892,dh=440;
+  glassBox(c,44,dy,992,dh,24,"rgba(255,255,255,.12)",null);
+  tx(c,"TAKTİKSEL DNA & MENAJER KİMLİĞİ",82,dy+38,22,"#94a3b8","left",700);
+  const cx=W/2,cy=dy+226,R=136;
+  const ax=[[0,-1,"HÜCUM","atk"],[1,0,"KONTROL","ctrl"],[0,1,"DİRENÇ","aggr"],[-1,0,"BİTİRİCİLİK","eff"]];
+  [0.25,0.5,0.75,1].forEach(k=>{
+    const r=R*k;
+    c.strokeStyle="rgba(255,255,255,.12)";c.lineWidth=k==1?1.8:1;
+    c.beginPath();c.moveTo(cx,cy-r);c.lineTo(cx+r,cy);c.lineTo(cx,cy+r);c.lineTo(cx-r,cy);c.closePath();c.stroke();
+  });
+  c.strokeStyle="rgba(255,255,255,.12)";c.lineWidth=1;
+  c.beginPath();c.moveTo(cx,cy-R);c.lineTo(cx,cy+R);c.moveTo(cx-R,cy);c.lineTo(cx+R,cy);c.stroke();
+  const drawPoly=(dna,fill,stroke)=>{
+    if(!dna)return;
+    c.beginPath();
+    ax.forEach(([dx,dy2,,k],i)=>{
+      const r=R*((dna[k]||0)/100),px=cx+dx*r,py=cy+dy2*r;
+      if(i===0)c.moveTo(px,py);else c.lineTo(px,py);
+    });
+    c.closePath();c.fillStyle=fill;c.fill();c.strokeStyle=stroke;c.lineWidth=3.5;c.stroke();
+  };
+  drawPoly(opp.dna,"rgba(232,190,84,.24)","#e8be54");
+  drawPoly(me.dna,"rgba(45,212,150,.26)","#2dd496");
+  tx(c,"HÜCUM",cx,cy-R-18,17,"#cbd5e1","center",700);
+  tx(c,"KONTROL",cx+R+16,cy+5,17,"#cbd5e1","left",700);
+  tx(c,"DİRENÇ",cx,cy+R+26,17,"#cbd5e1","center",700);
+  tx(c,"BİTİRİCİLİK",cx-R-16,cy+5,17,"#cbd5e1","right",700);
+
+  // Left & Right Identity Labels
+  c.font="700 26px "+NUMF;
+  tx(c,me.name.toLocaleUpperCase("tr"),82,dy+100,20,"#2dd496","left",700);
+  tx(c,fit(c,me.dna?me.dna.title:"İstatistik yok",260),82,dy+132,26,"#f8fafc","left",700);
+  if(me.dna&&me.dna.subTag)tx(c,fit(c,me.dna.subTag,250),82,dy+162,18,"#94a3b8","left",600);
+  if(me.dna)tx(c,`Gol−xG: ${xgS2(me.dna.xgDiff)}`,82,dy+376,20,"#3ee6a8","left",700);
+
+  c.font="700 26px "+NUMF;
+  tx(c,opp.name.toLocaleUpperCase("tr"),W-82,dy+100,20,"#e8be54","right",700);
+  tx(c,fit(c,opp.dna?opp.dna.title:"İstatistik yok",260),W-82,dy+132,26,"#f8fafc","right",700);
+  if(opp.dna&&opp.dna.subTag)tx(c,fit(c,opp.dna.subTag,250),W-82,dy+162,18,"#94a3b8","right",600);
+  if(opp.dna)tx(c,`Gol−xG: ${xgS2(opp.dna.xgDiff)}`,W-82,dy+376,20,"#fbeaa8","right",700);
+
+  // Footer
+  tx(c,"FC 27 LİG · MENAJER DÜELLOSU",W/2,H-36,19,"rgba(255,255,255,.45)","center",700);
+  return cv;
+}
