@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v20.42)
+   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v20.43)
    - Obsidian Broadcast Arena, 4 sekmeli Düello Stüdyosu (Genel · Sezonlar · Takımlar · DNA & xG)
    - Sıfır harici SDK: Firebase Realtime Database REST API + çevrimdışı IndexedDB uyumu
    - Canlı Sezon İnceleme (Puan Durumu, Maçlar, Eleme, Sezon DNA) & Yedek Manuel Kıyas Kodu
@@ -183,7 +183,7 @@ function buildDuelSeasonList(){
   if(typeof xpData==="function"){
     xpData("all").forEach(o=>{if(o&&o.x&&o.x.id!=null)xpMap[o.x.id]=o.d});
   }
-  return store.seasons.slice().reverse().slice(0,36).map(x=>{
+  return store.seasons.slice().reverse().slice(0,100).map(x=>{
     const tm=x.my!=null&&T[x.my]?T[x.my]:null;
     const t=x.ts||{},w=+t.w||0,d=+t.d||0,l=+t.l||0,m=w+d+l,gf=+t.gf||0,ga=+t.ga||0;
     const pts=w*3+d;
@@ -708,8 +708,9 @@ function duelSeasonStudio(me,opp,mode){
     `<div class="dl-starcard op"><span class="dl-stic op">${DLI.star}</span><div class="dl-sttxt"><small>${esc(s2.n)} Yıldızı</small><b>${esc(s2.mvp||"—")}</b></div></div>`+
   `</div>`:"";
 
+  const pBtn=`<button class="dl-livego sec" data-a="dlsposter" style="margin-top:12px">${DLI.share}<span>Sezon vs. Sezon Posterini Paylaş (PNG)</span></button>`;
   return duelPanel("se","sky","Sezon vs. Sezon Stüdyosu","Seçtiğin iki sezonu tüm verileriyle çarpıştır",`${sc1}–${sc2}`,
-    selBar+miniStage+`<div class="dl-tlist">${rows}${xgBlock}</div>`+mvpHtml
+    selBar+miniStage+`<div class="dl-tlist">${rows}${xgBlock}</div>`+mvpHtml+pBtn
   );
 }
 
@@ -803,8 +804,9 @@ function duelClubStudio(me,opp,mode){
       duelCompareRow("Yenilen Gol / Maç",c1.gapm,c2.gapm,fxF(c1.gapm),fxF(c2.gapm),true)+
       duelCompareRow("Toplam Averaj",c1.m?c1.gd:null,c2.m?c2.gd:null,c1.m?sgnI(c1.gd):"—",c2.m?sgnI(c2.gd):"—",false);
 
+    const cBtn=`<button class="dl-livego sec" data-a="dlcposter" style="margin-top:12px">${DLI.share}<span>Kulüp vs. Kulüp Posterini Paylaş (PNG)</span></button>`;
     customPanel=duelPanel("cl","sky","Kulüp vs. Kulüp Düellosu","İstediğin iki kulüp performansını kıyasla",`${ca.clubs1.length} vs ${ca.clubs2.length}`,
-      selBar+face+`<div class="dl-tlist">${rows}</div>`
+      selBar+face+`<div class="dl-tlist">${rows}</div>`+cBtn
     );
   }
 
@@ -859,6 +861,53 @@ function duelDnaStudio(me,opp){
   `</div>`:`<div class="note" style="margin:0">Tam xG kıyaslaması için iki menajerin de gelişmiş maç istatistiği girmesi gerekir.</div>`;
 
   return stage+duelPanel("dn","sky","xG, Bitiricilik & Hak Ediş Telemetrisi","Gelişmiş istatistik girilen tüm maçlar",null,xgBody);
+}
+
+// Son 5 Sezon Form & Trend Kıyaslaması (uzun kariyerlerde güncel momentum)
+function duelRecentFormPanel(me,opp,mode){
+  const l1=duelFilterSeasons(me,mode).slice(0,5),l2=duelFilterSeasons(opp,mode).slice(0,5);
+  if(!l1.length&&!l2.length)return "";
+  const modeLbl=mode=="cup"?"Kupa":mode=="lg"?"Lig":"Tüm Sezonlar";
+  const calc=arr=>{
+    let ch=0,m=0,w=0,d=0;
+    arr.forEach(s=>{if(s.fin&&s.st==7)ch++;m+=(+s.m||0);w+=(+s.w||0);d+=(+s.d||0)});
+    return{n:arr.length,ch,m,wr:m?Math.round(w/m*1000)/10:null,ppm:m?Math.round((w*3+d)/m*100)/100:null};
+  };
+  const r1=calc(l1),r2=calc(l2);
+  const pctF=v=>v==null?"—":"%"+Math.round(v),fxF=v=>v==null?"—":fx(v);
+
+  // 5 sezonluk P/M trend sparkline SVG (eski -> yeni soldan sağa)
+  const s1=l1.slice().reverse(),s2=l2.slice().reverse();
+  const maxN=Math.max(s1.length,s2.length,2);
+  const W=290,H=76,px=16,py=12,pw=W-px*2,ph=H-py*2;
+  const xAt=(i,len)=>len<=1?W/2:(px+(i/(maxN-1))*pw);
+  const yAt=v=>py+ph-(Math.max(0,Math.min(3,+v||0))/3)*ph;
+  const mkPath=(arr,col)=>{
+    const pts=arr.map((s,i)=>s.ppm!=null?[xAt(i,arr.length),yAt(s.ppm)]:null).filter(Boolean);
+    if(!pts.length)return "";
+    const line=pts.length>1?`<polyline points="${pts.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ")}" fill="none" stroke="${col}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`:"";
+    const dots=pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.4" fill="${col}" stroke="#0b1118" stroke-width="1.4"/>`).join("");
+    return line+dots;
+  };
+  const grid=[0,1.5,3].map(v=>`<line x1="${px}" y1="${yAt(v).toFixed(1)}" x2="${W-px}" y2="${yAt(v).toFixed(1)}" stroke="rgba(148,163,184,.22)" stroke-dasharray="2 3" stroke-width="1"/>`).join("");
+  const svg=`<div class="dl-trendbox"><div class="dl-trendleg"><span><i class="me"></i>${esc(me.name)} (${r1.n}S)</span><span>Puan / Maç Trendi</span><span><i class="op"></i>${esc(opp.name)} (${r2.n}S)</span></div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Son 5 sezon puan ortalaması trendi">${grid}${mkPath(s2,"#f0c24b")}${mkPath(s1,"#2ee59d")}</svg></div>`;
+
+  const pills=arr=>arr.slice().reverse().map(s=>{
+    const cls=s.st==7?"ch":s.st>=5?"hi":s.fin?"fn":"lv";
+    const lbl=s.st==7?"🏆":s.st==6?"F":s.st==5?"YF":s.fin?"S":"•";
+    return `<span class="dl-trp ${cls}" title="${esc(s.n)} · ${esc(s.tm||"")} · ${esc(s.res)}">${lbl}</span>`;
+  }).join("");
+
+  const strip=`<div class="dl-trstrip"><div class="dl-trs me"><small>${esc(me.name)}</small><div>${pills(l1)||"<em>—</em>"}</div></div><div class="dl-trs op"><small>${esc(opp.name)}</small><div>${pills(l2)||"<em>—</em>"}</div></div></div>`;
+
+  const rows=
+    duelCompareRow("Son 5S Kupa",r1.n?r1.ch:null,r2.n?r2.ch:null,r1.n?String(r1.ch):"—",r2.n?String(r2.ch):"—",false)+
+    duelCompareRow("Son 5S Galibiyet",r1.wr,r2.wr,pctF(r1.wr),pctF(r2.wr),false)+
+    duelCompareRow("Son 5S Puan / Maç",r1.ppm,r2.ppm,fxF(r1.ppm),fxF(r2.ppm),false);
+
+  return duelPanel("flame","sky","Son Dönem Formu","Son 5 sezonluk güncel ivme ve P/M trendi",modeLbl,
+    svg+strip+`<div class="dl-tlist" style="margin-top:10px">${rows}</div>`
+  );
 }
 
 // =========================================================================
@@ -1045,7 +1094,8 @@ function duelView(){
         `<button class="dl-livego" data-a="dllive" data-v="${esc(opp.uid)}">${DLI.eye}<span>${esc(opp.name)} · Puan Durumu, Fikstür ve Eleme Yolunu Aç</span></button>`
       );
 
-      tabBody=carPanel+starPanel+pulsePanel;
+      const trendPanel=duelRecentFormPanel(me,opp,mode);
+      tabBody=carPanel+trendPanel+starPanel+pulsePanel;
     }else if(dtab=="se"){
       tabBody=duelSeasonStudio(me,opp,mode);
     }else if(dtab=="cl"){
@@ -1278,6 +1328,30 @@ async function handleDuelAction(a,dv){
     const opp=(cache.sel&&rivals.find(r=>r.uid===cache.sel))||rivals[0];
     if(!opp){ask("Poster için önce bir rakip olmalı.");render();return true}
     mkImg("duello",{name:me.name+"-vs-"+opp.name,me,opp,mode:st.dlmod||"all"});
+    return true;
+  }
+  if(a=="dlsposter"){
+    const cfg=duelLoadCfg(),cache=duelLoadCache();
+    const me=buildDuelSummary(),mode=st.dlmod||"all";
+    const rivals=Object.values(cache.peers||{}).filter(p=>p&&p.uid&&p.uid!==cfg.uid);
+    const opp=(cache.sel&&rivals.find(r=>r.uid===cache.sel))||rivals[0];
+    if(!opp){ask("Poster için önce bir rakip olmalı.");render();return true}
+    const l1=duelFilterSeasons(me,mode),l2=duelFilterSeasons(opp,mode);
+    const s1=l1.find(x=>x.id===st.dlS1)||l1[0],s2=l2.find(x=>x.id===st.dlS2)||l2[0];
+    if(!s1||!s2){ask("Sezon posteri için iki tarafta da seçilebilir sezon olmalı.");render();return true}
+    mkImg("duello-sezon",{name:`${me.name}-${s1.n}-vs-${opp.name}-${s2.n}`,me,opp,s1,s2,mode});
+    return true;
+  }
+  if(a=="dlcposter"){
+    const cfg=duelLoadCfg(),cache=duelLoadCache();
+    const me=buildDuelSummary(),mode=st.dlmod||"all";
+    const rivals=Object.values(cache.peers||{}).filter(p=>p&&p.uid&&p.uid!==cfg.uid);
+    const opp=(cache.sel&&rivals.find(r=>r.uid===cache.sel))||rivals[0];
+    if(!opp){ask("Poster için önce bir rakip olmalı.");render();return true}
+    const ca=duelClubAnalytics(me,opp,mode);
+    const c1=ca.clubs1.find(x=>x.tm===st.dlC1)||ca.clubs1[0],c2=ca.clubs2.find(x=>x.tm===st.dlC2)||ca.clubs2[0];
+    if(!c1||!c2){ask("Kulüp posteri için iki tarafta da seçilebilir kulüp olmalı.");render();return true}
+    mkImg("duello-kulup",{name:`${c1.tm}-vs-${c2.tm}`,me,opp,c1,c2,mode});
     return true;
   }
   return false;

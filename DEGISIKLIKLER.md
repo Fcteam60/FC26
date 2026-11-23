@@ -1,3 +1,13 @@
+## v20.43 (2026-11-23) — Final Sürüm: Uzun Ömürlü Düello, Yeni Posterler & Kapsamlı Estetik Cilalama
+- **100 Sezonluk Arşiv & Son 5 Sezon Trendi (`duel.js`, `style.css`):** Buluta eşitlenen sezon arşivi sınırı 36’dan **100 sezona** çıkarıldı; Düello › Genel sekmesine son 5 sezonun P/M trend grafiğini, kupa, galibiyet % ve puan/maç kıyasını gösteren **Son Dönem Formu** paneli eklendi.
+- **Sezon vs. Sezon & Kulüp vs. Kulüp PNG Posterleri (`posters.js`, `duel.js`, `app.js`):** Sezonlar ve Takımlar stüdyolarından seçili iki sezonu (`duelloSezonCv`) veya iki kulübü (`duelloKulupCv`) gerçek kulüp armalarıyla tek tıkla 1080px PNG poster olarak paylaşma eklendi.
+- **Görsel Pürüz & Metin Düzeltmeleri (`app.js`, `analytics.js`, `style.css`):**
+  - *Kariyer Yıldızları* KPI kutularında sayı + etiket dikey ortalama düzeltildi.
+  - *İstat. › Analiz* akordeon alt başlıkları ve *Maç Girişi › MOTM* (`Otomatik (Rakip)`) metni kesilmeyecek şekilde kısaltıldı.
+  - *İlk 11 Saha* 4'lü hatlarda kenar boşluğu ve oyuncu rozet aralığı ferahlatıldı.
+  - *Kurulum* özetindeki *"ülke sınırından sonra X takım turnuvaya katılabilir"* ifadesi düzeltildi ve 15 ülke çipi açılır **Ülke Filtresi (X/Y)** paneline alındı.
+- **Obsidiyen Slot Çekilişi, Açık Tema Kontrastı & Maç Günlüğü Başlığı (`app.js`, `style.css`):** Takım çekilişi penceresi koyu obsidiyen + altın/zümrüt stadyum temasıyla yenilendi; açık tema arka planı ve kart gölgeleri belirginleştirildi; Maç Günlüğü kart üstüne hafta numarası ve kısa tarih etiketi eklendi.
+
 ## v20.42 (2026-11-23) — Final Denetim Düzeltmeleri, Kulüp Armalı 1v1 Poster & Rehber Güncellemesi
 - **6 Uç Durum Düzeltmesi (`duel.js`, `app.js`):**
   - `Lig` filtresinde sezon yokken **Sezonlar** sekmesinin gizlice Kupa sezonlarını göstermesi giderildi (`duelFilterSeasons`); **Takımlar** sekmesine açıklayıcı boş durum paneli eklendi.

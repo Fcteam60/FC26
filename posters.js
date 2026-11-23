@@ -912,14 +912,14 @@ async function mkImg(kind,x){
   await new Promise(r=>{if(typeof requestAnimationFrame=="function")requestAnimationFrame(()=>setTimeout(r,16));else setTimeout(r,16)});
   try{
     try{await document.fonts.load('700 30px "FC Sayi"')}catch(e){}
-    const cv=kind=="kura"?await kuraCv(x):kind=="tots"?await totsCv(x):kind=="ko"?await koCv(x):kind=="kariyer"?await kariyerCv():kind=="mac"?await macCv(x):kind=="duello"?await duelloCv(x):await karneCv(x);
+    const cv=kind=="kura"?await kuraCv(x):kind=="tots"?await totsCv(x):kind=="ko"?await koCv(x):kind=="kariyer"?await kariyerCv():kind=="mac"?await macCv(x):kind=="duello"?await duelloCv(x):kind=="duello-sezon"?await duelloSezonCv(x):kind=="duello-kulup"?await duelloKulupCv(x):await karneCv(x);
     const toImgObj=async(canvas,ttl,fn)=>{
       const blob=await new Promise(r=>canvas.toBlob(r,"image/png"));
       const url=blob&&typeof URL!="undefined"&&URL.createObjectURL?URL.createObjectURL(blob):canvas.toDataURL("image/png");
       return{title:ttl,name:fn,url,blob,w:canvas.width,h:canvas.height};
     };
     const baseSlug=x.name.replace(/[^\wÀ-ɏ]+/g,"-").replace(/^-+|-+$/g,"").toLowerCase();
-    const mainTitle=kind=="kariyer"?"Kariyer özeti":kind=="mac"?"Maç kartı":kind=="duello"?"Menajer Düellosu (1v1)":kind=="tots"?x.name+" · En İyi 11 (TOTS)":kind=="ko"?x.name+" · Eleme Ağacı":x.name+(kind=="kura"?" kurası":" karnesi");
+    const mainTitle=kind=="kariyer"?"Kariyer özeti":kind=="mac"?"Maç kartı":kind=="duello"?"Menajer Düellosu (1v1)":kind=="duello-sezon"?"Sezon vs. Sezon Posteri":kind=="duello-kulup"?"Kulüp vs. Kulüp Posteri":kind=="tots"?x.name+" · En İyi 11 (TOTS)":kind=="ko"?x.name+" · Eleme Ağacı":x.name+(kind=="kura"?" kurası":" karnesi");
     const mainName="fc27-"+kind+"-"+baseSlug+".png";
     const p1=await toImgObj(cv,mainTitle,mainName);
     let pages=null;
@@ -1404,5 +1404,162 @@ async function duelloCv(x){
 
   // Footer
   tx(c,"FC 27 LİG · MENAJER DÜELLOSU",W/2,H-32,19,"rgba(255,255,255,.45)","center",700);
+  return cv;
+}
+async function duelloSezonCv(x){
+  const me=x.me,opp=x.opp,s1=x.s1,s2=x.s2,W=1080,H=1320;
+  const ti1=s1.tm&&IX[s1.tm]!=null?IX[s1.tm]:null,ti2=s2.tm&&IX[s2.tm]!=null?IX[s2.tm]:null;
+  if(typeof preloadLogos==="function")await preloadLogos([ti1,ti2].filter(i=>i!=null));
+  const cv=mkCv(W,H),c=cv.getContext("2d");
+  dkBg(c,W,H,"#2dd496","#e8be54",false);
+
+  drawPill(c,"SEZON vs. SEZON · 1V1",48,40,280,38,"rgba(56,189,248,.18)","rgba(56,189,248,.06)","rgba(56,189,248,.52)","#7dd3fc",20);
+  tx(c,"SEZON KARŞILAŞTIRMASI",48,114,48,"#f8fafc","left",700);
+  tx(c,today(),W-48,66,24,"#94a3b8","right",600);
+  drawPill(c,"FC 27 LİG · DÜELLO",W-48-210,92,210,32,"rgba(240,194,75,.16)",null,"rgba(240,194,75,.45)","#fbeaa8",17);
+
+  let sc1=0,sc2=0;
+  const cmp=(a,b,low)=>{if(a==null||b==null||!Number.isFinite(+a)||!Number.isFinite(+b))return;if(low){if(+a<+b)sc1++;else if(+b<+a)sc2++}else{if(+a>+b)sc1++;else if(+b>+a)sc2++}};
+  if(s1.g>0&&s2.g>0)cmp(s1.g,s2.g,false);
+  if(s1.xpD!=null&&s2.xpD!=null)cmp(s1.xpD,s2.xpD,false);
+  if(s1.m>0&&s2.m>0){cmp(s1.wr,s2.wr,false);cmp(s1.ppm,s2.ppm,false);cmp(s1.gpm,s2.gpm,false);cmp(s1.gapm,s2.gapm,true);cmp(s1.gf-s1.ga,s2.gf-s2.ga,false)}
+  if(s1.xgM!=null&&s2.xgM!=null)cmp(s1.xgM,s2.xgM,false);
+  if(s1.oXgM!=null&&s2.oXgM!=null)cmp(s1.oXgM,s2.oXgM,true);
+  if(s1.xgDiff!=null&&s2.xgDiff!=null)cmp(s1.xgDiff,s2.xgDiff,false);
+
+  const hy=174,hh=224;
+  glassBox(c,44,hy,992,hh,26,"rgba(56,189,248,.34)","#2dd496");
+  const drawCrest=(ti,nm,bx,by,scol,gcol)=>{
+    c.save();c.fillStyle="rgba(255,255,255,.06)";c.strokeStyle=scol;c.lineWidth=2;c.shadowColor=gcol;c.shadowBlur=18;
+    rr(c,bx,by,86,86,20);c.fill();c.stroke();c.restore();
+    if(ti!=null&&typeof drawBadge==="function")drawBadge(c,ti,bx+12,by+8,62);
+    else tx(c,(nm||"?").slice(0,1).toLocaleUpperCase("tr"),bx+43,by+46,38,"#f8fafc","center",700);
+  };
+  drawCrest(ti1,s1.tm||me.name,72,hy+64,"rgba(46,229,157,.62)","rgba(46,229,157,.32)");
+  c.font="700 36px "+NUMF;
+  tx(c,fit(c,(s1.tm||"TAKIM YOK").toLocaleUpperCase("tr"),255),176,hy+68,36,"#f8fafc","left",700);
+  tx(c,`${me.name.toLocaleUpperCase("tr")} · ${s1.n}`,176,hy+106,20,"#94a3b8","left",600);
+  tx(c,fit(c,s1.res,255),176,hy+140,20,"#3ee6a8","left",700);
+  tx(c,`${s1.w}G ${s1.d}B ${s1.l}M · ${s1.gf}:${s1.ga}`,176,hy+172,18,"#cbd5e1","left",600);
+
+  drawPill(c,"VS",W/2-38,hy+36,76,34,"rgba(255,255,255,.10)",null,"rgba(255,255,255,.22)","#e2e8f0",18);
+  tx(c,String(sc1),W/2-44,hy+128,78,"#2dd496","right",700);
+  tx(c,"–",W/2,hy+124,54,"#64748b","center",700);
+  tx(c,String(sc2),W/2+44,hy+128,78,"#e8be54","left",700);
+
+  drawCrest(ti2,s2.tm||opp.name,W-72-86,hy+64,"rgba(240,194,75,.64)","rgba(240,194,75,.32)");
+  c.font="700 36px "+NUMF;
+  tx(c,fit(c,(s2.tm||"TAKIM YOK").toLocaleUpperCase("tr"),255),W-176,hy+68,36,"#f8fafc","right",700);
+  tx(c,`${opp.name.toLocaleUpperCase("tr")} · ${s2.n}`,W-176,hy+106,20,"#94a3b8","right",600);
+  tx(c,fit(c,s2.res,255),W-176,hy+140,20,"#fbeaa8","right",700);
+  tx(c,`${s2.w}G ${s2.d}B ${s2.l}M · ${s2.gf}:${s2.ga}`,W-176,hy+172,18,"#cbd5e1","right",600);
+
+  const by=424,bh=650;
+  glassBox(c,44,by,992,bh,24,"rgba(255,255,255,.12)",null);
+  const pctF=v=>v==null?"—":"%"+Math.round(v),fxF=v=>v==null?"—":fx(v),sgnI=v=>v==null?"—":(v>0?"+"+v:v<0?"−"+Math.abs(v):"0");
+  const dFmt=v=>v==null?"—":(v>0?"+":"")+fx(v);
+  const gd1=s1.gf-s1.ga,gd2=s2.gf-s2.ga;
+  const rows=[
+    ["TAKIM GÜCÜ (GEN)",s1.g||null,s2.g||null,s1.g?s1.g+" GEN":"—",s2.g?s2.g+" GEN":"—",false],
+    ["BEKLENTİ ÜSTÜ",s1.xpD,s2.xpD,dFmt(s1.xpD),dFmt(s2.xpD),false],
+    ["GALİBİYET ORANI",s1.wr,s2.wr,pctF(s1.wr),pctF(s2.wr),false],
+    ["MAÇ BAŞI PUAN",s1.ppm,s2.ppm,fxF(s1.ppm),fxF(s2.ppm),false],
+    ["ATILAN GOL / MAÇ",s1.gpm,s2.gpm,fxF(s1.gpm),fxF(s2.gpm),false],
+    ["YENİLEN GOL / MAÇ",s1.gapm,s2.gapm,fxF(s1.gapm),fxF(s2.gapm),true],
+    ["SEZON AVERAJI",s1.m?gd1:null,s2.m?gd2:null,s1.m?sgnI(gd1):"—",s2.m?sgnI(gd2):"—",false],
+    ["ÜRETİLEN xG / MAÇ",s1.xgM,s2.xgM,s1.xgM!=null?xgN2(s1.xgM):"—",s2.xgM!=null?xgN2(s2.xgM):"—",false],
+    ["RAKİP xG / MAÇ",s1.oXgM,s2.oXgM,s1.oXgM!=null?xgN2(s1.oXgM):"—",s2.oXgM!=null?xgN2(s2.oXgM):"—",true],
+    ["BİTİRİCİLİK (GOL−xG)",s1.xgDiff,s2.xgDiff,s1.xgDiff!=null?xgS2(s1.xgDiff):"—",s2.xgDiff!=null?xgS2(s2.xgDiff):"—",false]
+  ];
+  rows.forEach(([lbl,v1,v2,f1,f2,low],idx)=>{
+    const ry=by+42+idx*60;
+    const b=duelBarCalc(v1,v2,low);
+    tx(c,f1,82,ry,26,b.w1?"#2dd496":"#cbd5e1","left",700);
+    tx(c,lbl,W/2,ry,17,"#94a3b8","center",700);
+    tx(c,f2,W-82,ry,26,b.w2?"#e8be54":"#cbd5e1","right",700);
+    const bw1=Math.round(b.p1/100*430),bw2=Math.round(b.p2/100*430);
+    c.fillStyle="rgba(255,255,255,.07)";
+    rr(c,82,ry+17,430,8,4);c.fill();rr(c,W-82-430,ry+17,430,8,4);c.fill();
+    if(bw1>0){c.fillStyle=b.w1?"#2dd496":"rgba(45,212,150,.48)";rr(c,82+(430-bw1),ry+17,bw1,8,4);c.fill()}
+    if(bw2>0){c.fillStyle=b.w2?"#e8be54":"rgba(232,190,84,.48)";rr(c,W-82-430,ry+17,bw2,8,4);c.fill()}
+  });
+
+  const my=1098,mh=134;
+  glassBox(c,44,my,992,mh,22,"rgba(255,255,255,.12)",null);
+  tx(c,"SEZON YILDIZLARI",W/2,my+32,17,"#94a3b8","center",700);
+  c.font="700 24px "+NUMF;
+  tx(c,s1.mvp?`★ ${fit(c,s1.mvp,380)}`:"—",82,my+84,24,"#3ee6a8","left",700);
+  tx(c,s2.mvp?`★ ${fit(c,s2.mvp,380)}`:"—",W-82,my+84,24,"#fbeaa8","right",700);
+  tx(c,"FC 27 LİG · SEZON vs. SEZON DÜELLOSU",W/2,H-32,19,"rgba(255,255,255,.45)","center",700);
+  return cv;
+}
+
+async function duelloKulupCv(x){
+  const me=x.me,opp=x.opp,c1=x.c1,c2=x.c2,W=1080,H=1100;
+  const ti1=c1.tm&&IX[c1.tm]!=null?IX[c1.tm]:null,ti2=c2.tm&&IX[c2.tm]!=null?IX[c2.tm]:null;
+  if(typeof preloadLogos==="function")await preloadLogos([ti1,ti2].filter(i=>i!=null));
+  const cv=mkCv(W,H),c=cv.getContext("2d");
+  dkBg(c,W,H,"#2dd496","#e8be54",false);
+
+  drawPill(c,"KULÜP vs. KULÜP · 1V1",48,40,280,38,"rgba(240,194,75,.18)","rgba(240,194,75,.06)","rgba(240,194,75,.52)","#fbeaa8",20);
+  tx(c,"KULÜP PERFORMANS DÜELLOSU",48,114,48,"#f8fafc","left",700);
+  tx(c,today(),W-48,66,24,"#94a3b8","right",600);
+  drawPill(c,"FC 27 LİG · DÜELLO",W-48-210,92,210,32,"rgba(45,212,150,.16)",null,"rgba(45,212,150,.45)","#3ee6a8",17);
+
+  let sc1=0,sc2=0;
+  const cmp=(a,b,low)=>{if(a==null||b==null||!Number.isFinite(+a)||!Number.isFinite(+b))return;if(low){if(+a<+b)sc1++;else if(+b<+a)sc2++}else{if(+a>+b)sc1++;else if(+b>+a)sc2++}};
+  cmp(c1.ch,c2.ch,false);
+  if(c1.m>0&&c2.m>0){cmp(c1.wr,c2.wr,false);cmp(c1.ppm,c2.ppm,false);cmp(c1.gpm,c2.gpm,false);cmp(c1.gapm,c2.gapm,true);cmp(c1.gd,c2.gd,false)}
+
+  const hy=174,hh=210;
+  glassBox(c,44,hy,992,hh,26,"rgba(240,194,75,.34)","#2dd496");
+  const drawCrest=(ti,nm,bx,by,scol,gcol)=>{
+    c.save();c.fillStyle="rgba(255,255,255,.06)";c.strokeStyle=scol;c.lineWidth=2;c.shadowColor=gcol;c.shadowBlur=18;
+    rr(c,bx,by,86,86,20);c.fill();c.stroke();c.restore();
+    if(ti!=null&&typeof drawBadge==="function")drawBadge(c,ti,bx+12,by+8,62);
+    else tx(c,(nm||"?").slice(0,1).toLocaleUpperCase("tr"),bx+43,by+46,38,"#f8fafc","center",700);
+  };
+  drawCrest(ti1,c1.tm,72,hy+58,"rgba(46,229,157,.62)","rgba(46,229,157,.32)");
+  c.font="700 36px "+NUMF;
+  tx(c,fit(c,c1.tm.toLocaleUpperCase("tr"),255),176,hy+72,36,"#f8fafc","left",700);
+  tx(c,`${me.name.toLocaleUpperCase("tr")}${c1.g?" · "+c1.g+" GEN":""}`,176,hy+112,20,"#3ee6a8","left",700);
+  tx(c,`${c1.n} SEZON · ${c1.m} MAÇ · ${c1.w}G ${c1.d}B ${c1.l}M`,176,hy+146,19,"#94a3b8","left",600);
+
+  drawPill(c,"VS",W/2-38,hy+32,76,34,"rgba(255,255,255,.10)",null,"rgba(255,255,255,.22)","#e2e8f0",18);
+  tx(c,String(sc1),W/2-44,hy+124,78,"#2dd496","right",700);
+  tx(c,"–",W/2,hy+120,54,"#64748b","center",700);
+  tx(c,String(sc2),W/2+44,hy+124,78,"#e8be54","left",700);
+
+  drawCrest(ti2,c2.tm,W-72-86,hy+58,"rgba(240,194,75,.64)","rgba(240,194,75,.32)");
+  c.font="700 36px "+NUMF;
+  tx(c,fit(c,c2.tm.toLocaleUpperCase("tr"),255),W-176,hy+72,36,"#f8fafc","right",700);
+  tx(c,`${opp.name.toLocaleUpperCase("tr")}${c2.g?" · "+c2.g+" GEN":""}`,W-176,hy+112,20,"#fbeaa8","right",700);
+  tx(c,`${c2.n} SEZON · ${c2.m} MAÇ · ${c2.w}G ${c2.d}B ${c2.l}M`,W-176,hy+146,19,"#94a3b8","right",600);
+
+  const by=412,bh=584;
+  glassBox(c,44,by,992,bh,24,"rgba(255,255,255,.12)",null);
+  const pctF=v=>v==null?"—":"%"+Math.round(v),fxF=v=>v==null?"—":fx(v),sgnI=v=>v>0?"+"+v:v<0?"−"+Math.abs(v):"0";
+  const rows=[
+    ["ŞAMPİYONLUK",c1.ch,c2.ch,String(c1.ch),String(c2.ch),false],
+    ["GALİBİYET ORANI",c1.wr,c2.wr,pctF(c1.wr),pctF(c2.wr),false],
+    ["MAÇ BAŞI PUAN",c1.ppm,c2.ppm,fxF(c1.ppm),fxF(c2.ppm),false],
+    ["ATILAN GOL / MAÇ",c1.gpm,c2.gpm,fxF(c1.gpm),fxF(c2.gpm),false],
+    ["YENİLEN GOL / MAÇ",c1.gapm,c2.gapm,fxF(c1.gapm),fxF(c2.gapm),true],
+    ["TOPLAM AVERAJ",c1.m?c1.gd:null,c2.m?c2.gd:null,c1.m?sgnI(c1.gd):"—",c2.m?sgnI(c2.gd):"—",false],
+    ["TOPLAM GOL",c1.m?c1.gf:null,c2.m?c2.gf:null,c1.m?`${c1.gf}:${c1.ga}`:"—",c2.m?`${c2.gf}:${c2.ga}`:"—",false]
+  ];
+  rows.forEach(([lbl,v1,v2,f1,f2,low],idx)=>{
+    const ry=by+52+idx*74;
+    const b=duelBarCalc(v1,v2,low);
+    tx(c,f1,82,ry,28,b.w1?"#2dd496":"#cbd5e1","left",700);
+    tx(c,lbl,W/2,ry,18,"#94a3b8","center",700);
+    tx(c,f2,W-82,ry,28,b.w2?"#e8be54":"#cbd5e1","right",700);
+    const bw1=Math.round(b.p1/100*430),bw2=Math.round(b.p2/100*430);
+    c.fillStyle="rgba(255,255,255,.07)";
+    rr(c,82,ry+20,430,9,4);c.fill();rr(c,W-82-430,ry+20,430,9,4);c.fill();
+    if(bw1>0){c.fillStyle=b.w1?"#2dd496":"rgba(45,212,150,.48)";rr(c,82+(430-bw1),ry+20,bw1,9,4);c.fill()}
+    if(bw2>0){c.fillStyle=b.w2?"#e8be54":"rgba(232,190,84,.48)";rr(c,W-82-430,ry+20,bw2,9,4);c.fill()}
+  });
+  tx(c,"FC 27 LİG · KULÜP vs. KULÜP DÜELLOSU",W/2,H-32,19,"rgba(255,255,255,.45)","center",700);
   return cv;
 }

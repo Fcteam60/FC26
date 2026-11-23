@@ -1091,12 +1091,12 @@ function xgSummaryCard(ML){
   </dl></details>`;
   return cd(`xG, xPts & Verimlilik Analizi<small>${covCnt}/${totalM} maç kapsama</small>`,
     head+insHtml+
-    xgSec("Gol Beklentisi","Pozisyonların değeri ve gerçek goller",gol,false,"fin")+
-    xgSec("Puan Beklentisi","Oyununa göre kaç puan toplamalıydın",puan,false,"pts")+
-    xgSec("Şut Kalitesi","Şutların ne kadar tehlikeli ve isabetli",sut,true,"shot",convV!=null?`%${Math.round(convV)}`:(avgSh!=null?`${xgN1(avgSh)}/M`:""))+
-    xgSec("Savunma & Kaleci","Rakibe verdiğin pozisyonlar ve kaleci",sav,true,"def",gkV!=null?`%${Math.round(gkV)}`:`${cs} temiz`)+
+    xgSec("Gol Beklentisi","Pozisyon değeri ve goller",gol,false,"fin")+
+    xgSec("Puan Beklentisi","Oyuna göre hak edilen puan",puan,false,"pts")+
+    xgSec("Şut Kalitesi","Şut kalitesi ve isabet",sut,true,"shot",convV!=null?`%${Math.round(convV)}`:(avgSh!=null?`${xgN1(avgSh)}/M`:""))+
+    xgSec("Savunma & Kaleci","Rakip şut ve kurtarış",sav,true,"def",gkV!=null?`%${Math.round(gkV)}`:`${cs} temiz`)+
     xgSec("Oyun Kontrolü","Top ve pas hakimiyeti",kont,true,"ctrl",avgPos!=null?`%${Math.round(avgPos)} top`:(avgPas!=null?`%${Math.round(avgPas)} pas`:""))+
-    xgSec("Hak Ediş Dağılımı","Sonuçlar oyununu yansıttı mı",hak,true,"hak",D.length?`${D.length} maç`:"")+
-    xgSec("xG Trendi","Son maçlarda pozisyon üretimin",trend,true,"tr",XA.length>=3?`${Math.min(10,XA.length)} maç`:"")+
+    xgSec("Hak Ediş Dağılımı","Sonuç ve oyun dengesi",hak,true,"hak",D.length?`${D.length} maç`:"")+
+    xgSec("xG Trendi","Son maçlarda xG akışı",trend,true,"tr",XA.length>=3?`${Math.min(10,XA.length)} maç`:"")+
     gls);
 }

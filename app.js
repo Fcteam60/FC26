@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.42",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="20.43",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -943,8 +943,10 @@ function setupView(s){
   // 2) Gelişmiş Kurallar Katlanır Panel (.pfold)
   const advBody=`<div class="pset-lbl">Takım Bölgesi</div>`+
     `<div class="stabs seg3" style="margin-bottom:11px">${Object.keys(RGN).map(k=>segBtn("rl","rg",k,k=="all"?"Tümü":k=="eu"?"Avrupa":"Avrupa Dışı",r.rg==k)).join("")}</div>`+
-    `<div class="su-cthd"><span class="pset-lbl" style="margin:0">Ülkeler <small style="text-transform:none;font-weight:400">(dokunarak çıkar / ekle)</small></span>${r.xc.length?`<button class="sf-clr" data-a="xcall">Hepsini seç</button>`:""}</div>`+
-    `<div class="su-cgrid">${cs.map(k=>`<button class="su-cchip${!r.xc.includes(k)?" on":""}" data-a="xc" data-v="${k}">${fl(k)}<span>${CN[k][0]}</span><em>${cc[k]}</em></button>`).join("")}</div>`+
+    (()=>{const actC=cs.length-r.xc.filter(k=>cs.includes(k)).length;return `<details class="xfold su-ctfold"${r.xc.length?" open":""}><summary><span class="ui-lbl">${uiIco("sliders")}<span>Ülke Filtresi</span></span><span class="xfpill${r.xc.length?" org":""}">${actC}/${cs.length}</span></summary><div class="xfb">`+
+      `<div class="su-cthd"><span class="pset-lbl" style="margin:0">Ülkeler <small style="text-transform:none;font-weight:400">(dokunarak çıkar / ekle)</small></span>${r.xc.length?`<button class="sf-clr" data-a="xcall">Hepsini seç</button>`:""}</div>`+
+      `<div class="su-cgrid">${cs.map(k=>`<button class="su-cchip${!r.xc.includes(k)?" on":""}" data-a="xc" data-v="${k}">${fl(k)}<span>${CN[k][0]}</span><em>${cc[k]}</em></button>`).join("")}</div>`+
+    `</div></details>`})()+
     (()=>{const limCnt=[r.gmin>0,r.gmax<99,r.amin>0,r.mmin>0,r.dmin>0,r.cap>0,r.gcap>0].filter(Boolean).length;return `<details class="xfold su-limfold"${limCnt?" open":""}><summary><span class="ui-lbl">${uiIco("sliders")}<span>Güç ve Ülke Sınırları</span></span><span class="xfpill ${limCnt?"gold":"mut"}">${limCnt?limCnt+" sınır aktif":"Varsayılan"}</span></summary><div class="su-fgrid" style="margin-top:10px">`+
       `<div class="su-fld"><label>Genel En Az</label>${sel("rs","gmin",gmn,r.gmin)}</div>`+
       `<div class="su-fld"><label>Genel En Çok</label>${sel("rs","gmax",gmx,r.gmax)}</div>`+
@@ -965,7 +967,7 @@ function setupView(s){
   const poolBox=`<div class="su-pool ${okp?"ok":"bad"}">`+
     `<div class="su-ph"><span>Takım Havuzu Durumu</span><b>${A} / ${c.N} ${okp?"✓":"✗"}</b></div>`+
     `<div class="su-pbar"><i style="width:${poolPct}%"></i></div>`+
-    `<div class="su-ptx">${M} takım kurallara uyuyor${A<M?` · ülke sınırından sonra <b>${A}</b>`:""}${okp?" · turnuva başlatılabilir.":" — yeterli takım yok, kuralları gevşet veya takım sayısını azalt."}</div>`+
+    `<div class="su-ptx">${M} takım kurallara uyuyor${A<M?` · ülke sınırından sonra <b>${A}</b> takım`:""}${okp?" turnuvaya katılabilir.":" — yeterli takım yok, kuralları gevşet veya takım sayısını azalt."}</div>`+
   `</div>`;
   const rlPills=`<div class="dnamets" style="margin:10px 0 0">${ruleLines(s).map(x=>`<span class="dnam"><em>${esc(x)}</em></span>`).join("")}</div>`;
   const elList=st.te?`<div class="su-elw"><div class="pset-lbl" style="margin:12px 0 7px">Kurallara Uyan Takımlar (${M})</div>${suTeamGrid(elig(r).sort((a,b)=>V(T[b])-V(T[a])))}</div>`:"";
@@ -1830,7 +1832,10 @@ function sbRow(s,m,isFirst){
   const crest=i=>i!=null&&i>=0&&T[i]?badge(i,38):`<span class="sbph" aria-hidden="true">${uiIco("ball")}</span>`;
   const myN=me!=null?esc(T[me].n):"Takımım";
   const act=`<div class="sbact"><button class="mb" data-a="medit" data-id="${m.id}" aria-label="Maçı düzenle" title="Maçı düzenle">${SBI.edit}</button><button class="mb" data-a="mkart" data-id="${m.id}" aria-label="Maç kartı oluştur" title="Maç kartı oluştur">${SBI.card}</button><button class="mb dl" data-a="mdel" data-id="${m.id}" aria-label="Maçı sil" title="Maçı sil">${SBI.del}</button></div>`;
-  return `<div class="sbcard sb-${r}${des&&(des.k=="unlucky"||des.k=="undeserved")?" "+des.k:""}"><div class="sbtop"><span class="sbrd">${esc(m.rd)}${m.lg?" · "+m.lg+". maç":""}</span>${act}</div><div class="sbmain"><div class="sbtm hm">${crest(me)}<span class="n">${myN}</span></div><div class="sbsc ${r}" aria-label="${{w:"Galibiyet",d:"Beraberlik",l:"Mağlubiyet"}[r]}">${m.gf} – ${m.ga}${sub}</div><div class="sbtm aw">${crest(oi)}<span class="n">${esc(m.on)}</span></div></div>${panel}${callout}${evHtml}</div>`}
+  const gIdx=m.rd=="Grup"?((s.mt||[]).filter(q=>q.rd=="Grup").indexOf(m)+1):0;
+  const mDt=(()=>{if(m.dt)return m.dt;const ts=+m.id;if(!Number.isFinite(ts)||ts<1e12)return "";try{return new Date(ts).toLocaleDateString("tr-TR",{day:"numeric",month:"short"})}catch(e){return ""}})();
+  const mSub=[gIdx?`${gIdx}. Hafta`:"",mDt].filter(Boolean).join(" · ");
+  return `<div class="sbcard sb-${r}${des&&(des.k=="unlucky"||des.k=="undeserved")?" "+des.k:""}"><div class="sbtop"><div class="sbtop-l"><span class="sbrd">${esc(m.rd)}${m.lg?" · "+m.lg+". maç":""}</span>${mSub?`<span class="sbdt">${esc(mSub)}</span>`:""}</div>${act}</div><div class="sbmain"><div class="sbtm hm">${crest(me)}<span class="n">${myN}</span></div><div class="sbsc ${r}" aria-label="${{w:"Galibiyet",d:"Beraberlik",l:"Mağlubiyet"}[r]}">${m.gf} – ${m.ga}${sub}</div><div class="sbtm aw">${crest(oi)}<span class="n">${esc(m.on)}</span></div></div>${panel}${callout}${evHtml}</div>`}
 function matchLog(s){const ms=s.mt||[],showM=st.mall?ms.slice().reverse():ms.slice(-8).reverse();
   return `<div class="card pglass" style="margin-top:0"><h3>Maç günlüğü<span class="fm">${dotsOf(ms)}</span></h3>`+
   (ms.length?`<div class="rt sbhd"><span>${st.mall?"Tüm maçlar ("+ms.length+")":"Son maçlar"}</span></div>`+showM.map((m,idx)=>sbRow(s,m,idx===0)).join("")+(ms.length>8?`<div class="bar" style="margin:8px 0 0"><button class="chip" data-a="mall" style="width:100%">${st.mall?"Daha az göster":"Tüm maçları göster ("+ms.length+")"}</button></div>`:""):emp("Maç sonuçlarını Kura › Gruplar ekranından girebilirsin. G-B-M, gol ve oyuncu golleri otomatik güncellenir."))+`</div>`}
@@ -2312,7 +2317,7 @@ function scorerUI(s,gf,sc){
   const customMom=mom&&!allMomNames.has(mom)?`<option value="${esc(mom)}" selected>${esc(mom)} (Transfer)</option>`:"";
   const momOpts=["F","M","D","K"].map(g=>{const G=L.filter(p=>p.g==g);return G.length?`<optgroup label="${SQL[g]}">${G.map(p=>`<option value="${esc(p.n)}" ${mom===p.n?"selected":""}>${esc(p.n)} · ${p.p} ${p.o}</option>`).join("")}</optgroup>`:""}).join("");
   const momEx=ex.length?`<optgroup label="Transferler / Eklenenler">${ex.map(p=>`<option value="${esc(p.n)}" ${mom===p.n?"selected":""}>${esc(p.n)}</option>`).join("")}</optgroup>`:"";
-  h+=`<div class="rr" style="margin-top:8px"><span class="lb">Maçın Adamı (MOTM)</span><select id="mmom" class="sel" style="flex:1"><option value="">Otomatik (rakip)</option>${customMom}${momEx}${momOpts}</select><button class="chip ${st.trm=="mom"?"on":""}" data-a="tropen" data-k="mom" style="padding:6px 10px">+ Başka</button></div>`;
+  h+=`<div class="rr" style="margin-top:8px"><span class="lb">Maçın Adamı (MOTM)</span><select id="mmom" class="sel" style="flex:1"><option value="">Otomatik (Rakip)</option>${customMom}${momEx}${momOpts}</select><button class="chip ${st.trm=="mom"?"on":""}" data-a="tropen" data-k="mom" style="padding:6px 10px">+ Başka</button></div>`;
   if(st.trm=="mom")h+=trBox("mom",s);
   return h}
 document.addEventListener("focusin",e=>{
@@ -2372,7 +2377,7 @@ const vsLine=(s,i)=>{if(s.my==null||i==null||!T[i])return "";const a=T[s.my],b=T
 
 /* ---------- RASTGELE TAKIM: SLOT ANİMASYONU ---------- */
 const reelHtml=i=>`<span class="rc">${fl(T[i].c)}<span class="n">${esc(T[i].n)}</span>${rb(T[i].g)}</span>`;
-const slotDlg=()=>{const r=st.slot.r;return `<div class="dlg"><div class="dbox" role="dialog" aria-modal="true"><div class="rs">Takımın çekiliyor…</div><div class="reel"><div class="rl" id="r0">${reelHtml(r[0])}</div><div class="rl on" id="r1">${reelHtml(r[1])}</div><div class="rl" id="r2">${reelHtml(r[2])}</div></div><div class="bar"><button class="btn" data-a="skip">Atla</button></div></div></div>`};
+const slotDlg=()=>{const r=st.slot.r;return `<div class="dlg"><div class="dbox slotbox" role="dialog" aria-modal="true"><div class="slot-ey">FC 27 · TAKIM ÇEKİLİŞİ</div><div class="rs">Takımın çekiliyor…</div><div class="reel"><div class="rl" id="r0">${reelHtml(r[0])}</div><div class="rl on" id="r1">${reelHtml(r[1])}</div><div class="rl" id="r2">${reelHtml(r[2])}</div></div><div class="bar"><button class="btn slot-skip" data-a="skip">Atla</button></div></div></div>`};
 function spin(s){
   if(st.slot)return;
   const PS=s.P.slice().sort((x,y)=>V(T[y])-V(T[x])),baseC=PS.slice(dcut(s,store.diff||0)),cdSet=recentCooldownSet(s);
@@ -2588,8 +2593,8 @@ function render(){
   const qsAfter=document.querySelector("#qs .sheet");if(qsAfter&&qsTop)qsAfter.scrollTop=qsTop;
   const tiAfter=document.querySelector("#dlg .tisheet");if(tiAfter&&tiTop)tiAfter.scrollTop=tiTop;
   if(st.isGenerating){
-    const actMap={kura:"kurag",karne:"karne",mac:"mkart",kariyer:"kariyer",tots:"totsg",ko:"kog",duello:"dlposter"},targetAct=actMap[st.isGenerating];
-    document.querySelectorAll('[data-a="kurag"],[data-a="karne"],[data-a="mkart"],[data-a="kariyer"],[data-a="totsg"],[data-a="kog"],[data-a="dlposter"]').forEach(btn=>{
+    const actMap={kura:"kurag",karne:"karne",mac:"mkart",kariyer:"kariyer",tots:"totsg",ko:"kog",duello:"dlposter","duello-sezon":"dlsposter","duello-kulup":"dlcposter"},targetAct=actMap[st.isGenerating];
+    document.querySelectorAll('[data-a="kurag"],[data-a="karne"],[data-a="mkart"],[data-a="kariyer"],[data-a="totsg"],[data-a="kog"],[data-a="dlposter"],[data-a="dlsposter"],[data-a="dlcposter"]').forEach(btn=>{
       btn.disabled=true;
       const bid=btn.dataset.id!=null?+btn.dataset.id:null;
       if(btn.dataset.a===targetAct&&(st.genId==null||bid==null||bid===st.genId)){
@@ -2600,7 +2605,7 @@ function render(){
   const focusEl=aeId?$(aeId):null;
   if(focusEl&&document.activeElement!==focusEl){focusEl.focus();if(aeSel!=null&&typeof focusEl.setSelectionRange=="function")try{focusEl.setSelectionRange(aeSel,aeSel)}catch(e){}}}
 
-const UI_ONLY=new Set(["stab","mexp","fxw","fxv","bkv","adv","cust","roall","vitall","sall","rstopen","sfopen","hm","grk","tropen","trclose","bkadv","madv","qs","medit","mall","qx","gofin","mg","mo","mu","mp","mpf","mpa","glsc","glas","glclr","glasclr","glasno","glasopen","tel","tpl","ht","hmod","sfm","sfr","sv","sfd","sfx","ro","dcancel","next","all","no","tinfo","pinfo","tpinfo","tpclose","totsv","guide","cmpsw","gs","gsgo","tif","tiv","ren","own","owno","mman","ex","im","rcv","imgpg","oldlsx","dljoin","dlsync","dledit","dlcancel","dlleave","dlsel","dldel","dlcpcode","dlmycode","dladdcode","dlposter","dlmod","dltab","dlslatest","dllive","dllivetab","dllivewho"]);
+const UI_ONLY=new Set(["stab","mexp","fxw","fxv","bkv","adv","cust","roall","vitall","sall","rstopen","sfopen","hm","grk","tropen","trclose","bkadv","madv","qs","medit","mall","qx","gofin","mg","mo","mu","mp","mpf","mpa","glsc","glas","glclr","glasclr","glasno","glasopen","tel","tpl","ht","hmod","sfm","sfr","sv","sfd","sfx","ro","dcancel","next","all","no","tinfo","pinfo","tpinfo","tpclose","totsv","guide","cmpsw","gs","gsgo","tif","tiv","ren","own","owno","mman","ex","im","rcv","imgpg","oldlsx","dljoin","dlsync","dledit","dlcancel","dlleave","dlsel","dldel","dlcpcode","dlmycode","dladdcode","dlposter","dlsposter","dlcposter","dlmod","dltab","dlslatest","dllive","dllivetab","dllivewho"]);
 document.addEventListener("click",async e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.t!==undefined){hideToast();st.tab=+b.dataset.t;if(st.tab==6)refreshQuota(true);render();scrollTo(0,0);return}

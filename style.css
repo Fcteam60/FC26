@@ -4407,3 +4407,129 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
   .dl-hk div{font-size:16px}
   .dl-ntab{font-size:10.5px}
 }
+/* ===== v20.43: Final Estetik Cilalama, Son 5 Sezon Trendi & Obsidiyen Slot ===== */
+
+/* Açık Temada Daha Net Yüzey & Kart Kontrastı */
+:root:not([data-theme="dark"]){
+  --bg:#e9efec;
+  --bg2:#dfe7e3;
+  --bd:#d2dcd7;
+  --gbd:#cfd9d4;
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#070d14;--bg2:#0a121b;--bd:#1b2b3b;--gbd:rgba(148,176,198,.16);
+  }
+}
+:root[data-theme="light"] .card,:root:not([data-theme="dark"]) .card{
+  box-shadow:0 4px 14px -4px rgba(15,35,28,.08),0 1px 2px rgba(15,35,28,.04);
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .card{box-shadow:none}
+}
+
+/* Kariyer Yıldızları KPI Hizalama Kesin Düzeltmesi */
+.hof-kpi .hk{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  padding:11px 6px 10px;
+}
+.hof-kpi .hk b{display:block;line-height:1;margin:0}
+.hof-kpi .hk span{display:block;line-height:1.15;margin:0}
+
+/* İlk 11 Saha Görünümü — 4'lü Hat Ferahlığı & Rozet Boşluğu */
+.tots-pitch.xi-pitch{padding:12px 10px 14px}
+.tots-pitch.xi-pitch .tots-rows{gap:18px}
+.tots-pitch.xi-pitch .tots-row.r4{gap:4px;padding:0 3px}
+.tots-pitch.xi-pitch .tots-row.r4 .xi-med{width:35px;height:35px;font-size:17.5px;border-radius:10px}
+.tots-pitch.xi-pitch .tots-pl{gap:5px}
+.tots-pitch.xi-pitch .tots-st{margin-top:2px}
+.tots-pitch.xi-pitch .tots-row.r4 .tots-nm{font-size:10.5px;padding:2.5px 4px;max-width:74px}
+.tots-pitch.xi-pitch .tots-row.r4 .tots-st{font-size:9.3px;padding:1.5px 5px}
+
+/* Takım Çekilişi (Slot) Obsidiyen Broadcast Penceresi */
+.dbox.slotbox{
+  max-width:360px;padding:18px 16px 15px;border-radius:22px;color:#f8fafc;
+  background:
+    radial-gradient(85% 90% at 10% 6%,rgba(46,229,157,.22) 0%,transparent 55%),
+    radial-gradient(85% 90% at 90% 6%,rgba(240,194,75,.22) 0%,transparent 55%),
+    linear-gradient(165deg,#0c131d 0%,#080d14 100%);
+  border:1px solid rgba(240,194,75,.34);
+  box-shadow:0 24px 50px -12px rgba(4,9,16,.72),inset 0 1px 0 rgba(255,255,255,.16);
+}
+.slot-ey{
+  text-align:center;font-size:10px;font-weight:800;letter-spacing:.16em;
+  color:rgba(240,194,75,.86);margin-bottom:4px;
+}
+.dbox.slotbox .rs{
+  display:block;text-align:center;background:transparent;color:#f8fafc;
+  font-family:var(--num);font-size:21px;letter-spacing:.02em;margin:0 0 10px;padding:0;
+}
+.dbox.slotbox .reel{gap:7px;margin:10px 0 14px}
+.dbox.slotbox .rl{
+  background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.10);color:#cbd5e1;
+  border-radius:12px;opacity:.42;
+}
+.dbox.slotbox .rl.on{
+  opacity:1;color:#f8fafc;
+  background:linear-gradient(135deg,rgba(46,229,157,.18),rgba(240,194,75,.12));
+  border:1.5px solid rgba(46,229,157,.65);
+  box-shadow:0 0 22px rgba(46,229,157,.22),inset 0 1px 0 rgba(255,255,255,.18);
+}
+.dbox.slotbox .rl.win{
+  border-color:#f0c24b;
+  background:linear-gradient(135deg,rgba(240,194,75,.24),rgba(46,229,157,.16));
+  box-shadow:0 0 28px rgba(240,194,75,.42),inset 0 1px 0 rgba(255,255,255,.28);
+}
+.dbox.slotbox .slot-skip{
+  width:100%;background:rgba(255,255,255,.08);color:#e2e8f0;
+  border:1px solid rgba(255,255,255,.18);border-radius:12px;font-weight:700;
+}
+
+/* Maç Günlüğü Kart Üstü Hafta & Tarih Dengesi */
+.sbtop-l{display:flex;align-items:center;gap:6px;min-width:0;flex-wrap:wrap}
+.sbdt{
+  font-size:11px;font-weight:600;color:var(--mut);
+  padding:2px 7px;border-radius:99px;
+  background:var(--hi);border:1px solid var(--gbd);
+  white-space:nowrap;font-variant-numeric:tabular-nums;
+}
+
+/* Kurulum Açılır Ülke Filtresi */
+.su-ctfold{margin:8px 0 10px}
+.su-ctfold .su-cthd{margin-top:0}
+
+/* Son 5 Sezon Form & Trend Grafiği + Poster Düğmesi */
+.dl-trendbox{
+  padding:10px 10px 6px;border-radius:14px;margin-bottom:10px;color:#f8fafc;
+  background:linear-gradient(165deg,#0c131d,#080d14);border:1px solid rgba(56,189,248,.22);
+}
+.dl-trendleg{
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+  font-size:10.5px;font-weight:700;color:rgba(148,163,184,.85);margin-bottom:4px;
+}
+.dl-trendleg span{display:inline-flex;align-items:center;gap:5px}
+.dl-trendleg i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.dl-trendleg i.me{background:#2ee59d}.dl-trendleg i.op{background:#f0c24b}
+.dl-trendbox svg{width:100%;height:auto;display:block}
+
+.dl-trstrip{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dl-trs{
+  padding:8px 9px;border-radius:11px;background:var(--hi);border:1px solid var(--gbd);
+  display:flex;flex-direction:column;gap:5px;min-width:0;
+}
+.dl-trs.op{align-items:flex-end;text-align:right}
+.dl-trs small{font-size:10.5px;font-weight:700;color:var(--mut)}
+.dl-trs>div{display:flex;gap:4px;flex-wrap:wrap}
+.dl-trp{
+  width:24px;height:24px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;
+  font-size:10.5px;font-weight:800;background:var(--gcard);border:1px solid var(--gbd);color:var(--mut);
+}
+.dl-trp.ch{background:rgba(240,194,75,.20);border-color:rgba(240,194,75,.52);color:var(--gold)}
+.dl-trp.hi{background:rgba(16,185,129,.16);border-color:rgba(16,185,129,.42);color:var(--ac)}
+.dl-trp.lv{background:rgba(14,165,233,.14);border-color:rgba(14,165,233,.36);color:#0ea5e9}
+
+.dl-livego.sec{
+  background:linear-gradient(135deg,#0f1824,#131e2c);
+  border-color:rgba(240,194,75,.38);color:#fbe39b;
+}
+.dl-livego.sec svg{color:#f0c24b}
