@@ -1,3 +1,7 @@
+## v20.45 (2026-11-23) — Adil GEN Kıyaslaması (Nötr Bilgi Satırı)
+- **GEN Puanlamadan Çıkarıldı (`duel.js`, `posters.js`):** *Sezon vs. Sezon Stüdyosu* ve *Sezon vs. Sezon PNG Posteri* skor hesabından `Takım Gücü (GEN)` puanı kaldırıldı; daha güçlü takım çekmek artık `+1` üstünlük kazandırmaz.
+- **Nötr GEN Bilgi Satırı (`duel.js`, `posters.js`, `style.css`):** *Takım Gücü (GEN)* ve *Ortalama Takım GEN* satırları tüm ekranlarda ve 1v1 PNG posterlerde kazanan noktası (`•`) veya yeşil/altın vurgu olmadan nötr gri bilgi satırı (`.dl-trow.neu`) olarak gösterilir.
+
 ## v20.44 (2026-11-23) — Düello Okunurluk & Kontrast Düzeltmeleri
 - **Sarı Zemin / `.lead` Sınıf Çakışması Giderildi (`duel.js`, `style.css`):** Düello skorları ve KPI şeridindeki kazanan vurgusu küresel `.lead` sınıfından ayrılarak `.dlhi` sınıfına taşındı; sarı zemin üzerinde sarı rakam çıkması tamamen bitti.
 - **Koyu Zeminde Siyah Kulüp Arması Kontrastı (`duel.js`, `style.css`, `posters.js`):** Hero sahnesi, Sezon/Kulüp mini sahneleri, Canlı Sezon başlığı ve tüm 1v1 PNG posterlerindeki arma yuvalarına yumuşak platin-buzlu zemin eklendi; Juventus, Newcastle gibi koyu armalar artık net görünür.

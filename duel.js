@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v20.44)
+   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v20.45)
    - Obsidian Broadcast Arena, 4 sekmeli Düello Stüdyosu (Genel · Sezonlar · Takımlar · DNA & xG)
    - Sıfır harici SDK: Firebase Realtime Database REST API + çevrimdışı IndexedDB uyumu
    - Canlı Sezon İnceleme (Puan Durumu, Maçlar, Eleme, Sezon DNA) & Yedek Manuel Kıyas Kodu
@@ -545,14 +545,15 @@ function duelBarCalc(v1,v2,lowerBetter){
   };
 }
 
-// Flagship Telemetri Kıyaslama Satırı
-function duelCompareRow(label,v1,v2,fmt1,fmt2,lowerBetter){
+// Flagship Telemetri Kıyaslama Satırı (neutral=true: bağlam bilgisi, kazanan puanı/vurgusu yok)
+function duelCompareRow(label,v1,v2,fmt1,fmt2,lowerBetter,neutral){
   const b=duelBarCalc(v1,v2,lowerBetter);
-  return `<div class="dl-trow${b.w1?" w1":b.w2?" w2":""}">`+
+  const w1=!neutral&&b.w1,w2=!neutral&&b.w2;
+  return `<div class="dl-trow${neutral?" neu":(w1?" w1":w2?" w2":"")}">`+
     `<div class="dl-ttop">`+
-      `<span class="dl-tv me${b.w1?" win":""}">${b.w1?`<i class="dl-wdot me"></i>`:""}<b>${fmt1}</b></span>`+
+      `<span class="dl-tv me${w1?" win":""}">${w1?`<i class="dl-wdot me"></i>`:""}<b>${fmt1}</b></span>`+
       `<span class="dl-tlbl">${label}</span>`+
-      `<span class="dl-tv op${b.w2?" win":""}"><b>${fmt2}</b>${b.w2?`<i class="dl-wdot op"></i>`:""}</span>`+
+      `<span class="dl-tv op${w2?" win":""}"><b>${fmt2}</b>${w2?`<i class="dl-wdot op"></i>`:""}</span>`+
     `</div>`+
     `<div class="dl-ttrack"><div class="dl-tbL"><i style="width:${b.p1}%"></i></div><span class="dl-tmid"></span><div class="dl-tbR"><i style="width:${b.p2}%"></i></div></div>`+
   `</div>`;
@@ -655,7 +656,6 @@ function duelSeasonStudio(me,opp,mode){
     if(a==null||b==null||!Number.isFinite(+a)||!Number.isFinite(+b))return;
     if(low){if(+a<+b)sc1++;else if(+b<+a)sc2++}else{if(+a>+b)sc1++;else if(+b>+a)sc2++}
   };
-  if(s1.g>0&&s2.g>0)cmp(s1.g,s2.g,false);
   if(s1.xpD!=null&&s2.xpD!=null)cmp(s1.xpD,s2.xpD,false);
   if(s1.m>0&&s2.m>0){
     cmp(s1.wr,s2.wr,false);cmp(s1.ppm,s2.ppm,false);cmp(s1.gpm,s2.gpm,false);cmp(s1.gapm,s2.gapm,true);cmp(s1.gf-s1.ga,s2.gf-s2.ga,false);
@@ -687,7 +687,7 @@ function duelSeasonStudio(me,opp,mode){
   const gd1=s1.gf-s1.ga,gd2=s2.gf-s2.ga;
 
   let rows=
-    duelCompareRow("Takım Gücü (GEN)",s1.g||null,s2.g||null,s1.g?s1.g+" GEN":"—",s2.g?s2.g+" GEN":"—",false)+
+    duelCompareRow("Takım Gücü (GEN)",s1.g||null,s2.g||null,s1.g?s1.g+" GEN":"—",s2.g?s2.g+" GEN":"—",false,true)+
     (s1.xpD!=null||s2.xpD!=null?duelCompareRow("Beklenti Üstü",s1.xpD,s2.xpD,dFmt(s1.xpD),dFmt(s2.xpD),false):"")+
     duelCompareRow("Galibiyet Oranı",s1.wr,s2.wr,pctF(s1.wr),pctF(s2.wr),false)+
     duelCompareRow("Maç Başı Puan",s1.ppm,s2.ppm,fxF(s1.ppm),fxF(s2.ppm),false)+
@@ -731,7 +731,7 @@ function duelClubStudio(me,opp,mode){
   if(m1.xp.n||m2.xp.n){
     fairHtml=duelPanel("trophy","gold","Adil Güç Endeksi","Ortalama takım gücü (GEN) ve beklenti üstü performans",modeLbl,
       `<div class="dl-tlist">`+
-        duelCompareRow("Ortalama Takım GEN",m1.xp.avgG,m2.xp.avgG,fxF(m1.xp.avgG),fxF(m2.xp.avgG),false)+
+        duelCompareRow("Ortalama Takım GEN",m1.xp.avgG,m2.xp.avgG,fxF(m1.xp.avgG),fxF(m2.xp.avgG),false,true)+
         duelCompareRow("Beklenti Üstü (Sezon/Tur)",m1.xp.avgD,m2.xp.avgD,dFmt(m1.xp.avgD),dFmt(m2.xp.avgD),false)+
       `</div>`+
       `<div class="dl-hint">Daha düşük GEN ortalamasıyla beklentinin üzerine çıkan menajer adil güç kıyaslamasında öne geçer.</div>`

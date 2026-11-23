@@ -1345,21 +1345,22 @@ async function duelloCv(x){
     ["ATILAN / YENİLEN",c1.m?Math.round((c1.gpm-c1.gapm)*100)/100:null,c2.m?Math.round((c2.gpm-c2.gapm)*100)/100:null,c1.m?`${fx(c1.gpm)} / ${fx(c1.gapm)}`:"—",c2.m?`${fx(c2.gpm)} / ${fx(c2.gapm)}`:"—",false],
     ["TEMİZ KASA (CS %)",c1.csPct,c2.csPct,pctF(c1.csPct),pctF(c2.csPct),false],
     ["EN UZUN GALİBİYET SERİSİ",c1.maxW,c2.maxW,c1.maxW!=null?c1.maxW+" MAÇ":"—",c2.maxW!=null?c2.maxW+" MAÇ":"—",false],
-    ["ORT. TAKIM GEN",m1.xp.avgG,m2.xp.avgG,fxF(m1.xp.avgG),fxF(m2.xp.avgG),false],
+    ["ORT. TAKIM GEN",m1.xp.avgG,m2.xp.avgG,fxF(m1.xp.avgG),fxF(m2.xp.avgG),false,true],
     ["BEKLENTİ ÜSTÜ",m1.xp.avgD,m2.xp.avgD,sgnF(m1.xp.avgD),sgnF(m2.xp.avgD),false]
   ];
-  rows.forEach(([lbl,v1,v2,f1,f2,low],idx)=>{
+  rows.forEach(([lbl,v1,v2,f1,f2,low,neu],idx)=>{
     const ry=by+42+idx*57;
     const b=duelBarCalc(v1,v2,low);
-    tx(c,f1,82,ry,26,b.w1?"#2dd496":"#cbd5e1","left",700);
+    const w1=!neu&&b.w1,w2=!neu&&b.w2;
+    tx(c,f1,82,ry,26,w1?"#2dd496":"#cbd5e1","left",700);
     tx(c,lbl,W/2,ry,17,"#94a3b8","center",700);
-    tx(c,f2,W-82,ry,26,b.w2?"#e8be54":"#cbd5e1","right",700);
+    tx(c,f2,W-82,ry,26,w2?"#e8be54":"#cbd5e1","right",700);
     const bw1=Math.round(b.p1/100*430),bw2=Math.round(b.p2/100*430);
     c.fillStyle="rgba(255,255,255,.07)";
     rr(c,82,ry+17,430,8,4);c.fill();
     rr(c,W-82-430,ry+17,430,8,4);c.fill();
-    if(bw1>0){c.fillStyle=b.w1?"#2dd496":"rgba(45,212,150,.48)";rr(c,82+(430-bw1),ry+17,bw1,8,4);c.fill()}
-    if(bw2>0){c.fillStyle=b.w2?"#e8be54":"rgba(232,190,84,.48)";rr(c,W-82-430,ry+17,bw2,8,4);c.fill()}
+    if(bw1>0){c.fillStyle=neu?"rgba(148,163,184,.52)":(w1?"#2dd496":"rgba(45,212,150,.48)");rr(c,82+(430-bw1),ry+17,bw1,8,4);c.fill()}
+    if(bw2>0){c.fillStyle=neu?"rgba(148,163,184,.52)":(w2?"#e8be54":"rgba(232,190,84,.48)");rr(c,W-82-430,ry+17,bw2,8,4);c.fill()}
   });
 
   // Dual Tactical DNA Radar + Identities + Career Star Box
@@ -1424,7 +1425,6 @@ async function duelloSezonCv(x){
 
   let sc1=0,sc2=0;
   const cmp=(a,b,low)=>{if(a==null||b==null||!Number.isFinite(+a)||!Number.isFinite(+b))return;if(low){if(+a<+b)sc1++;else if(+b<+a)sc2++}else{if(+a>+b)sc1++;else if(+b>+a)sc2++}};
-  if(s1.g>0&&s2.g>0)cmp(s1.g,s2.g,false);
   if(s1.xpD!=null&&s2.xpD!=null)cmp(s1.xpD,s2.xpD,false);
   if(s1.m>0&&s2.m>0){cmp(s1.wr,s2.wr,false);cmp(s1.ppm,s2.ppm,false);cmp(s1.gpm,s2.gpm,false);cmp(s1.gapm,s2.gapm,true);cmp(s1.gf-s1.ga,s2.gf-s2.ga,false)}
   if(s1.xgM!=null&&s2.xgM!=null)cmp(s1.xgM,s2.xgM,false);
@@ -1470,7 +1470,7 @@ async function duelloSezonCv(x){
   const dFmt=v=>v==null?"—":(v>0?"+":"")+fx(v);
   const gd1=s1.gf-s1.ga,gd2=s2.gf-s2.ga;
   const rows=[
-    ["TAKIM GÜCÜ (GEN)",s1.g||null,s2.g||null,s1.g?s1.g+" GEN":"—",s2.g?s2.g+" GEN":"—",false],
+    ["TAKIM GÜCÜ (GEN)",s1.g||null,s2.g||null,s1.g?s1.g+" GEN":"—",s2.g?s2.g+" GEN":"—",false,true],
     ["BEKLENTİ ÜSTÜ",s1.xpD,s2.xpD,dFmt(s1.xpD),dFmt(s2.xpD),false],
     ["GALİBİYET ORANI",s1.wr,s2.wr,pctF(s1.wr),pctF(s2.wr),false],
     ["MAÇ BAŞI PUAN",s1.ppm,s2.ppm,fxF(s1.ppm),fxF(s2.ppm),false],
@@ -1481,17 +1481,18 @@ async function duelloSezonCv(x){
     ["RAKİP xG / MAÇ",s1.oXgM,s2.oXgM,s1.oXgM!=null?xgN2(s1.oXgM):"—",s2.oXgM!=null?xgN2(s2.oXgM):"—",true],
     ["BİTİRİCİLİK (GOL−xG)",s1.xgDiff,s2.xgDiff,s1.xgDiff!=null?xgS2(s1.xgDiff):"—",s2.xgDiff!=null?xgS2(s2.xgDiff):"—",false]
   ];
-  rows.forEach(([lbl,v1,v2,f1,f2,low],idx)=>{
+  rows.forEach(([lbl,v1,v2,f1,f2,low,neu],idx)=>{
     const ry=by+42+idx*60;
     const b=duelBarCalc(v1,v2,low);
-    tx(c,f1,82,ry,26,b.w1?"#2dd496":"#cbd5e1","left",700);
+    const w1=!neu&&b.w1,w2=!neu&&b.w2;
+    tx(c,f1,82,ry,26,w1?"#2dd496":"#cbd5e1","left",700);
     tx(c,lbl,W/2,ry,17,"#94a3b8","center",700);
-    tx(c,f2,W-82,ry,26,b.w2?"#e8be54":"#cbd5e1","right",700);
+    tx(c,f2,W-82,ry,26,w2?"#e8be54":"#cbd5e1","right",700);
     const bw1=Math.round(b.p1/100*430),bw2=Math.round(b.p2/100*430);
     c.fillStyle="rgba(255,255,255,.07)";
     rr(c,82,ry+17,430,8,4);c.fill();rr(c,W-82-430,ry+17,430,8,4);c.fill();
-    if(bw1>0){c.fillStyle=b.w1?"#2dd496":"rgba(45,212,150,.48)";rr(c,82+(430-bw1),ry+17,bw1,8,4);c.fill()}
-    if(bw2>0){c.fillStyle=b.w2?"#e8be54":"rgba(232,190,84,.48)";rr(c,W-82-430,ry+17,bw2,8,4);c.fill()}
+    if(bw1>0){c.fillStyle=neu?"rgba(148,163,184,.52)":(w1?"#2dd496":"rgba(45,212,150,.48)");rr(c,82+(430-bw1),ry+17,bw1,8,4);c.fill()}
+    if(bw2>0){c.fillStyle=neu?"rgba(148,163,184,.52)":(w2?"#e8be54":"rgba(232,190,84,.48)");rr(c,W-82-430,ry+17,bw2,8,4);c.fill()}
   });
 
   const my=1098,mh=134;

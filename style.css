@@ -4553,3 +4553,8 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
 .dbox.slotbox .rl img.bd-img{
   filter:drop-shadow(0 0 6px rgba(255,255,255,.35));
 }
+/* ===== v20.45: Nötr Bilgi Satırı (.dl-trow.neu — GEN Bağlam Satırları) ===== */
+.dl-trow.neu .dl-tv{color:var(--tx);opacity:.82}
+.dl-trow.neu .dl-tbL i,.dl-trow.neu .dl-tbR i{
+  background:rgba(148,163,184,.46);box-shadow:none;opacity:1;
+}
