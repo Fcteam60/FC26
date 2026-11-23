@@ -3818,3 +3818,10 @@ details.su-limfold > summary{
   cursor:pointer;font-weight:700;font-size:13.5px;color:var(--tx);
 }
 details.su-limfold > summary::-webkit-details-marker{display:none}
+/* ===== v20.33: Menajer DNA İkincil Tarz Etiketi (.dnasub) ===== */
+.dnasub{
+  display:inline-flex;align-items:center;gap:5px;margin-top:4px;
+  padding:2px 8px;border-radius:99px;font-size:11px;line-height:1.3;
+  background:var(--hi);border:1px solid var(--gbd);color:var(--mut);
+}
+.dnasub b{color:var(--tx);font-weight:700}

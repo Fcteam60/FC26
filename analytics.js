@@ -623,14 +623,15 @@ function cleanStatsW(raw){
 }
 function matchDeserve(m){
   const st=m&&m.stats;if(!st||st.myXg==null||st.oppXg==null)return null;
-  const r=mres(m),mx=+st.myXg,ox=+st.oppXg,diff=mx-ox;
+  const r=mres(m),mx=+st.myXg,ox=+st.oppXg,diff=mx-ox,tot=mx+ox;
+  const relTh=Math.max(0.35,tot*0.16),drawTh=Math.max(0.55,tot*0.22);
   const xp=calcMatchXpts(mx,ox),actPts=r=="w"?3:r=="d"?1:0,pDiff=xp?actPts-xp.xPts:0;
-  if(r=="l"&&diff>=0.35&&pDiff<=-1.15)return{k:"unlucky",t:"Şanssız Mağlubiyet",ic:uiIco("bug"),c:"#f97316",bg:"#ea580c",d:diff,xPts:xp.xPts};
-  if(r=="w"&&diff<=-0.35&&pDiff>=1.15)return{k:"undeserved",t:"Hak Edilmemiş Galibiyet",ic:uiIco("shield"),c:"#3b82f6",bg:"#1e3a8a",d:diff,xPts:xp.xPts};
-  if(r=="w"&&diff>=0.25)return{k:"deserved",t:"Hak Edilmiş Galibiyet",ic:uiIco("check"),c:"#12b886",bg:"#0f9d6b",d:diff,xPts:xp.xPts};
-  if(r=="d"&&diff>=0.6)return{k:"unlucky",t:"Kaçan Galibiyet (Şanssız)",ic:uiIco("bug"),c:"#f97316",bg:"#ea580c",d:diff,xPts:xp.xPts};
-  if(r=="d"&&diff<=-0.6)return{k:"undeserved",t:"Kurtarılan Puan",ic:uiIco("shield"),c:"#3b82f6",bg:"#1e3a8a",d:diff,xPts:xp.xPts};
-  return{k:"fair",t:r=="l"&&diff<=-0.25?"Hak Edilmiş Mağlubiyet":"Dengeli Maç",ic:"•",c:"#94a3b8",bg:"#475569",d:diff,xPts:xp?xp.xPts:null};
+  if(r=="l"&&diff>=relTh&&pDiff<=-1.15)return{k:"unlucky",t:"Şanssız Mağlubiyet",ic:uiIco("bug"),c:"#f97316",bg:"#ea580c",d:diff,xPts:xp.xPts};
+  if(r=="w"&&diff<=-relTh&&pDiff>=1.15)return{k:"undeserved",t:"Hak Edilmemiş Galibiyet",ic:uiIco("shield"),c:"#3b82f6",bg:"#1e3a8a",d:diff,xPts:xp.xPts};
+  if(r=="w"&&diff>=Math.max(0.25,tot*0.11))return{k:"deserved",t:"Hak Edilmiş Galibiyet",ic:uiIco("check"),c:"#12b886",bg:"#0f9d6b",d:diff,xPts:xp.xPts};
+  if(r=="d"&&diff>=drawTh)return{k:"unlucky",t:"Kaçan Galibiyet (Şanssız)",ic:uiIco("bug"),c:"#f97316",bg:"#ea580c",d:diff,xPts:xp.xPts};
+  if(r=="d"&&diff<=-drawTh)return{k:"undeserved",t:"Kurtarılan Puan",ic:uiIco("shield"),c:"#3b82f6",bg:"#1e3a8a",d:diff,xPts:xp.xPts};
+  return{k:"fair",t:r=="l"&&diff<=-Math.max(0.25,tot*0.11)?"Hak Edilmiş Mağlubiyet":"Dengeli Maç",ic:"•",c:"#94a3b8",bg:"#475569",d:diff,xPts:xp?xp.xPts:null};
 }
 function xgEffInfo(m){
   const st=m&&m.stats;if(!st||st.myXg==null)return null;
@@ -669,9 +670,9 @@ function calcTacticalDNA(s,opt){
     const curM=((s&&s.mt)||[]).filter(m=>m.stats);
     if(onlySeason&&!curM.length)return null;
     const allSt=onlySeason?[]:store.seasons.flatMap(x=>(x.mt||[]).filter(m=>m.stats));
-    src=(curM.length>=1?curM:allSt).slice(-15);
+    src=curM.length>=1?curM:allSt;
     if(!src.length)return null;
-    scopeLbl=curM.length>=1?"Bu sezon (son "+src.length+" istatistikli maç)":"Kariyer (son "+src.length+" istatistikli maç)";
+    scopeLbl=curM.length>=1?`Bu sezon (${src.length} istatistikli maç)`:`Tüm kariyer (${src.length} istatistikli maç)`;
   }
   const n=src.length,avgOf=(fn)=>{const vals=src.map(fn).filter(v=>v!=null&&Number.isFinite(v));return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null};
   const mPos=avgOf(m=>m.stats.myPos)??50;
@@ -683,70 +684,95 @@ function calcTacticalDNA(s,opt){
   const oSot=avgOf(m=>m.stats.oppSot)??(oShots*0.5);
   const oXg=avgOf(m=>m.stats.oppXg)??1.3;
   const mGf=avgOf(m=>+m.gf||0)??1.5;
+  const mGa=avgOf(m=>+m.ga||0)??1.2;
   const cl=(v)=>Math.round(Math.max(12,Math.min(99,v)));
   // 1. Hücum Tehdidi (Şut + xG + İsabetli Şut)
   const shScore=Math.min(100,(mShots/16)*100);
   const xgScore=Math.min(100,(mXg/3.0)*100);
   const sotScore=Math.min(100,(mSot/9)*100);
-  const atk=cl(shScore*0.4+xgScore*0.45+sotScore*0.15);
+  const atk=cl(shScore*0.40+xgScore*0.45+sotScore*0.15);
   // 2. Top & Pas Kontrolü (Topla Oynama + Pas İsabeti)
   const posScore=Math.max(0,Math.min(100,((mPos-30)/40)*100));
   const pasScore=Math.max(0,Math.min(100,((mPass-65)/28)*100));
   const ctrl=cl(posScore*0.55+pasScore*0.45);
-  // 3. Savunma Direnci & Pres (Rakip şutları engelleme + rakipten az şut yeme + baskı)
-  const blkRatio=oShots>0?Math.max(0,Math.min(1,(oShots-oSot)/oShots)):0.45;
-  const lowPosAggr=Math.max(0,Math.min(100,((62-mPos)/32)*100));
-  const suppScore=Math.max(0,Math.min(100,((18-oShots)/14)*100));
-  const aggr=cl(lowPosAggr*0.5+blkRatio*100*0.3+suppScore*0.2);
-  // 4. Bitiricilik Verimi (Gol / xG + Şut/Gol dönüşümü)
+  // 3. Savunma Direnci (Rakip xG %50 + Rakip Şut Kalitesi %25 + Rakip İsabetli Şut %25)
+  const oxgScore=Math.max(0,Math.min(100,((2.30-oXg)/1.80)*100));
+  const oQual=oShots>0?oXg/oShots:0.13;
+  const oQualScore=Math.max(0,Math.min(100,((0.24-oQual)/0.18)*100));
+  const oSotScore=Math.max(0,Math.min(100,((8.5-oSot)/7.0)*100));
+  const aggr=cl(oxgScore*0.50+oQualScore*0.25+oSotScore*0.25);
+  // 4. Bitiricilik Verimi (Maç başı Gol - xG + Şut dönüşümü)
   const totGf=src.reduce((a,m)=>a+(+m.gf||0),0);
   const xgSrc=src.filter(m=>m.stats&&m.stats.myXg!=null);
   const totGfXg=xgSrc.reduce((a,m)=>a+(+m.gf||0),0);
   const totXg=xgSrc.reduce((a,m)=>a+(+m.stats.myXg||0),0);
   const totSh=src.reduce((a,m)=>a+(m.stats.myShots!=null?+m.stats.myShots:10),0);
   const gxRatio=(xgSrc.length&&totXg>0.2)?totGfXg/totXg:1;
-  const conv=totSh>0?totGf/totSh:0.15;
-  const effRaw=Math.min(100,Math.max(10,55+(gxRatio-1)*45+(conv-0.14)*120));
+  const finPm=xgSrc.length?(totGfXg-totXg)/xgSrc.length:0;
+  const conv=totSh>0?totGf/totSh:0.14;
+  const effRaw=55+finPm*65+(conv-0.14)*115;
   const eff=cl(effRaw);
-  // Menajer Kimliği Ataması (Tutarlı eşikler)
-  let title="Dengeli Taktisyen",desc="Savunma ile hücumu dengede tutan, rakibe ve skora göre strateji değiştirebilen komple menajer.",icon=uiIco("dna");
-  if(mPos>=53&&ctrl>=55&&ctrl>=atk){
-    title="Tiki-Taka Ustası";
-    desc="Topa hükmeden (%"+Math.round(mPos)+"), yüksek pas isabetiyle oyunu rakip yarı sahaya yıkan pas ve pozisyon oyunu ustası.";
-    icon=uiIco("play");
-  }else if(mPos<49&&(atk>=50||eff>=62)){
-    title="Kontra Atak Dehası";
-    desc="Topu rakibe bırakıp (%"+Math.round(mPos)+") kapılan toplarla saniyeler içinde tehlike ve skor üreten geçiş oyunu uzmanı.";
-    icon=uiIco("bolt");
-  }else if(atk>=68&&aggr>=60){
-    title="Gegenpressing Mimarı";
-    desc="Önde yoğun baskı, yüksek şut temposu ve dikine oyunla rakibi bunaltan hücum presi ekolü.";
-    icon=uiIco("flame");
-  }else if(eff>=72&&xgSrc.length&&totGfXg>totXg){
-    title="Klinik Bitirici";
-    desc="Az pozisyona girse bile bulduğu fırsatları yüksek yüzdeli gole çeviren soğukkanlı bitiricilik uzmanı.";
-    icon=uiIco("boot");
-  }else if(aggr>=62&&oShots<=9){
-    title="Savunma Bakanı (Katı Defans)";
-    desc="Kalesini şuta kapatan, rakibe net fırsat tanımayan disiplinli savunma ve direnç ustası.";
-    icon=uiIco("shield");
-  }else if(atk>=ctrl+8){
-    title="Direkt Hücumcu";
-    desc="Pas yapmak yerine doğrudan rakip kaleyi düşünen, sık şut deneyip ceza sahasını zorlayan oyun tarzı.";
-    icon=uiIco("rocket");
-  }else if(mPos>=51&&mPass>=82){
-    title="Kontrollü Oyun Kurucu";
-    desc="Topu ayağında güvenli tutup yüksek pas yüzdesiyle (%"+Math.round(mPass)+") oyunu sakin yönlendiren menajer.";
-    icon=uiIco("compass");
-  }
+  // xPts & Kaleci Kurtarış metrikleri (16 profilli matris için)
+  const xaSrc=src.filter(m=>m.stats&&m.stats.myXg!=null&&m.stats.oppXg!=null);
+  const xgPairCnt=xaSrc.length;
+  const actPtsPm=xgPairCnt?xaSrc.reduce((a,m)=>{const r=mres(m);return a+(r=="w"?3:r=="d"?1:0)},0)/xgPairCnt:1.5;
+  const xPtsPm=xgPairCnt?xaSrc.reduce((a,m)=>{const xp=calcMatchXpts(m.stats.myXg,m.stats.oppXg);return a+(xp?xp.xPts:1.5)},0)/xgPairCnt:1.5;
+  const xptsDeltaPm=actPtsPm-xPtsPm;
+  const gkSavePm=xgPairCnt?(xaSrc.reduce((a,m)=>a+(+m.stats.oppXg||0)-(+m.ga||0),0)/xgPairCnt):0;
+  const xgPerShot=mShots>0?mXg/mShots:0.13;
+  // 16 Profilli Uygunluk Skoru Matrisi + İkincil Tarz Etiketi
+  const profs=[];
+  const addP=(sc,title,icon,desc)=>{if(sc>0)profs.push({sc,title,icon,desc})};
+  if(atk>=68&&ctrl>=68&&aggr>=68&&eff>=65&&mPos<61)
+    addP(98+(atk+ctrl+aggr+eff-269)*0.25,"Toplam Futbol Mimarı",uiIco("trophy"),"Hücum, pas kontrolü, savunma direnci ve bitiricilikte dört eksende birden elit seviye yakalayan komple futbol ekolü.");
+  if(mPos>=56&&mPass>=85&&ctrl>=68)
+    addP(78+(mPos-56)*2.6+(mPass-85)*2.0+Math.max(0,ctrl-atk)*0.6,"Tiki-Taka Ustası",uiIco("play"),`Topa hükmeden (%${Math.round(mPos)}), yüksek pas isabetiyle (%${Math.round(mPass)}) oyunu rakip yarı sahaya yıkan pas ustası.`);
+  if(mPos>=52&&mPos<60&&xgPerShot>=0.165&&atk>=52)
+    addP(74+(mPos-52)*1.5+(xgPerShot-0.165)*260,"Pozisyon Oyunu Mimarı",uiIco("compass"),`Topu sabırla dolaştırıp şut başına ${xgN2(xgPerShot)} xG ile yüksek kaliteli net fırsatlar üreten modern oyun kurgusu.`);
+  if(mPos>=50&&mPos<57&&mPass>=83&&aggr>=52)
+    addP(66+(mPass-83)*2.0+(aggr-52)*0.4,"Kontrollü Oyun Kurucu",uiIco("compass"),`Topu ayağında güvenli tutup (%${Math.round(mPass)} pas) savunma dengesini bozmadan maçı sakin yöneten menajer.`);
+  if(atk>=62&&aggr>=62&&mShots>=12&&oShots<=9.5&&mPos<58)
+    addP(78+(atk-62)*0.85+(aggr-62)*0.85,"Gegenpressing Mimarı",uiIco("flame"),`Önde yoğun baskı, maç başı ${xgN1(mShots)} şut temposu ve rakibi ${xgN1(oShots)} şutta boğan yüksek enerjili pres ekolü.`);
+  if(mXg>=1.65&&oXg>=1.45)
+    addP(80+(mXg-1.65)*22+(oXg-1.45)*20,"Heavy Metal (Kaotik Hücum)",uiIco("bolt"),`İki kalede de fırtına koparan (${xgN2(mXg)} vs ${xgN2(oXg)} xG), riski yüksek ve gollü açık futbol anlayışı.`);
+  if(mShots>=12&&atk>=ctrl+10)
+    addP(68+(mShots-12)*2.0+(atk-ctrl-10)*0.7,"Direkt Hücumcu",uiIco("rocket"),`Pas dolaştırmak yerine doğrudan kaleyi düşünen, maç başı ${xgN1(mShots)} şutla ceza sahasını zorlayan dikine oyun.`);
+  if(mPos<=47.5&&(atk>=48||xgPerShot>=0.16||eff>=62))
+    addP(75+(47.5-mPos)*1.8+Math.max(0,xgPerShot-0.15)*140+Math.max(0,eff-60)*0.45,"Kontra Atak Dehası",uiIco("bolt"),`Topu rakibe bırakıp (%${Math.round(mPos)}) kapılan toplarla saniyeler içinde tehlikeli geçiş ve skor üreten taktikçi.`);
+  if(oXg<=0.95&&aggr>=68&&mPos<=47.5)
+    addP(78+(0.95-oXg)*35+(aggr-68)*0.8,"Catenaccio (Katı Savunma)",uiIco("shield"),`Rakibi maç başı yalnızca ${xgN2(oXg)} xG’de kilitleyen, önce kalesini güvenceye alan disiplinli savunma okulu.`);
+  if(xgPairCnt>=2&&oXg>=1.35&&gkSavePm>=0.35)
+    addP(76+(gkSavePm-0.35)*42+(oXg-1.35)*10,"Duvar Arkası (Kaleci Kalkanı)",uiIco("shield"),`Kalede yüksek rakip xG’sine (${xgN2(oXg)}) rağmen maç başı ${xgN2(gkSavePm)} gol önleyerek ayakta kalan dirençli yapı.`);
+  if(xgSrc.length>=2&&finPm>=0.25&&eff>=72)
+    addP(76+(finPm-0.25)*38+(eff-72)*0.6,"Klinik Bitirici",uiIco("boot"),`Bulduğu fırsatları beklenenin çok üstünde (+${xgN2(finPm)} Gol/M) gole çeviren soğukkanlı bitiricilik uzmanı.`);
+  if(xgPairCnt>=2&&xptsDeltaPm>=0.28&&actPtsPm>=1.5)
+    addP(73+(xptsDeltaPm-0.28)*48,"Sonuç Odaklı Pragmatist",uiIco("trophy"),`xG üstünlüğü kurmasa da skoru almayı bilen; maç başı beklenenden +${xgN2(xptsDeltaPm)} fazla puan toplayan realist menajer.`);
+  if(xgSrc.length>=2&&mXg>=1.55&&finPm<=-0.25)
+    addP(84+(mXg-1.55)*20+(-finPm-0.25)*45,"İsrafçı Dominant",uiIco("spark"),`Maç başı ${xgN2(mXg)} xG ile oyunu domine edip bol pozisyon üreten ama bitiricilikte (${xgS2(finPm)}/M) puan bırakan yapı.`);
+  if(mXg<=1.05&&oXg<=1.05&&mPos>=45)
+    addP(76+(1.05-mXg)*28+(1.05-oXg)*28,"Kısır / Kilitli Oyun",uiIco("sliders"),`Hem kendi (${xgN2(mXg)}) hem rakip (${xgN2(oXg)}) xG’sinin düşük kaldığı, pozisyonun az olduğu kilitli satranç maçları.`);
+  if(mXg<=1.05&&oXg>=1.55)
+    addP(82+(1.05-mXg)*22+(oXg-1.55)*24,"Kırılgan Yapı (Savunma Alarmı)",uiIco("bug"),`Hücum üretimi düşük (${xgN2(mXg)} xG), kalede verilen pozisyon yüksek (${xgN2(oXg)} rakip xG); savunma ve üretim dengesi acil öncelik.`);
+  if(!profs.length)
+    addP(50,"Dengeli Taktisyen",uiIco("dna"),"Savunma ile hücumu dengede tutan, rakibe ve skora göre strateji değiştirebilen esnek menajer.");
+  profs.sort((a,b)=>b.sc-a.sc);
+  const {title,icon,desc}=profs[0];
+  let subTag="";
+  if(profs.length>=2&&profs[1].sc>=70)subTag=profs[1].title;
+  else if(xgSrc.length>=2&&finPm>=0.22)subTag="Keskin Bitirici";
+  else if(xgSrc.length>=2&&finPm<=-0.22)subTag="Bitiricilik Baskısı";
+  else if(xgPairCnt>=2&&gkSavePm>=0.30)subTag="Kaleciye Güvenen";
+  else if(xgPairCnt>=2&&xptsDeltaPm>=0.25)subTag="Skor Odaklı";
+  else if(xgPairCnt>=2&&xptsDeltaPm<=-0.25)subTag="Şanssız Seri";
   const xgDiff=xgSrc.length?(totGfXg-totXg):0;
   const unluckyCnt=src.filter(m=>{const d=matchDeserve(m);return d&&d.k=="unlucky"}).length;
   const stealCnt=src.filter(m=>{const d=matchDeserve(m);return d&&d.k=="undeserved"}).length;
   const deservedCnt=src.filter(m=>{const d=matchDeserve(m);return d&&d.k=="deserved"}).length;
+  const fairCnt=Math.max(0,xgPairCnt-(unluckyCnt+stealCnt+deservedCnt));
   const cntK=fn=>src.filter(m=>fn(m)!=null).length;
   const covd={pos:cntK(m=>m.stats.myPos),pass:cntK(m=>m.stats.myPass),shots:cntK(m=>m.stats.myShots),sot:cntK(m=>m.stats.mySot),xg:cntK(m=>m.stats.myXg),oShots:cntK(m=>m.stats.oppShots),oSot:cntK(m=>m.stats.oppSot),oXg:cntK(m=>m.stats.oppXg)};
   const miss=[["Topla oynama",covd.pos],["Pas isabeti",covd.pass],["Şut",covd.shots],["İsabetli şut",covd.sot],["xG",covd.xg],["Rakip şutu",covd.oShots],["Rakip xG",covd.oXg]].filter(x=>!x[1]).map(x=>x[0]);
-  return{n,scope:scopeLbl,isCareer,atk,ctrl,aggr,eff,title,desc,icon,mPos,mPass,mShots,mSot,mXg,oShots,oXg,mGf,oSot,conv,gxRatio,miss,cov:covd,xgDiff,unluckyCnt,stealCnt,deservedCnt};
+  return{n,scope:scopeLbl,isCareer,atk,ctrl,aggr,eff,title,subTag,desc,icon,mPos,mPass,mShots,mSot,mXg,oShots,oXg,mGf,mGa,oSot,conv,gxRatio,finPm,miss,cov:covd,xgDiff,xgPairCnt,fairCnt,unluckyCnt,stealCnt,deservedCnt};
 }
 function radarSvg(dna){
   const W=240,H=220,cx=120,cy=110,R=72;
@@ -801,7 +827,7 @@ function deserveWhy(m,d){
 const DNAX={
   atk:{n:"Hücum Tehdidi",hi:"Rakip kaleyi sürekli yokluyorsun: çok şut çekiyor ve yüksek değerli (net) pozisyonlara giriyorsun.",mid:"Hücumun dengeli: fırsat üretiyorsun ama net pozisyon sayını artırma payı var.",lo:"Az şut çekiyor ya da düşük değerli pozisyonlara giriyorsun. Ceza sahasına daha çok girmek skoru yükseltir.",tip:"Yükseltmek için: daha çok şut, ceza sahası içinden ve isabetli şut."},
   ctrl:{n:"Top & Pas Kontrolü",hi:"Topu rakipten çok kullanıyor ve paslarını yerine ulaştırıyorsun; maçın temposunu sen belirliyorsun.",mid:"Top kontrolün dengede; maçın büyük bölümünde rakiple eşit oynuyorsun.",lo:"Top çoğunlukla rakipte ya da pas isabetin düşük. Kısa paslarla topu tutmak puanı artırır.",tip:"Yükseltmek için: topla oynama oranı (%30'dan %70'e) ve pas isabeti (%65'ten %93'e)."},
-  aggr:{n:"Savunma Direnci & Pres",hi:"Rakibe az şut izin veriyor ve şutlarının çoğunu isabetsiz bırakıyorsun; savunman sağlam.",mid:"Savunman idare ediyor; rakip arada tehlikeli şut bulabiliyor.",lo:"Rakip çok şut çekebiliyor ve isabetli şutları fazla. Savunma hattını sıkılaştırmak puanı yükseltir.",tip:"Yükseltmek için: rakibin şut sayısını ve isabetli şutlarını azalt. Not: düşük topla oynama bu puanı hafifçe artırır (savunma ağırlıklı oyun)."},
+  aggr:{n:"Savunma Direnci",hi:"Rakibi çok düşük xG’de tutuyor, ceza sahasına sokmuyor ve kaleye gelen isabetli şutları kısıtlıyorsun.",mid:"Savunman orta seviyede; rakibe zaman zaman tehlikeli xG fırsatları verebiliyorsun.",lo:"Rakip yüksek xG ve net şut fırsatları buluyor. Blokları daraltıp ceza sahası şutlarını kesmek puanı yükseltir.",tip:"Yükseltmek için: rakibin xG’sini (%50), şut başına xG kalitesini (%25) ve isabetli şutlarını (%25) düşür."},
   eff:{n:"Bitiricilik Verimi",hi:"Pozisyonları gole çevirmede çok iyisin: beklenenden fazla gol atıyorsun.",mid:"Bitiriciliğin pozisyonlarınla uyumlu; ne şanslı ne şanssızsın.",lo:"Pozisyonlar gole dönüşmüyor, beklenenden az gol atıyorsun. Sakin ve köşeye vuruş denemeye değer.",tip:"Yükseltmek için: gol / xG oranı ve gol / şut oranı yüksek olmalı."}
 };
 const DNASH={atk:"Hücum",ctrl:"Kontrol",aggr:"Direnç",eff:"Bitiricilik"};
@@ -875,14 +901,15 @@ function tacticalDnaCard(s,careerOpt){
       <details class="dnatip"><summary>Nasıl yükselir?</summary><p>${d.tip}</p></details>
     </div>`;
   }).join("");
-  const cf=dna.n>=8?["Yüksek güven","l4"]:dna.n>=4?["Orta güven","l3"]:["Düşük güven","l1"];
+  const cf=dna.n>=8?["Yüksek güven","l4"]:dna.n>=3?["Orta güven","l3"]:["Erken sinyal","l1"];
   const notes=[];
-  if(dna.n<4)notes.push(`Yalnızca ${dna.n} maçlık veri var; maç sayısı arttıkça puanlar daha güvenilir olur.`);
+  if(dna.n<3)notes.push(`Erken sinyal: yalnızca ${dna.n} maçlık veri var; menajer kimliği en az 3 maçta netleşir.`);
   if(dna.miss&&dna.miss.length)notes.push(`Hiç girilmeyen veriler (${dna.miss.join(", ")}) için nötr varsayılan değer kullanıldı.`);
-  const totDes=dna.deservedCnt+dna.stealCnt+dna.unluckyCnt;
+  const totDes=dna.deservedCnt+dna.stealCnt+dna.unluckyCnt,pairN=dna.xgPairCnt||totDes;
   const dhkBar=totDes>0?`<div class="dhkbar" role="img" aria-label="Hak ediş dağılımı: ${dna.deservedCnt} hak edilmiş, ${dna.stealCnt} şanslı, ${dna.unluckyCnt} şanssız">${dna.deservedCnt?`<i class="ok" style="flex:${dna.deservedCnt}"></i>`:""}${dna.stealCnt?`<i class="st" style="flex:${dna.stealCnt}"></i>`:""}${dna.unluckyCnt?`<i class="un" style="flex:${dna.unluckyCnt}"></i>`:""}</div>`:"";
+  const subHtml=dna.subTag?`<div class="dnasub"><span>İkincil tarz:</span> <b>${esc(dna.subTag)}</b></div>`:"";
   return `<div class="dnacard">
-    <div class="dnahd"><div><div class="lb" style="text-transform:uppercase;letter-spacing:.05em;font-weight:700">${isCareer?"Genel Menajer Profili":"Oyun Tarzın"} · ${esc(dna.scope)}</div><div class="dnabdg" style="margin-top:4px"><span>${dna.icon}</span><span>${esc(dna.title)}</span></div></div><span class="dlv ${cf[1]}" title="Puanların kaç maça dayandığına göre güven düzeyi">${cf[0]} · ${dna.n} maç</span></div>
+    <div class="dnahd"><div><div class="lb" style="text-transform:uppercase;letter-spacing:.05em;font-weight:700">${isCareer?"Genel Menajer Profili":"Oyun Tarzın"} · ${esc(dna.scope)}</div><div class="dnabdg" style="margin-top:4px"><span>${dna.icon}</span><span>${esc(dna.title)}</span></div>${subHtml}</div><span class="dlv ${cf[1]}" title="Puanların kaç maça dayandığına göre güven düzeyi">${cf[0]} · ${dna.n} maç</span></div>
     <div class="note" style="margin:0 0 10px">${esc(dna.desc)}</div>
     <div class="dnasum"><span class="ui-lbl">${uiIco("up")}<span>En güçlü: <b>${DNASH[best.k]}</b> (${best.v})</span></span><span class="ui-lbl">${uiIco("wrench")}<span>Geliştirilecek: <b>${DNASH[worst.k]}</b> (${worst.v})</span></span></div>
     <div class="dnagrid">
@@ -891,23 +918,23 @@ function tacticalDnaCard(s,careerOpt){
     </div>
     ${isCareer?"":tacticalDeltaHtml(s)}
     <div class="dhkbox">
-      <div class="dhkh"><b>Maç sonuçların hak edildi mi?</b>${totDes?`<span class="lb">${totDes} xG maçı</span>`:""}</div>
+      <div class="dhkh"><b>Maç sonuçların hak edildi mi?</b>${pairN?`<span class="lb">${pairN} xG maçı</span>`:""}</div>
       ${dhkBar}
       <div class="dhk3">
         <div class="dhkc ok${dna.deservedCnt?"":" z"}"><span class="dhki">${DHKI.ok}</span><b>${dna.deservedCnt}</b><span>Hak Edilmiş</span></div>
         <div class="dhkc st${dna.stealCnt?"":" z"}"><span class="dhki">${DHKI.st}</span><b>${dna.stealCnt}</b><span>Şanslı</span></div>
         <div class="dhkc un${dna.unluckyCnt?"":" z"}"><span class="dhki">${DHKI.un}</span><b>${dna.unluckyCnt}</b><span>Şanssız</span></div>
       </div>
-      <div class="note" style="margin:6px 0 0">Her maçta iki tarafın xG (gol beklentisi) farkına göre hesaplanır; ayrıntı için aşağıdaki xG analizine bak.</div>
+      <div class="note" style="margin:6px 0 0">${dna.fairCnt?`Diğer <b>${dna.fairCnt} maç</b> dengeli veya beklenen sonuçla bitti. `:""}Her maçta toplam xG’ye orantılı farkla hesaplanır; ayrıntı için aşağıdaki xG analizine bak.</div>
     </div>
     ${notes.length?`<div class="note dnawarn">${notes.map(esc).join(" ")}</div>`:""}
     <details class="xgl"><summary>Puanlar nasıl hesaplanıyor?</summary><dl>
       <div><dt>Puan Ölçeği (0–100)</dt><dd><b>35 altı</b> Geliştirilmeli · <b>35–49</b> Orta · <b>50–64</b> İyi · <b>65–79</b> Çok iyi · <b>80+</b> Elit.</dd></div>
       <div><dt>Hücum Tehdidi</dt><dd>Maç başı şut sayısı (%40; 16 şut = tam puan) + xG (%45; 3,0 xG = tam puan) + isabetli şut (%15; 9 isabetli şut = tam puan).</dd></div>
       <div><dt>Top & Pas Kontrolü</dt><dd>Topla oynama (%55; %30 = 0 puan, %70 = tam puan) + pas isabeti (%45; %65 = 0 puan, %93 = tam puan).</dd></div>
-      <div><dt>Savunma Direnci & Pres</dt><dd>Düşük topla oynama / savunma ağırlıklı oyun (%50) + rakip şutlarının isabetsiz kalma oranı (%30) + rakibin az şut çekmesi (%20).</dd></div>
-      <div><dt>Bitiricilik Verimi</dt><dd>Gol / xG oranı ve gol / şut dönüşümü. Beklentiyle aynı gol sayısı yaklaşık 55 puan verir; fazlası puanı yükseltir.</dd></div>
-      <div><dt>Hangi maçlar sayılır?</dt><dd>${isCareer?"Kariyerindeki (ve varsa seçili zorluk filtresindeki) istatistik girilmiş tüm maçlar genel menajer profiline dahil edilir.":"İstatistik girilmiş en fazla son 15 maç. Bu sezonda istatistikli maç varsa yalnızca bu sezon, yoksa tüm kariyer kullanılır."}</dd></div>
+      <div><dt>Savunma Direnci</dt><dd>Rakip xG’sini baskılama (%50; 0,50 xG = tam puan) + rakip şut kalitesini düşürme (%25) + rakip isabetli şutunu kısıtlama (%25).</dd></div>
+      <div><dt>Bitiricilik Verimi</dt><dd>Maç başı (Gol − xG) farkı ve gol / şut dönüşümü. Beklentiyle aynı gol sayısı yaklaşık 55 puan verir; fazlası puanı yükseltir.</dd></div>
+      <div><dt>Hangi maçlar sayılır?</dt><dd>${isCareer?"Kariyerindeki (ve varsa seçili zorluk filtresindeki) istatistik girilmiş tüm maçlar genel menajer profiline dahil edilir.":"Bu sezonda istatistik girilmiş tüm maçlar dahil edilir. Bu sezonda henüz veri yoksa tüm kariyerin kullanılır."}</dd></div>
     </dl></details>
   </div>`;
 }
@@ -952,10 +979,12 @@ function xgSummaryCard(ML){
   const D=XA.map(m=>({m,d:matchDeserve(m)})).filter(x=>x.d);
   // --- Koç notları (tek birleşik cam kart + özel SVG ikonlar) ---
   const ins=[];
+  const finPm=n?diff/n:0,avgMyXg=n?totXg/n:0;
   if(n>=2){
-    if(diff>=.5)ins.push(["pos","fin",`<b>Bitiriciliğin güçlü:</b> ${xgN1(totXg)} xG'lik pozisyondan ${totGf} gol çıkardın (${xgS2(diff)}). Kalıcı olması için şut kalitesini koru.`]);
-    else if(diff<=-.5)ins.push(["neg","fin",`<b>Bitiricilik beklentinin altında:</b> ${xgN1(totXg)} xG'ye karşı ${totGf} gol (${xgS2(diff)}). Sakin bitirmeye odaklan.`]);
-    else ins.push(["neu","fin",`<b>Gollerin pozisyonlarınla uyumlu:</b> ${totGf} gol, ${xgN1(totXg)} xG. Belirgin bir sapma yok.`]);
+    if(finPm>=.18&&diff>=.5)ins.push(["pos","fin",`<b>Bitiriciliğin güçlü:</b> ${xgN1(totXg)} xG'lik pozisyondan ${totGf} gol çıkardın (${xgS2(diff)}, maç başı ${xgS2(finPm)}).`]);
+    else if(finPm<=-.18&&diff<=-.5)ins.push(["neg","fin",`<b>Bitiricilik beklentinin altında:</b> ${xgN1(totXg)} xG'ye karşı ${totGf} gol (${xgS2(diff)}, maç başı ${xgS2(finPm)}). Sakin bitirmeye odaklan.`]);
+    else if(avgMyXg<1.0)ins.push(["neu","fin",`<b>Bitiricilik normal ama üretim düşük:</b> ${totGf} gol, ${xgN1(totXg)} xG (maç başı ${xgN2(avgMyXg)} xG). Öncelik daha fazla net pozisyon üretmek.`]);
+    else ins.push(["neu","fin",`<b>Gollerin pozisyonlarınla uyumlu:</b> ${totGf} gol, ${xgN1(totXg)} xG (maç başı ${xgS2(finPm)}). Belirgin bir sapma yok.`]);
   }
   if(nx>=2){
     if(xpDiff>=1.5)ins.push(["pos","pts",`<b>Puanların oyununun önünde:</b> beklenen ${xgN1(totXpts)} puana karşı ${actPts} topladın (${xgS1(xpDiff)}).`]);
@@ -975,14 +1004,14 @@ function xgSummaryCard(ML){
     else if(gkV<=55)ins.push(["neg","def",`<b>Kaleci kurtarışı düşük:</b> isabetli şutların yalnızca %${Math.round(gkV)}'i çıkarıldı.`]);
   }
   const insHtml=ins.length?`<div class="xinsbox"><div class="xinsh"><b>Koç Özeti</b><span>${Math.min(5,ins.length)} bulgu</span></div><ul class="xins">${ins.slice(0,5).map(([c,ic,t])=>`<li class="${c}"><span class="xini">${XGI[ic]||XGI.fin}</span><span class="xint">${t}</span></li>`).join("")}</ul></div>`:"";
-  const vdCls=n?xgVc(diff,.5):"neu";
-  const statusTtl=!n?"Gelişmiş Analiz Hazır":diff>=.5?"Mükemmel Bitiricilik":diff<=-.5?"Bitiricilik Sorunu":"Dengeli Bitiricilik";
-  const statusSub=!n?"Girilen maç istatistiklerine göre özet çıkarıldı.":diff>=.5?"Beklentinin üzerinde gol üretiyorsun.":diff<=-.5?"Pozisyon zenginliğine göre gol sayın düşük kalıyor.":"xG beklentisiyle paralel skor üretiyorsun.";
+  const vdCls=n?(finPm>=.18&&diff>=.5?"pos":finPm<=-.18&&diff<=-.5?"neg":"neu"):"neu";
+  const statusTtl=!n?"Gelişmiş Analiz Hazır":vdCls=="pos"?"Mükemmel Bitiricilik":vdCls=="neg"?"Bitiricilik Sorunu":"Dengeli Bitiricilik";
+  const statusSub=!n?"Girilen maç istatistiklerine göre özet çıkarıldı.":vdCls=="pos"?"Beklentinin üzerinde gol üretiyorsun.":vdCls=="neg"?"Üretilen pozisyonlara göre gol dönüşümü düşük kalıyor.":avgMyXg<1.0?"Bitiricilik normal; asıl odak daha fazla pozisyon (xG) üretmek.":"xG beklentisiyle paralel skor üretiyorsun.";
   const head=`<div class="xvd pxvd ${vdCls}"><span class="xvdi">${XGI.fin}</span><div class="xvdm"><b>${statusTtl}</b><span>${statusSub}</span><div class="xvdp"><span class="xvp"><b>${n}/${totalM}</b> xG maçı</span>${nx?`<span class="xvp"><b>${nx}</b> xPts maçı</span>`:""}${n?`<span class="xvp ${vdCls}"><b>${xgS2(diff)}</b> Gol−xG</span>`:""}</div></div></div>`;
   // --- 1. Gol beklentisi ---
   let gol="";
   if(n){
-    const t=[xgTile(xgN1(totXg),"Üretilen xG",`gerçekte ${totGf} gol (${xgS2(diff)})`,diff>=.5?"Beklentinin üstünde gol attın: bitiricilik çok iyi.":diff<=-.5?"Pozisyonlar golle sonuçlanmadı: bitiricilik düşük.":"Gol sayın pozisyonlarınla uyumlu.",xgVc(diff,.5))];
+    const t=[xgTile(xgN1(totXg),"Üretilen xG",`gerçekte ${totGf} gol (${xgS2(diff)})`,vdCls=="pos"?"Beklentinin üstünde gol attın: bitiricilik çok iyi.":vdCls=="neg"?"Pozisyonlar golle sonuçlanmadı: bitiricilik düşük.":"Gol sayın pozisyonlarınla uyumlu.",vdCls)];
     if(nx){
       const gd=xaX-xaGa,xd=(xaMyX-xaX)/nx,sh=xaMyX+xaX>0?Math.round(xaMyX/(xaMyX+xaX)*100):null;
       t.push(xgTile(xgN1(xaX),"Yenen xG (rakibin xG'si)",`gerçekte ${xaGa} gol yedin (${xgS2(xaGa-xaX)})`,gd>=.75?"Beklenenden az gol yedin: savunma ve kaleci iyi.":gd<=-.75?"Beklenenden çok gol yedin: kaleci ya da savunma zayıf kaldı.":"Yediğin goller rakibin pozisyonlarıyla uyumlu.",xgVc(gd,.75)));
