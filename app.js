@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.46",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="20.47",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -1203,7 +1203,7 @@ function statView(s){
   if(s.my==null)return `<div class="big">İstatistik girmek için önce Takımım sekmesinden takım seç.</div>`;
   const ms=s.mt||[];
   const sub=["m","a","w"].includes(st.stab)?st.stab:"m";
-  const nav=`<div class="stabs" role="tablist" aria-label="İstatistik bölümleri">`+
+  const nav=`<div class="ptabs itabs" role="tablist" aria-label="İstatistik bölümleri">`+
     [["m",`Maçlar${ms.length?` (${ms.length})`:""}`],["a","Analiz"],["w","Ödüller"]].map(([k,l])=>
       `<button class="chip ${sub==k?"on":""}" role="tab" aria-selected="${sub==k}" data-a="stab" data-v="${k}">${l}</button>`
     ).join("")+`</div>`;
@@ -1322,7 +1322,7 @@ function histView(){
   const achFold=`<div class="pfold gold${achOp?" open":""}"><button class="acbtn${achOp?" open":""}" data-a="hm" data-k="ach" aria-expanded="${achOp}"><span class="aci">${UICO.trophy}</span><span class="act"><b>Rozetler</b><small>Kariyer başarımları</small></span><span class="acr"><span class="xfpill">${achDone}/${A.length}</span><span class="acc" aria-hidden="true">${UICO.chev}</span></span></button>${achOp?`<div class="acbody">${achCard()}</div>`:""}</div>`;
   const cupCnt=ss.filter(x=>!isLg(x.cfg)).length,lgCnt=ss.filter(x=>isLg(x.cfg)).length;
   const modBar=`<div class="stabs seg3" style="margin:0 0 10px" role="tablist" aria-label="Kariyer türü">${[["all",`Tümü (${ss.length})`],["cup",`Kupa (${cupCnt})`],["lg",`Lig (${lgCnt})`]].map(([k,l])=>`<button class="chip ${hmod==k?"on":""}" role="tab" aria-selected="${hmod==k}" data-a="hmod" data-v="${k}">${l}</button>`).join("")}</div>`;
-  const ht=(st.ht&&st.ht!="b")?st.ht:"o",nav=`<div class="stabs htabs htabs6" role="tablist" aria-label="Geçmiş bölümleri">${[["o","Özet"],["r","Rekorlar"],["s","Sezonlar"],["p","Rakipler"],["m","Maçlar"],["d","Düello"]].map(([k,l])=>`<button class="chip ${ht==k?"on":""}" role="tab" aria-selected="${ht==k}" data-a="ht" data-v="${k}">${l}</button>`).join("")}</div>`;
+  const ht=(st.ht&&st.ht!="b")?st.ht:"o",nav=`<div class="ptabs htabs htabs6" role="tablist" aria-label="Geçmiş bölümleri">${[["o","Özet"],["r","Rekorlar"],["s","Sezonlar"],["p","Rakipler"],["m","Maçlar"],["d","Düello"]].map(([k,l])=>`<button class="chip ${ht==k?"on":""}" role="tab" aria-selected="${ht==k}" data-a="ht" data-v="${k}">${l}</button>`).join("")}</div>`;
   const ovBody=!filtS.length?cd(isL?"Lig kariyeri":"Kupa kariyeri",emp(isL?"Henüz puan usulü lig sezonu oluşturmadın. Kurulumdan «Lig» şablonunu seçerek başlayabilirsin.":"Henüz kupa sezonu bulunmuyor.")):careerCard(hmod)+xpCard(hmod)+powerCard(hmod)+A1+A2+A3+tsCard(filtS)+chartCard(filtS);
   const body=ht=="r"?recCard()+A4+posDistCard(store.seasons)+A5+cmpCard():ht=="s"?seasonsView(ss,A6c):ht=="p"?oppCard():ht=="m"?matchTab():ht=="d"?(typeof duelView==="function"?duelView():""):modBar+ovBody+achFold;
   return nav+(ht=="o"?vitrinCard():"")+body}
@@ -1774,7 +1774,7 @@ function fixtureView(s){
 const emp=t=>`<div class="emp">${PITCH}${t}</div>`;
 const qOk=s=>!!(s.lk&&s.my!=null&&s.G&&s.P);
 const NAV5=[["Sezon",'<path d="M5 21V4M5 5h11l-2 3.5L16 12H5"/>',[7,0,1],7],["Turnuva",'<path d="M4 6h5M4 18h5M9 6v12M9 12h6M15 12h5"/>',[2,3,8,9],2],["İstat.",'<path d="M5 20V10M12 20V4M19 20v-7"/>',[4],4],["Geçmiş",'<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5v1a3 3 0 0 0 3 3M16 6h3v1a3 3 0 0 1-3 3M12 13v4M8 20h8"/>',[5],5],["Ayarlar",'<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>',[6],6]];
-const tabPre=t=>t==0||t==1?`<div class="bar"><button class="chip backpill" data-t="7">‹ Sezon</button></div>`:t==2||t==3||t==8||t==9?`<div class="stabs ttabs" role="tablist" aria-label="Turnuva bölümleri">${[[2,"Kura"],[3,"Gruplar"],[8,"Fikstür"],[9,"İstatistik"]].map(([id,lb])=>`<button class="chip ${t==id?"on":""}" role="tab" aria-selected="${t==id}" ${t==id?'aria-current="page"':""} data-t="${id}">${lb}</button>`).join("")}</div>`:"";
+const tabPre=t=>t==0||t==1?`<div class="bar"><button class="chip backpill" data-t="7">‹ Sezon</button></div>`:t==2||t==3||t==8||t==9?`<div class="ptabs ttabs" role="tablist" aria-label="Turnuva bölümleri">${[[2,"Kura"],[3,"Gruplar"],[8,"Fikstür"],[9,"İstatistik"]].map(([id,lb])=>`<button class="chip ${t==id?"on":""}" role="tab" aria-selected="${t==id}" ${t==id?'aria-current="page"':""} data-t="${id}">${lb}</button>`).join("")}</div>`:"";
 const FDL={w:"Galibiyet (G)",d:"Beraberlik (B)",l:"Mağlubiyet (M)"};
 const dotsOf=ms=>ms.slice(-5).map(m=>{const r=mres(m);return `<i class="fd ${r}" role="img" aria-label="${FDL[r]}" title="${FDL[r]}: ${esc(m.on)} ${m.gf}-${m.ga}"></i>`}).join("");
 const SBI={
@@ -2571,6 +2571,7 @@ const toast=(m,snap)=>{st.snap=snap;$("toast").innerHTML=`<span>${esc(m)}</span>
 function render(){
   const qsEl=document.querySelector("#qs .sheet"),qsTop=qsEl?qsEl.scrollTop:0;
   const tiEl=document.querySelector("#dlg .tisheet"),tiTop=tiEl?tiEl.scrollTop:0;
+  const ptEl=document.querySelector(".ptabs.htabs6"),ptLeft=ptEl?ptEl.scrollLeft:0;
   const ae=document.activeElement,aeId=ae&&ae.id?ae.id:null,aeSel=ae&&typeof ae.selectionStart=="number"?ae.selectionStart:null;
   const de=document.documentElement;if(store.theme)de.setAttribute("data-theme",store.theme);else de.removeAttribute("data-theme");syncThemeColor();if(store.motion===0)de.setAttribute("data-motion","off");else de.removeAttribute("data-motion");
   $("sbar").innerHTML=`<select id="ss" class="sel">${store.seasons.map(x=>`<option value="${x.id}" ${x.id==store.cur?"selected":""}>${esc(x.name)}${x.res?" ✓":""}</option>`).join("")}</select><button class="btn" data-a="ns" aria-label="Yeni sezon">＋</button><button class="btn" data-a="gs" aria-label="Ara"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button>`;
@@ -2592,6 +2593,7 @@ function render(){
   {const wc=st.tab==8&&document.querySelector(".wktabs .chip.on");if(wc&&wc.scrollIntoView)try{wc.scrollIntoView({inline:"center",block:"nearest"})}catch(e){}}
   const qsAfter=document.querySelector("#qs .sheet");if(qsAfter&&qsTop)qsAfter.scrollTop=qsTop;
   const tiAfter=document.querySelector("#dlg .tisheet");if(tiAfter&&tiTop)tiAfter.scrollTop=tiTop;
+  const ptAfter=document.querySelector(".ptabs.htabs6");if(ptAfter){if(ptLeft)ptAfter.scrollLeft=ptLeft;const ptOn=ptAfter.querySelector(".chip.on");if(ptOn){const rP=ptAfter.getBoundingClientRect(),rO=ptOn.getBoundingClientRect();if(rO.left<rP.left||rO.right>rP.right)ptOn.scrollIntoView({inline:"nearest",block:"nearest"})}}
   if(st.isGenerating){
     const actMap={kura:"kurag",karne:"karne",mac:"mkart",kariyer:"kariyer",tots:"totsg",ko:"kog",duello:"dlposter","duello-sezon":"dlsposter","duello-kulup":"dlcposter"},targetAct=actMap[st.isGenerating];
     document.querySelectorAll('[data-a="kurag"],[data-a="karne"],[data-a="mkart"],[data-a="kariyer"],[data-a="totsg"],[data-a="kog"],[data-a="dlposter"],[data-a="dlsposter"],[data-a="dlcposter"]').forEach(btn=>{

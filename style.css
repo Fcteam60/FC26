@@ -4558,3 +4558,160 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
 .dl-trow.neu .dl-tbL i,.dl-trow.neu .dl-tbR i{
   background:rgba(148,163,184,.46);box-shadow:none;opacity:1;
 }
+/* ==========================================================================
+   v20.47: 3 Katmanlı Navigasyon Hiyerarşisi
+   1) Obsidiyen Yüzen Alt Dock (.nav)
+   2) İnce Alt Çizgili Sayfa Sekmeleri (.ptabs — Turnuva · İstat · Geçmiş)
+   3) İnce Sayfa İçi Filtre Çipleri (.stabs, .dl-nav, .dl-mbar)
+   ========================================================================== */
+
+/* --- KATMAN 1: OBSİDİYEN YÜZEN ALT DOCK (.nav) --- */
+.nav{
+  background:linear-gradient(180deg,rgba(15,24,35,.95) 0%,rgba(8,14,22,.98) 100%)!important;
+  border:1px solid rgba(255,255,255,.13)!important;
+  box-shadow:0 16px 34px -8px rgba(4,9,16,.58),0 4px 12px rgba(4,9,16,.28),inset 0 1px 0 rgba(255,255,255,.15)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);
+}
+.nav button{
+  color:rgba(168,184,200,.76)!important;
+}
+.nav button::before,.nav button.cur::before{
+  background:linear-gradient(180deg,rgba(46,229,157,.20) 0%,rgba(46,229,157,.06) 100%)!important;
+  box-shadow:inset 0 0 0 1px rgba(46,229,157,.36)!important;
+}
+.nav button.cur{
+  color:#3ee6a8!important;
+  font-weight:700!important;
+}
+.nav button.cur::after{
+  content:"";position:absolute;top:0;left:28%;right:28%;height:2.5px;border-radius:0 0 4px 4px;
+  background:linear-gradient(90deg,#2ee59d,#f0c24b);
+  box-shadow:0 2px 8px rgba(46,229,157,.55);
+}
+@media(hover:hover){
+  .nav button:not(.cur):hover{color:#e2e8f0!important}
+}
+
+/* --- KATMAN 2: ALT ÇİZGİLİ SAYFA SEKMELERİ (.ptabs) --- */
+.ptabs{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:2px;
+  margin:-2px 0 14px;padding:0;
+  border-bottom:1.5px solid var(--bd);
+  background:transparent;
+}
+.ptabs.ttabs{grid-template-columns:repeat(4,1fr)}
+.ptabs.itabs{grid-template-columns:repeat(3,1fr)}
+.ptabs.htabs6{
+  display:flex;flex-wrap:nowrap;overflow-x:auto;gap:4px;
+  scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;
+  scroll-snap-type:x proximity;
+}
+.ptabs.htabs6::-webkit-scrollbar{display:none}
+.ptabs.htabs6 .chip{flex:0 0 auto;padding:10px 13px 11px;scroll-snap-align:center}
+@media(min-width:520px){
+  .ptabs.htabs6{display:grid;grid-template-columns:repeat(6,1fr);overflow:visible}
+  .ptabs.htabs6 .chip{padding:10px 4px 11px}
+}
+.ptabs .chip{
+  position:relative;margin:0;min-height:40px;padding:10px 4px 11px;
+  border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;
+  color:var(--mut)!important;font-size:13px;font-weight:600;letter-spacing:.005em;
+  text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  transition:color .16s ease;
+}
+.ptabs .chip::after{
+  content:"";position:absolute;left:14%;right:14%;bottom:-1.5px;height:2.5px;
+  border-radius:3px 3px 0 0;background:transparent;
+  transform:scaleX(.35);opacity:0;transition:transform .2s ease,opacity .2s ease,background .2s ease;
+}
+.ptabs .chip.on{
+  background:transparent!important;border-color:transparent!important;box-shadow:none!important;
+  color:var(--tx)!important;font-weight:800!important;
+}
+.ptabs .chip.on::after{
+  background:linear-gradient(90deg,var(--ac),#2ee59d);
+  box-shadow:0 0 10px color-mix(in srgb,var(--ac) 48%,transparent);
+  transform:scaleX(1);opacity:1;
+}
+[data-theme="dark"] .ptabs .chip.on{color:#3ee6a8!important}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .ptabs .chip.on{color:#3ee6a8!important}
+}
+@media(max-width:359px){
+  .ptabs .chip{font-size:12px;padding:9px 3px 10px}
+  .ptabs.htabs6 .chip{padding:9px 10px 10px}
+}
+
+/* --- KATMAN 3: İNCE SAYFA İÇİ FİLTRE ÇİPLERİ & DÜELLO STÜDYO AYRIMI --- */
+.stabs{
+  padding:3px;border-radius:12px;gap:3px;
+  background:color-mix(in srgb,var(--tx) 5%,transparent);
+  border:1px solid var(--gbd);
+}
+.stabs .chip{
+  min-height:31px;padding:5px 4px;border-radius:9px;
+  font-size:12px;font-weight:700;
+}
+.stabs .chip.on{
+  background:var(--card)!important;
+  color:var(--ac)!important;
+  border:1px solid color-mix(in srgb,var(--ac) 34%,var(--gbd))!important;
+  box-shadow:0 2px 6px rgba(15,35,28,.10)!important;
+}
+[data-theme="dark"] .stabs .chip.on{
+  background:rgba(46,229,157,.14)!important;color:#3ee6a8!important;
+  border-color:rgba(46,229,157,.34)!important;box-shadow:none!important;
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .stabs .chip.on{
+    background:rgba(46,229,157,.14)!important;color:#3ee6a8!important;
+    border-color:rgba(46,229,157,.34)!important;box-shadow:none!important;
+  }
+}
+
+/* Düello Stüdyosu (4 Sekmeli Obsidiyen Seçici) vs. İnce Mod Filtresi (Çift Yeşil Çakışmasına Son) */
+.dl-nav{
+  padding:4px;border-radius:14px;gap:4px;
+  background:var(--gcard);border:1px solid var(--gbd);
+}
+.dl-ntab{padding:7px 2px;border-radius:10px;font-size:11.5px}
+.dl-ntab.on{
+  background:linear-gradient(165deg,#101a26,#090f17)!important;
+  color:#f8fafc!important;
+  border-color:rgba(240,194,75,.40)!important;
+  box-shadow:0 5px 14px -3px rgba(7,12,20,.34)!important;
+}
+.dl-ntab.on svg{color:#3ee6a8}
+[data-theme="dark"] .dl-ntab.on{
+  background:linear-gradient(135deg,rgba(46,229,157,.18),rgba(240,194,75,.12))!important;
+  color:#f8fafc!important;border-color:rgba(46,229,157,.42)!important;
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .dl-ntab.on{
+    background:linear-gradient(135deg,rgba(46,229,157,.18),rgba(240,194,75,.12))!important;
+    color:#f8fafc!important;border-color:rgba(46,229,157,.42)!important;
+  }
+}
+
+.dl-mbar{
+  padding:3px;border-radius:11px;
+  background:color-mix(in srgb,var(--tx) 5%,transparent);
+  border:1px solid var(--gbd);
+}
+.dl-mbtn{padding:5px 4px;border-radius:8px;font-size:11.5px}
+.dl-mbtn.on{
+  background:var(--card)!important;color:var(--tx)!important;
+  border:1px solid var(--gbd)!important;
+  box-shadow:0 2px 6px rgba(15,35,28,.09)!important;
+  font-weight:700!important;
+}
+[data-theme="dark"] .dl-mbtn.on{
+  background:rgba(255,255,255,.10)!important;color:#f8fafc!important;
+  border-color:rgba(255,255,255,.18)!important;box-shadow:none!important;
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .dl-mbtn.on{
+    background:rgba(255,255,255,.10)!important;color:#f8fafc!important;
+    border-color:rgba(255,255,255,.18)!important;box-shadow:none!important;
+  }
+}
