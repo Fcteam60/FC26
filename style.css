@@ -3904,3 +3904,9 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
 .dl-pkpi{text-align:right;display:flex;flex-direction:column}
 .dl-pkpi b{font-family:var(--num);font-size:16px;color:var(--gold)}
 .dl-pkpi small{font-size:11px;color:var(--mut)}
+/* ===== v20.35: Düello Aktif Kulüp GEN Rozeti ===== */
+.dl-gen{
+  flex:0 0 auto;font-family:var(--num);font-size:13px;font-weight:700;
+  padding:2px 7px;border-radius:7px;line-height:1.2;
+  background:var(--gcard);border:1px solid var(--gbd);color:var(--tx);
+}

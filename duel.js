@@ -1,8 +1,9 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — Canlı Menajer Düellosu (VS) & Firebase REST Eşitleme (duel.js · v20.34)
+   FC 27 Grup Ligi — Canlı Menajer Düellosu (VS) & Firebase REST Eşitleme (duel.js · v20.35)
    - Sıfır harici SDK: doğrudan fetch() ile Firebase Realtime Database REST API kullanır.
-   - Çevrimdışı öncelikli: ana veriler IndexedDB'de kalır, yalnızca ~1.5 KB özet eşitlenir.
-   - Yedek olarak çevrimdışı Kıyas Kodu (kopyala / yapıştır) desteği içerir.
+   - Çevrimdışı öncelikli: ana veriler IndexedDB'de kalır, yalnızca ~2 KB özet eşitlenir.
+   - Tümü / Kupa / Lig kırılımı, Temiz Kasa %, Galibiyet Serisi, Averaj, Kariyer Yıldızı ve
+     negatif/verisiz uç durum korumalı kıyaslama motoru.
    ========================================================================== */
 const DUEL_DEFAULT_URL="https://fc27ligvs-default-rtdb.europe-west1.firebasedatabase.app";
 const DUEL_CFG_K="fc27lig_duel_cfg";
@@ -58,22 +59,45 @@ function duelRelTime(ts){
   return Math.floor(s/86400)+" gün önce";
 }
 
-// Mevcut cihazdaki tüm sezonlardan ~1.5 KB'lık kompakt Menajer Düellosu özeti üretir
-function buildDuelSummary(){
-  const cfg=duelLoadCfg();
-  const d=careerData("all");
+// Belirli bir mod (all / cup / lg) için kariyer, temiz kasa, galibiyet serisi ve beklenti üstü metrikleri
+function duelModeStats(mode){
+  const d=careerData(mode);
+  const S=store.seasons.filter(x=>!mode||mode=="all"||(mode=="lg"?isLg(x.cfg):!isLg(x.cfg)));
   const totM=(d.t.w||0)+(d.t.d||0)+(d.t.l||0);
   const pts=(d.t.w||0)*3+(d.t.d||0);
-  const wr=totM?Math.round(d.t.w/totM*1000)/10:0;
-  const ppm=totM?Math.round(pts/totM*100)/100:0;
-  const gpm=totM?Math.round(d.t.gf/totM*100)/100:0;
-  const gapm=totM?Math.round(d.t.ga/totM*100)/100:0;
+  const gf=d.t.gf||0,ga=d.t.ga||0,gd=gf-ga;
+  const wr=totM?Math.round(d.t.w/totM*1000)/10:null;
+  const ppm=totM?Math.round(pts/totM*100)/100:null;
+  const gpm=totM?Math.round(gf/totM*100)/100:null;
+  const gapm=totM?Math.round(ga/totM*100)/100:null;
+  const chRate=d.finN?Math.round(d.ch/d.finN*1000)/10:null;
 
-  const xpL=typeof xpData==="function"?xpData("all"):[];
-  const xpAvgG=xpL.length?Math.round(xpL.reduce((a,o)=>a+o.g,0)/xpL.length*10)/10:0;
+  // Maç bazlı: temiz kasa (clean sheet %) ve en uzun galibiyet serisi
+  const mtAll=S.flatMap(x=>x.mt||[]);
+  let csCnt=0,curW=0,maxW=0;
+  mtAll.forEach(m=>{
+    if((+m.ga||0)===0)csCnt++;
+    if(mres(m)==="w"){curW++;if(curW>maxW)maxW=curW}else curW=0;
+  });
+  const csPct=mtAll.length?Math.round(csCnt/mtAll.length*1000)/10:null;
+
+  const xpL=typeof xpData==="function"?xpData(mode):[];
+  const xpAvgG=xpL.length?Math.round(xpL.reduce((a,o)=>a+o.g,0)/xpL.length*10)/10:null;
   const xpTotD=xpL.length?xpL.reduce((a,o)=>a+o.d,0):0;
-  const xpAvgD=xpL.length?Math.round(xpTotD/xpL.length*100)/100:0;
+  const xpAvgD=xpL.length?Math.round(xpTotD/xpL.length*100)/100:null;
   const xpUp=xpL.filter(o=>o.d>0).length;
+
+  return{
+    car:{n:d.n,finN:d.finN,ch:d.ch,chRate,fin:d.fin,pod:d.pod,w:d.t.w||0,d:d.t.d||0,l:d.t.l||0,gf,ga,gd,m:totM,wr,ppm,gpm,gapm,csPct,maxW:mtAll.length?maxW:null},
+    xp:{n:xpL.length,avgG:xpAvgG,totD:xpTotD,avgD:xpAvgD,up:xpUp},
+    star:d.ga?{n:d.ga.n,v:d.ga.v,g:d.g?d.g.v:null,gn:d.g?d.g.n:""}:null
+  };
+}
+
+// Mevcut cihazdaki tüm sezonlardan ~2 KB'lık kompakt Menajer Düellosu özeti üretir (v:2)
+function buildDuelSummary(){
+  const cfg=duelLoadCfg();
+  const allS=duelModeStats("all"),cupS=duelModeStats("cup"),lgS=duelModeStats("lg");
 
   const dnaRaw=typeof calcTacticalDNA==="function"?calcTacticalDNA(null,{career:true}):null;
   let dna=null;
@@ -101,7 +125,7 @@ function buildDuelSummary(){
       oXg:Math.round(dnaRaw.oXg*100)/100,
       xgDiff:Math.round(dnaRaw.xgDiff*100)/100,
       xgPairCnt:xa.length,
-      xPtsDiff:xa.length?Math.round((actPtsSum-xPtsSum)*10)/10:0,
+      xPtsDiff:xa.length?Math.round((actPtsSum-xPtsSum)*10)/10:null,
       gkPct,
       des:dnaRaw.deservedCnt,st:dnaRaw.stealCnt,un:dnaRaw.unluckyCnt
     };
@@ -125,17 +149,42 @@ function buildDuelSummary(){
 
   const nm=(cfg.name||store.owner||"Menajer").replace(/\s+/g," ").trim().slice(0,32)||"Menajer";
   return{
-    v:1,
+    v:2,
     uid:cfg.uid,
     name:nm,
     ut:Date.now(),
     ver:VER,
-    car:{n:d.n,finN:d.finN,ch:d.ch,fin:d.fin,pod:d.pod,w:d.t.w||0,d:d.t.d||0,l:d.t.l||0,gf:d.t.gf||0,ga:d.t.ga||0,m:totM,wr,ppm,gpm,gapm},
-    xp:{n:xpL.length,avgG:xpAvgG,totD:xpTotD,avgD:xpAvgD,up:xpUp},
+    car:allS.car,
+    xp:allS.xp,
+    star:allS.star,
+    modes:{cup:{car:cupS.car,xp:cupS.xp},lg:{car:lgS.car,xp:lgS.xp}},
     dna,
-    cur:active,
-    star:d.ga?{n:d.ga.n,v:d.ga.v}:null
+    cur:active
   };
+}
+
+// Eski (v1) veya yeni (v2) özetlerden seçili moda göre güvenli veri okuma
+function duelPickMode(p,mode){
+  if(!p)return{car:{n:0,finN:0,ch:0,fin:0,pod:0,m:0},xp:{n:0},compat:true};
+  if(mode=="cup"||mode=="lg"){
+    if(p.modes&&p.modes[mode])return{car:p.modes[mode].car,xp:p.modes[mode].xp,compat:true};
+    return{car:{n:0,finN:0,ch:0,fin:0,pod:0,m:0},xp:{n:0},compat:false};
+  }
+  const c=p.car||{},m=c.m||0;
+  // v1 geri uyumluluk: 0 maçlı eski kayıtlarda rate alanlarını null yap ki haksız puan almasın
+  const normCar=Object.assign({},c,{
+    gd:c.gd!=null?c.gd:((c.gf||0)-(c.ga||0)),
+    chRate:c.chRate!=null?c.chRate:(c.finN?Math.round((c.ch||0)/c.finN*1000)/10:null),
+    wr:m>0?c.wr:null,
+    ppm:m>0?c.ppm:null,
+    gpm:m>0?c.gpm:null,
+    gapm:m>0?c.gapm:null,
+    csPct:c.csPct!=null?c.csPct:null,
+    maxW:c.maxW!=null?c.maxW:null
+  });
+  const x=p.xp||{n:0};
+  const normXp={n:x.n||0,avgG:x.n?x.avgG:null,totD:x.totD||0,avgD:x.n?x.avgD:null,up:x.up||0};
+  return{car:normCar,xp:normXp,compat:true};
 }
 
 let duelPushTimer=null;
@@ -177,7 +226,6 @@ async function duelPull(silent){
     if(!r.ok)throw new Error("HTTP "+r.status);
     const data=await r.json();
     const cache=duelLoadCache();
-    // Buluttan gelenleri güncelle, manuel eklenen çevrimdışı rakipleri koru
     const nextPeers={};
     Object.entries(cache.peers||{}).forEach(([k,v])=>{if(v&&v.manual)nextPeers[k]=v});
     if(data&&typeof data==="object"){
@@ -199,11 +247,24 @@ async function duelPull(silent){
   }
 }
 
+async function duelDeleteRemote(cfg){
+  if(!cfg||!cfg.room||cfg.room.length<6||!cfg.uid)return false;
+  if(typeof navigator!=="undefined"&&navigator.onLine===false)return false;
+  const url=`${duelBaseUrl(cfg)}/rooms/${encodeURIComponent(cfg.room)}/${encodeURIComponent(cfg.uid)}.json`;
+  try{
+    const r=await fetch(url,{method:"DELETE"});
+    return r.ok;
+  }catch(e){return false}
+}
+
 async function duelSyncNow(silent){
   if(st.duelBusy)return;
   const cfg=duelLoadCfg();
   if(!cfg.room||cfg.room.length<6)return;
+  // Otomatik sekme geçişlerinde 10 saniye içinde gereksiz tekrar isteği engelle
+  if(silent&&Date.now()-(st.duelLastAuto||0)<10000)return;
   st.duelBusy=true;
+  st.duelLastAuto=Date.now();
   if(!silent)render();
   const ok1=await duelPush(silent);
   const ok2=await duelPull(silent);
@@ -244,29 +305,66 @@ function duelRadarSvg(me,opp){
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Çift renkli Taktiksel DNA Düello Radarı">${rings}${axes}${pOp}${pMe}${labels}</svg>`;
 }
 
-function duelCompareRow(label,v1,v2,fmt1,fmt2,lowerBetter){
-  const n1=Number.isFinite(+v1)?+v1:0,n2=Number.isFinite(+v2)?+v2:0;
+// Negatif / null / 0-maç korumalı bar genişliği ve kazanan hesabı
+function duelBarCalc(v1,v2,lowerBetter){
+  const h1=v1!=null&&Number.isFinite(+v1),h2=v2!=null&&Number.isFinite(+v2);
+  if(!h1&&!h2)return{p1:0,p2:0,w1:false,w2:false};
+  if(!h1)return{p1:0,p2:65,w1:false,w2:false};
+  if(!h2)return{p1:65,p2:0,w1:false,w2:false};
+  const n1=+v1,n2=+v2;
   const w1=lowerBetter?(n1<n2):(n1>n2),w2=lowerBetter?(n2<n1):(n2>n1);
-  const absMax=Math.max(0.01,Math.abs(n1),Math.abs(n2));
-  const p1=Math.max(8,Math.min(100,Math.round(Math.abs(n1)/absMax*100)));
-  const p2=Math.max(8,Math.min(100,Math.round(Math.abs(n2)/absMax*100)));
+  if(n1===n2)return{p1:n1===0?14:55,p2:n2===0?14:55,w1:false,w2:false};
+  if(n1<0||n2<0){
+    const a=lowerBetter?-n1:n1,b=lowerBetter?-n2:n2;
+    if(a>0&&b<=0)return{p1:100,p2:10,w1,w2};
+    if(b>0&&a<=0)return{p1:10,p2:100,w1,w2};
+    const lo=Math.min(a,b),hi=Math.max(a,b),sp=Math.max(0.01,hi-lo),pad=sp*0.25;
+    return{
+      p1:Math.max(10,Math.min(100,Math.round((a-lo+pad)/(sp+pad)*100))),
+      p2:Math.max(10,Math.min(100,Math.round((b-lo+pad)/(sp+pad)*100))),
+      w1,w2
+    };
+  }
+  const mx=Math.max(0.01,n1,n2);
+  return{
+    p1:n1>0?Math.max(8,Math.min(100,Math.round(n1/mx*100))):6,
+    p2:n2>0?Math.max(8,Math.min(100,Math.round(n2/mx*100))):6,
+    w1,w2
+  };
+}
+
+function duelCompareRow(label,v1,v2,fmt1,fmt2,lowerBetter){
+  const b=duelBarCalc(v1,v2,lowerBetter);
   return `<div class="dl-row">`+
-    `<div class="dl-top"><b class="dl-v me${w1?" win":""}">${fmt1}</b><span class="dl-lbl">${label}</span><b class="dl-v op${w2?" win":""}">${fmt2}</b></div>`+
-    `<div class="dl-bars"><div class="dl-bL"><i style="width:${p1}%"></i></div><div class="dl-bR"><i style="width:${p2}%"></i></div></div>`+
+    `<div class="dl-top"><b class="dl-v me${b.w1?" win":""}">${fmt1}</b><span class="dl-lbl">${label}</span><b class="dl-v op${b.w2?" win":""}">${fmt2}</b></div>`+
+    `<div class="dl-bars"><div class="dl-bL"><i style="width:${b.p1}%"></i></div><div class="dl-bR"><i style="width:${b.p2}%"></i></div></div>`+
   `</div>`;
 }
 
-function duelScoreboard(me,opp){
+// Sadece iki tarafın da geçerli verisi olan kategorilerde puan verir (0 maçlıya haksız puan yok)
+function duelScoreboard(me,opp,mode){
+  const m1=duelPickMode(me,mode||"all"),m2=duelPickMode(opp,mode||"all");
+  const c1=m1.car,c2=m2.car;
   let s1=0,s2=0;
-  const cmp=(a,b,low)=>{if(a==null||b==null)return;if(low){if(a<b)s1++;else if(b<a)s2++}else{if(a>b)s1++;else if(b>a)s2++}};
-  cmp(me.car.ch,opp.car.ch,false);
-  cmp(me.car.fin,opp.car.fin,false);
-  cmp(me.car.wr,opp.car.wr,false);
-  cmp(me.car.ppm,opp.car.ppm,false);
-  cmp(me.car.gpm,opp.car.gpm,false);
-  cmp(me.car.gapm,opp.car.gapm,true);
-  if(me.xp.n&&opp.xp.n)cmp(me.xp.avgD,opp.xp.avgD,false);
-  if(me.dna&&opp.dna){
+  const cmp=(a,b,low)=>{
+    if(a==null||b==null||!Number.isFinite(+a)||!Number.isFinite(+b))return;
+    if(low){if(+a<+b)s1++;else if(+b<+a)s2++}else{if(+a>+b)s1++;else if(+b>+a)s2++}
+  };
+  if(c1.n>0&&c2.n>0){
+    cmp(c1.ch,c2.ch,false);
+    cmp(c1.fin,c2.fin,false);
+    cmp(c1.pod,c2.pod,false);
+  }
+  if(c1.m>0&&c2.m>0){
+    cmp(c1.wr,c2.wr,false);
+    cmp(c1.ppm,c2.ppm,false);
+    cmp(c1.gpm,c2.gpm,false);
+    cmp(c1.gapm,c2.gapm,true);
+    cmp(c1.csPct,c2.csPct,false);
+    cmp(c1.maxW,c2.maxW,false);
+  }
+  if(m1.xp.n>0&&m2.xp.n>0)cmp(m1.xp.avgD,m2.xp.avgD,false);
+  if((!mode||mode=="all")&&me.dna&&opp.dna){
     cmp(me.dna.atk+me.dna.ctrl+me.dna.aggr+me.dna.eff,opp.dna.atk+opp.dna.ctrl+opp.dna.aggr+opp.dna.eff,false);
   }
   return{s1,s2};
@@ -290,9 +388,10 @@ function duelCodeDecode(raw){
 function duelView(){
   const cfg=duelLoadCfg(),cache=duelLoadCache();
   const me=buildDuelSummary();
+  const mode=st.dlmod||"all";
   const hasRoom=!!(cfg.room&&cfg.room.length>=6);
   const allPeers=Object.values(cache.peers||{}).filter(p=>p&&p.uid&&p.uid!==cfg.uid);
-  const rivals=allPeers.sort((a,b)=>(b.car.ch-a.car.ch)||(b.car.ppm-a.car.ppm)||(b.ut-a.ut));
+  const rivals=allPeers.sort((a,b)=>(b.car.ch-a.car.ch)||((b.car.ppm||0)-(a.car.ppm||0))||(b.ut-a.ut));
   const selUid=(cache.sel&&rivals.some(r=>r.uid===cache.sel))?cache.sel:(rivals[0]?rivals[0].uid:"");
   const opp=rivals.find(r=>r.uid===selUid)||null;
 
@@ -300,7 +399,7 @@ function duelView(){
   let connHtml="";
   if(!hasRoom||st.duelEdit){
     connHtml=psetCard("duo","emr",hasRoom?"Düello Odası Ayarları":"Canlı Menajer Düellosu","Arkadaşınla aynı oda kodunu gir, sezonlarınız otomatik kıyaslansın",hasRoom?cfg.room:"Hazır",
-      `<div class="note" style="margin:0 0 10px">İkiniz de aynı <b>Oda Kodu</b>’nu girdiğinizde maç kaydettikçe yalnızca 1–2 KB’lık özetiniz eşitlenir; ana kayıtlarınız telefonunuzda kalır.</div>`+
+      `<div class="note" style="margin:0 0 10px">İkiniz de aynı <b>Oda Kodu</b>’nu girdiğinizde maç kaydettikçe yalnızca ~2 KB’lık özetiniz eşitlenir; ana kayıtlarınız telefonunuzda kalır.</div>`+
       `<div class="su-fgrid" style="margin-bottom:10px">`+
         `<div class="su-fld"><label>Menajer Adın</label><input id="dl_nm" class="f" maxlength="32" placeholder="Adın" value="${esc(cfg.name||store.owner||"")}"></div>`+
         `<div class="su-fld"><label>Ortak Oda Kodu (min 6)</label><input id="dl_rm" class="f" maxlength="40" placeholder="örn: fc27-duello-2026" value="${esc(cfg.room||"")}" autocapitalize="none" autocorrect="off"></div>`+
@@ -324,14 +423,16 @@ function duelView(){
     `</div>`;
   }
 
-  // 2) Oda Sıralaması (3+ kişi) veya Rakip Seçici
+  // 2) Oda Sıralaması (3+ kişi)
   let lbHtml="";
   if(rivals.length>=2){
-    const board=[me,...rivals].sort((a,b)=>(b.car.ch-a.car.ch)||(b.car.ppm-a.car.ppm)||(b.car.wr-a.car.wr));
+    const board=[me,...rivals].sort((a,b)=>(b.car.ch-a.car.ch)||((b.car.ppm||0)-(a.car.ppm||0))||((b.car.wr||0)-(a.car.wr||0)));
     lbHtml=psetCard("trophy","gold","Oda Sıralaması","Kıyaslamak için bir rakibe dokun",`${board.length} menajer`,
       `<div class="dl-lb">${board.map((p,idx)=>{
         const isMe=p.uid===cfg.uid,isSel=p.uid===selUid;
-        const inner=`<span class="dl-rk">${idx+1}</span><span class="dl-pnm"><b>${esc(p.name)}${isMe?" (Sen)":""}</b><small>${p.car.n} sezon · ${p.car.m} maç · %${Math.round(p.car.wr)}G</small></span><span class="dl-pkpi"><b>${p.car.ch}🏆</b><small>${fx(p.car.ppm)} P/M</small></span>`;
+        const wrTxt=p.car.m?`%${Math.round(p.car.wr||0)}G`:"0 maç";
+        const ppmTxt=p.car.m?`${fx(p.car.ppm||0)} P/M`:"—";
+        const inner=`<span class="dl-rk">${idx+1}</span><span class="dl-pnm"><b>${esc(p.name)}${isMe?" (Sen)":""}</b><small>${p.car.n} sezon · ${p.car.m} maç · ${wrTxt}</small></span><span class="dl-pkpi"><b>${p.car.ch}🏆</b><small>${ppmTxt}</small></span>`;
         return isMe?`<div class="dl-lbr me">${inner}</div>`:`<button class="dl-lbr${isSel?" sel":""}" data-a="dlsel" data-v="${esc(p.uid)}">${inner}</button>`;
       }).join("")}</div>`
     );
@@ -347,47 +448,79 @@ function duelView(){
         : `<div class="note" style="margin:0">Yukarıdan ortak bir oda koduyla bağlanabilir veya aşağıdaki <b>Manuel Kıyas Kodu</b> alanından çevrimdışı karşılaştırma yapabilirsin.</div>`
     );
   }else{
-    const sb=duelScoreboard(me,opp);
+    const m1=duelPickMode(me,mode),m2=duelPickMode(opp,mode);
+    const c1=m1.car,c2=m2.car;
+    const sb=duelScoreboard(me,opp,mode);
     const shIc='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>';
+    const modeLbl=mode=="cup"?"Kupa":mode=="lg"?"Lig":"Tüm Sezonlar";
+
+    const modeBar=`<div class="stabs seg3" style="margin:10px 0" role="tablist" aria-label="Düello filtresi">${[["all","Tümü"],["cup","Kupa"],["lg","Lig"]].map(([k,l])=>`<button class="chip ${mode==k?"on":""}" role="tab" aria-selected="${mode==k}" data-a="dlmod" data-v="${k}">${l}</button>`).join("")}</div>`;
+    const compatNote=(!m2.compat&&mode!="all")?`<div class="note wr" style="margin:0 0 10px">${esc(opp.name)} henüz önceki sürümde eşitleme yaptı; Kupa/Lig ayrımı için uygulamayı güncelleyip bir kez eşitlemesi gerekir.</div>`:"";
+
     const hero=`<div class="card pglass dl-hero">`+
       `<div class="dl-vshead">`+
-        `<div class="dl-side me"><span class="dl-dot me"></span><b>${esc(me.name)}</b><small>${me.car.n} sezon · ${me.car.m} maç</small></div>`+
+        `<div class="dl-side me"><span class="dl-dot me"></span><b>${esc(me.name)}</b><small>${c1.n} sezon · ${c1.m} maç</small></div>`+
         `<div class="dl-mid"><span class="dl-vs">VS</span><div class="dl-sc"><b class="me">${sb.s1}</b><span>–</span><b class="op">${sb.s2}</b></div></div>`+
-        `<div class="dl-side op"><span class="dl-dot op"></span><b>${esc(opp.name)}</b><small>${opp.car.n} sezon · ${opp.car.m} maç</small></div>`+
+        `<div class="dl-side op"><span class="dl-dot op"></span><b>${esc(opp.name)}</b><small>${c2.n} sezon · ${c2.m} maç</small></div>`+
       `</div>`+
       `<div class="dl-meta"><span>Senin son kaydın: Güncel</span><span>${esc(opp.name)}: ${esc(duelRelTime(opp.ut))}${opp.manual?" (Manuel)":""}</span></div>`+
       `<div class="bar" style="margin:10px 0 0"><button class="btn p pset-pri ui-btn" data-a="dlposter" style="flex:1">${shIc}<span>1v1 Düello Posterini Paylaş (PNG)</span></button>${opp.manual?`<button class="btn pset-sec" data-a="dldel" data-v="${esc(opp.uid)}" style="color:var(--wr)">Kaldır</button>`:""}</div>`+
     `</div>`;
 
+    const sgnI=v=>v==null?"—":(v>0?"+"+v:v<0?"−"+Math.abs(v):"0");
+    const pctF=v=>v==null?"—":"%"+Math.round(v);
+    const fxF=v=>v==null?"—":fx(v);
     const carRows=
-      duelCompareRow("Şampiyonluk",me.car.ch,opp.car.ch,me.car.ch+"🏆",opp.car.ch+"🏆",false)+
-      duelCompareRow("Final / İlk 2",me.car.fin,opp.car.fin,me.car.fin,opp.car.fin,false)+
-      duelCompareRow("Galibiyet Oranı",me.car.wr,opp.car.wr,"%"+Math.round(me.car.wr),"%"+Math.round(opp.car.wr),false)+
-      duelCompareRow("Maç Başı Puan",me.car.ppm,opp.car.ppm,fx(me.car.ppm),fx(opp.car.ppm),false)+
-      duelCompareRow("Atılan Gol / Maç",me.car.gpm,opp.car.gpm,fx(me.car.gpm),fx(opp.car.gpm),false)+
-      duelCompareRow("Yenilen Gol / Maç",me.car.gapm,opp.car.gapm,fx(me.car.gapm),fx(opp.car.gapm),true);
-    const carCard=psetCard("trophy","emr","Kariyer & Kupa Düellosu","Tüm sezonlar toplamı",`${sb.s1}–${sb.s2}`,carRows);
+      duelCompareRow("Şampiyonluk",c1.n?c1.ch:null,c2.n?c2.ch:null,c1.n?c1.ch+"🏆":"—",c2.n?c2.ch+"🏆":"—",false)+
+      duelCompareRow("Kupa Oranı",c1.chRate,c2.chRate,pctF(c1.chRate),pctF(c2.chRate),false)+
+      duelCompareRow(mode=="lg"?"İlk 2":"Final / İlk 2",c1.n?c1.fin:null,c2.n?c2.fin:null,c1.n?c1.fin:"—",c2.n?c2.fin:"—",false)+
+      duelCompareRow(mode=="lg"?"İlk 3 (Podyum)":"Yarı Final+",c1.n?c1.pod:null,c2.n?c2.pod:null,c1.n?c1.pod:"—",c2.n?c2.pod:"—",false)+
+      duelCompareRow("Galibiyet Oranı",c1.wr,c2.wr,pctF(c1.wr),pctF(c2.wr),false)+
+      duelCompareRow("Maç Başı Puan",c1.ppm,c2.ppm,fxF(c1.ppm),fxF(c2.ppm),false)+
+      duelCompareRow("Atılan Gol / Maç",c1.gpm,c2.gpm,fxF(c1.gpm),fxF(c2.gpm),false)+
+      duelCompareRow("Yenilen Gol / Maç",c1.gapm,c2.gapm,fxF(c1.gapm),fxF(c2.gapm),true)+
+      duelCompareRow("Toplam Averaj",c1.m?c1.gd:null,c2.m?c2.gd:null,c1.m?sgnI(c1.gd):"—",c2.m?sgnI(c2.gd):"—",false)+
+      duelCompareRow("Temiz Kasa (Clean Sheet)",c1.csPct,c2.csPct,pctF(c1.csPct),pctF(c2.csPct),false)+
+      duelCompareRow("En Uzun Galibiyet Serisi",c1.maxW,c2.maxW,c1.maxW!=null?c1.maxW+" maç":"—",c2.maxW!=null?c2.maxW+" maç":"—",false);
+    const carCard=psetCard("trophy","emr","Kariyer & Kupa Düellosu",`${modeLbl} · ${c1.m} vs ${c2.m} maç`,`${sb.s1}–${sb.s2}`,carRows);
 
     let fairCard="";
-    if(me.xp.n||opp.xp.n){
-      const dFmt=v=>(v>0?"+":"")+fx(v);
-      fairCard=psetCard("radar","gold","Adil Güç Kıyaslaması","Ortalama takım gücü (GEN) ve beklenti üstü performans",null,
-        duelCompareRow("Ortalama Takım GEN",me.xp.avgG,opp.xp.avgG,me.xp.n?fx(me.xp.avgG):"—",opp.xp.n?fx(opp.xp.avgG):"—",false)+
-        duelCompareRow("Beklenti Üstü (Sezon/Tur)",me.xp.avgD,opp.xp.avgD,me.xp.n?dFmt(me.xp.avgD):"—",opp.xp.n?dFmt(opp.xp.avgD):"—",false)+
+    if(m1.xp.n||m2.xp.n){
+      const dFmt=v=>v==null?"—":(v>0?"+":"")+fx(v);
+      fairCard=psetCard("radar","gold","Adil Güç Kıyaslaması","Ortalama takım gücü (GEN) ve beklenti üstü performans",modeLbl,
+        duelCompareRow("Ortalama Takım GEN",m1.xp.avgG,m2.xp.avgG,fxF(m1.xp.avgG),fxF(m2.xp.avgG),false)+
+        duelCompareRow("Beklenti Üstü (Sezon/Tur)",m1.xp.avgD,m2.xp.avgD,dFmt(m1.xp.avgD),dFmt(m2.xp.avgD),false)+
         `<div class="note" style="margin:6px 0 0">Daha düşük GEN takımla beklentinin üstüne çıkan menajer adil kıyaslamada öne geçer.</div>`
+      );
+    }
+
+    let starCard="";
+    if(me.star||opp.star){
+      const sBox=(p,cls)=>{
+        const st0=p.star;
+        return `<div class="dl-id ${cls}"><small>${esc(p.name)}</small><b>${st0?esc(st0.n):"Veri yok"}</b>${st0?`<em>${st0.v} G+A${st0.g!=null&&st0.gn&&nz(st0.gn)===nz(st0.n)?` · ${st0.g} Gol`:""}</em>`:""}</div>`;
+      };
+      starCard=psetCard("spark","gold","Kariyer Yıldızı Düellosu","Tüm sezonlarda en çok skor katkısı (G+A) üreten yıldızlar",null,
+        `<div class="dl-ids" style="margin-top:0">${sBox(me,"me")}${sBox(opp,"op")}</div>`
       );
     }
 
     let dnaCard="";
     if(me.dna||opp.dna){
       const md=me.dna,od=opp.dna;
+      const luckVal=d=>d&&d.xgPairCnt?((d.st||0)-(d.un||0)):null;
+      const luckFmt=d=>d&&d.xgPairCnt?`${d.st||0}Ş / ${d.un||0}Şs`:"—";
       const xgRows=(md&&od)?(
-        duelCompareRow("Bitiricilik (Gol − xG)",md.xgDiff,od.xgDiff,xgS2(md.xgDiff),xgS2(od.xgDiff),false)+
-        duelCompareRow("Puan − xPts (Pragmatizm)",md.xPtsDiff,od.xPtsDiff,xgS1(md.xPtsDiff),xgS1(od.xPtsDiff),false)+
+        duelCompareRow("Topla Oynama %",md.mPos,od.mPos,"%"+md.mPos,"%"+od.mPos,false)+
+        duelCompareRow("Pas İsabeti %",md.mPass,od.mPass,"%"+md.mPass,"%"+od.mPass,false)+
+        duelCompareRow("Üretilen xG / Maç",md.mXg,od.mXg,xgN2(md.mXg),xgN2(od.mXg),false)+
         duelCompareRow("Rakip xG / Maç (Savunma)",md.oXg,od.oXg,xgN2(md.oXg),xgN2(od.oXg),true)+
-        (md.gkPct!=null&&od.gkPct!=null?duelCompareRow("Kaleci Kurtarış %",md.gkPct,od.gkPct,"%"+md.gkPct,"%"+od.gkPct,false):"")
+        duelCompareRow("Bitiricilik (Gol − xG)",md.xgDiff,od.xgDiff,xgS2(md.xgDiff),xgS2(od.xgDiff),false)+
+        duelCompareRow("Puan − xPts (Pragmatizm)",md.xPtsDiff,od.xPtsDiff,md.xPtsDiff!=null?xgS1(md.xPtsDiff):"—",od.xPtsDiff!=null?xgS1(od.xPtsDiff):"—",false)+
+        (md.gkPct!=null||od.gkPct!=null?duelCompareRow("Kaleci Kurtarış %",md.gkPct,od.gkPct,pctF(md.gkPct),pctF(od.gkPct),false):"")+
+        duelCompareRow("Hak Ediş (Şanslı / Şanssız)",luckVal(md),luckVal(od),luckFmt(md),luckFmt(od),false)
       ):`<div class="note" style="margin:6px 0 0">Tam xG kıyaslaması için iki menajerin de gelişmiş maç istatistiği girmesi gerekir.</div>`;
-      dnaCard=psetCard("dna","sky","Taktiksel DNA & xG Düellosu","Çift renkli radar ve menajer kimlikleri",null,
+      dnaCard=psetCard("dna","sky","Taktiksel DNA & xG Düellosu","Çift renkli radar, oyun tarzı ve xG metrikleri",null,
         `<div class="dl-leg"><span><i class="me"></i>${esc(me.name)}${md?` (${md.n}M)`:""}</span><span><i class="op"></i>${esc(opp.name)}${od?` (${od.n}M)`:""}</span></div>`+
         `<div class="dl-radar">${duelRadarSvg(md,od)}</div>`+
         `<div class="dl-ids">`+
@@ -402,13 +535,15 @@ function duelView(){
     const curSide=(p,cls)=>{
       const c=p.cur;if(!c)return `<div class="dl-cs ${cls}"><small>${esc(p.name)}</small><b>Aktif sezon yok</b></div>`;
       const ti=c.team&&IX[c.team]!=null?IX[c.team]:null;
-      return `<div class="dl-cs ${cls}"><div class="dl-csh">${ti!=null?badge(ti,24):""}<div><small>${esc(p.name)}</small><b>${esc(c.team||"Takım seçilmedi")}</b></div></div><div class="dl-csm">${esc(c.stage||"")} · ${c.w}G ${c.d}B ${c.l}M</div>${formDots(c.form)}</div>`;
+      const gTag=c.teamG?`<span class="dl-gen">${c.teamG}</span>`:"";
+      const gd=(c.gf||0)-(c.ga||0),gdS=(gd>0?"+"+gd:gd<0?"−"+Math.abs(gd):"0");
+      return `<div class="dl-cs ${cls}"><div class="dl-csh">${ti!=null?badge(ti,24):""}<div style="min-width:0;flex:1"><small>${esc(p.name)}</small><b>${esc(c.team||"Takım seçilmedi")}</b></div>${gTag}</div><div class="dl-csm">${esc(c.stage||"")} · ${c.w}G ${c.d}B ${c.l}M</div><div class="dl-csm">Gol: ${c.gf||0}:${c.ga||0} (Av ${gdS})</div>${formDots(c.form)}</div>`;
     };
-    const pulseCard=psetCard("flame","org","Canlı Sezon Nabzı","Aktif sezondaki takım ve son 5 maç formu",null,
+    const pulseCard=psetCard("flame","org","Canlı Sezon Nabzı","Aktif sezondaki kulüp, GEN, averaj ve son 5 maç formu",null,
       `<div class="dl-curgrid">${curSide(me,"me")}${curSide(opp,"op")}</div>`
     );
 
-    vsHtml=hero+carCard+fairCard+dnaCard+pulseCard;
+    vsHtml=modeBar+compatNote+hero+carCard+fairCard+starCard+dnaCard+pulseCard;
   }
 
   // 4) Yedek: Çevrimdışı Manuel Kıyas Kodu
@@ -423,6 +558,9 @@ function duelView(){
 
 // Düello aksiyon yönlendiricisi (app.js click listener içinden çağrılır)
 async function handleDuelAction(a,dv){
+  if(a=="dlmod"){
+    st.dlmod=dv||"all";render();return true;
+  }
   if(a=="dljoin"){
     const nmEl=$("dl_nm"),rmEl=$("dl_rm");
     const nm=(nmEl?nmEl.value:"").replace(/\s+/g," ").trim().slice(0,32)||(store.owner||"Menajer");
@@ -431,7 +569,7 @@ async function handleDuelAction(a,dv){
     const cfg=duelLoadCfg();
     cfg.name=nm;cfg.room=rm;cfg.auto=true;
     duelSaveCfg(cfg);
-    st.duelEdit=false;st.duelErr="";
+    st.duelEdit=false;st.duelErr="";st.duelLastAuto=0;
     await duelSyncNow(false);
     return true;
   }
@@ -439,10 +577,12 @@ async function handleDuelAction(a,dv){
   if(a=="dledit"){st.duelEdit=true;render();return true}
   if(a=="dlcancel"){st.duelEdit=false;render();return true}
   if(a=="dlleave"){
-    ask("Bu düello odasından ayrılmak istiyor musun? Telefonundaki sezon kayıtların etkilenmez.",()=>{
-      const cfg=duelLoadCfg();cfg.room="";duelSaveCfg(cfg);
+    ask("Bu düello odasından ayrılmak istiyor musun? Odadaki özet kaydın silinir, telefonundaki sezonların etkilenmez.",async()=>{
+      const cfg=duelLoadCfg();
+      await duelDeleteRemote(cfg);
+      cfg.room="";duelSaveCfg(cfg);
       const cache=duelLoadCache();cache.peers={};cache.sel="";cache.lastSync=0;duelSaveCache(cache);
-      st.duelEdit=false;st.duelErr="";
+      st.duelEdit=false;st.duelErr="";st.duelLastAuto=0;
       return "Düello odasından ayrıldın";
     });
     render();return true;
@@ -474,6 +614,8 @@ async function handleDuelAction(a,dv){
     const el=$("dl_imp"),raw=el?el.value:"";
     const obj=duelCodeDecode(raw);
     if(!obj){ask("Geçersiz kıyas kodu. Arkadaşının «Kendi Kıyas Kodumu Kopyala» ile aldığı metni yapıştır.");render();return true}
+    const cfg=duelLoadCfg();
+    if(obj.uid===cfg.uid){ask("Bu senin kendi kıyas kodun. Arkadaşının gönderdiği kodu yapıştırmalısın.");render();return true}
     const cache=duelLoadCache();
     cache.peers[obj.uid]=obj;cache.sel=obj.uid;
     duelSaveCache(cache);
@@ -487,7 +629,7 @@ async function handleDuelAction(a,dv){
     const rivals=Object.values(cache.peers||{}).filter(p=>p&&p.uid&&p.uid!==cfg.uid);
     const opp=(cache.sel&&rivals.find(r=>r.uid===cache.sel))||rivals[0];
     if(!opp){ask("Poster için önce bir rakip olmalı.");render();return true}
-    mkImg("duello",{name:me.name+"-vs-"+opp.name,me,opp});
+    mkImg("duello",{name:me.name+"-vs-"+opp.name,me,opp,mode:st.dlmod||"all"});
     return true;
   }
   return false;

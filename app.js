@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.34",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="20.35",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -2599,7 +2599,7 @@ function render(){
   const focusEl=aeId?$(aeId):null;
   if(focusEl&&document.activeElement!==focusEl){focusEl.focus();if(aeSel!=null&&typeof focusEl.setSelectionRange=="function")try{focusEl.setSelectionRange(aeSel,aeSel)}catch(e){}}}
 
-const UI_ONLY=new Set(["stab","mexp","fxw","fxv","bkv","adv","cust","roall","vitall","sall","rstopen","sfopen","hm","grk","tropen","trclose","bkadv","madv","qs","medit","mall","qx","gofin","mg","mo","mu","mp","mpf","mpa","glsc","glas","glclr","glasclr","glasno","glasopen","tel","tpl","ht","hmod","sfm","sfr","sv","sfd","sfx","ro","dcancel","next","all","no","tinfo","pinfo","tpinfo","tpclose","totsv","guide","cmpsw","gs","gsgo","tif","tiv","ren","own","owno","mman","ex","im","rcv","imgpg","oldlsx","dljoin","dlsync","dledit","dlcancel","dlleave","dlsel","dldel","dlcpcode","dlmycode","dladdcode","dlposter"]);
+const UI_ONLY=new Set(["stab","mexp","fxw","fxv","bkv","adv","cust","roall","vitall","sall","rstopen","sfopen","hm","grk","tropen","trclose","bkadv","madv","qs","medit","mall","qx","gofin","mg","mo","mu","mp","mpf","mpa","glsc","glas","glclr","glasclr","glasno","glasopen","tel","tpl","ht","hmod","sfm","sfr","sv","sfd","sfx","ro","dcancel","next","all","no","tinfo","pinfo","tpinfo","tpclose","totsv","guide","cmpsw","gs","gsgo","tif","tiv","ren","own","owno","mman","ex","im","rcv","imgpg","oldlsx","dljoin","dlsync","dledit","dlcancel","dlleave","dlsel","dldel","dlcpcode","dlmycode","dladdcode","dlposter","dlmod"]);
 document.addEventListener("click",async e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.t!==undefined){hideToast();st.tab=+b.dataset.t;if(st.tab==6)refreshQuota(true);render();scrollTo(0,0);return}
