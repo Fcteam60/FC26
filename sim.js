@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — Simülasyon, Canlı Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v20.2) */
+/* FC 27 Grup Ligi — 4 Katmanlı Gerçekçi Simülasyon, Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v20.32) */
 /* ---------- AŞAMA 1, 2 & 3: HAFTALIK SİMÜLASYON, ELEME AĞACI (BRACKET), GOL KRALLIĞI VE TURNUVA BİTİŞİ ---------- */
 const SIM_MODES=[[0,"Gerçekçi","Güç farkı ve gerçek futbol skorları (1-0, 2-1, 1-1 ağırlıklı)"],[1,"Dengeli","Standart güç ve günlük form dengesi"],[2,"Sürprizli","Yüksek şans faktörü, kupa sürprizlerine açık"]];
 function ensureSim(s){
@@ -12,73 +12,148 @@ function ensureSim(s){
   s.sim.mom=toNob(s.sim.mom);
   return s.sim}
 function poissonSample(lam){const L=Math.exp(-lam);let k=0,p=1;do{k++;p*=Math.random()}while(p>L&&k<12);return k-1}
-// Takımın İlk 11 ortalaması, en iyi 3 hücum yıldızı ve kaleci gücünü birleştiren gerçekçi güç profili
+// Katman 1: İlk 11 Diziliş, Yedek Kulübesi (B), Yaş Profili, Orta Saha & Kaleci Metrikleri (Önbellekli)
 const SIM_PWC=Object.create(null);
 function squadMetricsOf(i){
   if(SIM_PWC[i])return SIM_PWC[i];
   const sq=squadOf(i),t=T[i]||{g:75,a:75,o:75,d:75};
-  if(!sq||!sq.length)return SIM_PWC[i]={xi:t.g,star:t.a,gk:t.d};
+  if(!sq||!sq.length)return SIM_PWC[i]={xi:t.g,bench:t.g-4,mid:t.o,def:t.d,star:t.a,gk:t.d,avgAge:26,atkMod:0,defMod:0,tempoMod:0,ageVar:0,ageClutch:0,wbBoost:false};
   const xiL=sq.filter(p=>p.t==="S");
-  const xi=xiL.length?xiL.reduce((a,p)=>a+p.o,0)/xiL.length:t.g;
+  const base11=xiL.length?xiL:sq.slice(0,11);
+  const avgOf=(arr,fn,fb)=>arr.length?arr.reduce((a,p)=>a+fn(p),0)/arr.length:fb;
+  const xi=avgOf(base11,p=>p.o,t.g);
+  const benchL=sq.filter(p=>p.t==="B").map(p=>p.o).sort((a,b)=>b-a).slice(0,5);
+  const bench=benchL.length?benchL.reduce((a,v)=>a+v,0)/benchL.length:xi-4;
+  const mid=avgOf(base11.filter(p=>p.g==="M"),p=>p.o,t.o);
+  const def=avgOf(base11.filter(p=>p.g==="D"),p=>p.o,t.d);
   const atks=sq.filter(p=>(p.g==="F"||p.g==="M")&&p.t!=="R").map(p=>p.o).sort((a,b)=>b-a).slice(0,3);
   const star=atks.length?atks.reduce((a,v)=>a+v,0)/atks.length:t.a;
   const gkP=sq.find(p=>p.g==="K"&&p.t==="S")||sq.find(p=>p.g==="K");
   const gk=gkP?gkP.o:t.d;
-  return SIM_PWC[i]={xi,star,gk}}
+  const avgAge=avgOf(base11,p=>p.a||26,26);
+  // İlk 11 mevkilerinden otomatik taktik & diziliş karakteri
+  const cbCnt=base11.filter(p=>p.p==="CB").length;
+  const wbCnt=base11.filter(p=>p.p==="LWB"||p.p==="RWB").length;
+  const cdmCnt=base11.filter(p=>p.p==="CDM").length;
+  const stCnt=base11.filter(p=>p.p==="ST"||p.p==="CF").length;
+  const wCamCnt=base11.filter(p=>p.p==="LW"||p.p==="RW"||p.p==="CAM"||p.p==="LF"||p.p==="RF").length;
+  const wbBoost=cbCnt>=3||wbCnt>=2;
+  const defMod=(wbBoost?0.55:0)+(cdmCnt>=2?0.45:0)-(stCnt>=2?0.25:0);
+  const atkMod=(stCnt>=2?0.50:0)+(wCamCnt>=3?0.40:0)-(cdmCnt>=2?0.20:0);
+  const tempoMod=(wCamCnt>=3?0.05:0)+(stCnt>=2?0.04:0)-(cbCnt>=3?0.04:0)-(cdmCnt>=2?0.05:0);
+  const ageVar=avgAge<24.5?0.035:(avgAge>27.5?-0.025:0);
+  const ageClutch=Math.max(-0.55,Math.min(0.65,(avgAge-26)*0.18));
+  return SIM_PWC[i]={xi,bench,mid,def,star,gk,avgAge,atkMod,defMod,tempoMod,ageVar,ageClutch,wbBoost}}
 
-function simPowerOf(s,i){
+// Sezon içi canlı form ve momentum (son 3 maç -> -1.2 .. +1.2 GEN eşdeğeri)
+function simTeamForm(s,ti){
+  if(!s||ti==null)return 0;
+  const res=[];
+  const sim=s.sim;
+  if(sim&&sim.gm){
+    Object.values(sim.gm).forEach(wkList=>{
+      if(!Array.isArray(wkList))return;
+      wkList.forEach(wk=>{
+        if(!Array.isArray(wk))return;
+        wk.forEach(arr=>{
+          if(!Array.isArray(arr)||arr.length<4)return;
+          if(arr[0]===ti)res.push(arr[2]>arr[3]?1:arr[2]<arr[3]?-1:0);
+          else if(arr[1]===ti)res.push(arr[3]>arr[2]?1:arr[3]<arr[2]?-1:0);
+        });
+      });
+    });
+  }
+  if(s.my!=null&&Array.isArray(s.mt)){
+    s.mt.forEach(m=>{
+      if(!m||m.opp==null)return;
+      const gf=+m.gf||0,ga=+m.ga||0;
+      if(ti===s.my)res.push(gf>ga?1:gf<ga?-1:0);
+      else if(m.opp===ti)res.push(ga>gf?1:ga<gf?-1:0);
+    });
+  }
+  if(sim&&sim.ko){
+    Object.values(sim.ko).forEach(pairs=>{
+      if(!Array.isArray(pairs))return;
+      pairs.forEach(p=>{
+        if(!p||p.w==null)return;
+        if(p.t1===ti)res.push(p.w===ti?1:-1);
+        else if(p.t2===ti)res.push(p.w===ti?1:-1);
+      });
+    });
+  }
+  const last3=res.slice(-3);
+  if(!last3.length)return 0;
+  const sum=last3.reduce((a,v)=>a+v,0);
+  return Math.max(-1.2,Math.min(1.2,sum*0.40))}
+
+function simPowerOf(s,i,isET){
   const t=RT(s,i),m=squadMetricsOf(i);
   const dOvr=t.g-(T[i]?T[i].g:t.g);
-  const xi=m.xi+dOvr,star=m.star+dOvr,gk=m.gk+dOvr;
+  const xi=m.xi+dOvr,bench=m.bench+dOvr,mid=m.mid+dOvr,def=m.def+dOvr,star=m.star+dOvr,gk=m.gk+dOvr;
   return{
-    g:t.g*0.45+xi*0.40+star*0.15,
-    a:t.a*0.50+star*0.35+xi*0.15,
-    o:t.o*0.60+xi*0.40,
-    d:t.d*0.55+gk*0.25+xi*0.20,
-    gk,star,xi
+    g:isET?(t.g*0.28+xi*0.32+star*0.15+bench*0.25):(t.g*0.36+xi*0.38+star*0.16+bench*0.10),
+    a:t.a*0.45+star*0.35+xi*0.20+m.atkMod,
+    o:t.o*0.50+mid*0.50,
+    d:t.d*0.55+def*0.45+m.defMod,
+    gk,star,xi,bench,avgAge:m.avgAge,tempoMod:m.tempoMod,ageVar:m.ageVar,ageClutch:m.ageClutch
   }}
 
-function simMatchScore(s,i1,i2,mode,seedAdv){
-  const p1=simPowerOf(s,i1),p2=simPowerOf(s,i2);
-  const sAdv=(seedAdv||0)*1.15;
-  const gap=(p1.g-p2.g)+sAdv;
-  const ad1=(p1.a-p2.d)*0.032+(p1.o-p2.o)*0.022+gap*0.038;
-  const ad2=(p2.a-p1.d)*0.032+(p2.o-p1.o)*0.022-gap*0.038;
-  let dom1=0,dom2=0;
-  if(Math.abs(gap)>2.5){
-    const nl=Math.pow(Math.abs(gap)-2.5,1.35)*0.035;
-    if(gap>0){dom1+=nl;dom2-=nl*1.25}
-    else{dom2+=nl;dom1-=nl*1.25}
-  }
-  const gkSup1=Math.max(0,(p1.d-78)*0.018);
-  const gkSup2=Math.max(0,(p2.d-78)*0.018);
+// Katman 2: Tarafsız Saha, Hat Bazlı Çarpışma, Kaleci Duvarı, S-Eğrisi (tanh), Form, Final Temposu & Rövanş Riski
+function simMatchScore(s,i1,i2,mode,seedAdv,ctx){
+  const p1=simPowerOf(s,i1,false),p2=simPowerOf(s,i2,false);
+  const f1=simTeamForm(s,i1),f2=simTeamForm(s,i2);
+  const sAdv=(seedAdv||0)*0.65;
+  const hs=!!(ctx&&ctx.highStakes);
+  let effGap=(p1.g+f1)-(p2.g+f2)+sAdv;
+  if(hs)effGap+=(p1.ageClutch-p2.ageClutch);
+  const attDef1=(p1.a-p2.d)*0.030,attDef2=(p2.a-p1.d)*0.030;
+  const midCtrl=(p1.o-p2.o)*0.026;
+  const dom=Math.tanh(effGap/8.5)*0.42;
+  const gkWall1=Math.max(-0.08,Math.min(0.24,(p1.gk-80)*0.020));
+  const gkWall2=Math.max(-0.08,Math.min(0.24,(p2.gk-80)*0.020));
+  let tempo=1.0+p1.tempoMod+p2.tempoMod+((p1.a-p1.d)+(p2.a-p2.d))*0.007;
+  tempo=Math.max(0.84,Math.min(1.18,tempo));
+  if(hs)tempo*=0.90;
   const scale=mode===0?1.0:mode===1?0.72:0.42;
-  const jitter=mode===0?0.08:mode===1?0.22:0.42;
-  let l1=1.22*Math.exp((ad1+dom1-gkSup2)*scale)*(1+(Math.random()*2-1)*jitter);
-  let l2=1.22*Math.exp((ad2+dom2-gkSup1)*scale)*(1+(Math.random()*2-1)*jitter);
-  if(mode===0){
-    if(l1>2.35)l1=2.35+(l1-2.35)*0.38;
-    if(l2>2.35)l2=2.35+(l2-2.35)*0.38;
+  const baseJ=mode===0?0.09:mode===1?0.22:0.40;
+  const j1=Math.max(0.04,baseJ+p1.ageVar),j2=Math.max(0.04,baseJ+p2.ageVar);
+  let l1=1.24*tempo*Math.exp((attDef1+midCtrl+dom-gkWall2)*scale)*(1+(Math.random()*2-1)*j1);
+  let l2=1.24*tempo*Math.exp((attDef2-midCtrl-dom-gkWall1)*scale)*(1+(Math.random()*2-1)*j2);
+  // Çift maçlı rövanşta ilk maçı geride kapatan takım risk alır (hem gol hem kontra ihtimali artar)
+  const def1=(ctx&&ctx.leg2Deficit)||0;
+  if(def1>0){
+    l1*=1+Math.min(0.26,def1*0.11);
+    l2*=1+Math.min(0.22,def1*0.09);
+  }else if(def1<0){
+    const d2=-def1;
+    l2*=1+Math.min(0.26,d2*0.11);
+    l1*=1+Math.min(0.22,d2*0.09);
   }
-  l1=Math.max(0.15,Math.min(3.6,l1));
-  l2=Math.max(0.15,Math.min(3.6,l2));
+  if(mode===0){
+    if(l1>2.30)l1=2.30+(l1-2.30)*0.35;
+    if(l2>2.30)l2=2.30+(l2-2.30)*0.35;
+  }
+  l1=Math.max(0.18,Math.min(3.4,l1));
+  l2=Math.max(0.18,Math.min(3.4,l2));
   return [Math.min(6,poissonSample(l1)),Math.min(6,poissonSample(l2))]}
 
 // Mevkiye özel gerçekçi gol & asist ağırlıkları (ST/CF > Kanat > CAM > CM > CDM > Defans)
 const SIM_GW={ST:6.5,CF:6.2,LF:4.8,RF:4.8,LW:4.6,RW:4.6,CAM:3.4,LM:2.6,RM:2.6,CM:1.5,CDM:0.55,LWB:0.42,RWB:0.42,LB:0.35,RB:0.35,CB:0.30};
 const SIM_AW={CAM:5.0,LW:4.2,RW:4.2,LM:4.0,RM:4.0,LF:3.6,RF:3.6,CM:3.0,CF:2.8,ST:2.4,LWB:2.0,RWB:2.0,LB:1.7,RB:1.7,CDM:1.1,CB:0.25};
-// Yapay zeka maçlarında atılan golleri kadrodaki oyunculara gerçekçi ağırlıklarla dağıtır (hafıza tasarrufu için kadro sıra indisi döndürür)
-function pickSimScorer(ti){
+// Yapay zeka maçlarında atılan golleri sıcak ayak (duble/hat-trick) ve mevki ağırlıklarıyla dağıtır
+function pickSimScorer(ti,scoredCounts){
   const sq=squadOf(ti);if(!sq||!sq.length)return null;
   const cands=[];
   sq.forEach((p,idx)=>{if(p.g!=="K"&&p.t!=="R")cands.push([p,idx])});
   if(!cands.length)sq.forEach((p,idx)=>{if(p.g!=="K")cands.push([p,idx])});
   if(!cands.length)return null;
-  const weights=cands.map(([p])=>{
+  const weights=cands.map(([p,idx])=>{
     const posW=SIM_GW[p.p]||(p.g==="F"?4.8:p.g==="M"?1.8:0.32);
     const stW=p.t==="S"?1.0:p.t==="B"?0.22:0.06;
     const ovrW=Math.pow(1.10,Math.max(-6,(p.o||75)-75));
-    return posW*stW*ovrW;
+    const prev=scoredCounts?(scoredCounts[idx]||0):0;
+    const hotW=prev===1?1.45:prev>=2?1.22:1.0;
+    return posW*stW*ovrW*hotW;
   });
   const tot=weights.reduce((a,b)=>a+b,0);
   let r=Math.random()*tot;
@@ -88,15 +163,17 @@ function pickSimScorer(ti){
   }
   return cands[0][1]}
 
-// Her gol için asist yapan oyuncunun kadro indisini (veya -1: asistsiz) seçer; golü atan hariç, CAM/kanat/CM ağırlıklı
+// Her gol için asist yapan oyuncunun kadro indisini (veya -1: asistsiz) seçer; 3'lü stoperde kanat beklere bonus verir
 function simAssistsFor(ti,scorers){
   const sq=squadOf(ti);if(!sq||!sq.length||!Array.isArray(scorers))return [];
+  const wbBoost=squadMetricsOf(ti).wbBoost;
   return scorers.map(sc=>{
     if(Math.random()>0.78)return -1;
     const cands=[];sq.forEach((p,idx)=>{if(idx!==sc&&p.g!=="K"&&p.t!=="R")cands.push([p,idx])});
     if(!cands.length)return -1;
     const w=cands.map(([p])=>{
-      const posW=SIM_AW[p.p]||(p.g==="M"?3.0:p.g==="F"?2.6:0.8);
+      let posW=SIM_AW[p.p]||(p.g==="M"?3.0:p.g==="F"?2.6:0.8);
+      if(wbBoost&&(p.p==="LWB"||p.p==="RWB"||p.p==="LB"||p.p==="RB"))posW*=1.45;
       const stW=p.t==="S"?1.0:p.t==="B"?0.22:0.06;
       const ovrW=Math.pow(1.10,Math.max(-6,(p.o||75)-75));
       return posW*stW*ovrW;
@@ -106,34 +183,52 @@ function simAssistsFor(ti,scorers){
     return cands[0][1]})}
 function simGoalAssign(ti,goals){
   const out=[];if(!goals||goals<=0||ti==null||!T[ti])return out;
+  const cnt=Object.create(null);
   for(let g=0;g<goals;g++){
-    const idx=pickSimScorer(ti);
-    if(idx!=null)out.push(idx);
+    const idx=pickSimScorer(ti,cnt);
+    if(idx!=null){out.push(idx);cnt[idx]=(cnt[idx]||0)+1}
   }
   return out}
 
-// Simüle edilen bir maçta en çok katkı veren (3×gol + 2×asist, eşitlikte galip takım / gol sayısı / OVR) oyuncuyu Maçın Adamı (MA) seçer
+// Katman 4: Sanal Maç Reytingi (6.0-9.8) ile Maçın Adamı (Gol, Asist, Galibiyet, Temiz Kasa & 0-0 Kaleci/Stoper)
 function pickSimMom(t1,t2,g1,g2,s1,s2,a1,a2){
   if(t1==null||t2==null||!T[t1]||!T[t2])return null;
   const cand=nob(),win=g1>g2?t1:g2>g1?t2:-1;
+  const ovr1=T[t1]?T[t1].g:75,ovr2=T[t2]?T[t2].g:75;
+  const ensureC=(ti,p)=>{
+    if(!p||!p.n||isKK(p.n))return null;
+    const k=p.n+"|"+ti;
+    if(!cand[k])cand[k]={k,ti,g:0,a:0,rt:6.3+((p.o||75)-75)*0.025+(ti===win?0.55:0),ovr:p.o||75,w:ti===win?1:0};
+    return cand[k];
+  };
   const addP=(ti,v,pts,isG)=>{
     const sq=squadOf(ti);
     const p=typeof v==="number"?(v>=0?sq[v]:null):(v?sq.find(x=>x.n===v)||{n:v,o:75}:null);
-    if(!p||!p.n||isKK(p.n))return;
-    const k=p.n+"|"+ti;
-    if(!cand[k])cand[k]={k,ti,g:0,a:0,pts:0,ovr:p.o||75,w:ti===win?1:0};
-    cand[k].pts+=pts;if(isG)cand[k].g++;else cand[k].a++;
+    const c=ensureC(ti,p);if(!c)return;
+    c.rt+=pts;if(isG)c.g++;else c.a++;
   };
-  (Array.isArray(s1)?s1:[]).forEach(v=>addP(t1,v,3,true));
-  (Array.isArray(s2)?s2:[]).forEach(v=>addP(t2,v,3,true));
-  (Array.isArray(a1)?a1:[]).forEach(v=>addP(t1,v,2,false));
-  (Array.isArray(a2)?a2:[]).forEach(v=>addP(t2,v,2,false));
+  (Array.isArray(s1)?s1:[]).forEach(v=>addP(t1,v,1.15,true));
+  (Array.isArray(s2)?s2:[]).forEach(v=>addP(t2,v,1.15,true));
+  (Array.isArray(a1)?a1:[]).forEach(v=>addP(t1,v,0.72,false));
+  (Array.isArray(a2)?a2:[]).forEach(v=>addP(t2,v,0.72,false));
+  // Temiz kasa (Clean Sheet) katkısı: kaleci ve en iyi stoper
+  const addClean=(ti,oppG,myOvr,oppOvr)=>{
+    if(oppG!==0)return;
+    const sq=squadOf(ti);if(!sq.length)return;
+    const uBonus=oppOvr-myOvr>=3?0.45:0;
+    const gk=sq.find(p=>p.g==="K"&&p.t==="S")||sq.find(p=>p.g==="K");
+    if(gk){const c=ensureC(ti,gk);if(c)c.rt+=1.25+uBonus+(ti===win?0.20:0.15)}
+    const cb=sq.filter(p=>p.g==="D"&&p.t==="S").sort((a,b)=>b.o-a.o)[0];
+    if(cb){const c=ensureC(ti,cb);if(c)c.rt+=0.85+uBonus*0.6+(ti===win?0.15:0.10)}
+  };
+  addClean(t1,g2,ovr1,ovr2);
+  addClean(t2,g1,ovr2,ovr1);
   const list=Object.values(cand);
   if(list.length){
-    list.sort((a,b)=>(b.pts+b.w*0.5)-(a.pts+a.w*0.5)||b.g-a.g||b.w-a.w||b.ovr-a.ovr);
+    list.sort((a,b)=>b.rt-a.rt||b.g-a.g||b.w-a.w||b.ovr-a.ovr);
     return list[0].k;
   }
-  const ti=win>=0?win:t2,sq=squadOf(ti);
+  const ti=win>=0?win:t1,sq=squadOf(ti);
   if(!sq.length)return null;
   const gk=sq.find(p=>p.g==="K"&&p.t==="S")||sq[0];
   return gk&&gk.n?gk.n+"|"+ti:null}
@@ -192,10 +287,8 @@ function simMetaLine(t1,t2,g1,g2,s1,s2,a1,a2,leg1,leg2){
   const gStr1=fmtGoalList(t1,s1,a1),gStr2=fmtGoalList(t2,s2,a2);
   if(gStr1)parts.push(`⚽ ${esc(T[t1].n)}: ${gStr1}`);
   if(gStr2)parts.push(`⚽ ${esc(T[t2].n)}: ${gStr2}`);
-  if((Array.isArray(s1)&&s1.length)||(Array.isArray(s2)&&s2.length)){
-    const mk=pickSimMom(t1,t2,g1,g2,s1,s2,a1,a2);
-    if(mk){const sp=mk.lastIndexOf("|");parts.push(`★ ${esc(sp>0?mk.slice(0,sp):mk)}`)}
-  }
+  const mk=pickSimMom(t1,t2,g1,g2,s1,s2,a1,a2);
+  if(mk){const sp=mk.lastIndexOf("|");parts.push(`★ ${esc(sp>0?mk.slice(0,sp):mk)}`)}
   return parts.join(" · ")}
 
 // v18.24: Fikstür maç detaylarını yapılandırılmış (sütunlu) olarak üretir
@@ -217,10 +310,8 @@ function fxDet(hi,ai,mom){
   return `<div class="fdet">${hi.length||ai.length?`<div class="fgl">${fxCol(hi,"h")}${fxCol(ai,"a")}</div>`:""}${mom?`<div class="fmom"><span class="st" aria-hidden="true">★</span><span>Maçın adamı</span><b>${esc(mom)}</b></div>`:""}</div>`}
 function fxSimDet(t1,t2,g1,g2,s1,s2,a1,a2){
   let mom="";
-  if((Array.isArray(s1)&&s1.length)||(Array.isArray(s2)&&s2.length)){
-    const mk=pickSimMom(t1,t2,g1,g2,s1,s2,a1,a2);
-    if(mk){const sp=mk.lastIndexOf("|");mom=sp>0?mk.slice(0,sp):mk}
-  }
+  const mk=pickSimMom(t1,t2,g1,g2,s1,s2,a1,a2);
+  if(mk){const sp=mk.lastIndexOf("|");mom=sp>0?mk.slice(0,sp):mk}
   return fxDet(fxGoalItems(t1,s1,a1),fxGoalItems(t2,s2,a2),mom)}
 function fxUserDet(s,m){
   const conv=l=>(Array.isArray(l)?l:[]).filter(g=>g&&g.sc).map(g=>({n:g.sc,as:g.as||"",kk:isKK(g.sc)}));
@@ -640,10 +731,11 @@ function getAutoKoOpponent(s,rdName){
 
 function simOneKoTie(s,p,rd){
   const sim=ensureSim(s),legs=lgs(s.cfg,rd),sa=p.sa||0;
+  const highStakes=rd===RN[1]||rd===RN[2];
   let g1=0,g2=0,s1=[],s2=[],a1=[],a2=[],et=0,pf=null,pa=null;
   if(legs===2){
-    const [l1a,l1b]=simMatchScore(s,p.t1,p.t2,sim.m,0.35);
-    const [l2b,l2a]=simMatchScore(s,p.t2,p.t1,sim.m,0.35-sa*0.5);
+    const [l1a,l1b]=simMatchScore(s,p.t1,p.t2,sim.m,sa*0.4,{highStakes});
+    const [l2a,l2b]=simMatchScore(s,p.t1,p.t2,sim.m,sa*0.4,{highStakes,leg2Deficit:l1b-l1a});
     g1=l1a+l2a;g2=l1b+l2b;
     p.leg1=[l1a,l1b];p.leg2=[l2a,l2b];
     const s1_1=simGoalAssign(p.t1,l1a),a1_1=simAssistsFor(p.t1,s1_1);
@@ -653,18 +745,19 @@ function simOneKoTie(s,p,rd){
     s1=s1_1.concat(s1_2);a1=a1_1.concat(a1_2);
     s2=s2_1.concat(s2_2);a2=a2_1.concat(a2_2);
   }else{
-    const [l1a,l1b]=simMatchScore(s,p.t1,p.t2,sim.m,sa);
+    const [l1a,l1b]=simMatchScore(s,p.t1,p.t2,sim.m,sa,{highStakes});
     g1=l1a;g2=l1b;
     s1=simGoalAssign(p.t1,g1);a1=simAssistsFor(p.t1,s1);
     s2=simGoalAssign(p.t2,g2);a2=simAssistsFor(p.t2,s2);
   }
   if(g1===g2){
     et=1;
-    const pw1=simPowerOf(s,p.t1),pw2=simPowerOf(s,p.t2);
-    const diff=(pw1.g-pw2.g)+sa*0.8;
+    // Uzatmalarda yedek kulübesi derinliği (%25) ve tecrübe belirleyici
+    const pw1=simPowerOf(s,p.t1,true),pw2=simPowerOf(s,p.t2,true);
+    const diff=(pw1.g-pw2.g)+(pw1.ageClutch-pw2.ageClutch)+sa*0.4;
     const scale=sim.m===0?1.0:sim.m===1?0.72:0.42;
-    const p1=Math.min(0.55,0.25*Math.exp(diff*0.055*scale));
-    const p2=Math.min(0.55,0.25*Math.exp(-diff*0.055*scale));
+    const p1=Math.min(0.50,0.24*Math.exp(Math.tanh(diff/8)*0.45*scale));
+    const p2=Math.min(0.50,0.24*Math.exp(-Math.tanh(diff/8)*0.45*scale));
     const eg1=Math.random()<p1?1:0,eg2=Math.random()<p2?1:0;
     if(eg1){
       g1+=eg1;if(legs===2&&Array.isArray(p.leg2))p.leg2[0]+=eg1;
@@ -675,11 +768,17 @@ function simOneKoTie(s,p,rd){
       const es2=simGoalAssign(p.t2,eg2);s2.push(...es2);a2.push(...simAssistsFor(p.t2,es2));
     }
     if(g1===g2){
+      // Gerçek FIFA penaltı kuralı (erken bitiş + kaleci GEN + tecrübe)
       let k1=0,k2=0;
-      const pkAdv=((pw1.gk-pw2.gk)*0.008+(pw1.g-pw2.g)*0.006)*scale;
-      const r1=Math.max(0.62,Math.min(0.86,0.75+pkAdv));
-      const r2=Math.max(0.62,Math.min(0.86,0.75-pkAdv));
-      for(let k=0;k<5;k++){if(Math.random()<r1)k1++;if(Math.random()<r2)k2++}
+      const pkAdv=((pw1.gk-pw2.gk)*0.008+(pw1.g-pw2.g)*0.005+(pw1.ageClutch-pw2.ageClutch)*0.015)*scale;
+      const r1=Math.max(0.64,Math.min(0.85,0.75+pkAdv));
+      const r2=Math.max(0.64,Math.min(0.85,0.75-pkAdv));
+      for(let k=0;k<5;k++){
+        if(Math.random()<r1)k1++;
+        if(k1>k2+(5-k)||k2>k1+(4-k))break;
+        if(Math.random()<r2)k2++;
+        if(k1>k2+(4-k)||k2>k1+(4-k))break;
+      }
       let sd=0;
       while(k1===k2&&sd<15){sd++;const m1=Math.random()<r1,m2=Math.random()<r2;if(m1!==m2){if(m1)k1++;else k2++}}
       if(k1===k2){if(Math.random()<0.5)k1++;else k2++}

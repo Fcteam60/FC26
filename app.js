@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.31",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="20.32",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -1376,13 +1376,25 @@ function tourneyTots(s,st2){
         .forEach(p=>put(p.n,tm.ti,p.p,p.g,p.o,0,0,0));
     });
   });
+  const koDepth=nob();
+  if(s&&s.sim&&s.sim.ko){
+    const RDs=rds(s.cfg).filter(r=>r!=="Grup");
+    RDs.forEach((rd,ri)=>{
+      const bonus=rd===RN[2]?2.2:rd===RN[1]?1.3:ri>=RDs.length-3?0.7:0.35;
+      (s.sim.ko[rd]||[]).forEach(pr=>{
+        if(pr.t1!=null)koDepth[pr.t1]=Math.max(koDepth[pr.t1]||0,bonus);
+        if(pr.t2!=null)koDepth[pr.t2]=Math.max(koDepth[pr.t2]||0,bonus);
+        if(rd===RN[2]&&pr.w!=null)koDepth[pr.w]=Math.max(koDepth[pr.w]||0,3.2);
+      });
+    });
+  }
   const list=Object.values(pool).map(p=>{
-    const tm=tmMap[p.ti],cs=tm?tm.cs:0,gaPm=tm&&tm.o?tm.ga/tm.o:1.5,wr=tm&&tm.o?tm.w/tm.o:0;
+    const tm=tmMap[p.ti],cs=tm?tm.cs:0,gaPm=tm&&tm.o?tm.ga/tm.o:1.5,wr=tm&&tm.o?tm.w/tm.o:0,dp=koDepth[p.ti]||0;
     let sc=0;
-    if(p.grp==="K")sc=p.mom*6+cs*4.5+Math.max(0,2.2-gaPm)*3.5+wr*2.5+p.ovr*0.12+p.g*5+p.a*3;
-    else if(p.grp==="D")sc=p.g*5.5+p.a*4+p.mom*4.5+cs*2.8+Math.max(0,2.0-gaPm)*2.0+wr*1.8+p.ovr*0.10;
-    else if(p.grp==="M")sc=p.g*3.8+p.a*3.2+p.mom*3.5+wr*1.5+p.ovr*0.08;
-    else sc=p.g*4.0+p.a*2.5+p.mom*3.5+wr*1.2+p.ovr*0.08;
+    if(p.grp==="K")sc=p.mom*5.8+cs*5.2+Math.max(0,2.2-gaPm)*4.0+wr*2.2+dp*1.2+p.ovr*0.12+p.g*5+p.a*3;
+    else if(p.grp==="D")sc=p.g*5.2+p.a*3.8+p.mom*4.5+cs*3.4+Math.max(0,2.0-gaPm)*2.4+wr*1.6+dp*1.0+p.ovr*0.10;
+    else if(p.grp==="M")sc=p.g*3.8+p.a*3.2+p.mom*3.5+wr*1.5+dp*0.7+p.ovr*0.08;
+    else sc=p.g*4.0+p.a*2.5+p.mom*3.5+wr*1.2+dp*0.7+p.ovr*0.08;
     return Object.assign(p,{sc,cs,mvp:3*p.g+2*p.a+2*p.mom,z:0});
   });
   const keepers=list.filter(p=>p.grp==="K").sort((a,b)=>b.sc-a.sc||b.mvp-a.mvp||b.ovr-a.ovr||TR_CMP(a.n,b.n));
