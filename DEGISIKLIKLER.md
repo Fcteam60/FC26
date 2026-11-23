@@ -1,3 +1,8 @@
+## v20.38 (2026-11-23) — Düello Eşitleme Hata Koruması & iOS Önbellek Kırıcı
+- **Sessiz Gönderim Hatası Düzeltmesi (`duel.js`):** `duelPush` başarısız olduğunda ardından gelen `duelPull` işleminin hata mesajını silmesi giderildi; artık Firebase'in döndürdüğü gerçek HTTP hata detayı ekranda net olarak gösterilir ve `buildDuelSummary` tam `try/catch` korumasına alındı.
+- **Sunucu Kayıt Durumu Göstergesi (`duel.js`):** Canlı Oda üst çubuğunda *"Senin kaydın sunucuda ✓"* / *"Kaydın henüz sunucuda değil!"* bilgisi görünür.
+- **iOS Önbellek Kırıcı (`duel.js`):** `duelPull` isteğine `?t=...` parametresi eklenerek mobil PWA/Safari önbellek takılması engellendi.
+
 ## v20.37 (2026-11-23) — Canlı Sezon & Düello Son Cilalama (5 Uç Durum Düzeltmesi)
 - **iOS Safari Tablo Hizalaması (`duel.js`, `style.css`):** Canlı Puan Durumu tablosunda `td.tm` hücresindeki `display: flex` kaldırılarak iç `.dl-tmcell` sarmalayıcısına taşındı; satır çizgileri ve hücre yükseklikleri tüm tarayıcılarda hizalandı.
 - **Akıllı Açılış Sekmesi (`duel.js`):** Canlı Sezon İnceleme artık Direkt Eleme sezonlarında boş puan tablosu yerine otomatik olarak **Eleme** (veya **Maçlar**) sekmesiyle açılır.

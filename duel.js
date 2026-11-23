@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — Canlı Menajer Düellosu (VS), Canlı Sezon İnceleme & Firebase REST (duel.js · v20.37)
+   FC 27 Grup Ligi — Canlı Menajer Düellosu (VS), Canlı Sezon İnceleme & Firebase REST (duel.js · v20.38)
    - Sıfır harici SDK: doğrudan fetch() ile Firebase Realtime Database REST API kullanır.
    - Çevrimdışı öncelikli: ana veriler IndexedDB'de kalır, yalnızca ~2 KB özet eşitlenir.
    - Tümü / Kupa / Lig kırılımı, Temiz Kasa %, Galibiyet Serisi, Averaj, Kariyer Yıldızı ve
@@ -258,24 +258,37 @@ let duelPushTimer=null;
 async function duelPush(silent){
   const cfg=duelLoadCfg();
   if(!cfg.room||cfg.room.length<6)return false;
-  if(typeof navigator!=="undefined"&&navigator.onLine===false)return false;
-  const payload=buildDuelSummary();
-  const url=`${duelBaseUrl(cfg)}/rooms/${encodeURIComponent(cfg.room)}/${encodeURIComponent(cfg.uid)}.json`;
+  if(typeof navigator!=="undefined"&&navigator.onLine===false){
+    if(!silent)st.duelPushErr="Çevrimdışısın — verin sunucuya gönderilemedi.";
+    return false;
+  }
   try{
+    const payload=buildDuelSummary();
+    if(!payload.name)payload.name="Menajer";
+    if(!payload.ut)payload.ut=Date.now();
+    const url=`${duelBaseUrl(cfg)}/rooms/${encodeURIComponent(cfg.room)}/${encodeURIComponent(cfg.uid)}.json`;
     const r=await fetch(url,{
       method:"PUT",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify(payload)
     });
-    if(!r.ok)throw new Error("HTTP "+r.status);
+    if(!r.ok){
+      let detail="";
+      try{detail=String(await r.text()).slice(0,120)}catch(_){}
+      throw new Error("HTTP "+r.status+(detail?" · "+detail:""));
+    }
     const cache=duelLoadCache();
     cache.peers[cfg.uid]=payload;
     cache.lastSync=Date.now();
+    cache.lastPush=Date.now();
     duelSaveCache(cache);
-    st.duelErr="";
+    st.duelPushErr="";
     return true;
   }catch(e){
-    if(!silent)st.duelErr="Sunucuya gönderilemedi ("+(e&&e.message?e.message:"ağ hatası")+"). İnternetini ve Firebase kurallarını kontrol et.";
+    const msg="Verin sunucuya gönderilemedi ("+(e&&e.message?e.message:"ağ hatası")+").";
+    st.duelPushErr=msg;
+    if(!silent)st.duelErr=msg;
+    elog("duelPush",e&&e.message?e.message:String(e));
     return false;
   }
 }
@@ -284,13 +297,17 @@ async function duelPull(silent){
   const cfg=duelLoadCfg();
   if(!cfg.room||cfg.room.length<6)return false;
   if(typeof navigator!=="undefined"&&navigator.onLine===false){
-    if(!silent)st.duelErr="Çevrimdışısın — son kaydedilen veriler gösteriliyor.";
+    if(!silent)st.duelPullErr="Çevrimdışısın — son kaydedilen veriler gösteriliyor.";
     return false;
   }
-  const url=`${duelBaseUrl(cfg)}/rooms/${encodeURIComponent(cfg.room)}.json`;
+  const url=`${duelBaseUrl(cfg)}/rooms/${encodeURIComponent(cfg.room)}.json?t=${Date.now()}`;
   try{
     const r=await fetch(url,{cache:"no-store"});
-    if(!r.ok)throw new Error("HTTP "+r.status);
+    if(!r.ok){
+      let detail="";
+      try{detail=String(await r.text()).slice(0,120)}catch(_){}
+      throw new Error("HTTP "+r.status+(detail?" · "+detail:""));
+    }
     const data=await r.json();
     const cache=duelLoadCache();
     const nextPeers={};
@@ -306,10 +323,13 @@ async function duelPull(silent){
     cache.peers=nextPeers;
     cache.lastSync=Date.now();
     duelSaveCache(cache);
-    st.duelErr="";
+    st.duelPullErr="";
     return true;
   }catch(e){
-    if(!silent)st.duelErr="Odadan veri çekilemedi ("+(e&&e.message?e.message:"ağ hatası")+").";
+    const msg="Odadan veri çekilemedi ("+(e&&e.message?e.message:"ağ hatası")+").";
+    st.duelPullErr=msg;
+    if(!silent)st.duelErr=msg;
+    elog("duelPull",e&&e.message?e.message:String(e));
     return false;
   }
 }
@@ -332,13 +352,18 @@ async function duelSyncNow(silent){
   if(silent&&Date.now()-(st.duelLastAuto||0)<10000)return;
   st.duelBusy=true;
   st.duelLastAuto=Date.now();
-  if(!silent)render();
+  if(!silent){st.duelErr="";render()}
   const ok1=await duelPush(silent);
   const ok2=await duelPull(silent);
   st.duelBusy=false;
+  // Push başarısızsa pull başarılı olsa bile hatayı koru ve ekranda göster
+  if(!ok1&&st.duelPushErr)st.duelErr=st.duelPushErr;
+  else if(!ok2&&st.duelPullErr)st.duelErr=st.duelPullErr;
+  else if(ok1&&ok2)st.duelErr="";
   if(!silent){
     if(ok1&&ok2)ntf("Düello odası eşitlendi");
-    else if(ok2)ntf("Oda verileri güncellendi");
+    else if(!ok1&&ok2)ntf("Dikkat: Verin sunucuya gönderilemedi");
+    else if(ok1&&!ok2)ntf("Verin gönderildi ama oda çekilemedi");
   }
   render();
 }
@@ -480,7 +505,7 @@ function duelView(){
   }else{
     connHtml=`<div class="card pglass dl-barcard">`+
       `<div class="dl-barh">`+
-        `<div class="dl-binfo"><span class="ph-ey"><i class="ph-dot"></i>CANLI ODA · ${esc(cfg.room)}</span><small>Son eşitleme: ${esc(duelRelTime(cache.lastSync))} · ${rivals.length+1} menajer</small></div>`+
+        `<div class="dl-binfo"><span class="ph-ey"><i class="ph-dot"></i>CANLI ODA · ${esc(cfg.room)}</span><small>Son eşitleme: ${esc(duelRelTime(cache.lastSync))} · ${rivals.length+(cache.peers[cfg.uid]?1:0)} kayıtlı · ${cache.peers[cfg.uid]?"Senin kaydın sunucuda ✓":"Kaydın henüz sunucuda değil!"}</small></div>`+
         `<div class="dl-bacts">`+
           `<button class="btn p pset-pri" data-a="dlsync" ${st.duelBusy?"disabled":""}>${st.duelBusy?"Eşitleniyor…":"Şimdi Eşitle"}</button>`+
           `<button class="mb sc-ic" data-a="dledit" aria-label="Oda ayarları" title="Oda ayarları">${UICO.sliders}</button>`+
