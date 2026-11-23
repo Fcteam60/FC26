@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.35",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="20.36",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -2331,7 +2331,7 @@ addEventListener("keydown",e=>{
     return;
   }
   if(e.key=="Tab"){const modal=document.querySelector("#dlg .dbox, #qs .sheet");if(modal){const f=[...modal.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),a[href]')];if(f.length){const first=f[0],last=f[f.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}return}}
-  if(e.key=="Escape"){if(st.qs){st.qs=false;st.med=null;render();return}if(st.tpi){st.tpi=null;render();return}if(st.pi||st.totsv||st.guide||st.ti!=null||st.gs||st.ask||st.img||st.ren||st.imp){st.pi=null;st.tpi=null;st.totsv=null;st.guide=false;st.ti=null;st.gs=false;st.ask=null;clrImg();st.ren=null;st.imp=null;st.tiq="";render();return}}
+  if(e.key=="Escape"){if(st.qs){st.qs=false;st.med=null;render();return}if(st.tpi){st.tpi=null;render();return}if(st.dlLive||st.pi||st.totsv||st.guide||st.ti!=null||st.gs||st.ask||st.img||st.ren||st.imp){st.dlLive=null;st.pi=null;st.tpi=null;st.totsv=null;st.guide=false;st.ti=null;st.gs=false;st.ask=null;clrImg();st.ren=null;st.imp=null;st.tiq="";render();return}}
   if(e.target&&e.target.id=="rn"){if(e.key=="Enter"){e.preventDefault();document.querySelector('[data-a="rens"]').click()}else if(e.key=="Escape"){document.querySelector('[data-a="no"]').click()}return}
   if(e.key=="Enter"&&e.target&&e.target.id=="trinp"){e.preventDefault();const b=document.querySelector('[data-a="tradd"]');if(b)b.click()}
 });
@@ -2569,7 +2569,7 @@ function render(){
   const de=document.documentElement;if(store.theme)de.setAttribute("data-theme",store.theme);else de.removeAttribute("data-theme");syncThemeColor();if(store.motion===0)de.setAttribute("data-motion","off");else de.removeAttribute("data-motion");
   $("sbar").innerHTML=`<select id="ss" class="sel">${store.seasons.map(x=>`<option value="${x.id}" ${x.id==store.cur?"selected":""}>${esc(x.name)}${x.res?" ✓":""}</option>`).join("")}</select><button class="btn" data-a="ns" aria-label="Yeni sezon">＋</button><button class="btn" data-a="gs" aria-label="Ara"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button>`;
   $("tabs").innerHTML=NAV5.map(([t,ic,g,d])=>{const on=g.includes(st.tab);return `<button role="tab" aria-selected="${on}" ${on?'aria-current="page"':""} class="${on?"cur":""}" data-t="${d}"><svg viewBox="0 0 24 24" aria-hidden="true">${ic}</svg><span>${t}</span></button>`}).join("");
-  $("dlg").innerHTML=st.slot?slotDlg():st.own?ownDlg():st.gs?gsDlg():st.img?imgDlg():st.ren?`<div class="dlg"><div class="dbox" role="dialog" aria-modal="true"><div class="rs">Sezon adını değiştir</div><input id="rn" class="f" maxlength="24" value="${esc(st.ren.v)}" aria-label="Sezon adı" autocomplete="off"><div class="bar"><button class="btn p" data-a="rens">Kaydet</button><button class="btn" data-a="no">Vazgeç</button></div></div></div>`:st.imp?impDlg():st.ask?`<div class="dlg"><div class="dbox" role="dialog" aria-modal="true"><div>${esc(st.ask.m)}</div><div class="bar">${st.ask.fn?`<button class="btn p" data-a="yes">Evet</button><button class="btn" data-a="no">Vazgeç</button>`:`<button class="btn p" data-a="no">Tamam</button>`}</div></div></div>`:st.guide?guideDlg():st.tpi?tpDlg():st.totsv?totsDlg():st.pi?plDlg():st.ti!=null?withSn(cur(),tiDlg):"";
+  $("dlg").innerHTML=st.slot?slotDlg():st.own?ownDlg():st.gs?gsDlg():st.img?imgDlg():st.ren?`<div class="dlg"><div class="dbox" role="dialog" aria-modal="true"><div class="rs">Sezon adını değiştir</div><input id="rn" class="f" maxlength="24" value="${esc(st.ren.v)}" aria-label="Sezon adı" autocomplete="off"><div class="bar"><button class="btn p" data-a="rens">Kaydet</button><button class="btn" data-a="no">Vazgeç</button></div></div></div>`:st.imp?impDlg():st.ask?`<div class="dlg"><div class="dbox" role="dialog" aria-modal="true"><div>${esc(st.ask.m)}</div><div class="bar">${st.ask.fn?`<button class="btn p" data-a="yes">Evet</button><button class="btn" data-a="no">Vazgeç</button>`:`<button class="btn p" data-a="no">Tamam</button>`}</div></div></div>`:st.guide?guideDlg():st.dlLive&&typeof duelLiveDlg==="function"?duelLiveDlg():st.tpi?tpDlg():st.totsv?totsDlg():st.pi?plDlg():st.ti!=null?withSn(cur(),tiDlg):"";
   const s0=cur();
   {const de2=document.documentElement;let cb=null;try{cb=(s0&&s0.my!=null&&T[s0.my])?bspec(s0.my):null}catch(e){cb=null}
   if(cb&&cb.c1&&cb.c2){de2.style.setProperty("--club1",cb.c1);de2.style.setProperty("--club2",cb.c2);de2.setAttribute("data-club","1")}else{de2.removeAttribute("data-club");de2.style.removeProperty("--club1");de2.style.removeProperty("--club2")}}
@@ -2599,7 +2599,7 @@ function render(){
   const focusEl=aeId?$(aeId):null;
   if(focusEl&&document.activeElement!==focusEl){focusEl.focus();if(aeSel!=null&&typeof focusEl.setSelectionRange=="function")try{focusEl.setSelectionRange(aeSel,aeSel)}catch(e){}}}
 
-const UI_ONLY=new Set(["stab","mexp","fxw","fxv","bkv","adv","cust","roall","vitall","sall","rstopen","sfopen","hm","grk","tropen","trclose","bkadv","madv","qs","medit","mall","qx","gofin","mg","mo","mu","mp","mpf","mpa","glsc","glas","glclr","glasclr","glasno","glasopen","tel","tpl","ht","hmod","sfm","sfr","sv","sfd","sfx","ro","dcancel","next","all","no","tinfo","pinfo","tpinfo","tpclose","totsv","guide","cmpsw","gs","gsgo","tif","tiv","ren","own","owno","mman","ex","im","rcv","imgpg","oldlsx","dljoin","dlsync","dledit","dlcancel","dlleave","dlsel","dldel","dlcpcode","dlmycode","dladdcode","dlposter","dlmod"]);
+const UI_ONLY=new Set(["stab","mexp","fxw","fxv","bkv","adv","cust","roall","vitall","sall","rstopen","sfopen","hm","grk","tropen","trclose","bkadv","madv","qs","medit","mall","qx","gofin","mg","mo","mu","mp","mpf","mpa","glsc","glas","glclr","glasclr","glasno","glasopen","tel","tpl","ht","hmod","sfm","sfr","sv","sfd","sfx","ro","dcancel","next","all","no","tinfo","pinfo","tpinfo","tpclose","totsv","guide","cmpsw","gs","gsgo","tif","tiv","ren","own","owno","mman","ex","im","rcv","imgpg","oldlsx","dljoin","dlsync","dledit","dlcancel","dlleave","dlsel","dldel","dlcpcode","dlmycode","dladdcode","dlposter","dlmod","dllive","dllivetab","dllivewho"]);
 document.addEventListener("click",async e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.t!==undefined){hideToast();st.tab=+b.dataset.t;if(st.tab==6)refreshQuota(true);render();scrollTo(0,0);return}
@@ -2738,7 +2738,7 @@ document.addEventListener("click",async e=>{
   else if(a=="use"){if(!st.dr||s.G)return;s.G=mixG(s,st.dr.G);s.fxMix=1;sync();st.tab=3}
   else if(a=="bal"){if(s.G){ask("Kura onaylandı. Yeniden çekmek için önce kurayı sıfırla.");render();return}const d=withSn(s,()=>genDraw(s,4000,.4,1500));if(d){s.dn=(s.dn||0)+1;s.G=mixG(s,d.G);s.fxMix=1;sync();st.tab=3;un="Gruplar otomatik kuruldu"}else ask("Bu kurallarla kura üretilemedi. Kurulumda ülke sınırını gevşetip tekrar dene.")}
   else if(a=="yes"){const f=st.ask&&st.ask.fn;st.ask=null;if(f){const r=await f();if(typeof r=="string")un=r}}
-  else if(a=="no"){st.ask=null;clrImg();st.ren=null;st.imp=null;st.ti=null;st.pi=null;st.tpi=null;st.totsv=null;st.guide=false;st.gs=false;st.tiq=""}
+  else if(a=="no"){st.ask=null;clrImg();st.ren=null;st.imp=null;st.ti=null;st.pi=null;st.tpi=null;st.totsv=null;st.dlLive=null;st.guide=false;st.gs=false;st.tiq=""}
   else if(a=="tpclose"){st.tpi=null}
   else if(a=="tpinfo"){st.tpi={n:b.dataset.n||"",ti:i,sid:b.dataset.s?+b.dataset.s:cur().id}}
   else if(a=="pinfo"){st.tpi=null;st.pi=b.dataset.n||null}

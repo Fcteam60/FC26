@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — Canlı Menajer Düellosu (VS) & Firebase REST Eşitleme (duel.js · v20.35)
+   FC 27 Grup Ligi — Canlı Menajer Düellosu (VS), Canlı Sezon İnceleme & Firebase REST (duel.js · v20.36)
    - Sıfır harici SDK: doğrudan fetch() ile Firebase Realtime Database REST API kullanır.
    - Çevrimdışı öncelikli: ana veriler IndexedDB'de kalır, yalnızca ~2 KB özet eşitlenir.
    - Tümü / Kupa / Lig kırılımı, Temiz Kasa %, Galibiyet Serisi, Averaj, Kariyer Yıldızı ve
@@ -94,7 +94,71 @@ function duelModeStats(mode){
   };
 }
 
-// Mevcut cihazdaki tüm sezonlardan ~2 KB'lık kompakt Menajer Düellosu özeti üretir (v:2)
+// Aktif sezona ait kompakt canlı veri paketi (Puan durumu, Maçlar/Fikstür, Eleme yolu, Sezon yıldızları & Sezon DNA)
+function buildDuelLiveSeason(cs){
+  if(!cs||!cs.cfg)return null;
+  const lg=isLg(cs.cfg)?1:0,q=lg?0:(cs.cfg.q||0),my=cs.my;
+  let gName="",tbl=[],rem=[];
+  if(cs.G&&cs.G.length&&(cs.cfg.gs||lg)){
+    const gi=lg?0:(my!=null?cs.G.findIndex(g=>g.includes(my)):-1);
+    if(gi>=0&&cs.G[gi]){
+      gName=typeof gname==="function"?gname(cs,gi):(lg?"Lig Tablosu":"Grup "+GL(gi));
+      if(typeof calcGroupTable==="function"){
+        const rows=calcGroupTable(cs,gi);
+        tbl=rows.map(r=>[T[r.ti]?T[r.ti].n:"?",r.o,r.w,r.d,r.l,r.gf,r.ga,r.pts,r.ti===my?1:0]);
+      }
+      // Kalan grup/lig rakipleri
+      if(my!=null){
+        const maxGl=cs.cfg.gl||1,played=nob();
+        (cs.mt||[]).filter(m=>m.rd==="Grup"&&m.opp!=null).forEach(m=>{played[m.opp]=(played[m.opp]||0)+1});
+        cs.G[gi].forEach(ti=>{
+          if(ti===my)return;
+          const left=maxGl-(played[ti]||0);
+          if(left>0&&T[ti])rem.push([T[ti].n,left]);
+        });
+      }
+    }
+  }
+  const mt=(cs.mt||[]).slice(-46).map(m=>{
+    const st0=m.stats||{};
+    const mx=st0.myXg!=null?Math.round(+st0.myXg*100)/100:null;
+    const ox=st0.oppXg!=null?Math.round(+st0.oppXg*100)/100:null;
+    return [m.on||(m.opp!=null&&T[m.opp]?T[m.opp].n:"Rakip"),+m.gf||0,+m.ga||0,m.rd||"Grup",m.et?1:0,m.pf!=null?+m.pf:null,m.pa!=null?+m.pa:null,mx,ox];
+  });
+  let ko=[];
+  if(!lg&&cs.sim&&cs.sim.ko&&typeof rds==="function"){
+    const RDs=rds(cs.cfg).filter(r=>r!=="Grup");
+    RDs.forEach(rd=>{
+      const ps=cs.sim.ko[rd];
+      if(!Array.isArray(ps)||!ps.length)return;
+      const list=ps.map(p=>{
+        const n1=p.t1!=null&&T[p.t1]?T[p.t1].n:"?";
+        const n2=p.t2!=null&&T[p.t2]?T[p.t2].n:"?";
+        const wi=p.w==null?0:(p.w===p.t1?1:(p.w===p.t2?2:0));
+        const mine=(my!=null&&(p.t1===my||p.t2===my))?1:0;
+        return [n1,n2,p.g1!=null?+p.g1:null,p.g2!=null?+p.g2:null,wi,p.pf!=null?+p.pf:null,p.pa!=null?+p.pa:null,p.et?1:0,mine];
+      });
+      ko.push([rd,list]);
+    });
+  }
+  const pls=(cs.pl||[]).slice();
+  const top3=(k,k2)=>pls.filter(p=>(p[k]||0)>0).sort((a,b)=>(b[k]||0)-(a[k]||0)||(b[k2]||0)-(a[k2]||0)).slice(0,3).map(p=>[p.n,p[k]||0,p[k2]||0]);
+  const stars={g:top3("g","a"),a:top3("a","g"),m:top3("mom","g")};
+  let sDna=null;
+  const sdRaw=typeof calcTacticalDNA==="function"?calcTacticalDNA(cs,true):null;
+  if(sdRaw){
+    sDna={
+      n:sdRaw.n,title:sdRaw.title,subTag:sdRaw.subTag||"",
+      atk:sdRaw.atk,ctrl:sdRaw.ctrl,aggr:sdRaw.aggr,eff:sdRaw.eff,
+      mPos:Math.round(sdRaw.mPos),mPass:Math.round(sdRaw.mPass),
+      mXg:Math.round(sdRaw.mXg*100)/100,oXg:Math.round(sdRaw.oXg*100)/100,
+      xgDiff:Math.round(sdRaw.xgDiff*100)/100
+    };
+  }
+  return{fmt:typeof fmt==="function"?fmt(cs.cfg):"",lg,q,gName,tbl,mt,rem,ko,stars,dna:sDna};
+}
+
+// Mevcut cihazdaki tüm sezonlardan ~4-5 KB'lık kompakt Menajer Düellosu + Canlı Sezon özeti üretir (v:3)
 function buildDuelSummary(){
   const cfg=duelLoadCfg();
   const allS=duelModeStats("all"),cupS=duelModeStats("cup"),lgS=duelModeStats("lg");
@@ -149,7 +213,7 @@ function buildDuelSummary(){
 
   const nm=(cfg.name||store.owner||"Menajer").replace(/\s+/g," ").trim().slice(0,32)||"Menajer";
   return{
-    v:2,
+    v:3,
     uid:cfg.uid,
     name:nm,
     ut:Date.now(),
@@ -159,7 +223,8 @@ function buildDuelSummary(){
     star:allS.star,
     modes:{cup:{car:cupS.car,xp:cupS.xp},lg:{car:lgS.car,xp:lgS.xp}},
     dna,
-    cur:active
+    cur:active,
+    live:buildDuelLiveSeason(cs)
   };
 }
 
@@ -540,7 +605,8 @@ function duelView(){
       return `<div class="dl-cs ${cls}"><div class="dl-csh">${ti!=null?badge(ti,24):""}<div style="min-width:0;flex:1"><small>${esc(p.name)}</small><b>${esc(c.team||"Takım seçilmedi")}</b></div>${gTag}</div><div class="dl-csm">${esc(c.stage||"")} · ${c.w}G ${c.d}B ${c.l}M</div><div class="dl-csm">Gol: ${c.gf||0}:${c.ga||0} (Av ${gdS})</div>${formDots(c.form)}</div>`;
     };
     const pulseCard=psetCard("flame","org","Canlı Sezon Nabzı","Aktif sezondaki kulüp, GEN, averaj ve son 5 maç formu",null,
-      `<div class="dl-curgrid">${curSide(me,"me")}${curSide(opp,"op")}</div>`
+      `<div class="dl-curgrid">${curSide(me,"me")}${curSide(opp,"op")}</div>`+
+      `<div class="bar" style="margin:10px 0 0"><button class="btn p pset-pri ui-btn" data-a="dllive" data-v="${esc(opp.uid)}" style="flex:1">${UICO.radar}<span>${esc(opp.name)} · Canlı Sezonu İncele (Tablo · Fikstür)</span></button></div>`
     );
 
     vsHtml=modeBar+compatNote+hero+carCard+fairCard+starCard+dnaCard+pulseCard;
@@ -556,10 +622,137 @@ function duelView(){
   return connHtml+lbHtml+vsHtml+manCard;
 }
 
+// Canlı Sezon İnceleme Modalı (4 Sekmeli: Puan Durumu · Maçlar/Fikstür · Eleme Yolu · Yıldızlar & DNA)
+function duelLiveDlg(){
+  if(!st.dlLive)return "";
+  const cfg=duelLoadCfg(),cache=duelLoadCache();
+  const me=buildDuelSummary();
+  const rivals=Object.values(cache.peers||{}).filter(p=>p&&p.uid&&p.uid!==cfg.uid);
+  const targetUid=st.dlLive.uid||"";
+  const isMe=targetUid===cfg.uid;
+  const p=isMe?me:(rivals.find(r=>r.uid===targetUid)||rivals[0]||me);
+  const other=isMe?(rivals.find(r=>r.uid===cache.sel)||rivals[0]||null):me;
+  const tab=st.dlLive.tab||"tbl";
+  const c=p.cur||{},lv=p.live||null;
+  const ti=c.team&&IX[c.team]!=null?IX[c.team]:null;
+  const gd=(c.gf||0)-(c.ga||0),gdS=(gd>0?"+"+gd:gd<0?"−"+Math.abs(gd):"0");
+
+  // Üst kişi değiştirici (Sen / Rakip)
+  const whoSwitch=other?`<div class="stabs seg2" style="margin:0 0 10px">`+
+    `<button class="chip ${p.uid===me.uid?"on":""}" data-a="dllivewho" data-v="${esc(me.uid)}">${esc(me.name)} (Sen)</button>`+
+    `<button class="chip ${p.uid!==me.uid?"on":""}" data-a="dllivewho" data-v="${esc((p.uid!==me.uid?p:other).uid)}">${esc((p.uid!==me.uid?p:other).name)}</button>`+
+  `</div>`:"";
+
+  const headCard=`<div class="dl-lvhead ${p.uid===me.uid?"me":"op"}">`+
+    `<div class="dl-csh">${ti!=null?badge(ti,36):""}<div style="min-width:0;flex:1"><b>${esc(c.team||"Takım seçilmedi")}</b><small>${esc(c.sName||"Aktif Sezon")}${c.stage?" · "+esc(c.stage):""}</small></div>${c.teamG?`<span class="dl-gen">${c.teamG} GEN</span>`:""}</div>`+
+    `<div class="dl-lvkpi"><span><b>${c.w||0}G ${c.d||0}B ${c.l||0}M</b><em>Karne</em></span><span><b>${c.gf||0}:${c.ga||0}</b><em>Gol (Av ${gdS})</em></span><span><b>${lv&&lv.mt?lv.mt.length:((c.w||0)+(c.d||0)+(c.l||0))}</b><em>Maç</em></span></div>`+
+    (lv&&lv.fmt?`<div class="note" style="margin:6px 0 0;font-size:11.5px">${esc(lv.fmt)}</div>`:"")+
+  `</div>`;
+
+  let body="";
+  if(!lv){
+    body=`<div class="note wr" style="margin:8px 0"><b>${esc(p.name)}</b> henüz <b>v20.36</b> sürümüne geçip eşitleme yapmadığı için detaylı canlı sezon verisi (puan durumu, fikstür, eleme yolu) henüz paylaşılmadı. Güncelleyip <b>Şimdi Eşitle</b> dediğinde burada otomatik görünecek.</div>`;
+  }else{
+    const nav=`<div class="stabs dl-lvtbs" role="tablist" aria-label="Canlı sezon bölümleri">${[["tbl","Puan Durumu"],["mt","Maçlar"],["ko","Eleme"],["st","Yıldız & DNA"]].map(([k,l])=>`<button class="chip ${tab==k?"on":""}" role="tab" aria-selected="${tab==k}" data-a="dllivetab" data-v="${k}">${l}</button>`).join("")}</div>`;
+    let content="";
+    if(tab=="tbl"){
+      if(lv.tbl&&lv.tbl.length){
+        const qCut=!lv.lg&&lv.q>0?lv.q:0;
+        const rowsHtml=lv.tbl.map((r,idx)=>{
+          const [nm,o,w,d,l,gf,ga,pts,mine]=r;
+          const rti=IX[nm]!=null?IX[nm]:null,av=gf-ga,avS=av>0?"+"+av:av<0?"−"+Math.abs(av):"0";
+          const isCut=qCut>0&&idx===qCut-1&&idx<lv.tbl.length-1;
+          return `<tr class="${mine?"me":""}${isCut?" qcut":""}">`+
+            `<td class="rk">${idx+1}</td>`+
+            `<td class="tm">${rti!=null?badge(rti,18):""}<span>${esc(nm)}</span></td>`+
+            `<td>${o}</td><td>${w}</td><td>${d}</td><td>${l}</td>`+
+            `<td class="${av>0?"pos":av<0?"neg":""}">${avS}</td>`+
+            `<td class="pt"><b>${pts}</b></td>`+
+          `</tr>`;
+        }).join("");
+        content=`<div class="dl-lvsec"><div class="dl-lvsh"><b>${esc(lv.gName||"Puan Durumu")}</b>${qCut?`<span class="xfpill emr">İlk ${qCut} çıkar</span>`:""}</div>`+
+          `<div class="dl-tblwrap"><table class="ptbl dl-ptbl"><thead><tr><th>#</th><th class="tm">Takım</th><th>O</th><th>G</th><th>B</th><th>M</th><th>Av</th><th>P</th></tr></thead><tbody>${rowsHtml}</tbody></table></div></div>`;
+      }else{
+        content=`<div class="note">Bu sezonda henüz kura/puan tablosu oluşmamış (veya direkt eleme formatında).</div>`;
+      }
+    }else if(tab=="mt"){
+      const remHtml=(lv.rem&&lv.rem.length)?`<div class="dl-lvsec"><div class="dl-lvsh"><b>Kalan Grup / Lig Rakipleri</b><span class="xfpill sky">${lv.rem.reduce((a,x)=>a+x[1],0)} maç kaldı</span></div><div class="dl-remwrap">${lv.rem.map(([nm,cnt])=>{const rti=IX[nm]!=null?IX[nm]:null;return `<span class="dl-remchip">${rti!=null?badge(rti,16):""}<span>${esc(nm)}</span>${cnt>1?`<em>×${cnt}</em>`:""}</span>`}).join("")}</div></div>`:"";
+      if(lv.mt&&lv.mt.length){
+        const mHtml=lv.mt.slice().reverse().map(m=>{
+          const [on,gf,ga,rd,et,pf,pa,mx,ox]=m;
+          const r=gf>ga?"w":gf<ga?"l":(pf!=null&&pa!=null&&pf!==pa?(pf>pa?"w":"l"):"d");
+          const sc=`${gf}–${ga}${pf!=null&&pa!=null?` (P ${pf}–${pa})`:et?" (UZ)":""}`;
+          const rti=IX[on]!=null?IX[on]:null;
+          const xgTag=(mx!=null&&ox!=null)?`<span class="dl-mxg">xG ${xgN2(mx)}–${xgN2(ox)}</span>`:"";
+          return `<div class="dl-mrow ${r}">`+
+            `<span class="dl-mres ${r}">${r=="w"?"G":r=="d"?"B":"M"}</span>`+
+            `<div class="dl-mmain"><div class="dl-mtop">${rti!=null?badge(rti,20):""}<b>${esc(on)}</b><span class="dl-mrd">${esc(rd)}</span></div>${xgTag}</div>`+
+            `<span class="dl-msc ${r}">${sc}</span>`+
+          `</div>`;
+        }).join("");
+        content=remHtml+`<div class="dl-lvsec"><div class="dl-lvsh"><b>Oynanan Maçlar</b><span class="xfpill">${lv.mt.length} maç</span></div><div class="dl-mlist">${mHtml}</div></div>`;
+      }else{
+        content=remHtml+`<div class="note">Bu sezonda henüz oynanmış maç yok.</div>`;
+      }
+    }else if(tab=="ko"){
+      if(lv.lg){
+        content=`<div class="note">Bu sezon <b>Puan Usulü Lig</b> formatında oynandığı için eleme turu bulunmuyor.</div>`;
+      }else if(lv.ko&&lv.ko.length){
+        content=lv.ko.map(([rd,pairs])=>{
+          const rows=pairs.map(pr=>{
+            const [n1,n2,g1,g2,wi,pf,pa,et,mine]=pr;
+            const sc=(g1!=null&&g2!=null)?`${g1}–${g2}${pf!=null&&pa!=null?` (P ${pf}–${pa})`:et?" (UZ)":""}`:"—";
+            return `<div class="dl-kor${mine?" mine":""}"><span class="dl-kot l${wi===1?" w":""}">${esc(n1)}</span><span class="dl-kosc">${sc}</span><span class="dl-kot r${wi===2?" w":""}">${esc(n2)}</span></div>`;
+          }).join("");
+          return `<div class="dl-lvsec"><div class="dl-lvsh"><b>${esc(rd)}</b><span class="xfpill">${pairs.length} eşleşme</span></div><div class="dl-kolist">${rows}</div></div>`;
+        }).join("");
+      }else{
+        content=`<div class="note">Eleme ağacı henüz oluşmadı (grup aşaması devam ediyor).</div>`;
+      }
+    }else if(tab=="st"){
+      const stBlk=(ttl,arr,unit,subU)=>{
+        if(!arr||!arr.length)return "";
+        return `<div class="dl-lvsec"><div class="dl-lvsh"><b>${ttl}</b></div>`+
+          `<div class="dl-stlist">${arr.map(([nm,v1,v2],i)=>`<div class="dl-str"><span class="dl-rk">${i+1}</span><b class="dl-stn">${esc(nm)}</b><span class="dl-stv">${v1} ${unit}${v2?` <small>· ${v2} ${subU}</small>`:""}</span></div>`).join("")}</div></div>`;
+      };
+      const sG=lv.stars?stBlk("Gol Krallığı (Bu Sezon)",lv.stars.g,"G","A"):"";
+      const sA=lv.stars?stBlk("Asist Liderleri (Bu Sezon)",lv.stars.a,"A","G"):"";
+      const sM=lv.stars?stBlk("Maçın Adamı (MOTM)",lv.stars.m,"★","G"):"";
+      let dnaHtml="";
+      if(lv.dna){
+        const d=lv.dna;
+        const bar=(lbl,val)=>`<div class="dl-sdrow"><span>${lbl}</span><div class="dl-sdbar"><i style="width:${val}%"></i></div><b>${val}</b></div>`;
+        dnaHtml=`<div class="dl-lvsec"><div class="dl-lvsh"><b>Bu Sezonun Menajer DNA’sı</b><span class="xfpill emr">${d.n} maç</span></div>`+
+          `<div class="dl-id ${p.uid===me.uid?"me":"op"}" style="margin-bottom:8px"><b>${esc(d.title)}</b>${d.subTag?`<em>İkincil tarz: ${esc(d.subTag)}</em>`:""}</div>`+
+          bar("Hücum Tehdidi",d.atk)+bar("Top & Pas Kontrolü",d.ctrl)+bar("Savunma Direnci",d.aggr)+bar("Bitiricilik Verimi",d.eff)+
+          `<div class="dnamets" style="margin-top:8px"><span class="dnam"><b>%${d.mPos}</b><em>Top</em></span><span class="dnam"><b>%${d.mPass}</b><em>Pas</em></span><span class="dnam"><b>${xgN2(d.mXg)}</b><em>xG/M</em></span><span class="dnam"><b>${xgN2(d.oXg)}</b><em>Rakip xG</em></span><span class="dnam ${d.xgDiff>=0?"pos":"neg"}"><b>${xgS2(d.xgDiff)}</b><em>Gol−xG</em></span></div>`+
+        `</div>`;
+      }
+      content=(sG||sA||sM||dnaHtml)?(sG+sA+sM+dnaHtml):`<div class="note">Bu sezonda henüz oyuncu veya gelişmiş maç istatistiği girilmemiş.</div>`;
+    }
+    body=nav+content;
+  }
+
+  return `<div class="dlg ti"><button class="tibk" data-a="no" aria-label="Kapat"></button><div class="dbox tisheet dl-lvbox" role="dialog" aria-modal="true" aria-label="Canlı Sezon İnceleme">`+
+    `<div class="tots-dlg-hd"><div><b>${esc(p.name)} · Canlı Sezon</b><small>Son eşitleme: ${esc(duelRelTime(p.ut))}</small></div><button class="mb sc-ic" data-a="no" aria-label="Kapat">✕</button></div>`+
+    whoSwitch+headCard+body+
+    `<div class="bar" style="margin:12px 0 0"><button class="btn p pset-pri" data-a="no" style="flex:1">Kapat</button></div>`+
+  `</div></div>`;
+}
+
 // Düello aksiyon yönlendiricisi (app.js click listener içinden çağrılır)
 async function handleDuelAction(a,dv){
   if(a=="dlmod"){
     st.dlmod=dv||"all";render();return true;
+  }
+  if(a=="dllive"){
+    st.dlLive={uid:dv||"",tab:"tbl"};render();return true;
+  }
+  if(a=="dllivetab"){
+    if(st.dlLive){st.dlLive.tab=dv||"tbl";render()}return true;
+  }
+  if(a=="dllivewho"){
+    if(st.dlLive){st.dlLive.uid=dv||"";render()}return true;
   }
   if(a=="dljoin"){
     const nmEl=$("dl_nm"),rmEl=$("dl_rm");

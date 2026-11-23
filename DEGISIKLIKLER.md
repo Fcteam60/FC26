@@ -1,3 +1,7 @@
+## v20.36 (2026-11-23) — Canlı Sezon İnceleme (Puan Durumu, Fikstür, Eleme Yolu & Sezon DNA)
+- **Canlı Sezon Paketi (`duel.js` `buildDuelLiveSeason`, şema `v:3`):** Firebase’e gönderilen özete aktif sezonun canlı puan tablosu (kendi grubu veya tüm lig), oynanan maç geçmişi (skor, uzatma/penaltı, xG), kalan rakipler, eleme ağacı eşleşmeleri, sezon yıldızları (ilk 3 gol/asist/MOTM) ve bu sezona ait Menajer DNA özeti kompakt biçimde (~4–5 KB) eklendi.
+- **4 Sekmeli Canlı Sezon İnceleme Modalı (`duel.js` `duelLiveDlg`, `app.js`, `style.css`):** Düello ekranındaki *Canlı Sezon Nabzı* kartından açılan tam ekran panelle arkadaşının (veya kendinin) aktif sezonu 4 sekmede incelenebilir: **Puan Durumu** (çıkış çizgisi ve takım vurgulu), **Maçlar & Kalan Fikstür**, **Eleme Yolu** ve **Yıldız & DNA**.
+
 ## v20.35 (2026-11-23) — Menajer Düellosu Hata Düzeltmeleri & Genişletilmiş Kıyaslama Seçenekleri
 - **Uç Durum & Hata Düzeltmeleri (`duel.js`, `posters.js`):** Negatif değerlerde (`Gol − xG`, `Puan − xPts`, `Beklenti Üstü`, `Averaj`) ters çubuk genişliği `duelBarCalc` ile düzeltildi; 0 maçlı veya verisiz (`—`) profillerin `lowerBetter` kategorilerde haksız puan alması engellendi; **Odadan Ayrıl** artık Firebase'deki kendi kaydını `DELETE` ile temizler; kendi kıyas kodunu yapıştırma engellendi; sekme geçişlerinde 10 saniyelik ağ koruması eklendi.
 - **Tümü / Kupa / Lig Filtresi (`duel.js`, `app.js`, `posters.js`):** Düello ekranına ve 1v1 PNG posterine **Tümü · Kupa · Lig** kırılımı eklendi (eski v1 özetlerle geri uyumlu).
