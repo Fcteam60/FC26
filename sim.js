@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — 4 Katmanlı Gerçekçi Simülasyon, Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v22.1) */
+/* FC 27 Grup Ligi — 4 Katmanlı Gerçekçi Simülasyon, Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v22.3) */
 /* ---------- AŞAMA 1, 2 & 3: HAFTALIK SİMÜLASYON, ELEME AĞACI (BRACKET), GOL KRALLIĞI VE TURNUVA BİTİŞİ ---------- */
 const SIM_MODES=[[0,"Gerçekçi","Güç farkı ve gerçek futbol skorları (1-0, 2-1, 1-1 ağırlıklı)"],[1,"Dengeli","Standart güç ve günlük form dengesi"],[2,"Sürprizli","Yüksek şans faktörü, kupa sürprizlerine açık"]];
 
@@ -81,6 +81,19 @@ function uclNextMatch(s,excludeId){
   const sched=uclMySchedule(s);if(!sched.length)return null;
   const played=new Set((s.mt||[]).filter(m=>m.id!==excludeId&&m.rd==="Grup"&&m.opp!=null).map(m=>m.opp));
   return sched.find(x=>!played.has(x.opp))||null;
+}
+
+function uclWeekOfOpp(s,opp){
+  if(!isUcl(s.cfg)||opp==null)return 0;
+  const it=uclMySchedule(s).find(x=>x.opp===opp);
+  return it?it.w:0;
+}
+
+function uclHasPlayedWeek(s,w){
+  if(!isUcl(s.cfg)||s.my==null)return false;
+  const it=uclMySchedule(s).find(x=>x.w===w);
+  if(!it)return false;
+  return (s.mt||[]).some(m=>m.rd==="Grup"&&m.opp===it.opp);
 }
 
 function ensureSim(s){
@@ -619,7 +632,16 @@ function simNextWeek(s){
   const sim=ensureSim(s),totW=totWeeks(s.cfg);
   if(sim.w>=totW)return "Tüm grup/lig haftaları zaten simüle edildi";
   const myGm=(s.mt||[]).filter(m=>m.rd==="Grup").length,targetW=sim.w+1;
-  if(!s.res&&s.my!=null&&myGm<targetW)return `Önce kendi ${targetW}. hafta maçını girmelisin`;
+  if(!s.res&&s.my!=null){
+    if(isUcl(s.cfg)){
+      if(!uclHasPlayedWeek(s,targetW)){
+        const it=uclMySchedule(s).find(x=>x.w===targetW);
+        return `Önce kendi ${targetW}. hafta maçını${it&&T[it.opp]?" ("+T[it.opp].n+")":""} girmelisin`;
+      }
+    }else if(myGm<targetW){
+      return `Önce kendi ${targetW}. hafta maçını girmelisin`;
+    }
+  }
   s.G.forEach((g,gi)=>{
     sim.gm[gi]=Array.isArray(sim.gm[gi])?sim.gm[gi]:[];
     const pairs=simWeekPairs(s,gi,targetW);
@@ -792,7 +814,7 @@ function syncUserMatchesToBracket(s){
           p.g1=isT1?myGf:myGa;
           p.g2=isT1?myGa:myGf;
           p.et=last.et?1:0;
-          if(last.pf!=null&&last.pa!=null&&last.pf!==last.pa){
+          if(myGf===myGa&&last.pf!=null&&last.pa!=null&&last.pf!==last.pa){
             p.pf=isT1?last.pf:last.pa;
             p.pa=isT1?last.pa:last.pf;
             p.w=last.pf>last.pa?s.my:opp;
@@ -1196,7 +1218,8 @@ function weekBulletinData(s){
   // Kullanıcının o haftadaki kendi maçını da sürpriz, hat-trick ve en gollü maç taramasına kat
   if(s.my!=null&&T[s.my]){
     const myGm=(s.mt||[]).filter(m=>m.rd==="Grup");
-    const um=myGm[w-1];
+    const uIt=isUcl(s.cfg)?uclMySchedule(s).find(x=>x.w===w):null;
+    const um=uIt?(myGm.find(m=>m.opp===uIt.opp)||null):myGm[w-1];
     if(um&&um.opp!=null&&T[um.opp]){
       const r1=RT(s,s.my),r2=RT(s,um.opp);
       allMatches.push({gi:myGi,t1:s.my,t2:um.opp,g1:+um.gf||0,g2:+um.ga||0,r1,r2,tot:(+um.gf||0)+(+um.ga||0),mine:true});

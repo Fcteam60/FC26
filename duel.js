@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v22.1)
+   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v22.3)
    - Obsidian Broadcast Arena, 4 sekmeli Düello Stüdyosu (Genel · Sezonlar · Takımlar · DNA & xG)
    - Sıfır harici SDK: Firebase Realtime Database REST API + çevrimdışı IndexedDB uyumu
    - Canlı Sezon İnceleme (Puan Durumu, Maçlar, Eleme, Sezon DNA) & Yedek Manuel Kıyas Kodu
@@ -153,7 +153,8 @@ function buildDuelLiveSeason(cs){
     const st0=m.stats||{};
     const mx=st0.myXg!=null?Math.round(+st0.myXg*100)/100:null;
     const ox=st0.oppXg!=null?Math.round(+st0.oppXg*100)/100:null;
-    return [m.on||(m.opp!=null&&T[m.opp]?T[m.opp].n:"Rakip"),+m.gf||0,+m.ga||0,m.rd||"Grup",m.et?1:0,m.pf!=null?+m.pf:null,m.pa!=null?+m.pa:null,mx,ox];
+    const rdL=m.rd==="Grup"?(ucl?"Lig Aşaması":lg?"Lig":"Grup"):(m.rd||"Grup");
+    return [m.on||(m.opp!=null&&T[m.opp]?T[m.opp].n:"Rakip"),+m.gf||0,+m.ga||0,rdL,m.et?1:0,m.pf!=null?+m.pf:null,m.pa!=null?+m.pa:null,mx,ox];
   });
   let ko=[];
   if(!lg&&cs.sim&&cs.sim.ko&&typeof rds==="function"){
@@ -255,6 +256,7 @@ function duelClubAnalytics(me,opp,mode){
     const pts=w*3+d;
     return{
       n,finN,ch,fin,pod,m,w,d,l,gf,ga,gd:gf-ga,
+      gdpm:m?Math.round((gf-ga)/m*100)/100:null,
       wr:m?Math.round(w/m*1000)/10:null,
       ppm:m?Math.round(pts/m*100)/100:null,
       gpm:m?Math.round(gf/m*100)/100:null,
@@ -875,7 +877,7 @@ function duelClubStudio(me,opp,mode){
     let cs1=0,cs2=0;
     const cmpC=(a,b,low)=>{if(a==null||b==null||!Number.isFinite(+a)||!Number.isFinite(+b))return;if(low){if(+a<+b)cs1++;else if(+b<+a)cs2++}else{if(+a>+b)cs1++;else if(+b>+a)cs2++}};
     cmpC(c1.ch,c2.ch,false);
-    if(c1.m>0&&c2.m>0){cmpC(c1.wr,c2.wr,false);cmpC(c1.ppm,c2.ppm,false);cmpC(c1.gpm,c2.gpm,false);cmpC(c1.gapm,c2.gapm,true);cmpC(c1.gd,c2.gd,false)}
+    if(c1.m>0&&c2.m>0){cmpC(c1.wr,c2.wr,false);cmpC(c1.ppm,c2.ppm,false);cmpC(c1.gpm,c2.gpm,false);cmpC(c1.gapm,c2.gapm,true);cmpC(c1.gdpm,c2.gdpm,false)}
 
     const face=`<div class="dl-ministage">`+
       `<div class="dl-mside me"><div class="dl-mcrest me${ti1!=null?" has-b":""}">${ti1!=null?badge(ti1,38):`<span class="dl-av sm">${esc(c1.tm.slice(0,1).toLocaleUpperCase("tr"))}</span>`}</div><small class="dl-msnm">${esc(me.name)}</small><b class="dl-mtm">${esc(c1.tm)}${c1.g?` <em>${c1.g}</em>`:""}</b><span class="dl-mgbm">${c1.n} sezon · ${c1.m} maç</span></div>`+
@@ -889,7 +891,7 @@ function duelClubStudio(me,opp,mode){
       duelCompareRow("Maç Başı Puan",c1.ppm,c2.ppm,fxF(c1.ppm),fxF(c2.ppm),false)+
       duelCompareRow("Atılan Gol / Maç",c1.gpm,c2.gpm,fxF(c1.gpm),fxF(c2.gpm),false)+
       duelCompareRow("Yenilen Gol / Maç",c1.gapm,c2.gapm,fxF(c1.gapm),fxF(c2.gapm),true)+
-      duelCompareRow("Toplam Averaj",c1.m?c1.gd:null,c2.m?c2.gd:null,c1.m?sgnI(c1.gd):"—",c2.m?sgnI(c2.gd):"—",false);
+      duelCompareRow("Maç Başı Averaj",c1.gdpm,c2.gdpm,c1.gdpm!=null?dFmt(c1.gdpm):"—",c2.gdpm!=null?dFmt(c2.gdpm):"—",false);
 
     const cBtn=`<button class="dl-livego sec" data-a="dlcposter" style="margin-top:12px">${DLI.share}<span>Kulüp vs. Kulüp Posterini Paylaş (PNG)</span></button>`;
     customPanel=duelPanel("cl","sky","Kulüp vs. Kulüp Düellosu","İstediğin iki kulüp performansını kıyasla",`${cs1}–${cs2}`,

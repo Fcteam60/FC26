@@ -1,4 +1,4 @@
-# FC 27 Grup Ligi — Kullanım Kılavuzu (v22.1)
+# FC 27 Grup Ligi — Kullanım Kılavuzu (v22.3)
 
 FC 27 Grup Ligi; çevrimdışı çalışabilen (PWA), kupa ve lig turnuvalarını takip etmeni ve arkadaşlarınla canlı kariyer düellosu yapmanı sağlayan kapsamlı bir futbol takip uygulamasıdır.
 

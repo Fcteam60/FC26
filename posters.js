@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — Broadcast PNG Poster Motoru (posters.js · v22.1) */
+/* FC 27 Grup Ligi — Broadcast PNG Poster Motoru (posters.js · v22.3) */
 /* ---------- PAYLAŞILABİLİR GÖRSELLER ---------- */
 const NUMF='"FC Sayi","Barlow Condensed","Oswald","Bahnschrift","Avenir Next Condensed","Roboto Condensed","Arial Narrow",sans-serif';
 const TCOL={1:["#fbeaa8","#e0b43a","#2b2000"],2:["#f3f6f8","#b9c3cb","#1b2328"],3:["#f0c9a2","#be7f47","#2a1500"],0:["#ffffff","#dfeee6","#12211a"]};
@@ -222,7 +222,7 @@ async function kuraCv(s){
 
   // Header cleanly positioned above y=154 divider
   drawPill(c,lg?"LİG TABLOSU":"KURA SONUCU",44,40,176,38,"rgba(240,194,75,.16)","rgba(240,194,75,.06)","rgba(240,194,75,.48)","#fbeaa8",20);
-  tx(c,s.name.toLocaleUpperCase("tr")+(lg?"":" · GRUPLAR"),44,114,52,"#f8fafc","left",700);
+  tx(c,s.name.toLocaleUpperCase("tr")+(lg?"":(!s.cfg.gs?" · EŞLEŞMELER":" · GRUPLAR")),44,114,52,"#f8fafc","left",700);
   tx(c,s.date,W-44,66,25,"#94a3b8","right",600);
   c.font="600 22px "+NUMF;tx(c,fit(c,fmt(s.cfg),520),W-44,112,22,"#3ee6a8","right",600);
 
@@ -530,7 +530,8 @@ async function karneCv(x,p,targetCv){p=p==null?1:p;const cu=n=>Math.round(n*p);
       const mr=mres(m),rCol={w:"#10b981",d:"#64748b",l:"#ef4444"}[mr],rLt={w:"G",d:"B",l:"M"}[mr];
       c.fillStyle=rCol;rr(c,rx+9,ry-16,32,32,9);c.fill();
       tx(c,rLt,rx+25,ry+1,19,mr=="w"?"#052e16":"#fff","center",700);
-      const rdTxt=m.rd+(m.lg?" "+m.lg+".M":""),scStr=mscTxt(m),fSz=mCols==2?25:29;
+      const rdDisp=m.rd==="Grup"?(isUcl(x.cfg)?"Lig Aş.":isLg(x.cfg)?"Lig":"Grup"):m.rd;
+      const rdTxt=rdDisp+(m.lg?" "+m.lg+".M":""),scStr=mscTxt(m),fSz=mCols==2?25:29;
       c.font="600 "+fSz+"px "+NUMF;
       tx(c,fit(c,rdTxt+" · "+m.on,cw-172),rx+52,ry+1,fSz,"#f1f5f9","left",600);
       c.fillStyle=mr=="w"?"rgba(16,185,129,.20)":mr=="l"?"rgba(239,68,68,.20)":"rgba(148,163,184,.18)";
@@ -1302,14 +1303,29 @@ async function macCv(q){const x=q.x,m=q.m,r=mres(m),oi=m.opp!=null&&T[m.opp]?m.o
   const momDisp=m.mom?m.mom:(momStr?`${momStr} (${m.on})`:"");
   const gRowCnt=n+(ex?1:0)+(na?1:0);
   const hasOppG=ogList.length>0;
-  const ch=(gRowCnt||hasOppG||momDisp)?(78+gRowCnt*54+(hasOppG?54:0)+(momDisp?86:0)+18):0;
+  const ogLines=[];
+  if(hasOppG){
+    const pref=(m.on||"RAKİP").toLocaleUpperCase("tr")+" GOLLERİ: ";
+    const parts=ogList.map(o=>o.sc+(o.as?" ("+o.as+")":""));
+    let curL=pref;
+    parts.forEach((pt,idx)=>{
+      const sep=idx===0?"":", ";
+      if(curL.length+sep.length+pt.length>56&&curL!==pref){
+        ogLines.push(curL);curL=pt;
+      }else curL+=sep+pt;
+    });
+    if(curL)ogLines.push(curL);
+  }
+  const ogBoxH=hasOppG?(26+ogLines.length*30):0;
+  const ch=(gRowCnt||hasOppG||momDisp)?(78+gRowCnt*54+(hasOppG?(ogBoxH+16):0)+(momDisp?86:0)+18):0;
   const W=1080,H=616+(stBoxH?stBoxH+24:0)+(ch?ch+24:0)+104+80;
   const cv=mkCv(W,H),c=cv.getContext("2d");
   try{await document.fonts.load('700 30px "FC Sayi"')}catch(e){}
   dkBg(c,W,H,cHome,cAway,false);
 
   // Header
-  const stageTag=(m.rd+(m.lg?" · "+m.lg+". MAÇ":"")).toLocaleUpperCase("tr");
+  const rdDisp=m.rd==="Grup"?(isUcl(x.cfg)?"Lig Aşaması":isLg(x.cfg)?"Lig":"Grup"):m.rd;
+  const stageTag=(rdDisp+(m.lg?" · "+m.lg+". MAÇ":"")).toLocaleUpperCase("tr");
   drawPill(c,"MAÇ SONUCU",48,40,164,38,"rgba(240,194,75,.18)","rgba(240,194,75,.06)","rgba(240,194,75,.52)","#fbeaa8",20);
   drawPill(c,stageTag,224,40,Math.min(340,Math.max(120,stageTag.length*15+36)),38,"rgba(255,255,255,.08)",null,"rgba(255,255,255,.18)","#e2e8f0",19);
   tx(c,x.name.toLocaleUpperCase("tr"),48,114,50,"#f8fafc","left",700);
@@ -1436,12 +1452,14 @@ async function macCv(q){const x=q.x,m=q.m,r=mres(m),oi=m.opp!=null&&T[m.opp]?m.o
       if(na){c.font="600 25px "+NUMF;tx(c,fit(c,"ASİST: "+as.slice(0,4).map(([nm,a])=>nm+(a>1?" (×"+a+")":"")).join(", "),910),84,ry+2,25,"#3ee6a8","left",600);ry+=54}
     }
     if(hasOppG){
-      c.fillStyle="rgba(249,115,22,.08)";rr(c,72,ry-20,936,42,11);c.fill();
+      const boxTop=ry-20;
+      c.fillStyle="rgba(249,115,22,.08)";rr(c,72,boxTop,936,ogBoxH,11);c.fill();
       c.lineWidth=1;c.strokeStyle="rgba(249,115,22,.28)";c.stroke();
-      const ogStr=ogList.map(o=>o.sc+(o.as?" ("+o.as+")":"")).join(", ");
-      c.font="600 23px "+NUMF;
-      tx(c,fit(c,(m.on||"RAKİP").toLocaleUpperCase("tr")+" GOLLERİ: "+ogStr,904),90,ry+2,23,"#fdba74","left",600);
-      ry+=54;
+      c.font="600 22px "+NUMF;
+      ogLines.forEach((ln,li)=>{
+        tx(c,fit(c,ln,904),90,boxTop+27+li*30,22,"#fdba74","left",600);
+      });
+      ry+=ogBoxH+16;
     }
     if(momDisp){
       const my2=ry-6;
@@ -1686,7 +1704,8 @@ async function duelloKulupCv(x){
   let sc1=0,sc2=0;
   const cmp=(a,b,low)=>{if(a==null||b==null||!Number.isFinite(+a)||!Number.isFinite(+b))return;if(low){if(+a<+b)sc1++;else if(+b<+a)sc2++}else{if(+a>+b)sc1++;else if(+b>+a)sc2++}};
   cmp(c1.ch,c2.ch,false);
-  if(c1.m>0&&c2.m>0){cmp(c1.wr,c2.wr,false);cmp(c1.ppm,c2.ppm,false);cmp(c1.gpm,c2.gpm,false);cmp(c1.gapm,c2.gapm,true);cmp(c1.gd,c2.gd,false)}
+  const gdpm1=c1.gdpm!=null?c1.gdpm:(c1.m?Math.round(c1.gd/c1.m*100)/100:null),gdpm2=c2.gdpm!=null?c2.gdpm:(c2.m?Math.round(c2.gd/c2.m*100)/100:null);
+  if(c1.m>0&&c2.m>0){cmp(c1.wr,c2.wr,false);cmp(c1.ppm,c2.ppm,false);cmp(c1.gpm,c2.gpm,false);cmp(c1.gapm,c2.gapm,true);cmp(gdpm1,gdpm2,false)}
 
   const hy=174,hh=210;
   glassBox(c,44,hy,992,hh,26,"rgba(240,194,75,.34)","#2dd496");
@@ -1728,7 +1747,7 @@ async function duelloKulupCv(x){
     ["MAÇ BAŞI PUAN",c1.ppm,c2.ppm,fxF(c1.ppm),fxF(c2.ppm),false,false],
     ["ATILAN GOL / MAÇ",c1.gpm,c2.gpm,fxF(c1.gpm),fxF(c2.gpm),false,false],
     ["YENİLEN GOL / MAÇ",c1.gapm,c2.gapm,fxF(c1.gapm),fxF(c2.gapm),true,false],
-    ["TOPLAM AVERAJ",c1.m?c1.gd:null,c2.m?c2.gd:null,c1.m?sgnI(c1.gd):"—",c2.m?sgnI(c2.gd):"—",false,false],
+    ["MAÇ BAŞI AVERAJ",gdpm1,gdpm2,gdpm1!=null?(gdpm1>0?"+"+fx(gdpm1):fx(gdpm1)):"—",gdpm2!=null?(gdpm2>0?"+"+fx(gdpm2):fx(gdpm2)):"—",false,false],
     ["TOPLAM GOL",c1.m?c1.gf:null,c2.m?c2.gf:null,c1.m?`${c1.gf}:${c1.ga}`:"—",c2.m?`${c2.gf}:${c2.ga}`:"—",false,true]
   ];
   rows.forEach(([lbl,v1,v2,f1,f2,low,neu],idx)=>{

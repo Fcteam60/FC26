@@ -1,3 +1,17 @@
+## v22.3 (2026-11-24) — ŞL Hafta–Silme Bütünlüğü & Son 4 İnce Cila
+- **Şampiyonlar Ligi Hafta–Silme Eşleşmesi (`sim.js` `uclWeekOfOpp`, `uclHasPlayedWeek`, `app.js`):** ŞL’de geçmiş bir hafta maçı silinip sonradan yeniden eklendiğinde `s.mt` dizi sırasından bağımsız olarak fikstür haftası (`w`) baz alınır; eksik hafta oynanmadan simülasyon açılmaz, `Haftanın Bülteni` ve geri-alma indeksi her zaman doğru haftayı hedefler.
+- **`Sonucu Sil` Onay Koruması (`app.js` `a == "unfin"`):** `Takımım › Sezon Sonucu` kartındaki sonuç silme butonuna onay penceresi eklendi.
+- **Etiket Tutarlılığı (`app.js` `recCard`, `tourneyPlayerDetail`):** `Geçmiş › Rekorlar` ve oyuncu detay penceresindeki maç listelerinde ŞL/Lig maçları artık `"Lig Aşaması"` / `"Lig"` olarak gösterilir.
+- **Çok Gollü Maç Kartı Posteri (`posters.js` `macCv`):** Rakibin 4+ gol attığı maçlarda golcü isimleri tek satırda kesilmek yerine otomatik çok satırlı kutuya sarılır.
+- **Adil Kulüp vs. Kulüp Kıyaslaması (`duel.js`, `posters.js`):** `Kulüp vs. Kulüp` sekmesi ve PNG posteri `"Toplam Averaj"` yerine hacimden bağımsız `"Maç Başı Averaj"` (`gdpm`) üzerinden puanlar.
+
+## v22.2 (2026-11-24) — Eleme/Final Penaltı Koruma, 1. Ayak Düzenleme & Etiket Bütünlüğü
+- **Tek Maçlı Eleme & Final `P 0–0` Koruması (`app.js` `matchCard`, `msave`, `sim.js`):** Maç girişi `0–0` açıldığında `Penaltılar (P)` artık otomatik kilitlenmez; skor eşit değilken penaltı kutusu gizlenir ve `pf/pa` asla yazılmaz (`2–0 (P 0–0)` kirliliği tamamen kapatıldı). `syncUserMatchesToBracket` penaltıları yalnızca toplam skor gerçekten eşitken uygular.
+- **Çift Maçlı Elemede 1. Ayak Düzenleme (`app.js` `msave`):** 2. maç oynandıktan sonra 1. maçı düzenlerken oluşan penaltı kilidi kaldırıldı; penaltı zorunluluğu yalnızca belirleyici ayakta (tek maç veya 2. ayak) aranır.
+- **Eleme Turu Ayak Limiti (`app.js` `msave`):** Aynı eleme turunda izin verilen maç sayısından fazla (örn. 2. Final veya 3. ayak) yanlışlıkla yeni maç eklenmesi engellendi.
+- **Direkt Eleme Ana Ekran Yönlendirmesi (`app.js` `homeView`):** Direkt Eleme formatında ana ekran aksiyon butonu artık doğrudan **`Fikstür / Eleme Ağacı`** sekmesine açılır.
+- **Poster, Düello Etiketleri & Ölü Kod Temizliği (`posters.js`, `duel.js`, `app.js`):** `Maç Kartı`, `Sezon Karnesi` ve `Canlı Düello`’da ŞL/Lig maçları `"Lig Aşaması"` / `"Lig"`, Direkt Eleme kura posteri `"EŞLEŞMELER"` olarak güncellendi; kullanılmayan `lgchamp` yöneticisi temizlendi.
+
 ## v22.1 (2026-11-24) — 4 Format Uçtan Uca Doğrulama & 15 Hata Kapanışı (Final)
 - **Şampiyonlar Ligi Eleme & Fikstür Koruması (`app.js`, `sim.js`):**
   - Play-Off maçı düzenlendiğinde veya silindiğinde `Son 16`’daki İlk 8 seri başı yerleşimi artık silinmez (`resetUclR16Results`); yalnızca sonuçlar sıfırlanıp sonraki turlar temizlenir.
