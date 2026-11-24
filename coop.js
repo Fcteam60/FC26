@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — coop.js · v23.7
+   FC 27 Grup Ligi — coop.js · v23.8
    İzole 2 Kişilik Online Ortak Turnuva (Co-op Oda) Modülü
    - Tek kişilik IndexedDB / JSON yedeğe hiç dokunmaz
    - Çakışmasız 2 düğümlü Firebase mimarisi (/rooms/{room}/host.json & guest.json)
@@ -175,6 +175,9 @@ function coopNormMt(list){
 }
 function coopNormSim(t){
   if(!t||typeof t!=="object")return;
+  const defRl={rg:"all",xc:[],gmin:0,gmax:99,amin:0,mmin:0,dmin:0,cap:0,gcap:1,pick:"top",dm:"pot"};
+  t.rl=Object.assign({},defRl,t.rl&&typeof t.rl==="object"?t.rl:{});
+  t.rl.xc=coopDenseArr(t.rl.xc);
   if(t.P)t.P=coopDenseArr(t.P);
   if(t.G)t.G=coopDenseArr(t.G).map(g=>coopDenseArr(g));
   if(t.ucl&&typeof t.ucl==="object"){
@@ -878,7 +881,7 @@ function coopPickView(S){
   const bothReady=S.hTi!=null&&S.gTi!=null;
   const statusCard=`<div class="cp-pstatus">`+
     `<div class="cp-ps me${S.hTi!=null?" ok":""}"><span>${esc(S.hName)} (Kurucu)</span><b>${S.hTi!=null?`${badge(S.hTi,20)} ${esc(T[S.hTi].n)}`:"Seçmedi"}</b></div>`+
-    `<div class="cp-ps op${S.gTi!=null?" ok":""}"><span>${esc(S.gName)} (Misafir)</span><b>${S.gTi!=null?`${badge(S.gTi,20)} ${esc(T[S.gTi].n)}`:"Seçmedi"}</b></div>`+
+    `<div class="cp-ps op${S.gTi!=null?" ok":""}"><span>${S.guest&&S.guest.name&&S.gName!=="Misafir"?`${esc(S.gName)} (Misafir)`:"Misafir · Arkadaşın"}</span><b>${S.gTi!=null?`${badge(S.gTi,20)} ${esc(T[S.gTi].n)}`:"Seçmedi"}</b></div>`+
   `</div>`;
   const q=nz(st.cpQ||"");
   const filtered=q?P.filter(i=>nz(T[i].n).includes(q)||nz(CN[T[i].c][0]).includes(q)):P;
@@ -1228,8 +1231,65 @@ function coopView(){
   return topBar+content;
 }
 
+
+async function coopCommitPick(origTid,pick){
+  if(st.cpLock)return;
+  st.cpLock=true;
+  try{
+    await coopPull(true);
+    const S2=coopState();
+    if(!S2||S2.t.id!==origTid||S2.t.phase!=="pick"){ntf("Turnuva aşaması değişti, ekran yenilendi.");render();return}
+    if(pick===S2.opTi){ntf(T[pick].n+" az önce arkadaşın tarafından seçildi, tekrar çevir!");render();return}
+    if(!(S2.t.P||[]).includes(pick))return;
+    let ok=false;
+    if(S2.role==="host"){
+      S2.t.hTi=pick;
+      ok=await coopPushHost(S2.host);
+    }else{
+      const gObj={v:1,ut:Date.now(),name:S2.cfg.name||S2.gName,tourId:S2.t.id,ti:pick,mt:[]};
+      ok=await coopPushGuest(gObj);
+    }
+    if(!ok){render();return}
+    await coopPull(true);
+    ntf("Takımın çekildi: "+T[pick].n);render();
+  }finally{st.cpLock=false}
+}
+
+async function coopSpin(S){
+  if(st.slot||st.cpLock)return;
+  await coopPull(true);
+  const S2=coopState();
+  if(!S2||S2.t.id!==S.t.id||S2.t.phase!=="pick"){ntf("Turnuva aşaması değişti, ekran yenilendi.");render();return}
+  const base=(S2.t.P||[]).filter(x=>x!==S2.opTi);
+  if(!base.length)return;
+  const freshPool=base.filter(x=>x!==S2.myTi);
+  const c=freshPool.length?freshPool:base;
+  const pk=()=>c[(Math.random()*c.length)|0],fin=pk(),origTid=S2.t.id;
+  let over=false;
+  const done=()=>{
+    if(over)return;
+    over=true;clearTimeout(st.slt);st.slot=null;render();
+    coopCommitPick(origTid,fin);
+  };
+  if(rm()||c.length<2){done();return}
+  const N=22;let k=0,r=[pk(),pk(),pk()];
+  st.slot={r,done};render();
+  try{navigator.vibrate&&navigator.vibrate(20)}catch(e){}
+  const paint=()=>{[0,1,2].forEach(j=>{const e=$("r"+j);if(e)e.innerHTML=reelHtml(r[j])});if(st.slot)st.slot.r=r};
+  const tick=()=>{
+    if(over)return;
+    k++;
+    let nx=k==N-1?fin:pk();
+    if(k!=N-1&&c.length>2)for(let g=0;g<6&&(nx===r[1]||nx===r[2]);g++)nx=pk();
+    r=[r[1],r[2],nx];paint();
+    if(k>=N){const e=$("r1");if(e)e.classList.add("win");try{navigator.vibrate&&navigator.vibrate([60,40,120])}catch(x){}st.slt=setTimeout(done,900);return}
+    st.slt=setTimeout(tick,55+Math.pow(k/N,2)*240);
+  };
+  st.slt=setTimeout(tick,60);
+}
+
 /* ---------- CO-OP ACTION HANDLER (All data-a="cp...") ---------- */
-const COOP_NET_ACTS=new Set(["cpcreate","cpjoin","cptpl","cpcfg","cprl","cplock","cpbacksetup","cppick","cprnd","cpdraw","cpmsave","cpsimw","cpbuildko","cpsimko","cpsimall","cpfin","cpnew"]);
+const COOP_NET_ACTS=new Set(["cpcreate","cpjoin","cptpl","cpcfg","cprl","cplock","cpbacksetup","cppick","cpdraw","cpmsave","cpsimw","cpbuildko","cpsimko","cpsimall","cpfin","cpnew"]);
 async function handleCoopAction(a,dv,dk,i,b){
   if(COOP_NET_ACTS.has(a)){
     if(st.cpLock)return true;
@@ -1242,6 +1302,7 @@ async function handleCoopActionInner(a,dv,dk,i,b){
   if(a==="cpjrole"){if($("cp_hname"))st.cpHName=$("cp_hname").value;if($("cp_gname"))st.cpGName=$("cp_gname").value;if($("cp_code"))st.cpCode=$("cp_code").value;st.cpJoinRole=dv==="host"?"host":"guest";render();return true}
   if(a==="cpopen"){
     st.coopMode=!st.coopMode;
+    if(st.coopMode){st.qs=false;st.ti=null;st.pi=null;st.tpi=null;st.gs=false}
     if(st.coopMode&&coopHasRoom()&&(Date.now()-(st.cpLastAuto||0)>12000)){
       render();await coopPull(true);render();return true;
     }
@@ -1331,16 +1392,15 @@ async function handleCoopActionInner(a,dv,dk,i,b){
     const ok=await coopPushHost(S2.host);
     if(ok)ntf("Kuruluma dönüldü · formatı değiştirebilirsin");render();return true;
   }
-  if((a==="cppick"||a==="cprnd")&&S.t.phase==="pick"){
+  if(a==="cprnd"&&S.t.phase==="pick"){
+    await coopSpin(S);
+    return true;
+  }
+  if(a==="cppick"&&S.t.phase==="pick"){
     await coopPull(true);
     const S2=coopState();
     if(!S2||S2.t.id!==S.t.id||S2.t.phase!=="pick"){ntf("Turnuva aşaması değişti, ekran yenilendi.");render();return true}
-    let pick=i;
-    if(a==="cprnd"){
-      const availP=(S2.t.P||[]).filter(x=>x!==S2.opTi);
-      if(!availP.length)return true;
-      pick=availP[(Math.random()*availP.length)|0];
-    }
+    const pick=i;
     if(pick===S2.opTi){ntf(T[pick].n+" az önce arkadaşın tarafından seçildi, başka bir takım seç.");render();return true}
     if(!(S2.t.P||[]).includes(pick))return true;
     let ok=false;

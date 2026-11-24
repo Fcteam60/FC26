@@ -1,3 +1,8 @@
+## v23.8 (2026-11-24) — 2P Tepkisizlik Düzeltmesi (`t.rl.xc`), 2P Slot Takım Çekilişi & Takım Izgarası Taşma Düzeltmesi
+- **2P Butonunun Tepki Vermemesi Düzeltildi (`coop.js`, `app.js`):** Firebase’in boş `rl.xc: []` dizisini silmesi nedeniyle kurulum ekranı (`avail` → `elig`) açılırken oluşan `TypeError` hatası `coopNormSim` içinde `t.rl` ve `t.rl.xc` varsayılanlarıyla onarıldı; ayrıca `coopView()` çağrısı `try/catch` korumasına alındı ve `cpopen` açık bireysel panelleri (`st.qs` vb.) temizleyecek şekilde güncellendi.
+- **2P Takım Seçiminde 3 Makaralı Slot Çekilişi (`coop.js` `coopSpin`):** Ortak turnuvadaki **🎲 Rastgele** butonu artık bireysel moddaki 3 makaralı çekiliş animasyonunu (`.slotbox`, `Atla` destekli) rakibin seçtiği takımı dışlayarak çalıştırır ve bitince sunucuya kaydeder.
+- **2 Sütunlu Takım Listesi Taşma & Etiket Düzeltmesi (`style.css`, `coop.js`):** `.cp-tgrid` ızgarası `minmax(0, 1fr) minmax(0, 1fr)` ve `.cp-tbtn` `min-width: 0; box-sizing: border-box` yapılarak sağ sütundaki GEN rozetlerinin kesilmesi giderildi; boş odadaki `Misafir (Misafir)` tekrarı `Misafir · Arkadaşın` olarak sadeleştirildi.
+
 ## v23.7 (2026-11-24) — 2P Firebase Düello Kuralı Uyumu (HTTP 401 Çözümü) & Mobil Üst Çubuk Ferahlığı
 - **Mevcut Firebase Düello Kuralıyla %100 Uyum (`coop.js`):** Firebase kurallarına hiç dokunmadan `HTTP 401` hatasını gidermek için 2P oda yolu küçük harfe (`cp-xxxxxx`), oyuncu düğümleri `u_cphost01` / `u_cpguest1` formatına ve yük şeması `uid`, `name`, `ut`, `car` alanlarını içerecek şekilde `duel.js` ile birebir uyumlu hâle getirildi.
 - **Mobil Üst Çubuk Düzeni (`style.css`):** 440 px ve altı telefon ekranlarında `2P` butonunun yanında sezon seçicisinin `"Se ▾"` şeklinde daralması giderildi (`min-width: 86px`, kompakt boşluklar).

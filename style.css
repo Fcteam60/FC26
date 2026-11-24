@@ -5337,11 +5337,13 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
 .cp-ps b{display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--tx)}
 .cp-ps.me.ok{border-color:color-mix(in srgb,var(--ok) 45%,var(--gbd))}
 .cp-ps.op.ok{border-color:rgba(56,189,248,.48)}
-.cp-tgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:360px;overflow-y:auto}
+.cp-tgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;max-height:360px;overflow-y:auto}
 .cp-tbtn{
-  display:flex;align-items:center;gap:7px;padding:7px 8px;border-radius:11px;
+  display:flex;align-items:center;gap:6px;padding:7px;border-radius:11px;min-width:0;width:100%;box-sizing:border-box;overflow:hidden;
   border:1px solid var(--gbd);background:var(--hi);color:var(--tx);font:inherit;text-align:left;cursor:pointer;
 }
+.cp-tbtn .bd{flex:0 0 auto}
+.cp-tbtn .r{flex:0 0 auto}
 .cp-tbtn .n{flex:1;min-width:0;font-size:12.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cp-tbtn.is-h{border-color:var(--gold);background:rgba(240,194,75,.14)}
 .cp-tbtn.is-g{border-color:#38bdf8;background:rgba(56,189,248,.14)}

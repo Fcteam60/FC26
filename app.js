@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="23.7",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="23.8",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -2903,7 +2903,8 @@ function render(){
   if(!qsOnly){
     let viewHtml="";try{viewHtml=withSn(s0,()=>([setupView,teamView,drawView,groupsView,statView,histView,setView,homeView,fixtureView,tstatView][st.tab]||homeView)(s0))}catch(err){elog("render",err&&err.message,err&&err.stack);viewHtml=`<div class="big"><b class="wr">Görünüm yüklenirken hata oluştu</b><div class="note" style="margin:6px 0">${esc(err&&err.message?err.message:String(err))}</div><button class="btn p" data-t="7">Ana ekrana dön</button></div>`}
     if(st.coopMode&&typeof coopView==="function"){
-      $("app").innerHTML=(st.upd?updBan():"")+coopView();
+      let cpHtml="";try{cpHtml=coopView()}catch(err){elog("coopRender",err&&err.message,err&&err.stack);cpHtml=`<div class="big"><b class="wr">2P görünümü yüklenirken hata oluştu</b><div class="note" style="margin:6px 0">${esc(err&&err.message?err.message:String(err))}</div><div class="bar"><button class="btn p" data-a="cpref" style="flex:1">Yenile</button><button class="btn" data-a="cpleave" style="flex:1">Odadan Ayrıl</button><button class="btn" data-a="cpexit" style="flex:1">Bireysel Mod</button></div></div>`}
+      $("app").innerHTML=(st.upd?updBan():"")+cpHtml;
     }else{
       $("app").innerHTML=(st.upd?updBan():"")+(st.sf?sfBan():"")+tabPre(st.tab)+viewHtml;
     }
@@ -3240,7 +3241,7 @@ document.addEventListener("click",async e=>{
   else if(a=="oldlsx"){const leg=(typeof legacyLsInfo==="function")?legacyLsInfo():{hasLegacy:false,bytes:0};if(!leg.hasLegacy)return;ask("IndexedDB’ye geçiş sırasında güvenlik için tutulan eski localStorage kopyası ("+fmtBytes(leg.bytes)+") kalıcı olarak silinsin mi? Güncel IndexedDB verilerin bundan etkilenmez.",async()=>{const ok=await clearLegacyLs();await refreshQuota(false);return ok?"Eski localStorage kopyası temizlendi":"Temizlenemedi: IndexedDB ana kaydı doğrulanamadı"});render();return}
   else if(a=="rst"){ask("Tüm sezonlar, maçlar ve ayarlar silinecek. Önce yedek almanı öneririm. Devam edilsin mi?",()=>resetAll());render();return}
   else if(a.startsWith("dl")&&typeof handleDuelAction==="function"){if(await handleDuelAction(a,dv))return}
-  else if(a.startsWith("cp")&&typeof handleCoopAction==="function"){if(await handleCoopAction(a,dv,dk,i,b))return}
+  else if(a.startsWith("cp")){if(typeof handleCoopAction==="function"){if(await handleCoopAction(a,dv,dk,i,b))return}else{ntf("Ortak mod (coop.js) yüklenemedi — sayfayı yenileyin.");return}}
   else return;
   if(!uiOnly){const cs=cur();if(cs)cs.ut=Date.now();save()}render();if(!uiOnly||un)flush(un,snap);if(st.cel){st.cel=0;scrollTo(0,0);confetti()}if(st.fw){const f=st.fw;st.fw=0;fireworks(f)}if(a=="gofin"){const e=$("fincard");if(e)e.scrollIntoView({block:"start"})}
   if(a=="next"){try{const e=document.querySelector(".card.hl");if(e&&e.scrollIntoView)e.scrollIntoView({block:"center",behavior:rm()?"auto":"smooth"})}catch(x){}}});
