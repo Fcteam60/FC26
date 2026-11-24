@@ -5171,3 +5171,48 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
   padding:1px 6px;border-radius:99px;background:var(--gcard);border:1px solid var(--gbd);color:var(--gold);
   white-space:nowrap;
 }
+
+/* ==========================================================================
+   v21.3 (Final): Semantik --ok Sızıntı Kapanışı & Sezon Karşılaştır Dengesi
+   ========================================================================== */
+
+/* 1) Puan tablosu çıkış hattı, Eleme kazananı, Gruptan çıktın & Fikstür galibiyeti -> her palette --ok */
+:root[data-pal] .ptbl .pt-r.t2{
+  background:linear-gradient(90deg,color-mix(in srgb,var(--ok) 13%,transparent),color-mix(in srgb,var(--ok) 2%,transparent) 65%)!important;
+}
+:root[data-pal] .ptbl .pt-r.t2::before,
+:root[data-pal] .row.tb.kr.qrow::after,
+:root[data-pal] .gleg .lg2,
+:root[data-pal] .bkt-tm.w::before{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--ok) 75%,#fff),var(--ok))!important;
+}
+:root[data-pal] .ptbl .pt-r .grk2.q:not(.q1),
+:root[data-pal] .ptbl .pt-r.t2 .gpts,
+:root[data-pal] .kr-rk.q:not(.q1),
+:root[data-pal] .kr-q,
+:root[data-pal] .pgst.ok,
+:root[data-pal] .bkt-tm.w .bkt-sc,
+:root[data-pal] .bkt-col.cdone .bkt-cpill em{
+  background:color-mix(in srgb,var(--ok) 16%,transparent)!important;
+  border-color:color-mix(in srgb,var(--ok) 36%,transparent)!important;
+  color:var(--ok)!important;
+}
+:root[data-pal] .row.tb.kr.qrow{
+  background:linear-gradient(90deg,color-mix(in srgb,var(--ok) 12%,transparent),color-mix(in srgb,var(--ok) 2%,transparent) 75%)!important;
+  border-color:color-mix(in srgb,var(--ok) 22%,transparent)!important;
+}
+.fxm.mine.w .fsc{
+  background:var(--ok)!important;
+  color:var(--okx)!important;
+}
+.fxm.mine.w .fsc i{background:var(--okx)!important}
+.fxm.mine.w .fsc .lose{color:var(--okx)!important}
+.fxm.mine.l .fsc{
+  background:var(--wr)!important;
+  color:#ffffff!important;
+}
+.fxm.mine.l .fsc i,.fxm.mine.l .fsc .lose{color:#ffffff!important}
+
+/* 2) Sezon Karşılaştır (H2H): sol taraf sabit --ok yeşili, sağ taraf sabit #38bdf8 mavisi (mavi palette çakışmasın) */
+.cmp-rh b.a.ld{color:var(--ok)!important}
+.cmp-bar i.a{background:linear-gradient(90deg,color-mix(in srgb,var(--ok) 78%,#000),var(--ok))!important}

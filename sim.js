@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — 4 Katmanlı Gerçekçi Simülasyon, Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v21.2) */
+/* FC 27 Grup Ligi — 4 Katmanlı Gerçekçi Simülasyon, Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v21.3) */
 /* ---------- AŞAMA 1, 2 & 3: HAFTALIK SİMÜLASYON, ELEME AĞACI (BRACKET), GOL KRALLIĞI VE TURNUVA BİTİŞİ ---------- */
 const SIM_MODES=[[0,"Gerçekçi","Güç farkı ve gerçek futbol skorları (1-0, 2-1, 1-1 ağırlıklı)"],[1,"Dengeli","Standart güç ve günlük form dengesi"],[2,"Sürprizli","Yüksek şans faktörü, kupa sürprizlerine açık"]];
 function ensureSim(s){
@@ -376,9 +376,13 @@ function rebuildSimScorers(s){
   return sim.sc}
 
 // Bitmiş sezonlarda s.sim.sc özeti oluştuktan sonra alt maçlardaki golcü dizilerini budayarak JSON/IndexedDB boyutunu ~%70 küçültür
-function pruneSimDetails(s){
+function pruneSimDetails(s,force){
   if(!s||!s.sim)return;
   rebuildSimScorers(s);
+  if(!force){
+    const finIds=store.seasons.filter(x=>x&&x.res).map(x=>x.id).slice(-6);
+    if(finIds.includes(s.id))return;
+  }
   Object.values(s.sim.gm||{}).forEach(wkList=>{
     if(!Array.isArray(wkList))return;
     wkList.forEach(matches=>{
@@ -1053,6 +1057,20 @@ function weekBulletinData(s){
       checkHt(t1,s1);checkHt(t2,s2);
     });
   });
+  // Kullanıcının o haftadaki kendi maçını da sürpriz, hat-trick ve en gollü maç taramasına kat
+  if(s.my!=null&&T[s.my]){
+    const myGm=(s.mt||[]).filter(m=>m.rd==="Grup");
+    const um=myGm[w-1];
+    if(um&&um.opp!=null&&T[um.opp]){
+      const r1=RT(s,s.my),r2=RT(s,um.opp);
+      allMatches.push({gi:myGi,t1:s.my,t2:um.opp,g1:+um.gf||0,g2:+um.ga||0,r1,r2,tot:(+um.gf||0)+(+um.ga||0),mine:true});
+      const mySc=Array.isArray(um.gls)&&um.gls.length?um.gls.map(g=>g&&g.sc):Object.entries(um.sc||{}).flatMap(([n,c])=>Array.from({length:+c||0},()=>n));
+      const cntMy=nob();mySc.forEach(n=>{if(n&&!isKK(n))cntMy[n]=(cntMy[n]||0)+1});
+      Object.entries(cntMy).forEach(([n,c])=>{if(c>=3)hatTricks.push({n,ti:s.my,g:c,mine:true})});
+      const cntOp=nob();(um.og||[]).forEach(o=>{if(o&&o.sc&&!isKK(o.sc))cntOp[o.sc]=(cntOp[o.sc]||0)+1});
+      Object.entries(cntOp).forEach(([n,c])=>{if(c>=3)hatTricks.push({n,ti:um.opp,g:c,mine:false})});
+    }
+  }
   if(!allMatches.length)return null;
   let upset=null,upScore=0;
   allMatches.forEach(m=>{

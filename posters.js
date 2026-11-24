@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — Broadcast PNG Poster Motoru (posters.js · v21.2) */
+/* FC 27 Grup Ligi — Broadcast PNG Poster Motoru (posters.js · v21.3) */
 /* ---------- PAYLAŞILABİLİR GÖRSELLER ---------- */
 const NUMF='"FC Sayi","Barlow Condensed","Oswald","Bahnschrift","Avenir Next Condensed","Roboto Condensed","Arial Narrow",sans-serif';
 const TCOL={1:["#fbeaa8","#e0b43a","#2b2000"],2:["#f3f6f8","#b9c3cb","#1b2328"],3:["#f0c9a2","#be7f47","#2a1500"],0:["#ffffff","#dfeee6","#12211a"]};
@@ -1195,13 +1195,12 @@ async function macCv(q){const x=q.x,m=q.m,r=mres(m),oi=m.opp!=null&&T[m.opp]?m.o
   tx(c,new Date(m.id).toLocaleDateString("tr-TR"),W-48,112,26,"#94a3b8","right",600);
 
   // Hero Broadcast Scoreboard
-  const isUnlucky=des&&des.k=="unlucky",isSteal=des&&des.k=="undeserved";
-  const vBg1=isUnlucky?"#f97316":isSteal?"#2563eb":{w:"#12b886",d:"#64748b",l:"#e03131"}[r];
-  const vBg2=isUnlucky?"#c2410c":isSteal?"#1e3a8a":{w:"#0a7c56",d:"#475569",l:"#991b1b"}[r];
-  const vBdr=isUnlucky?"#fb923c":isSteal?"#60a5fa":{w:"#3ee6a8",d:"#94a3b8",l:"#ff6b6b"}[r];
+  const vBg1={w:"#12b886",d:"#64748b",l:"#e03131"}[r];
+  const vBg2={w:"#0a7c56",d:"#475569",l:"#991b1b"}[r];
+  const vBdr={w:"#3ee6a8",d:"#94a3b8",l:"#ff6b6b"}[r];
   const hasP=m.pf!=null&&m.pa!=null;
   const baseLab=hasP?(r=="w"?"PENALTILARLA GALİBİYET":r=="l"?"PENALTILARLA MAĞLUBİYET":"BERABERLİK"):(m.et?({w:"UZATMADA GALİBİYET",d:"BERABERLİK (UZ)",l:"UZATMADA MAĞLUBİYET"}[r]):({w:"GALİBİYET",d:"BERABERLİK",l:"MAĞLUBİYET"}[r]));
-  const lab=(des&&des.k!="fair"?des.t:baseLab).toLocaleUpperCase("tr");
+  const lab=baseLab.toLocaleUpperCase("tr");
 
   const hy=178,hh=412;
   glassBox(c,44,hy,992,hh,28,"rgba(255,255,255,.18)");
@@ -1257,8 +1256,10 @@ async function macCv(q){const x=q.x,m=q.m,r=mres(m),oi=m.opp!=null&&T[m.opp]?m.o
   if(stBoxH){
     glassBox(c,44,y,992,stBoxH,24,"rgba(255,255,255,.12)");
     tx(c,"MAÇ ANALİZİ",74,y+42,27,"#f0c24b","left",700);
-    const metaTag=stObj&&stObj.myXg!=null&&stObj.oppXg!=null?`xG FARKI: ${xgS2(stObj.myXg-stObj.oppXg)}`:"MAÇ TELEMETRİSİ";
-    drawPill(c,metaTag,764,y+23,242,36,"rgba(255,255,255,.07)",null,"rgba(255,255,255,.18)","#e2e8f0",18);
+    const metaTag=(des&&des.k!=="fair")?des.t.toLocaleUpperCase("tr"):(stObj&&stObj.myXg!=null&&stObj.oppXg!=null?`xG FARKI: ${xgS2(stObj.myXg-stObj.oppXg)}`:"MAÇ TELEMETRİSİ");
+    const mCol=(des&&des.k==="unlucky")?"#fb923c":(des&&des.k==="undeserved")?"#60a5fa":(des&&des.k==="deserved")?"#3ee6a8":"#e2e8f0";
+    c.font="700 18px "+NUMF;const mW=Math.min(340,Math.max(200,Math.ceil(c.measureText(metaTag).width)+36));
+    drawPill(c,fit(c,metaTag,mW-24),1006-mW,y+23,mW,36,"rgba(255,255,255,.07)",null,mCol,mCol,18);
     let sy=y+98;
     stRows.forEach(([lbl,v1,v2,n1,n2])=>{
       const aNum=+n1||0,bNum=+n2||0,leadA=aNum>bNum,leadB=bNum>aNum,tie=aNum===bNum;
@@ -1342,7 +1343,7 @@ async function macCv(q){const x=q.x,m=q.m,r=mres(m),oi=m.opp!=null&&T[m.opp]?m.o
   drawPosterFooter(c,W,H,x.name.toLocaleUpperCase("tr")+" · "+stageTag);
   return cv}
 async function duelloCv(x){
-  const me=x.me,opp=x.opp,mode=x.mode||"all",W=1080,H=1520;
+  const me=x.me,opp=x.opp,mode=x.mode||"all",W=1080,hasDna=!!(me.dna||opp.dna),hasStar=!!(me.star||opp.star),H=hasDna?1520:(hasStar?1170:1030);
   const crit=duelCareerCriteria(me,opp,mode);
   const c1=crit.c1,c2=crit.c2;
   const tiMe=me.cur&&me.cur.team&&IX[me.cur.team]!=null?IX[me.cur.team]:null;
@@ -1418,6 +1419,7 @@ async function duelloCv(x){
     if(bw2>0){c.fillStyle=r.neu?"rgba(148,163,184,.52)":(w2?"#e8be54":"rgba(232,190,84,.48)");rr(c,W-82-430,ry+15,bw2,7,3.5);c.fill()}
   });
 
+  if(hasDna){
   // Dual Tactical DNA Radar + Identities + Career Star Box
   const dy=974,dh=472;
   glassBox(c,44,dy,992,dh,24,"rgba(255,255,255,.12)",null);
@@ -1462,6 +1464,14 @@ async function duelloCv(x){
   if(opp.dna)tx(c,`Gol−xG: ${xgS2(opp.dna.xgDiff)} · Rakip xG: ${xgN2(opp.dna.oXg)}`,W-82,dy+366,18,"#fbeaa8","right",700);
   if(opp.star)tx(c,`★ ${fit(c,opp.star.n,210)} (${opp.star.v} G+A)`,W-82,dy+418,20,"#f8fafc","right",700);
 
+  }else if(hasStar){
+    const dy=974,dh=126;
+    glassBox(c,44,dy,992,dh,22,"rgba(255,255,255,.12)",null);
+    tx(c,"KARİYER YILDIZLARI (G+A)",W/2,dy+32,17,"#94a3b8","center",700);
+    c.font="700 24px "+NUMF;
+    tx(c,me.star?`★ ${fit(c,me.star.n,360)} (${me.star.v} G+A)`:"—",82,dy+80,24,"#3ee6a8","left",700);
+    tx(c,opp.star?`★ ${fit(c,opp.star.n,360)} (${opp.star.v} G+A)`:"—",W-82,dy+80,24,"#fbeaa8","right",700);
+  }
   // Footer
   tx(c,"FC 27 LİG · MENAJER DÜELLOSU",W/2,H-32,19,"rgba(255,255,255,.45)","center",700);
   return cv;
@@ -1592,25 +1602,26 @@ async function duelloKulupCv(x){
   glassBox(c,44,by,992,bh,24,"rgba(255,255,255,.12)",null);
   const pctF=v=>v==null?"—":"%"+Math.round(v),fxF=v=>v==null?"—":fx(v),sgnI=v=>v>0?"+"+v:v<0?"−"+Math.abs(v):"0";
   const rows=[
-    ["ŞAMPİYONLUK",c1.ch,c2.ch,String(c1.ch),String(c2.ch),false],
-    ["GALİBİYET ORANI",c1.wr,c2.wr,pctF(c1.wr),pctF(c2.wr),false],
-    ["MAÇ BAŞI PUAN",c1.ppm,c2.ppm,fxF(c1.ppm),fxF(c2.ppm),false],
-    ["ATILAN GOL / MAÇ",c1.gpm,c2.gpm,fxF(c1.gpm),fxF(c2.gpm),false],
-    ["YENİLEN GOL / MAÇ",c1.gapm,c2.gapm,fxF(c1.gapm),fxF(c2.gapm),true],
-    ["TOPLAM AVERAJ",c1.m?c1.gd:null,c2.m?c2.gd:null,c1.m?sgnI(c1.gd):"—",c2.m?sgnI(c2.gd):"—",false],
-    ["TOPLAM GOL",c1.m?c1.gf:null,c2.m?c2.gf:null,c1.m?`${c1.gf}:${c1.ga}`:"—",c2.m?`${c2.gf}:${c2.ga}`:"—",false]
+    ["ŞAMPİYONLUK",c1.ch,c2.ch,String(c1.ch),String(c2.ch),false,false],
+    ["GALİBİYET ORANI",c1.wr,c2.wr,pctF(c1.wr),pctF(c2.wr),false,false],
+    ["MAÇ BAŞI PUAN",c1.ppm,c2.ppm,fxF(c1.ppm),fxF(c2.ppm),false,false],
+    ["ATILAN GOL / MAÇ",c1.gpm,c2.gpm,fxF(c1.gpm),fxF(c2.gpm),false,false],
+    ["YENİLEN GOL / MAÇ",c1.gapm,c2.gapm,fxF(c1.gapm),fxF(c2.gapm),true,false],
+    ["TOPLAM AVERAJ",c1.m?c1.gd:null,c2.m?c2.gd:null,c1.m?sgnI(c1.gd):"—",c2.m?sgnI(c2.gd):"—",false,false],
+    ["TOPLAM GOL",c1.m?c1.gf:null,c2.m?c2.gf:null,c1.m?`${c1.gf}:${c1.ga}`:"—",c2.m?`${c2.gf}:${c2.ga}`:"—",false,true]
   ];
-  rows.forEach(([lbl,v1,v2,f1,f2,low],idx)=>{
+  rows.forEach(([lbl,v1,v2,f1,f2,low,neu],idx)=>{
     const ry=by+52+idx*74;
     const b=duelBarCalc(v1,v2,low);
-    tx(c,f1,82,ry,28,b.w1?"#2dd496":"#cbd5e1","left",700);
+    const w1=!neu&&b.w1,w2=!neu&&b.w2;
+    tx(c,f1,82,ry,28,w1?"#2dd496":"#cbd5e1","left",700);
     tx(c,lbl,W/2,ry,18,"#94a3b8","center",700);
-    tx(c,f2,W-82,ry,28,b.w2?"#e8be54":"#cbd5e1","right",700);
+    tx(c,f2,W-82,ry,28,w2?"#e8be54":"#cbd5e1","right",700);
     const bw1=Math.round(b.p1/100*430),bw2=Math.round(b.p2/100*430);
     c.fillStyle="rgba(255,255,255,.07)";
     rr(c,82,ry+20,430,9,4);c.fill();rr(c,W-82-430,ry+20,430,9,4);c.fill();
-    if(bw1>0){c.fillStyle=b.w1?"#2dd496":"rgba(45,212,150,.48)";rr(c,82+(430-bw1),ry+20,bw1,9,4);c.fill()}
-    if(bw2>0){c.fillStyle=b.w2?"#e8be54":"rgba(232,190,84,.48)";rr(c,W-82-430,ry+20,bw2,9,4);c.fill()}
+    if(bw1>0){c.fillStyle=neu?"rgba(148,163,184,.52)":(w1?"#2dd496":"rgba(45,212,150,.48)");rr(c,82+(430-bw1),ry+20,bw1,9,4);c.fill()}
+    if(bw2>0){c.fillStyle=neu?"rgba(148,163,184,.52)":(w2?"#e8be54":"rgba(232,190,84,.48)");rr(c,W-82-430,ry+20,bw2,9,4);c.fill()}
   });
   tx(c,"FC 27 LİG · KULÜP vs. KULÜP DÜELLOSU",W/2,H-32,19,"rgba(255,255,255,.45)","center",700);
   return cv;

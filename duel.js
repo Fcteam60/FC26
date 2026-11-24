@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v21.2)
+   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v21.3)
    - Obsidian Broadcast Arena, 4 sekmeli Düello Stüdyosu (Genel · Sezonlar · Takımlar · DNA & xG)
    - Sıfır harici SDK: Firebase Realtime Database REST API + çevrimdışı IndexedDB uyumu
    - Canlı Sezon İnceleme (Puan Durumu, Maçlar, Eleme, Sezon DNA) & Yedek Manuel Kıyas Kodu
@@ -417,7 +417,8 @@ async function duelPush(silent){
   const cfg=duelLoadCfg();
   if(!cfg.room||cfg.room.length<6)return false;
   if(typeof navigator!=="undefined"&&navigator.onLine===false){
-    if(!silent)st.duelPushErr="Çevrimdışısın — verin sunucuya gönderilemedi.";
+    st.duelPendingPush=true;
+    if(!silent)st.duelPushErr="Çevrimdışısın — bağlantı gelince otomatik gönderilecek.";
     return false;
   }
   try{
@@ -440,12 +441,13 @@ async function duelPush(silent){
     cache.lastSync=Date.now();
     cache.lastPush=Date.now();
     duelSaveCache(cache);
-    st.duelPushErr="";
+    st.duelPushErr="";st.duelPendingPush=false;
     return true;
   }catch(e){
     const msg="Verin sunucuya gönderilemedi ("+(e&&e.message?e.message:"ağ hatası")+").";
     st.duelPushErr=msg;
     if(!silent)st.duelErr=msg;
+    st.duelPendingPush=true;
     elog("duelPush",e&&e.message?e.message:String(e));
     return false;
   }
@@ -745,7 +747,7 @@ function duelSeasonStudio(me,opp,mode){
   const optHtml=(arr,curId)=>arr.map(x=>`<option value="${esc(x.id)}" ${x.id===curId?"selected":""}>${esc(x.n)}${x.tm?" · "+esc(x.tm):""}${x.g?" ("+x.g+")":""}</option>`).join("");
   const selBar=`<div class="dl-seldock">`+
     `<div class="dl-selcol me"><label for="dl_s1">${esc(me.name)}</label><select id="dl_s1" class="sel">${optHtml(l1,s1.id)}</select></div>`+
-    `<button class="dl-swbtn" data-a="dlslatest" aria-label="Son sezonlara dön" title="Son sezonlara dön">${DLI.swap}</button>`+
+    `<button class="dl-swbtn" data-a="dlslatest" aria-label="Son sezonlara dön" title="Son sezonlara dön">${DLI.sync}</button>`+
     `<div class="dl-selcol op"><label for="dl_s2">${esc(opp.name)}</label><select id="dl_s2" class="sel">${optHtml(l2,s2.id)}</select></div>`+
   `</div>`;
 
@@ -943,7 +945,7 @@ function duelDnaStudio(me,opp){
 
 // Son 5 Sezon Form & Trend Kıyaslaması (uzun kariyerlerde güncel momentum)
 function duelRecentFormPanel(me,opp,mode){
-  const l1=duelFilterSeasons(me,mode).slice(0,5),l2=duelFilterSeasons(opp,mode).slice(0,5);
+  const l1=duelFilterSeasons(me,mode).filter(s=>s.fin||s.m>0).slice(0,5),l2=duelFilterSeasons(opp,mode).filter(s=>s.fin||s.m>0).slice(0,5);
   if(!l1.length&&!l2.length)return "";
   const modeLbl=mode=="cup"?"Kupa":mode=="lg"?"Lig":"Tüm Sezonlar";
   const calc=arr=>{
@@ -1346,7 +1348,7 @@ async function handleDuelAction(a,dv){
       const cfg=duelLoadCfg();
       await duelDeleteRemote(cfg);
       cfg.room="";duelSaveCfg(cfg);
-      const cache=duelLoadCache();cache.peers={};cache.sel="";cache.lastSync=0;duelSaveCache(cache);
+      const cache=duelLoadCache();const keep={};Object.entries(cache.peers||{}).forEach(([k,v])=>{if(v&&v.manual)keep[k]=v});cache.peers=keep;cache.sel=keep[cache.sel]?cache.sel:(Object.keys(keep)[0]||"");cache.lastSync=0;duelSaveCache(cache);
       st.duelEdit=false;st.duelErr="";st.duelLastAuto=0;
       return "Düello odasından ayrıldın";
     });
@@ -1423,4 +1425,13 @@ async function handleDuelAction(a,dv){
     return true;
   }
   return false;
+}
+
+if(typeof window!=="undefined"&&window.addEventListener){
+  window.addEventListener("online",()=>{
+    const cfg=duelLoadCfg();
+    if(cfg.room&&cfg.room.length>=6&&(st.duelPendingPush||cfg.auto!==false)){
+      duelPush(true).then(ok=>{if(ok&&st.tab==5&&st.ht=="d")duelPull(true).then(()=>render())});
+    }
+  });
 }
