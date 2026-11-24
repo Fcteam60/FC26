@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — Broadcast PNG Poster Motoru (posters.js · v21.0) */
+/* FC 27 Grup Ligi — Broadcast PNG Poster Motoru (posters.js · v21.1) */
 /* ---------- PAYLAŞILABİLİR GÖRSELLER ---------- */
 const NUMF='"FC Sayi","Barlow Condensed","Oswald","Bahnschrift","Avenir Next Condensed","Roboto Condensed","Arial Narrow",sans-serif';
 const TCOL={1:["#fbeaa8","#e0b43a","#2b2000"],2:["#f3f6f8","#b9c3cb","#1b2328"],3:["#f0c9a2","#be7f47","#2a1500"],0:["#ffffff","#dfeee6","#12211a"]};
@@ -238,7 +238,7 @@ async function karneCv(x,p,targetCv){p=p==null?1:p;const cu=n=>Math.round(n*p);
     else{curRow.push(it);if(curRow.length===2){awLayout.push(curRow);curRow=[]}}
   });
   if(curRow.length)awLayout.push(curRow);
-  const awBoxH=hasAw?(76+(aw&&aw.mvp?98:0)+(awLayout.length?awLayout.length*108+(awLayout.length-1)*12+8:0)+20):0;
+  const awBoxH=hasAw?(76+(aw&&aw.mvp?98:0)+(awLayout.length?awLayout.length*120-14:0)+22):0;
   const mCols=allMt.length>6?2:1,mRows=Math.ceil(allMt.length/mCols);
   const mBoxH=allMt.length?(88+mRows*60+18):0;
   let H=984;
@@ -1039,7 +1039,7 @@ async function kariyerCv(){const mode=st.hmod||"all",d=careerData(mode),isL=mode
   });
   if(curRow.length)cLayout.push(curRow);
   const hasBest=d.best>=0,hasLd=hasBest||cLayout.length>0;
-  const boxH=hasLd?(76+(hasBest?86:0)+(cLayout.length?cLayout.length*108+(cLayout.length-1)*12+8:0)+20):0;
+  const boxH=hasLd?(76+(hasBest?86:0)+(cLayout.length?cLayout.length*120-14:0)+22):0;
   const H=Math.max(1200,886+(boxH?boxH+24:0)+84);
   const cv=mkCv(W,H),c=cv.getContext("2d");
   dkBg(c,W,H,"#38bdf8","#f0c24b",d.ch>0);

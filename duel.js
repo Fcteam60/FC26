@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v21.0)
+   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v21.1)
    - Obsidian Broadcast Arena, 4 sekmeli Düello Stüdyosu (Genel · Sezonlar · Takımlar · DNA & xG)
    - Sıfır harici SDK: Firebase Realtime Database REST API + çevrimdışı IndexedDB uyumu
    - Canlı Sezon İnceleme (Puan Durumu, Maçlar, Eleme, Sezon DNA) & Yedek Manuel Kıyas Kodu
@@ -1008,9 +1008,9 @@ function duelView(){
   if(!hasRoom||st.duelEdit){
     connHtml=duelPanel("sliders","emr",hasRoom?"Düello Odası Ayarları":"Canlı Menajer Düellosu","Ortak oda koduyla kariyer ve sezonlarınızı canlı eşitleyin",hasRoom?cfg.room:"Kurulum",
       `<div class="note" style="margin:0 0 12px">İkiniz de aynı <b>Oda Kodu</b>’nu girdiğinizde maç kaydettikçe özetiniz arka planda eşitlenir; ana kayıtlarınız tamamen cihazınızda kalır.</div>`+
-      `<div class="su-fgrid" style="margin-bottom:12px">`+
+      `<div class="dl-fgrid" style="margin-bottom:12px">`+
         `<div class="su-fld"><label>Menajer Adın</label><input id="dl_nm" class="f" maxlength="32" placeholder="Adın" value="${esc(cfg.name||store.owner||"")}"></div>`+
-        `<div class="su-fld"><label>Ortak Oda Kodu (en az 6)</label><input id="dl_rm" class="f" maxlength="40" placeholder="örn: fc27-duello-2026" value="${esc(cfg.room||"")}" autocapitalize="none" autocorrect="off"></div>`+
+        `<div class="su-fld"><label>Ortak Oda Kodu (en az 6 karakter)</label><input id="dl_rm" class="f" maxlength="40" placeholder="örn: fc27-duello-2026" value="${esc(cfg.room||"")}" autocapitalize="none" autocorrect="off"></div>`+
       `</div>`+
       `<div class="bar" style="margin:0">`+
         `<button class="btn p pset-pri" data-a="dljoin" style="flex:1">${st.duelBusy?"Bağlanıyor…":"Odaya Bağlan ve Eşitle"}</button>`+

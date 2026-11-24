@@ -1,3 +1,14 @@
+## v21.1 (2026-11-24) — Mobil Ergonomi, Tam Renk Paleti Uyumu & Görsel Pürüz Temizliği
+- **Klavye & Placeholder İyileştirmesi (`app.js`, `style.css`):** Maç giriş panelinde metin/sayı girişine odaklanıldığında sabit `Maçı Kaydet` çubuğu otomatik olarak akış içine alınarak `xG` kutusunun üzerini kapatması önlendi; örnek placeholder sayıları silikleştirildi (`opacity: 0.34`), takım adlarındaki Türkçe büyük harf dönüşümü (`MAN UNİTED`) düzeltildi.
+- **Tam Renk Paleti Uyumu (`style.css`):** *Şampiyonlar Gecesi, Kraliyet Altını, Kızıl Arena* ve *Kulübümün Rengi* seçildiğinde sabit yeşil kalan üst ilerleme rayı, `Grubum` ilerleme barı, `Kura onaylandı` kutusu, grup harf rozetleri (`A`, `B`), grup `GEN` bloğu ve çıkış hattı vurguları seçili palete tam uyumlu hale getirildi.
+- **Takım Seçimi Sonrası Akış (`app.js` `teamView`):** Takım belirlendikten sonra doğrudan `Kuraya Geç ›` (Lig modunda `Lig Tablosunu Oluştur ›`) ana aksiyon butonu eklendi.
+- **Okunabilirlik & Kart Dengesi (`app.js`, `analytics.js`, `posters.js`, `style.css`):**
+  - `Sezonun MVP’si` kartında istatistik hapları ismin altına alınarak uzun oyuncu isimlerinin kesilmesi giderildi.
+  - Dar mobil ekranlarda (`<480px`) puan tablosunda takım adlarının kesilmemesi için varsayılan 8 sütunlu ferah görünüm ve tek dokunuşlu **`+ AG·YG`** genişletme çipi eklendi.
+  - Turnuva istatistiklerindeki `.g` rozetlerine boşluk (`gap: 5px`) eklenerek bitişik görünen skor/parantez metinleri ayrıştırıldı.
+  - Kurulum şablon alt yazıları kısaltıldı; `Güç ve Ülke Sınırları` bölümünün varsayılan ayarda `"1 sınır aktif"` diyerek kendiliğinden açılması düzeltildi.
+  - Kura çekimi yapışkan üst paneli (`.dock`) opak/buzlu cam zeminle arkadan sızmayı önleyecek şekilde güçlendirildi; sekme geçişlerindeki kısa boşluk flaşı kaldırıldı; `Simülasyon Merkezi` buton metni ve `Düello` oda kodu girişi mobilde tek satıra/tam genişliğe uyarlandı.
+
 ## v21.0 (2026-11-24) — Canlı Puan Durumu Posteri, Turnuva Evreni Tarihi, 5 Renk Paleti & UX Cilası
 - **Canlı Puan Durumu Posteri (`posters.js` `kuraCv`, `app.js` `groupsView`):** Maç oynanmadan önce kura posteri, grup/lig maçları başladıktan sonra ise `calcGroupTable` üzerinden canlı sıralamayı (`O, G, B, M, AV, P`; Lig modunda `AG, YG` dahil), hafta bilgisini ve çıkış çizgisini çizen broadcast puan durumu posteri eklendi.
 - **Manuel "Gruptan çıktın mı?" Temizliği (`app.js` `grpBox`, `homeView`):** Simülasyon motoruyla çakışan manuel sıra seçimi ve `Evet, çıktım / Hayır, elendim` kutusu kaldırıldı; son grup maçı sonrası doğrudan son hafta simülasyonuna ve otomatik eleme ağacına yönlendirildi.

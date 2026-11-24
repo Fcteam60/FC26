@@ -4889,3 +4889,165 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
 .uv-chm{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
 .uv-chm b{font-size:14.5px;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .uv-chm small{font-size:11.5px;color:var(--mut);line-height:1.35}
+
+/* ==========================================================================
+   v21.1: Klavye & Placeholder Cilası, Tam Palet Uyumu, MVP & Puan Tablosu
+   Okunabilirliği, Kura Dock Opaklığı ve Flaşsız Sekme Geçişleri
+   ========================================================================== */
+
+/* 1) Hızlı Skor Paneli: Klavye Açıkken Kaydet Çubuğunu Statik Yap + Silik Placeholder */
+#qs .sheet.kb-on{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
+#qs .sheet.kb-on .qs-foot{
+  position:static;margin:14px 0 0;padding:10px 0 0;
+  background:transparent;border-top:1px dashed var(--bd);box-shadow:none;
+}
+#qs .sheet:has(.advbox input:focus) .qs-foot{
+  position:static;margin:14px 0 0;padding:10px 0 0;
+  background:transparent;border-top:1px dashed var(--bd);box-shadow:none;
+}
+.advbox input.tin{scroll-margin-bottom:140px}
+.advinp .tin::placeholder,.f::placeholder{
+  color:var(--mut);opacity:.34;font-weight:500;
+}
+.advhd span:first-child,.advhd span:last-child{text-transform:none;letter-spacing:.01em}
+
+/* 2) Renk Paletinin Sabit Yeşil Kalan Tüm Yapısal Bileşenlere Tam Uyumu */
+:root[data-pal] .prog.pprog .stp.dn::before{
+  background:linear-gradient(90deg,var(--ac),color-mix(in srgb,var(--ac) 68%,#fff))!important;
+}
+:root[data-pal] .prog.pprog .stp.dn i{
+  background:linear-gradient(135deg,var(--ac),color-mix(in srgb,var(--ac) 72%,#000))!important;
+  border-color:color-mix(in srgb,var(--ac) 55%,#fff)!important;
+  color:var(--acx)!important;
+  box-shadow:0 2px 8px color-mix(in srgb,var(--ac) 34%,transparent)!important;
+}
+:root[data-pal] .pgpb i,
+:root[data-pal] .kgb u,
+:root[data-pal] .su-pbar i,
+:root[data-pal] .ach-bar i{
+  background:linear-gradient(90deg,color-mix(in srgb,var(--ac) 74%,#000),var(--ac),color-mix(in srgb,var(--ac) 68%,#fff))!important;
+}
+:root[data-pal] .klock{
+  border-color:color-mix(in srgb,var(--ac) 34%,var(--gbd))!important;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--ac) 14%,transparent),color-mix(in srgb,var(--ac) 4%,transparent) 70%),var(--gcard)!important;
+}
+:root[data-pal] .kli{
+  background:linear-gradient(135deg,var(--ac),color-mix(in srgb,var(--ac) 72%,#000))!important;
+  color:var(--acx)!important;
+  box-shadow:0 6px 14px color-mix(in srgb,var(--ac) 34%,transparent),inset 0 1px 0 rgba(255,255,255,.3)!important;
+}
+:root[data-pal] .kii{
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ac) 32%,transparent)!important;
+}
+:root[data-pal] .kgc:not(.mine):not(.dead) .kgl{
+  background:linear-gradient(135deg,var(--ac),color-mix(in srgb,var(--ac) 72%,#000))!important;
+  color:var(--acx)!important;
+  box-shadow:0 5px 14px color-mix(in srgb,var(--ac) 32%,transparent),inset 0 1px 0 rgba(255,255,255,.32)!important;
+}
+:root[data-pal] .kgc:not(.mine):not(.dead) .kgs-wrap .kgs.kgs4 > span.hi{
+  background:
+    radial-gradient(120% 90% at 15% 0%,color-mix(in srgb,var(--ac) 35%,#fff) 0%,transparent 62%),
+    linear-gradient(155deg,color-mix(in srgb,var(--ac) 78%,#000) 0%,color-mix(in srgb,var(--ac) 52%,#000) 62%,color-mix(in srgb,var(--ac) 34%,#000) 100%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.24),inset -1px 0 0 rgba(255,255,255,.10),4px 0 12px -4px color-mix(in srgb,var(--ac) 32%,#000)!important;
+}
+:root[data-pal] .kgc:not(.mine):not(.dead) .kgs-wrap .kgs.kgs4 > span.hi em{
+  color:rgba(255,255,255,.86)!important;
+}
+:root[data-pal] .kgs-c.s2 .kgs-m u{
+  background:linear-gradient(90deg,var(--ac),color-mix(in srgb,var(--ac) 65%,#fff))!important;
+}
+:root[data-pal] .ptbl .pt-r.t2{
+  background:linear-gradient(90deg,color-mix(in srgb,var(--ac) 13%,transparent),color-mix(in srgb,var(--ac) 2%,transparent) 65%)!important;
+}
+:root[data-pal] .ptbl .pt-r.t2::before,
+:root[data-pal] .row.tb.kr.qrow::after,
+:root[data-pal] .gleg .lg2,
+:root[data-pal] .bkt-tm.w::before{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--ac) 75%,#fff),var(--ac))!important;
+}
+:root[data-pal] .ptbl .pt-r .grk2.q:not(.q1),
+:root[data-pal] .ptbl .pt-r.t2 .gpts,
+:root[data-pal] .kr-rk.q:not(.q1),
+:root[data-pal] .kr-q,
+:root[data-pal] .pgst.ok,
+:root[data-pal] .bkt-tm.w .bkt-sc,
+:root[data-pal] .bkt-col.cdone .bkt-cpill em{
+  background:color-mix(in srgb,var(--ac) 16%,transparent)!important;
+  border-color:color-mix(in srgb,var(--ac) 36%,transparent)!important;
+  color:var(--ac)!important;
+}
+:root[data-pal] .row.tb.kr.qrow{
+  background:linear-gradient(90deg,color-mix(in srgb,var(--ac) 12%,transparent),color-mix(in srgb,var(--ac) 2%,transparent) 75%)!important;
+  border-color:color-mix(in srgb,var(--ac) 22%,transparent)!important;
+}
+:root[data-pal] .wktabs .chip.on{
+  box-shadow:0 4px 12px color-mix(in srgb,var(--ac) 28%,transparent)!important;
+}
+:root[data-theme="dark"][data-pal] body{
+  background:radial-gradient(ellipse 85% 240px at 50% -110px,color-mix(in srgb,var(--ac) 11%,transparent),transparent) no-repeat,var(--bg)!important;
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"])[data-pal] body{
+    background:radial-gradient(ellipse 85% 240px at 50% -110px,color-mix(in srgb,var(--ac) 11%,transparent),transparent) no-repeat,var(--bg)!important;
+  }
+  :root:not([data-theme="light"])[data-pal] .stabs .chip.on{
+    background:color-mix(in srgb,var(--ac) 15%,transparent)!important;
+    color:var(--ac)!important;
+    border-color:color-mix(in srgb,var(--ac) 36%,transparent)!important;
+  }
+}
+:root[data-theme="dark"][data-pal] .stabs .chip.on{
+  background:color-mix(in srgb,var(--ac) 15%,transparent)!important;
+  color:var(--ac)!important;
+  border-color:color-mix(in srgb,var(--ac) 36%,transparent)!important;
+}
+
+/* 3) Takım Seçimi Sonrası "Kuraya Geç" CTA Butonu (.tm-go) */
+.tm-go{
+  width:100%;margin:6px 0 2px;min-height:48px;border-radius:14px;
+  font-family:var(--num);font-size:19px;letter-spacing:.02em;
+}
+
+/* 4) Sezonun MVP'si Kartı: İsim Kesilmeden Altta İstatistik Hapları */
+.awd.mvp{align-items:flex-start}
+.awd.mvp .awm{display:flex;flex-direction:column;gap:2px}
+.awd.mvp b{white-space:normal;word-break:break-word;line-height:1.1}
+.awd.mvp .awps{margin-top:6px;flex-wrap:wrap}
+
+/* 5) Puan Tablosu: Mobilde Tam Kulüp Adı Okunabilirliği + Tek Dokunuş AG·YG */
+.pt-leg{align-items:center}
+.pt-dtog{
+  display:none;margin-left:auto;min-height:26px;padding:2px 9px;border-radius:99px;
+  border:1px solid var(--gbd);background:var(--hi);color:var(--tx);
+  font:700 11px inherit;cursor:pointer;white-space:nowrap;
+}
+.pt-dtog:active{transform:scale(.95)}
+@media(max-width:479px){
+  .pt-dtog{display:inline-flex;align-items:center}
+  .ptbl:not(.ptdet) .pt-ag{display:none}
+  .ptbl:not(.ptdet) .gtbl{
+    grid-template-columns:22px minmax(0,1fr) 20px 20px 20px 20px 30px 34px;
+    gap:2px;
+  }
+  .ptbl:not(.ptdet) .pt-r .gnm .n{font-size:13.5px}
+}
+
+/* 6) Turnuva İstatistikleri: Yapışık Metin/Sayı Boşluğu (.g) */
+.g{gap:5px;white-space:nowrap}
+.g small{font-size:.76em;font-weight:600;opacity:.78;letter-spacing:.01em}
+
+/* 7) Kura Yapışkan Üst Panelinin Arkadan Sızmasını Önle (.dock) */
+.dock{
+  background:color-mix(in srgb,var(--bg) 95%,transparent)!important;
+  margin:0 -13px 4px;padding:6px 13px 4px;
+  border-bottom:1px solid var(--bd);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+}
+
+/* 8) Sekme Geçişlerinde Flaşsız, Seri Giriş Animasyonu */
+#app.sw>*{animation:riseFast .18s ease-out both!important;animation-delay:0s!important}
+@keyframes riseFast{from{opacity:.62;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* 9) Düello Kurulum Formu: Oda Kodu Tam Genişlik */
+.dl-fgrid{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:520px){.dl-fgrid{grid-template-columns:1fr 1fr}}

@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — Analitik, xG/xPts, Taktiksel DNA ve Kariyer Motoru (analytics.js · v21.0) */
+/* FC 27 Grup Ligi — Analitik, xG/xPts, Taktiksel DNA ve Kariyer Motoru (analytics.js · v21.1) */
 const RS=["Grup","S64","S32","S16","ÇF","YF","Final","Şamp."];
 /* ---------- RAKİPLER ---------- */
 function oppData(){const M=nob();
@@ -498,8 +498,7 @@ function awardsCard(s,inFold){
   if(aw.mvp.mom)mvpPills.push(`<span class="awp gld"><b>${aw.mvp.mom}</b><em>★</em></span>`);
   const hero=`<button class="awd mvp tap" data-a="pinfo" data-n="${esc(aw.mvp.n)}" aria-label="${esc(aw.mvp.n)} profilini aç">`+
     `<span class="awic">${UICO.trophy}</span>`+
-    `<div class="awm"><div class="awi">★ Sezonun MVP’si</div><b>${esc(aw.mvp.n)}</b>${mvpSub}</div>`+
-    `<div class="awps">${mvpPills.join("")}</div>`+
+    `<div class="awm"><div class="awi">★ Sezonun MVP’si</div><b>${esc(aw.mvp.n)}</b>${mvpSub}<div class="awps">${mvpPills.join("")}</div></div>`+
   `</button>`;
   const mkA=(cls,ic,lbl,nm,badgeTxt,subTxt,forceWide)=>{
     const single=!nm.includes(",")&&!nm.includes("&");
