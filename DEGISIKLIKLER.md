@@ -1,3 +1,7 @@
+## v23.7 (2026-11-24) — 2P Firebase Düello Kuralı Uyumu (HTTP 401 Çözümü) & Mobil Üst Çubuk Ferahlığı
+- **Mevcut Firebase Düello Kuralıyla %100 Uyum (`coop.js`):** Firebase kurallarına hiç dokunmadan `HTTP 401` hatasını gidermek için 2P oda yolu küçük harfe (`cp-xxxxxx`), oyuncu düğümleri `u_cphost01` / `u_cpguest1` formatına ve yük şeması `uid`, `name`, `ut`, `car` alanlarını içerecek şekilde `duel.js` ile birebir uyumlu hâle getirildi.
+- **Mobil Üst Çubuk Düzeni (`style.css`):** 440 px ve altı telefon ekranlarında `2P` butonunun yanında sezon seçicisinin `"Se ▾"` şeklinde daralması giderildi (`min-width: 86px`, kompakt boşluklar).
+
 ## v23.6 (2026-11-24) — 2P Lejant CSS Düzeltmesi, Kulüp/Oyuncu İzolasyonu & UX Cilaları (Final)
 - **2P Puan Tablosu Lejant Çakışması & Renk İzolasyonu (`coop.js`, `style.css`):** `.gleg i` (`3px`) kutusuyla `◆` simgesinin üst üste binmesi ve `.lgm` sınıfından bireysel kulüp rengi sızması giderildi; 2P tablosu için sabit altın (`.cp-lgh`) ve gökyüzü mavisi (`.cp-lgg`) lejant çubukları tanımlandı.
 - **2P Kulüp & Oyuncu Penceresi Tam İzolasyonu (`app.js`, `coop.js`):** 2P modunda herhangi bir kulübe (`tiDlg`, `tiBody`, `teamPitchHtml`) veya oyuncuya (`tpDlg`, `tourneyPlayerDetail`) tıklandığında artık bireysel sezon yerine aktif 2P ortak turnuvanın kendi gol/asist/MOTM istatistikleri ve `★ Kurucu / ◆ Misafir` etiketleri gösterilir; bireysel kariyer profili sızıntısı kapatıldı.

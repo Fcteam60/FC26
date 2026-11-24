@@ -5450,3 +5450,12 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
 .cp-cmphd span.h b{color:var(--ok)}
 .cp-cmphd span.g b{color:#38bdf8}
 .cp-cmphd small{font-family:var(--num);font-size:12px;font-weight:800;color:var(--mut)}
+
+/* v23.7: Mobil üst çubukta 2P butonu yanında Sezon seçicisinin rahat görünmesi */
+@media(max-width:440px){
+  header{gap:5px;padding:7px 8px}
+  h1 .hd-ttl{font-size:17px}
+  #sbar{gap:4px}
+  header .sel{min-width:86px;padding:6px 22px 6px 8px;font-size:13px}
+  .cp-btn2p{min-width:34px;padding:0 7px;font-size:13px}
+}

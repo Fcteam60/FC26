@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — coop.js · v23.6
+   FC 27 Grup Ligi — coop.js · v23.7
    İzole 2 Kişilik Online Ortak Turnuva (Co-op Oda) Modülü
    - Tek kişilik IndexedDB / JSON yedeğe hiç dokunmaz
    - Çakışmasız 2 düğümlü Firebase mimarisi (/rooms/{room}/host.json & guest.json)
@@ -8,6 +8,9 @@
    ========================================================================== */
 
 const COOP_CFG_K="fc27lig_coop_cfg";
+const COOP_HOST_UID="u_cphost01";
+const COOP_GUEST_UID="u_cpguest1";
+const coopRoomKey=r=>String(r||"").trim().toLowerCase().replace(/[^a-z0-9_-]/g,"");
 const COOP_CACHE_K="fc27lig_coop_cache";
 const COOP_TPL=[
   ["Dünya Kupası","32 takım · 8×4",{N:32,gs:4,q:2,gl:1,kl:1,fl:1}],
@@ -74,15 +77,19 @@ function coopMkTour(no,prev){
   };
 }
 
-/* ---------- FIREBASE SYNC (2 ÇAKIŞMASIZ DÜĞÜM: host.json & guest.json) ---------- */
+/* ---------- FIREBASE SYNC (Düello kuralıyla %100 uyumlu 2 düğüm: u_cphost01 & u_cpguest1) ---------- */
 async function coopPushHost(hostObj){
   const cfg=coopLoadCfg();
   if(!cfg.room||cfg.role!=="host")return false;
   if(typeof navigator!=="undefined"&&navigator.onLine===false){
     st.cpErr="Çevrimdışısın — ortak oda sunucuya yazılamadı.";return false;
   }
+  hostObj.uid=COOP_HOST_UID;
+  if(!hostObj.name)hostObj.name=cfg.name||"Kurucu";
   hostObj.ut=Date.now();
-  const url=`${coopBaseUrl()}/rooms/${encodeURIComponent(cfg.room)}/host.json`;
+  if(!hostObj.car||typeof hostObj.car!=="object")hostObj.car={n:0,m:0};
+  const rk=coopRoomKey(cfg.room);
+  const url=`${coopBaseUrl()}/rooms/${encodeURIComponent(rk)}/${COOP_HOST_UID}.json`;
   try{
     const r=await duelFetch(url,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(hostObj)});
     if(!r.ok)throw new Error("HTTP "+r.status);
@@ -99,8 +106,12 @@ async function coopPushGuest(guestObj){
   if(typeof navigator!=="undefined"&&navigator.onLine===false){
     st.cpErr="Çevrimdışısın — verin sunucuya yazılamadı.";return false;
   }
+  guestObj.uid=COOP_GUEST_UID;
+  if(!guestObj.name)guestObj.name=cfg.name||"Misafir";
   guestObj.ut=Date.now();
-  const url=`${coopBaseUrl()}/rooms/${encodeURIComponent(cfg.room)}/guest.json`;
+  if(!guestObj.car||typeof guestObj.car!=="object")guestObj.car={n:0,m:0};
+  const rk=coopRoomKey(cfg.room);
+  const url=`${coopBaseUrl()}/rooms/${encodeURIComponent(rk)}/${COOP_GUEST_UID}.json`;
   try{
     const r=await duelFetch(url,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(guestObj)});
     if(!r.ok)throw new Error("HTTP "+r.status);
@@ -119,16 +130,19 @@ async function coopPull(silent){
     return false;
   }
   if(!silent){st.cpBusy=true;render()}
-  const url=`${coopBaseUrl()}/rooms/${encodeURIComponent(cfg.room)}.json?t=${Date.now()}`;
+  const rk=coopRoomKey(cfg.room);
+  const url=`${coopBaseUrl()}/rooms/${encodeURIComponent(rk)}.json?t=${Date.now()}`;
   try{
     const r=await duelFetch(url,{cache:"no-store"});
     if(!r.ok)throw new Error("HTTP "+r.status);
     const data=await r.json();
-    if(!data||!data.host){
+    const hData=data&&(data[COOP_HOST_UID]||data.host)||null;
+    const gData=data&&(data[COOP_GUEST_UID]||data.guest)||null;
+    if(!hData){
       if(!silent)st.cpErr="Bu oda kodu bulunamadı. Kodu kontrol et.";
       st.cpBusy=false;return false;
     }
-    const cache={room:cfg.room,host:data.host,guest:data.guest||null,lastSync:Date.now()};
+    const cache={room:cfg.room,host:hData,guest:gData,lastSync:Date.now()};
     coopSaveCache(cache);
     st.cpErr="";st.cpBusy=false;st.cpLastAuto=Date.now();
     return true;
