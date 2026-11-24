@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — 4 Katmanlı Gerçekçi Simülasyon, Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v21.1) */
+/* FC 27 Grup Ligi — 4 Katmanlı Gerçekçi Simülasyon, Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v21.2) */
 /* ---------- AŞAMA 1, 2 & 3: HAFTALIK SİMÜLASYON, ELEME AĞACI (BRACKET), GOL KRALLIĞI VE TURNUVA BİTİŞİ ---------- */
 const SIM_MODES=[[0,"Gerçekçi","Güç farkı ve gerçek futbol skorları (1-0, 2-1, 1-1 ağırlıklı)"],[1,"Dengeli","Standart güç ve günlük form dengesi"],[2,"Sürprizli","Yüksek şans faktörü, kupa sürprizlerine açık"]];
 function ensureSim(s){
@@ -1022,3 +1022,54 @@ function koBracketCard(s){
   }
   const shBtn=`<div class="bar" style="margin:10px 0 0"><button class="btn pset-sec" data-a="kog" style="width:100%"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg><span>Eleme Ağacını Görsel Olarak Paylaş</span></button></div>`;
   return `<div class="card pglass pko" style="margin:0 0 12px"><h3><span class="ui-lbl">${uiIco("trophy")}<span>Eleme Ağacı (Bracket)</span></span><small>${out&&out.done?`Şampiyon: ${esc(T[out.ch].n)}`:(userElim?"Elendin · Turnuva devam ediyor":koPath(s.cfg))}</small></h3>${simBtns}${viewSw}${content}${shBtn}</div>`}
+
+
+/* ---------- v21.2: HAFTANIN BÜLTENİ (Simülasyon Sonrası Kompakt Özet) ---------- */
+function weekBulletinData(s){
+  if(!s||!s.G||(!s.cfg.gs&&!isLg(s.cfg)))return null;
+  const sim=ensureSim(s),w=sim.w||0;
+  if(w<=0)return null;
+  const lg=isLg(s.cfg);
+  const myGi=s.my!=null?s.G.findIndex(g=>g.includes(s.my)):-1;
+  const groupMatches=[],allMatches=[],hatTricks=[];
+  const nmOf=(ti,v)=>{const q=squadOf(ti);return typeof v==="number"?(q[v]&&q[v].n):v};
+  Object.entries(sim.gm||{}).forEach(([giStr,wkList])=>{
+    const gi=+giStr,wk=Array.isArray(wkList)?wkList[w-1]:null;
+    if(!Array.isArray(wk))return;
+    wk.forEach(m=>{
+      if(!Array.isArray(m)||m.length<4)return;
+      const [t1,t2,g1,g2,s1,s2]=m;
+      if(!T[t1]||!T[t2])return;
+      const r1=RT(s,t1),r2=RT(s,t2);
+      const obj={gi,t1,t2,g1:+g1||0,g2:+g2||0,r1,r2,tot:(+g1||0)+(+g2||0)};
+      allMatches.push(obj);
+      if(!lg&&gi===myGi)groupMatches.push(obj);
+      const checkHt=(ti,scL)=>{
+        if(!Array.isArray(scL)||scL.length<3)return;
+        const cnt=nob();
+        scL.forEach(v=>{const n=nmOf(ti,v);if(n&&!isKK(n))cnt[n]=(cnt[n]||0)+1});
+        Object.entries(cnt).forEach(([n,c])=>{if(c>=3)hatTricks.push({n,ti,g:c})});
+      };
+      checkHt(t1,s1);checkHt(t2,s2);
+    });
+  });
+  if(!allMatches.length)return null;
+  let upset=null,upScore=0;
+  allMatches.forEach(m=>{
+    const gap=m.r1.g-m.r2.g;
+    if(gap>=2&&m.g2>m.g1){
+      const sc=gap+(m.g2-m.g1)*1.2;
+      if(sc>upScore){upScore=sc;upset={m,dog:m.t2,fav:m.t1,gap,draw:false}}
+    }else if(gap<=-2&&m.g1>m.g2){
+      const sc=(-gap)+(m.g1-m.g2)*1.2;
+      if(sc>upScore){upScore=sc;upset={m,dog:m.t1,fav:m.t2,gap:-gap,draw:false}}
+    }else if(Math.abs(gap)>=5&&m.g1===m.g2){
+      const sc=Math.abs(gap)*0.55;
+      if(sc>upScore){upScore=sc;upset={m,dog:gap>0?m.t2:m.t1,fav:gap>0?m.t1:m.t2,gap:Math.abs(gap),draw:true}}
+    }
+  });
+  const hiMatch=allMatches.slice().sort((a,b)=>b.tot-a.tot||Math.abs(b.g1-b.g2)-Math.abs(a.g1-a.g2))[0]||null;
+  const topClash=lg?allMatches.slice().sort((a,b)=>(b.r1.g+b.r2.g)-(a.r1.g+a.r2.g)||b.tot-a.tot).slice(0,2):[];
+  hatTricks.sort((a,b)=>b.g-a.g);
+  return{w,lg,myGi,groupMatches,topClash,upset,hatTrick:hatTricks[0]||null,hiMatch,cnt:allMatches.length};
+}

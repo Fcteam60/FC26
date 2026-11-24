@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — Broadcast PNG Poster Motoru (posters.js · v21.1) */
+/* FC 27 Grup Ligi — Broadcast PNG Poster Motoru (posters.js · v21.2) */
 /* ---------- PAYLAŞILABİLİR GÖRSELLER ---------- */
 const NUMF='"FC Sayi","Barlow Condensed","Oswald","Bahnschrift","Avenir Next Condensed","Roboto Condensed","Arial Narrow",sans-serif';
 const TCOL={1:["#fbeaa8","#e0b43a","#2b2000"],2:["#f3f6f8","#b9c3cb","#1b2328"],3:["#f0c9a2","#be7f47","#2a1500"],0:["#ffffff","#dfeee6","#12211a"]};
@@ -1341,17 +1341,6 @@ async function macCv(q){const x=q.x,m=q.m,r=mres(m),oi=m.opp!=null&&T[m.opp]?m.o
   drawFormRow(c,fm,1006,y+40,true);
   drawPosterFooter(c,W,H,x.name.toLocaleUpperCase("tr")+" · "+stageTag);
   return cv}
-/* ---------- KARNE: SAYILAR YUKARI SAYAR ---------- */
-async function playKarne(im){
-  const t0=performance.now(),D=1100;
-  while(st.img===im&&im.anim){
-    const el=$("kcv");if(!el)return;
-    const p=Math.min(1,(performance.now()-t0)/D),e=1-Math.pow(1-p,3);
-    await karneCv(im.x,e,el);
-    if(st.img!==im||!$("kcv"))return;
-    if(p>=1)break;
-    await new Promise(r=>requestAnimationFrame(r))}
-  if(st.img===im){im.anim=false;render()}}
 async function duelloCv(x){
   const me=x.me,opp=x.opp,mode=x.mode||"all",W=1080,H=1520;
   const crit=duelCareerCriteria(me,opp,mode);

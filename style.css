@@ -5051,3 +5051,123 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
 /* 9) Düello Kurulum Formu: Oda Kodu Tam Genişlik */
 .dl-fgrid{display:grid;grid-template-columns:1fr;gap:10px}
 @media(min-width:520px){.dl-fgrid{grid-template-columns:1fr 1fr}}
+
+/* ==========================================================================
+   v21.2: Semantik Galibiyet/Pozitif Yeşili (--ok) Ayrımı, Ölüm Grubu Rozeti,
+   TOTS Uzun İsim Uyumu, Haftanın Bülteni & Kadro Kariyer Hafızası
+   ========================================================================== */
+
+/* 1) Semantik Başarı / Galibiyet Yeşili (--ok): Renk Paletinden Bağımsız! */
+:root{--ok:#0d9464;--okx:#ffffff}
+:root[data-theme="dark"]{--ok:#2dd496;--okx:#041d14}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--ok:#2dd496;--okx:#041d14}
+}
+
+/* Galibiyet, pozitif averaj, hak edilmiş sonuç ve üstünlük göstergeleri daima --ok kullanır */
+.fd.w{background:var(--ok)}
+.fd.w::after{color:var(--okx)}
+.msb .w,.mbr .w,.mfc i.w{background:var(--ok)}
+.mgl .w,.psg.w b,.pk.pos b,.pt-av.pos,.psbox>b em.pos,.cp.gl em.pos,.car-wr,.gd,
+.dnam.pos b,.tdel-c em.pos,.ran-gd.pos,.ran-p.pos i,.podt-nt.emr b,.sbr b.a.ld,
+.dl-tv.me.win,.dl-mres.w,.dl-msc.w,.dl-form i.w,.dl-trp.hi,.dl-tcell.me.win .dl-tcmain b,
+.ach-st.ok,.pgmath.ok{color:var(--ok)!important}
+.pswr{
+  color:var(--ok)!important;
+  background:color-mix(in srgb,var(--ok) 15%,transparent)!important;
+  border-color:color-mix(in srgb,var(--ok) 36%,transparent)!important;
+}
+.cp.w{background:color-mix(in srgb,var(--ok) 14%,transparent);border-color:color-mix(in srgb,var(--ok) 34%,transparent)}
+.cp.w b,.cp.w em{color:var(--ok)!important}
+.gbm i.w{background:var(--ok)}
+.gbm.pgbm i.w{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok);border-color:color-mix(in srgb,var(--ok) 38%,transparent)}
+.xt.pos,.xvd.pxvd.pos,.xins li.pos,.sbv.deserved,.pxp-r.p,.ran-sc.lo{--tc:var(--ok);--vc:var(--ok);--ic:var(--ok);--xc:var(--ok);--sc:var(--ok)}
+.xt.pos b,.xt.pos .xtsub,.xvp.pos b,.desbdg.deserved{color:var(--ok)!important}
+.xbar .a,.k-deserved,.ran-leg i.pos,.sbb i:not(.o),.dhkbar i.ok{background:var(--ok)}
+.dhkc.ok{--hk:var(--ok)}
+.scp .p{fill:var(--ok)}
+.xtr text.w{fill:var(--ok)}
+.fxm.mine.w::before{background:var(--ok)!important}
+.sqst i.sg{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok);border-color:color-mix(in srgb,var(--ok) 34%,transparent)}
+.stk.pstk.w{background:color-mix(in srgb,var(--ok) 16%,transparent);border-color:color-mix(in srgb,var(--ok) 38%,transparent);color:var(--ok)}
+
+/* 2) Ölüm Grubu Rozet Karesi (.kgc.dead .kgl) — Sabit Yeşil Yerine Yakut Kırmızısı */
+.kgc.dead:not(.mine) .kgl{
+  background:linear-gradient(135deg,#e03131,#9b1c1c)!important;
+  color:#ffffff!important;
+  box-shadow:0 5px 14px rgba(224,49,49,.34),inset 0 1px 0 rgba(255,255,255,.28)!important;
+}
+
+/* 3) TOTS & İlk 11 Saha Uzun Tireli İsimler (örn: Gibbs-White) */
+.tots-nm.long{
+  font-size:10.2px!important;
+  padding:3px 4px!important;
+  letter-spacing:-.015em;
+}
+.tots-row.r4 .tots-nm.long{
+  font-size:9.6px!important;
+  padding:2.5px 3.5px!important;
+}
+
+/* 4) Haftanın Bülteni Kartı (.card.wbul) */
+.card.wbul{
+  margin:0 0 10px!important;padding:11px 12px!important;border-radius:16px!important;
+  border-color:color-mix(in srgb,var(--ac) 28%,var(--gbd))!important;
+}
+.wb-hd{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--bd)}
+.wb-ic{
+  width:26px;height:26px;border-radius:8px;display:grid;place-items:center;flex:0 0 auto;
+  color:var(--ac);background:color-mix(in srgb,var(--ac) 14%,transparent);
+  border:1px solid color-mix(in srgb,var(--ac) 32%,transparent);
+}
+.wb-ic svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.wb-hd b{font-family:var(--num);font-size:17px;color:var(--tx);flex:1;min-width:0}
+.wb-x{
+  width:28px;height:28px;min-height:28px;padding:0;border-radius:8px;flex:0 0 auto;
+  border:1px solid var(--gbd);background:var(--hi);color:var(--mut);
+  font-size:12px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.wb-list{display:grid;gap:6px}
+.wb-row{
+  display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;
+  background:var(--hi);border:1px solid var(--gbd);font-size:12.5px;min-width:0;
+}
+.wb-row.up{border-color:rgba(249,115,22,.32);background:rgba(249,115,22,.08)}
+.wb-row.ht{border-color:rgba(240,194,75,.38);background:rgba(240,194,75,.09)}
+.wb-tag{
+  flex:0 0 auto;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;
+  padding:2px 7px;border-radius:99px;background:var(--gcard);border:1px solid var(--gbd);color:var(--mut);
+}
+.wb-tag.up{color:#f97316;border-color:rgba(249,115,22,.38);background:rgba(249,115,22,.14)}
+.wb-tag.ht{color:var(--gold);border-color:rgba(240,194,75,.45);background:rgba(240,194,75,.16)}
+.wb-val{
+  flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:4px 8px;
+}
+.wb-val small{font-size:11px;font-weight:700;color:var(--mut);white-space:nowrap}
+.wb-m{display:inline-flex;align-items:center;gap:5px;min-width:0;flex-wrap:wrap}
+.wb-m b{
+  font-family:var(--num);font-size:15px;padding:1px 7px;border-radius:6px;
+  background:var(--gcard);border:1px solid var(--gbd);color:var(--tx);
+}
+.wb-tm{
+  background:none;border:0;padding:0;min-height:0;color:var(--tx);
+  font:600 12.5px inherit;cursor:pointer;text-align:left;
+}
+.wb-tm:active{color:var(--ac)}
+
+/* 5) Kadro İnceleme Modalı: Kariyer Hafızası Şeridi (.ti-mem, .ti-mc) */
+.ti-mem{
+  display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0;
+}
+.ti-mc{
+  flex:1 1 140px;display:flex;align-items:center;gap:6px;padding:6px 9px;border-radius:10px;
+  background:var(--hi);border:1px solid var(--gbd);font-size:12px;min-width:0;
+}
+.ti-mc em{font-style:normal;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}
+.ti-mc b{font-family:var(--num);font-size:14.5px;color:var(--tx);white-space:nowrap}
+.ti-mc i{
+  margin-left:auto;font-style:normal;font-size:11px;font-weight:700;
+  padding:1px 6px;border-radius:99px;background:var(--gcard);border:1px solid var(--gbd);color:var(--gold);
+  white-space:nowrap;
+}
