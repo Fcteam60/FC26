@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v22.0)
+   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v22.1)
    - Obsidian Broadcast Arena, 4 sekmeli Düello Stüdyosu (Genel · Sezonlar · Takımlar · DNA & xG)
    - Sıfır harici SDK: Firebase Realtime Database REST API + çevrimdışı IndexedDB uyumu
    - Canlı Sezon İnceleme (Puan Durumu, Maçlar, Eleme, Sezon DNA) & Yedek Manuel Kıyas Kodu
@@ -123,7 +123,7 @@ function duelModeStats(mode){
 // Aktif sezona ait kompakt canlı veri paketi
 function buildDuelLiveSeason(cs){
   if(!cs||!cs.cfg)return null;
-  const lg=isLg(cs.cfg)?1:0,q=lg?0:(cs.cfg.q||0),my=cs.my;
+  const lg=isLg(cs.cfg)?1:0,ucl=isUcl(cs.cfg)?1:0,q=lg?0:(ucl?24:(cs.cfg.q||0)),my=cs.my;
   let gName="",tbl=[],rem=[];
   if(cs.G&&cs.G.length&&(cs.cfg.gs||lg)){
     const gi=lg?0:(my!=null?cs.G.findIndex(g=>g.includes(my)):-1);
@@ -162,8 +162,8 @@ function buildDuelLiveSeason(cs){
       const ps=cs.sim.ko[rd];
       if(!Array.isArray(ps)||!ps.length)return;
       const list=ps.map(p=>{
-        const n1=p.t1!=null&&T[p.t1]?T[p.t1].n:"?";
-        const n2=p.t2!=null&&T[p.t2]?T[p.t2].n:"?";
+        const n1=p.t1!=null&&T[p.t1]?T[p.t1].n:(p.l1||"Bekleniyor");
+        const n2=p.t2!=null&&T[p.t2]?T[p.t2].n:(p.l2||"Bekleniyor");
         const wi=p.w==null?0:(p.w===p.t1?1:(p.w===p.t2?2:0));
         const mine=(my!=null&&(p.t1===my||p.t2===my))?1:0;
         const l1=Array.isArray(p.leg1)&&p.leg1.length>=2?[+p.leg1[0]||0,+p.leg1[1]||0]:null;
@@ -187,7 +187,7 @@ function buildDuelLiveSeason(cs){
       xgDiff:Math.round(sdRaw.xgDiff*100)/100
     };
   }
-  return{fmt:typeof fmt==="function"?fmt(cs.cfg):"",lg,q,gName,tbl,mt,rem,ko,stars,dna:sDna};
+  return{fmt:typeof fmt==="function"?fmt(cs.cfg):"",lg,ucl,q,gName,tbl,mt,rem,ko,stars,dna:sDna};
 }
 
 // Tüm sezonların kompakt özet listesi (Sezon vs. Sezon ve Alınan Takımlara Göre Kıyaslama için)
@@ -1231,12 +1231,14 @@ function duelLiveDlg(){
     let content="";
     if(tab=="tbl"){
       if(lv.tbl&&lv.tbl.length){
+        const isU=!!(lv.ucl||(lv.tbl.length===36&&lv.q===24));
         const qCut=!lv.lg&&lv.q>0?lv.q:0;
         const rowsHtml=lv.tbl.map((r,idx)=>{
           const [nm,o,w,d,l,gf,ga,pts,mine]=r;
           const rti=IX[nm]!=null?IX[nm]:null,av=gf-ga,avS=av>0?"+"+av:av<0?"−"+Math.abs(av):"0";
-          const isCut=qCut>0&&idx===qCut-1&&idx<lv.tbl.length-1;
-          return `<tr class="${mine?"me":""}${isCut?" qcut":""}">`+
+          const isCut=isU?(idx===7||idx===23):(qCut>0&&idx===qCut-1&&idx<lv.tbl.length-1);
+          const cutCls=isU&&idx===23?" qcut qcut-po":(isCut?" qcut":"");
+          return `<tr class="${mine?"me":""}${cutCls}">`+
             `<td class="rk">${idx+1}</td>`+
             `<td class="tm"><div class="dl-tmcell">${rti!=null?badge(rti,18):""}<span>${esc(nm)}</span></div></td>`+
             `<td>${o}</td><td>${w}</td><td>${d}</td><td>${l}</td>`+
@@ -1244,7 +1246,7 @@ function duelLiveDlg(){
             `<td class="pt"><b>${pts}</b></td>`+
           `</tr>`;
         }).join("");
-        content=`<div class="dl-lvsec"><div class="dl-lvsh"><b>${esc(lv.gName||"Puan Durumu")}</b>${qCut?`<span class="xfpill emr">İlk ${qCut} çıkar</span>`:""}</div>`+
+        content=`<div class="dl-lvsec"><div class="dl-lvsh"><b>${esc(lv.gName||"Puan Durumu")}</b>${isU?`<span class="xfpill emr">İlk 8 S16 · 9–24 PO</span>`:qCut?`<span class="xfpill emr">İlk ${qCut} çıkar</span>`:""}</div>`+
           `<div class="dl-tblwrap"><table class="ptbl dl-ptbl"><thead><tr><th>#</th><th class="tm">Takım</th><th>O</th><th>G</th><th>B</th><th>M</th><th>Av</th><th>P</th></tr></thead><tbody>${rowsHtml}</tbody></table></div></div>`;
       }else{
         content=`<div class="note">Bu sezonda henüz kura/puan tablosu oluşmamış (veya direkt eleme formatında).</div>`;

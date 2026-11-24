@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — 4 Katmanlı Gerçekçi Simülasyon, Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v22.0) */
+/* FC 27 Grup Ligi — 4 Katmanlı Gerçekçi Simülasyon, Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v22.1) */
 /* ---------- AŞAMA 1, 2 & 3: HAFTALIK SİMÜLASYON, ELEME AĞACI (BRACKET), GOL KRALLIĞI VE TURNUVA BİTİŞİ ---------- */
 const SIM_MODES=[[0,"Gerçekçi","Güç farkı ve gerçek futbol skorları (1-0, 2-1, 1-1 ağırlıklı)"],[1,"Dengeli","Standart güç ve günlük form dengesi"],[2,"Sürprizli","Yüksek şans faktörü, kupa sürprizlerine açık"]];
 
@@ -533,7 +533,7 @@ function tourneyStats(s){
     matches.push({t1,t2,g1,g2,rd})};
   const nmOf=(ti,list)=>{const sq=squadOf(ti);return (Array.isArray(list)?list:[]).map(v=>typeof v==="number"?(sq[v]&&sq[v].n):v)};
   Object.values(sim.gm||{}).forEach(wk=>Array.isArray(wk)&&wk.forEach(ms=>Array.isArray(ms)&&ms.forEach(m=>{
-    if(!Array.isArray(m))return;addM(m[0],m[1],m[2],m[3],"Grup");
+    if(!Array.isArray(m))return;addM(m[0],m[1],m[2],m[3],isUcl(s.cfg)?"Lig Aşaması":isLg(s.cfg)?"Lig":"Grup");
     if(m.length>=6){hat(nmOf(m[0],m[4]),m[0]);hat(nmOf(m[1],m[5]),m[1])}})));
   Object.entries(sim.ko||{}).forEach(([rd,pairs])=>Array.isArray(pairs)&&pairs.forEach(p=>{
     if(!p||p.w==null||p.t1===s.my||p.t2===s.my)return;
@@ -549,7 +549,7 @@ function tourneyStats(s){
       hat(n1,p.t1);hat(n2,p.t2);
     }}));
   (s.mt||[]).forEach(m=>{
-    if(s.my==null||m.opp==null)return;addM(s.my,m.opp,m.gf,m.ga,m.rd+(m.lg?" ("+m.lg+". Maç)":""));
+    if(s.my==null||m.opp==null)return;const rLbl=m.rd==="Grup"?(isUcl(s.cfg)?"Lig Aşaması":isLg(s.cfg)?"Lig":"Grup"):m.rd;addM(s.my,m.opp,m.gf,m.ga,rLbl+(m.lg?" ("+m.lg+". Maç)":""));
     const mSc=Array.isArray(m.gls)&&m.gls.length?m.gls.map(g=>g.sc):Object.entries(m.sc||{}).flatMap(([n,c])=>Array.from({length:+c||0},()=>n));
     hat(mSc,s.my);
     const og=m.og||[];hat(og.map(o=>o.sc),m.opp);
@@ -857,7 +857,7 @@ function getAutoKoOpponent(s,rdName){
 
 function simOneKoTie(s,p,rd){
   const sim=ensureSim(s),legs=lgs(s.cfg,rd),sa=p.sa||0;
-  const highStakes=rd===RN[1]||rd===RN[2];
+  const highStakes=rd===RN[4]||rd===RN[2];
   let g1=0,g2=0,s1=[],s2=[],a1=[],a2=[],et=0,pf=null,pa=null;
   if(legs===2){
     const [l1a,l1b]=simMatchScore(s,p.t1,p.t2,sim.m,sa*0.4,{highStakes});
@@ -956,6 +956,10 @@ function simKoStage(s,onlyCurrentRd){
     const userTie=pairs.find(p=>p.t1===s.my||p.t2===s.my);
     if(userTie&&userTie.w==null&&!s.res){
       const opIdx=userTie.t1===s.my?userTie.t2:userTie.t1;
+      if(lastSimRd){
+        rebuildSimScorers(s);
+        return `${lastSimRd} simüle edildi · sıradaki maçın: ${rd}${opIdx!=null&&T[opIdx]?" ("+T[opIdx].n+")":""}`;
+      }
       return `Önce ${rd} turundaki kendi maçını${opIdx!=null&&T[opIdx]?" ("+T[opIdx].n+")":""} oynamalısın`;
     }
     pairs.forEach(p=>{
@@ -1123,7 +1127,8 @@ function koBracketCard(s){
       const opp=opTmp;
       simBtns=`<div class="bar" style="margin:0 0 10px"><button class="btn p qgo ui-btn" data-a="qs" style="flex:1">${uiIco("ball")}<span>${activeRd} Maçını Gir (Rakip: ${esc(T[opp].n)})</span></button></div>`;
     }else{
-      simBtns=`<div class="bar" style="margin:0 0 10px"><button class="btn p ui-btn" data-a="simko" style="flex:1">${uiIco("bolt")}<span>${activeRd} Turunu Simüle Et</span></button>${RDs.indexOf(activeRd)<RDs.length-1?`<button class="btn ui-btn" data-a="simallko" style="flex:1">${uiIco("ff")}<span>Finale Kadar Simüle Et</span></button>`:""}</div>`;
+      const canSimAll=(userElim||!!s.res)&&RDs.indexOf(activeRd)<RDs.length-1;
+      simBtns=`<div class="bar" style="margin:0 0 10px"><button class="btn p ui-btn" data-a="simko" style="flex:1">${uiIco("bolt")}<span>${activeRd} Turunu Simüle Et</span></button>${canSimAll?`<button class="btn ui-btn" data-a="simallko" style="flex:1">${uiIco("ff")}<span>Finale Kadar Simüle Et</span></button>`:""}</div>`;
     }
   }else if(out&&out.done&&!s.res){
     simBtns=`<div class="gq" style="margin:0 0 10px;border-color:var(--gold)"><b class="ui-lbl">${uiIco("trophy")}<span>Turnuva Maçları Tamamlandı!</span></b><div class="note" style="margin:3px 0 8px">Şampiyon: <b>${esc(T[out.ch].n)}</b>${out.ru!=null?` · Finalist: <b>${esc(T[out.ru].n)}</b>`:""}. Turnuvayı sonlandırıp geçmişe ve karneye kaydedebilirsin.</div><button class="btn p cta ui-btn" data-a="fintrn">${uiIco("trophy")}<span>Turnuvayı Sonlandır ve Kaydet</span></button></div>`;
@@ -1221,4 +1226,18 @@ function weekBulletinData(s){
   const topClash=lg?allMatches.slice().sort((a,b)=>(b.r1.g+b.r2.g)-(a.r1.g+a.r2.g)||b.tot-a.tot).slice(0,2):[];
   hatTricks.sort((a,b)=>b.g-a.g);
   return{w,lg,myGi,groupMatches,topClash,upset,hatTrick:hatTricks[0]||null,hiMatch,cnt:allMatches.length};
+}
+
+function resetUclR16Results(s){
+  const ko=ensureSim(s).ko;
+  if(!Array.isArray(ko["Son 16"])||!ko["Son 16"].length){
+    const ub=buildUclBracket(s);
+    if(ub)ko["Son 16"]=ub.r16;
+    return;
+  }
+  ko["Son 16"].forEach(p=>{
+    if(!p)return;
+    p.g1=null;p.g2=null;p.et=0;p.pf=null;p.pa=null;p.w=null;
+    p.leg1=null;p.leg2=null;p.s1=[];p.s2=[];p.a1=[];p.a2=[];
+  });
 }

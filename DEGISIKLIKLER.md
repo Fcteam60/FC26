@@ -1,3 +1,18 @@
+## v22.1 (2026-11-24) — 4 Format Uçtan Uca Doğrulama & 15 Hata Kapanışı (Final)
+- **Şampiyonlar Ligi Eleme & Fikstür Koruması (`app.js`, `sim.js`):**
+  - Play-Off maçı düzenlendiğinde veya silindiğinde `Son 16`’daki İlk 8 seri başı yerleşimi artık silinmez (`resetUclR16Results`); yalnızca sonuçlar sıfırlanıp sonraki turlar temizlenir.
+  - İlk 8’de bay geçen kullanıcı için `Finale Kadar Simüle Et` gizlendi; ayrıca `simKoStage` bir turu simüle ettikten sonra kullanıcının maçında durduğunda yapılan simülasyonun `save()` ile kalıcı olarak yazılması garanti altına alındı.
+  - ŞL Lig Aşamasında maç girişi o haftanın fikstür rakibine bağlandı; tablonun maç sayısı kayması önlendi.
+  - İlk 8’deyken Play-Off tamamlanmadan ana ekranda doğrudan **`Play-Off Turunu Simüle Et`** aksiyonu sunulur; skor panelinde rastgele rakip açılması engellendi.
+- **Yarı Final Büyük Maç & TOTS Düzeltmesi (`sim.js`, `app.js`):** `RN[1]` (`undefined`) hatası `RN[4]` (*Yarı final*) olarak düzeltildi; Yarı Final maçları artık hem simülasyon tecrübe/tempo etkisine hem TOTS derinlik puanlamasına doğru girer.
+- **Direkt Eleme, Tek Grup & Puan Ligi Akış Düzeltmeleri (`app.js`):**
+  - Direkt Eleme (`gs=0`) kura onayı sonrasında eleme ağacı otomatik kurulur ve doğrudan `Fikstür / Eleme Ağacı` ekranına geçilir.
+  - Tek gruplu turnuvalarda (`16×16`, `32×32`) `gcap` kilidi kaldırıldı; `Puan Ligi` için tek dokunuşlu fikstür/tablo kurulumu ve son hafta simülasyon koruması eklendi.
+  - Çift maçlı elemede toplam skor eşitken penaltı girilmeden kaydetme engellendi; eleme ağacı kuruluyken `↩ Geri Al` (`simu`) için onay eklendi.
+- **ŞL İstatistik, Yedek Doğrulama & Canlı Düello Cilaları (`app.js`, `sim.js`, `duel.js`, `style.css`):**
+  - ŞL `gInfo` artık 8 fikstür rakibinin ortalama gücünü ve 36 takım içindeki fikstür zorluk sırasını gösterir; Maç Günlüğü ve turnuva istatistikleri `"GRUP"` yerine `"Lig Aşaması"` / `"Lig"` etiketlerini kullanır.
+  - `vS()` yedek doğrulayıcısına `s.ucl` doğrulaması, Canlı Düello ŞL tablosuna **8. ve 24. sıra** çizgileri ve `"Bekleniyor"` metni, `nm()` çıktısına `esc()` kaçış koruması eklendi.
+
 ## v22.0 (2026-11-24) — Gerçek 36 Takımlı UEFA Şampiyonlar Ligi Formatı (Lig Aşaması + Play-Off)
 - **6. Özel Turnuva Formatı (`app.js`, `sim.js`):** Mevcut formatlardan tamamen izole (`cfg.ucl = 1`), gerçek UEFA kurallarına uygun **Şampiyonlar Ligi (36 Takım · 8 Maç + Play-Off)** şablonu eklendi. Varsayılan olarak Avrupa kulüpleri, ülke başına en fazla 4 takım, çift maçlı Play-Off/Eleme ve tek maçlı Final ile kurulur.
 - **Matematiksel 4 Torba × 8 Hafta Kura & Fikstür Motoru (`sim.js` `genUclDraw`, `UCL_TPL`):** 36 takım 9’arlı 4 torbaya ayrılır; her takım her torbadan 1 iç saha + 1 deplasman olmak üzere toplam 8 farklı rakiple (4 EV / 4 DEP, 144 lig maçı) eşleşir; aynı ülke eşleşmesi ve yabancı ülke sınırı yerel aramayla optimize edilir. İnteraktif kura ekranında 8 rakibin tek tek çekilebilir.

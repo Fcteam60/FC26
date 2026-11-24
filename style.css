@@ -5303,3 +5303,6 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
 
 /* 4) Eleme Ağacı: Play-Off -> Son 16 Düz Yatay Bağlantı (.bkt-slot.straight) */
 .bkt-slot.straight:not(.lst)::after{width:16px}
+
+/* v22.1: Canlı Düello ŞL 24. sıra kesikli çizgisi */
+.dl-ptbl tr.qcut-po td{border-bottom:2px dashed rgba(56,189,248,.62)}
