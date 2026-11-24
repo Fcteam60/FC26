@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — Analitik, xG/xPts, Taktiksel DNA ve Kariyer Motoru (analytics.js · v20.0) */
+/* FC 27 Grup Ligi — Analitik, xG/xPts, Taktiksel DNA ve Kariyer Motoru (analytics.js · v21.0) */
 const RS=["Grup","S64","S32","S16","ÇF","YF","Final","Şamp."];
 /* ---------- RAKİPLER ---------- */
 function oppData(){const M=nob();
@@ -1099,4 +1099,142 @@ function xgSummaryCard(ML){
     xgSec("Hak Ediş Dağılımı","Sonuç ve oyun dengesi",hak,true,"hak",D.length?`${D.length} maç`:"")+
     xgSec("xG Trendi","Son maçlarda xG akışı",trend,true,"tr",XA.length>=3?`${Math.min(10,XA.length)} maç`:"")+
     gls);
+}
+
+
+/* ---------- v21.0: TURNUVA EVRENİ TARİHİ (Tüm Sezonlar — Sen + Yapay Zekâ) ---------- */
+function universeData(){
+  const fin=store.seasons.filter(x=>x&&x.res);
+  const clubs=nob(),totsM=nob(),scorers=nob(),mvps=nob(),timeline=[];
+  const ensClub=ti=>{
+    if(ti==null||!T[ti])return null;
+    return clubs[ti]=clubs[ti]||{ti,n:T[ti].n,ch:0,chMe:0,chAi:0,ru:0,ruMe:0,ruAi:0};
+  };
+  let myCh=0,aiCh=0;
+  fin.forEach(x=>{
+    const r=x.res||{},lg=isLg(x.cfg);
+    const chTi=(r.ch!=null&&T[r.ch])?r.ch:(r.st===7&&x.my!=null&&T[x.my]?x.my:null);
+    const ruTi=(r.ru!=null&&T[r.ru])?r.ru:(r.st===6&&x.my!=null&&T[x.my]?x.my:null);
+    const chIsMe=chTi!=null&&chTi===x.my&&r.st===7;
+    const ruIsMe=ruTi!=null&&ruTi===x.my&&r.st===6;
+    if(chTi!=null){
+      const c=ensClub(chTi);
+      if(c){c.ch++;if(chIsMe){c.chMe++;myCh++}else{c.chAi++;aiCh++}}
+    }
+    if(ruTi!=null){
+      const c=ensClub(ruTi);
+      if(c){c.ru++;if(ruIsMe)c.ruMe++;else c.ruAi++}
+    }
+    if(r.topG&&r.topG.n){
+      const k=nz(r.topG.n),o=scorers[k]=scorers[k]||{n:r.topG.n,cnt:0,totG:0,ti:r.topG.ti,seasons:[]};
+      o.cnt++;o.totG+=+r.topG.g||0;if(r.topG.ti!=null&&T[r.topG.ti])o.ti=r.topG.ti;o.seasons.push(x.name);
+    }
+    if(r.mvp&&r.mvp.n){
+      const k=nz(r.mvp.n),o=mvps[k]=mvps[k]||{n:r.mvp.n,cnt:0,g:0,a:0,mom:0,ti:r.mvp.ti,seasons:[]};
+      o.cnt++;o.g+=+r.mvp.g||0;o.a+=+r.mvp.a||0;o.mom+=+r.mvp.mom||0;if(r.mvp.ti!=null&&T[r.mvp.ti])o.ti=r.mvp.ti;o.seasons.push(x.name);
+    }
+    if(r.tots&&typeof r.tots==="object"){
+      const seenInS=new Set();
+      ["F","M","D","K"].forEach(grp=>{
+        (Array.isArray(r.tots[grp])?r.tots[grp]:[]).forEach(p=>{
+          if(!p||!p.n)return;
+          const k=nz(p.n);if(seenInS.has(k))return;seenInS.add(k);
+          const o=totsM[k]=totsM[k]||{n:p.n,cnt:0,g:0,a:0,mom:0,pos:p.pos||"",grp:p.grp||grp,ti:p.ti,clubs:new Set(),mineCnt:0};
+          o.cnt++;o.g+=+p.g||0;o.a+=+p.a||0;o.mom+=+p.mom||0;
+          if(p.pos)o.pos=p.pos;
+          if(p.ti!=null&&T[p.ti]){o.ti=p.ti;o.clubs.add(T[p.ti].n)}
+          if(p.mine)o.mineCnt++;
+        });
+      });
+    }
+    timeline.push({id:x.id,name:x.name,date:x.date,lg,chTi,ruTi,chIsMe,myTi:x.my,mySt:r.st,topG:r.topG,mvp:r.mvp,hasTots:!!r.tots});
+  });
+  const clubList=Object.values(clubs);
+  const champs=clubList.filter(c=>c.ch>0).sort((a,b)=>b.ch-a.ch||b.ru-a.ru||TR_CMP(a.n,b.n));
+  const cursed=clubList.filter(c=>c.ru>0).sort((a,b)=>b.ru-a.ru||a.ch-b.ch||TR_CMP(a.n,b.n));
+  const totsLegends=Object.values(totsM).map(o=>Object.assign({},o,{clubList:[...o.clubs]})).sort((a,b)=>b.cnt-a.cnt||(b.g+b.a)-(a.g+a.a)||b.g-a.g||TR_CMP(a.n,b.n));
+  const topScorers=Object.values(scorers).sort((a,b)=>b.cnt-a.cnt||b.totG-a.totG||TR_CMP(a.n,b.n));
+  const topMvps=Object.values(mvps).sort((a,b)=>b.cnt-a.cnt||(b.g+b.a)-(a.g+a.a)||TR_CMP(a.n,b.n));
+  return{finCnt:fin.length,myCh,aiCh,champs,cursed,totsLegends,topScorers,topMvps,timeline:timeline.reverse()};
+}
+function universeView(){
+  const u=universeData();
+  if(!u.finCnt){
+    return psetCard("trophy","gold","Turnuva Evreni Tarihi","Tüm sezonların şampiyonları, TOTS efsaneleri ve tarihi",null,
+      emp("Sezonları tamamladıkça (elensen bile Turnuvayı Sonlandır dediğinde) tüm FC 27 evreninin şampiyonluk tarihi, lanetli finalistleri ve TOTS efsaneleri burada birikir.")
+    );
+  }
+  const totCh=u.myCh+u.aiCh;
+  const sumCard=psetCard("trophy","gold","Evren Özeti","Sen ve yapay zekâ kulüplerinin ortak tarihi",`${u.finCnt} sezon`,
+    `<div class="car-kpi" style="margin-bottom:0">`+
+      `<div class="ck gold"><b>${u.champs.length}</b><span>Farklı Şampiyon</span></div>`+
+      `<div class="ck emr${u.myCh?"":" z"}"><b>${u.myCh}</b><span>Senin Kupan</span></div>`+
+      `<div class="ck sky${u.aiCh?"":" z"}"><b>${u.aiCh}</b><span>YZ Şampiyonluğu</span></div>`+
+    `</div>`+
+    (totCh?`<div class="note" style="margin:9px 0 0">Kayıtlı ${totCh} şampiyonluktan <b>%${Math.round(u.myCh/totCh*100)}</b>’i senin, <b>%${Math.round(u.aiCh/totCh*100)}</b>’i yapay zekâ kulüplerinin oldu.</div>`:"")
+  );
+  // 1) En çok şampiyon olan kulüpler
+  const champRows=u.champs.slice(0,12).map((c,i)=>{
+    const subParts=[];
+    if(c.chMe)subParts.push(`Sen: ${c.chMe}`);
+    if(c.chAi)subParts.push(`YZ: ${c.chAi}`);
+    if(c.ru)subParts.push(`${c.ru} ikincilik`);
+    return `<button class="hof-r tap${i===0?" r1":""}" data-a="tinfo" data-i="${c.ti}" aria-label="${esc(c.n)} kadrosunu incele">`+
+      `${i<3?`<span class="mdl m${i+1}">${i+1}</span>`:`<span class="hof-rk">${i+1}</span>`}`+
+      `${badge(c.ti,26)}`+
+      `<span class="hof-nm"><b>${esc(c.n)}</b><small>${esc(subParts.join(" · "))}</small></span>`+
+      `<span class="hof-v">${c.ch} 🏆</span>`+
+    `</button>`;
+  }).join("");
+  const champCard=u.champs.length?psetCard("shield","gold","Evrenin Devleri","En çok şampiyon olan kulüpler",`ilk ${Math.min(12,u.champs.length)}`,champRows):"";
+  // 2) En çok final kaybeden / 2. olan "lanetli" takımlar
+  const cursedRows=u.cursed.slice(0,8).map((c,i)=>{
+    const curseTag=c.ch===0&&c.ru>=2?" · 0 kupa laneti":(c.ch>0?` · ${c.ch} şampiyonluk`:" · henüz kupasız");
+    return `<button class="hof-r tap" data-a="tinfo" data-i="${c.ti}" aria-label="${esc(c.n)} kadrosunu incele">`+
+      `<span class="hof-rk">${i+1}</span>`+
+      `${badge(c.ti,24)}`+
+      `<span class="hof-nm"><b>${esc(c.n)}</b><small>${c.ruMe?`Sen: ${c.ruMe} · `:""}${c.ruAi?`YZ: ${c.ruAi}`:""}${curseTag}</small></span>`+
+      `<span class="hof-v">${c.ru}× 2.</span>`+
+    `</button>`;
+  }).join("");
+  const cursedCard=u.cursed.length?psetCard("flame","org","Lanetli Finalistler","En çok finalde kaybeden veya 2. olan kulüpler",`${u.cursed.length} kulüp`,cursedRows):"";
+  // 3) TOTS Efsaneleri
+  const totsRows=u.totsLegends.slice(0,12).map((p,i)=>{
+    const clTxt=p.clubList.slice(0,2).join(" / ");
+    const stTxt=`${p.g}G · ${p.a}A${p.mom?` · ${p.mom}★`:""}`;
+    const btnAttrs=p.mineCnt>0?`data-a="pinfo" data-n="${esc(p.n)}"`:(p.ti!=null&&T[p.ti]?`data-a="tinfo" data-i="${p.ti}"`:"");
+    const posTag=p.pos?`<span class="sqp p-${p.grp}" style="width:auto;padding:1px 6px;font-size:11px">${esc(p.pos)}</span>`:"";
+    const inner=`${i<3?`<span class="mdl m${i+1}">${i+1}</span>`:`<span class="hof-rk">${i+1}</span>`}`+
+      `${p.ti!=null&&T[p.ti]?badge(p.ti,24):""}`+
+      `<span class="hof-nm"><b>${p.mineCnt?"★ ":""}${esc(p.n)}</b><small>${esc(clTxt)}${clTxt?" · ":""}${stTxt}</small></span>`+
+      `${posTag}<span class="hof-v">${p.cnt}×</span>`;
+    return btnAttrs?`<button class="hof-r tap${i===0?" r1":""}" ${btnAttrs}>${inner}</button>`:`<div class="hof-r${i===0?" r1":""}">${inner}</div>`;
+  }).join("");
+  const totsCard=u.totsLegends.length?psetCard("spark","emr","TOTS Efsaneleri","Turnuvanın En İyi 11’ine en çok seçilen oyuncular",`ilk ${Math.min(12,u.totsLegends.length)}`,totsRows):"";
+  // 4) Gol Krallığı & MVP Onur Listesi
+  const honRow=(o,i,val,sub)=>{
+    const bdg=o.ti!=null&&T[o.ti]?badge(o.ti,22):"";
+    return `<div class="hof-r${i===0?" r1":""}">${i<3?`<span class="mdl m${i+1}">${i+1}</span>`:`<span class="hof-rk">${i+1}</span>`}${bdg}<span class="hof-nm"><b>${esc(o.n)}</b><small>${esc(sub)}</small></span><span class="hof-v">${val}</span></div>`;
+  };
+  let honorHtml="";
+  if(u.topScorers.length||u.topMvps.length){
+    const scPart=u.topScorers.length?`<div class="hof-sub">Turnuva Gol Kralları</div>`+u.topScorers.slice(0,6).map((o,i)=>honRow(o,i,`${o.cnt}×`,`Toplam ${o.totG} gol · ${o.seasons.slice(-2).join(", ")}`)).join(""):"";
+    const mvPart=u.topMvps.length?`<div class="hof-sub" style="margin-top:12px">Turnuva MVP’leri</div>`+u.topMvps.slice(0,6).map((o,i)=>honRow(o,i,`${o.cnt}×`,`${o.g}G ${o.a}A${o.mom?` ${o.mom}★`:""} · ${o.seasons.slice(-2).join(", ")}`)).join(""):"";
+    honorHtml=psetCard("boot","sky","Gol Krallığı & MVP Onur Listesi","Tüm sezonların turnuva ödülü sahipleri",`${u.topScorers.length} gol kralı`,scPart+mvPart);
+  }
+  // 5) Sezon Sezon Şampiyonluk Kronolojisi
+  const tlRows=u.timeline.map(it=>{
+    const chNm=it.chTi!=null&&T[it.chTi]?T[it.chTi].n:"Kayıt yok";
+    const ruNm=it.ruTi!=null&&T[it.ruTi]?T[it.ruTi].n:"";
+    const extras=[];
+    if(ruNm)extras.push(`Finalist: ${ruNm}`);
+    if(it.topG)extras.push(`Gol Kralı: ${it.topG.n} (${it.topG.g}G)`);
+    if(it.mvp)extras.push(`MVP: ${it.mvp.n}`);
+    return `<div class="uv-row${it.chIsMe?" mine":""}">`+
+      `<div class="uv-top"><span class="uv-sn"><b>${esc(it.name)}</b><span class="xfpill ${it.lg?"sky":"gold"}">${it.lg?"Lig":"Kupa"}</span></span>${it.hasTots?`<button class="chip uv-tots" data-a="totsv" data-id="${it.id}">En İyi 11</button>`:""}</div>`+
+      `<div class="uv-ch">${it.chTi!=null&&T[it.chTi]?badge(it.chTi,26):`<span class="aci" style="width:26px;height:26px">${UICO.trophy}</span>`}<div class="uv-chm"><b>${it.chIsMe?"★ ":""}${esc(chNm)}</b>${extras.length?`<small>${esc(extras.join(" · "))}</small>`:""}</div></div>`+
+    `</div>`;
+  }).join("");
+  const tlCard=psetCard("cal","sky","Şampiyonluk Kronolojisi","Sezon sezon tüm şampiyonlar ve ödüller",`${u.timeline.length} sezon`,`<div class="uv-list">${tlRows}</div>`);
+  return sumCard+champCard+cursedCard+totsCard+honorHtml+tlCard;
 }

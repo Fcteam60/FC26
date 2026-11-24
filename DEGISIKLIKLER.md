@@ -1,3 +1,17 @@
+## v21.0 (2026-11-24) — Canlı Puan Durumu Posteri, Turnuva Evreni Tarihi, 5 Renk Paleti & UX Cilası
+- **Canlı Puan Durumu Posteri (`posters.js` `kuraCv`, `app.js` `groupsView`):** Maç oynanmadan önce kura posteri, grup/lig maçları başladıktan sonra ise `calcGroupTable` üzerinden canlı sıralamayı (`O, G, B, M, AV, P`; Lig modunda `AG, YG` dahil), hafta bilgisini ve çıkış çizgisini çizen broadcast puan durumu posteri eklendi.
+- **Manuel "Gruptan çıktın mı?" Temizliği (`app.js` `grpBox`, `homeView`):** Simülasyon motoruyla çakışan manuel sıra seçimi ve `Evet, çıktım / Hayır, elendim` kutusu kaldırıldı; son grup maçı sonrası doğrudan son hafta simülasyonuna ve otomatik eleme ağacına yönlendirildi.
+- **Maç Düzenleme & Silme Koruması + Skor Senkronizasyonu (`app.js` `msave`, `mdel`):** Geçmiş grup veya eleme maçlarını düzenlerken/silerken sonraki haftaların simülasyonları ya da eleme ağacı etkilenecekse önce onay alınır; grup maçı skoru değişip gruptan çıkanları etkiliyorsa eleme ağacı yeni sıralamaya göre otomatik yeniden kurulur.
+- **Turnuva Evreni Tarihi (`analytics.js` `universeData`, `universeView`, `app.js` `histView`):** `Geçmiş` altına 7. sekme olarak **Evren** eklendi: en çok şampiyon olan kulüpler (Sen vs. YZ kırılımı), en çok final kaybeden lanetli finalistler, TOTS’a en çok seçilen efsane oyuncular, çoklu Gol Kralı / MVP onur listesi ve sezon kronolojisi.
+- **5 Küratörlü Stadyum Renk Paleti & Tek Koyu Zemin (`style.css`, `app.js`, `index.html`):** *Zümrüt Saha, Şampiyonlar Gecesi, Kraliyet Altını, Kızıl Arena* ve kontrast korumalı *Kulübümün Rengi* paletleri eklendi; otomatik ve manuel koyu mod tek obsidyen zeminde (`#090c10`) eşitlendi.
+- **Görsel Bütünlük & Temizlik (`app.js`, `style.css`, `posters.js`):**
+  - Maç giriş paneline alta sabitlenen (`sticky`) kaydet çubuğu ve kompakt broadcast başlık eklendi.
+  - Onay, ad değiştirme, sahip ve yedek modalları cam/obsidiyen modal diline yükseltildi (`z-index: 35`).
+  - Boş kura kartlarındaki `.kcard` hatası `.kgc` olarak düzeltildi; sezon bitince `Takımım › Sezon Sonucu` sade özet + `Düzenle` görünümüne kavuşturuldu.
+  - Tekrar eden öğretici notlar, `Oyun Ayarları` çift başlığı ve sarı butonun sonsuz yanıp sönme animasyonu kaldırıldı.
+  - Teknik Ayarlar kartları katlanır **Sistem & Tanılama** bölümünde toplandı; `Yedek Zamanı` şeridine 7 gün erteleme (`✕`) eklendi.
+  - iOS’ta poster görseli üzerinde basılı tutarak kaydetme kilidi açıldı; Sezon Karnesi açılışındaki takılan kare-kare yeniden çizim kaldırılıp yumuşak anında PNG önizlemeye geçildi; üst çubuğa aktif kulüp arması ve `Geçmiş` yatay sekmelerine sağ kenar kaydırma solması eklendi.
+
 ## v20.48 (2026-11-23) — Teknik Dayanıklılık, Önbellekleme & Dokümantasyon Güncellemesi
 - **Firebase Ağ Zaman Aşımı (`duel.js` `duelFetch`):** Tüm bulut isteklerine (`duelPush`, `duelPull`, `duelDeleteRemote`) 8 saniyelik `AbortController` zaman aşımı eklendi; yarı kopuk mobil bağlantılarda eşitleme düğmesinin kilitli kalması önlendi.
 - **Düello Özeti Önbelleklemesi (`duel.js` `buildDuelSummary`, `app.js` `save`):** `buildDuelSummary()` çıktısı `store` değişikliklerine bağlı olarak önbelleklendi; 50–100 sezonluk arşivlerde sekme ve filtre geçişleri sıfır yeniden tarama yüküyle anında çalışır.

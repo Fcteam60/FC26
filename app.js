@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="20.48",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="21.0",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -346,7 +346,7 @@ const norm=()=>store.seasons.forEach(s=>{
 norm();
 const cur=()=>store.seasons.find(s=>s.id==store.cur)||store.seasons[0];
 const defMst=()=>({myPos:"",oppPos:"",myShots:"",oppShots:"",mySot:"",oppSot:"",myPass:"",oppPass:"",myXg:"",oppXg:""});
-const sync=()=>{st.ti=null;st.tiv="xi";st.pi=null;st.tpi=null;st.totsv=null;st.guide=false;st.dr=null;st.k=0;st.mg=0;st.mo=0;st.mu=0;st.mp=0;st.mpf=0;st.mpa=0;st.mgls=[];st.msc=nob();st.mas=nob();st.mmom="";st.mop=null;st.mlg=null;st.qs=false;st.trm=null;st.fxw=0;st.fxv=null;st.bkv=null;st.med=null;st.mall=false;st.sall=false;st.madv=false;st.isGenerating=false;st.mst=defMst();st.mexp=nob();if(!st.stab)st.stab="m"};
+const sync=()=>{st.ti=null;st.tiv="xi";st.pi=null;st.tpi=null;st.totsv=null;st.guide=false;st.dr=null;st.k=0;st.mg=0;st.mo=0;st.mu=0;st.mp=0;st.mpf=0;st.mpa=0;st.mgls=[];st.msc=nob();st.mas=nob();st.mmom="";st.mop=null;st.mlg=null;st.qs=false;st.trm=null;st.fxw=0;st.fxv=null;st.bkv=null;st.med=null;st.mall=false;st.sall=false;st.madv=false;st.isGenerating=false;st.mst=defMst();st.mexp=nob();st.fined=false;if(!st.stab)st.stab="m"};
 function refreshQuota(reRender){
   if(typeof estimateStorage!=="function")return Promise.resolve(null);
   return estimateStorage().then(est=>{
@@ -363,7 +363,7 @@ const save=(immediate)=>{
   if(st.staleTab){ntfReload("Başka bir sekmede değişiklik yapıldı, veri kaybı yaşamamak için sayfayı yenileyin.");return Promise.resolve(false)}
   achScan(true);store.v=4;store.tn=TN;
   const raw=lastSavedRaw=JSON.stringify(store);
-  try{if(store.theme!==undefined)localStorage.setItem("fc26lig4_theme",store.theme);if(store.motion!==undefined)localStorage.setItem("fc26lig4_motion",String(store.motion))}catch(e){}
+  try{if(store.theme!==undefined)localStorage.setItem("fc26lig4_theme",store.theme);if(store.pal!==undefined)localStorage.setItem("fc26lig4_pal",store.pal||"");if(store.motion!==undefined)localStorage.setItem("fc26lig4_motion",String(store.motion))}catch(e){}
   if(typeof duelInvalidateSummary==="function")duelInvalidateSummary();
   if(typeof duelSchedulePush==="function")duelSchedulePush();
   if(typeof queueSave==="function")return queueSave(raw,!!immediate);
@@ -604,10 +604,23 @@ function quotaCard(){
     `<div class="note" style="margin:8px 0 0">${mode==="idb"?"Verilerin yüksek kapasiteli IndexedDB veritabanında güvenle saklanıyor.":"IndexedDB açılamadığı için 5 MB sınırlı localStorage kullanılıyor."}</div>`+legHtml;
   return psetCard("db",mode==="idb"?"emr":"org","Depolama ve Kota","Tarayıcı hafıza durumu",mode==="idb"?"IndexedDB":"localStorage",body);
 }
-function setView(){const dk=store.theme||"",motOn=store.motion===0?0:1;if(!st.qest)refreshQuota(true);
-  const appPref=psetCard("theme","emr","Görünüm ve Deneyim","Tema ve animasyon tercihleri",dk=="light"?"Açık":dk=="dark"?"Koyu":"Oto",
+const PALETTES=[
+  ["","Zümrüt Saha","#0d9464","#2dd496"],
+  ["ucl","Şampiyonlar Gecesi","#2563eb","#60a5fa"],
+  ["gold","Kraliyet Altını","#b8860b","#f0c24b"],
+  ["crimson","Kızıl Arena","#be123c","#fb7185"],
+  ["club","Kulübümün Rengi","var(--club1,#0d9464)","var(--club2,#f0c24b)"]
+];
+function setView(){const dk=store.theme||"",pl=store.pal||"",motOn=store.motion===0?0:1;if(!st.qest)refreshQuota(true);
+  const palName=(PALETTES.find(x=>x[0]===pl)||PALETTES[0])[1];
+  const palHtml=`<div class="pset-lbl" style="margin-top:12px">Renk Paleti</div>`+
+    `<div class="pal-grid" role="radiogroup" aria-label="Renk paleti seçimi">`+
+    PALETTES.map(([v,l,c1,c2])=>`<button class="pal-btn${pl===v?" on":""}" data-a="pal" data-v="${v}"><span class="pal-sw" style="background:linear-gradient(135deg,${c1},${c2})"></span><span>${l}</span></button>`).join("")+
+    `</div>`;
+  const appPref=psetCard("theme","emr","Görünüm ve Deneyim","Tema, renk paleti ve animasyon tercihleri",dk=="light"?"Açık":dk=="dark"?"Koyu":"Oto",
     `<div class="pset-lbl">Tema</div>`+
     `<div class="stabs seg3" role="radiogroup" aria-label="Tema seçimi">${[["","Otomatik"],["light","Taktik Tahtası"],["dark","Gece Stadyumu"]].map(([v,l])=>`<button class="chip ${dk==v?"on":""}" data-a="theme" data-v="${v}">${l}</button>`).join("")}</div>`+
+    palHtml+
     `<div class="pset-lbl" style="margin-top:12px">Hareket ve Efektler</div>`+
     `<div class="note" style="margin:0 0 8px">Sekme geçişi, kart parlaması, kura ve takım seçimi animasyonu, konfeti ve havai fişek.</div>`+
     `<div class="stabs seg2" style="margin:0" role="radiogroup" aria-label="Hareket tercihi">${[[1,"Açık"],[0,"Kapalı"]].map(([v,l])=>`<button class="chip ${motOn==v?"on":""}" data-a="mot" data-v="${v}">${l}</button>`).join("")}</div>`
@@ -622,13 +635,17 @@ function setView(){const dk=store.theme||"",motOn=store.motion===0?0:1;if(!st.qe
   const poolCard=psetCard("shield","sky","Takım Havuzu","EA FC 27 güncel kadroları",`${T.length} takım`,
     `<div class="dnamets" style="margin:0 0 8px"><span class="dnam"><b>${T.length}</b><em>Takım</em></span><span class="dnam"><b>${new Set(T.map(t=>t.c)).size}</b><em>Ülke</em></span><span class="dnam"><b>FC 27</b><em>Veritabanı</em></span></div>`+
     `<div class="note" style="margin:0">Brezilya takımları hariç güncel kulüp kadroları dahildir.</div>`+
-    `<details class="dnatip"><summary>Yasal uyarı ve telif bilgisi</summary><p>Bu uygulama ticari olmayan, reklamsız, açık kaynaklı bağımsız bir turnuva takip aracıdır. Electronic Arts Inc. (EA Sports), FIFA, UEFA veya herhangi bir futbol kulübü/federasyonu ile resmi bağlantısı ya da onayı yoktur. Kulüp armaları telif içermez; renk ve harflerden jenerik SVG olarak üretilir.</p></details>`
+    `<details class="dnatip"><summary>Yasal uyarı ve telif bilgisi</summary><p>Bu uygulama ticari olmayan, reklamsız, açık kaynaklı bağımsız bir turnuva takip aracıdır. Electronic Arts Inc. (EA Sports), FIFA, UEFA veya herhangi bir futbol kulübü/federasyonu ile resmi bağlantısı ya da onayı yoktur. Tüm ticari markalar ve kulüp görselleri ilgili sahiplerinin mülkiyetindedir.</p></details>`
   );
-  const guideCard=psetCard("app","sky","Kullanım Kılavuzu","Adım adım rehber ve kısayollar","6 bölüm",
-    `<div class="note" style="margin:0 0 10px">Kurulum, simülasyon, xG/xPts analizi, PNG posterler ve yedekleme hakkında kısa, çevrimdışı rehber.</div>`+
+  const guideCard=psetCard("app","sky","Kullanım Kılavuzu","Adım adım rehber ve kısayollar","7 bölüm",
+    `<div class="note" style="margin:0 0 10px">Kurulum, simülasyon, xG/xPts analizi, 9 PNG poster türü, Düello ve yedekleme hakkında kısa, çevrimdışı rehber.</div>`+
     `<button class="btn pset-sec ui-btn" data-a="guide" style="width:100%">${uiIco("book")}<span>Kullanım Kılavuzunu Aç</span></button>`
   );
-  return appPref+bkCard+quotaCard()+rcvCard()+trashCard()+appCard()+guideCard+poolCard+resetCard()}
+  const errN=elogGet().length,rcvN=RCV.filter(([k])=>rcvGet(k)).length;
+  const sysBadge=errN?`${errN} hata`:rcvN?`${rcvN} kurtarma`:"Sağlıklı";
+  const sysOpen=!!st.sysopen;
+  const sysFold=`<div class="pfold ${errN?"org":"sky"}${sysOpen?" open":""}"><button class="acbtn${sysOpen?" open":""}" data-a="sysopen" aria-expanded="${sysOpen}"><span class="aci">${UICO.db}</span><span class="act"><b>Sistem & Tanılama</b><small>Depolama kotası, kurtarma, hata raporu ve havuz</small></span><span class="acr"><span class="xfpill ${errN?"org":"sky"}">${sysBadge}</span><span class="acc" aria-hidden="true">${UICO.chev}</span></span></button>${sysOpen?`<div class="acbody sys-body">${quotaCard()+rcvCard()+errCard()+poolCard}</div>`:""}</div>`;
+  return appPref+bkCard+appCard()+guideCard+trashCard()+sysFold+resetCard()}
 
 sync();
 
@@ -763,10 +780,10 @@ function readImp(f){
   r.onerror=()=>{ask("Dosya okunamadı.");render()};
   r.readAsText(f)}
 const impDlg=()=>{const o=st.imp.o,n=o.seasons.length,m=o.seasons.reduce((a,s)=>a+((s.mt||[]).length),0);
-  return `<div class="dlg"><div class="dbox" role="dialog" aria-modal="true"><div class="rs">Yedeği yükle</div><div class="note" style="margin:0 0 8px">${n} sezon · ${m} maç bulundu (${esc(st.imp.src||"yedek")}).</div>${impWarn(o)}<button class="btn p opt" data-a="impm">Birleştir<small>Aynı sezonların maçları güvenle birleşir; sildiğin maç ve sezonlar geri gelmez</small></button><button class="btn opt" data-a="impr">Hepsini değiştir<small>Bu cihazdaki tüm kayıtlar yedekle değiştirilir</small></button><div class="bar"><button class="btn" data-a="no">Vazgeç</button></div></div></div>`};
+  return `<div class="dlg"><button class="tibk" data-a="no" aria-label="Kapat"></button><div class="dbox pmodal" role="dialog" aria-modal="true"><div class="pm-hd"><span class="aci">${UICO.upload}</span><div><b>Yedeği Yükle</b><small>${n} sezon · ${m} maç (${esc(st.imp.src||"yedek")})</small></div></div>${impWarn(o)}<button class="btn p pset-pri opt pm-opt" data-a="impm"><span>Birleştir</span><small>Aynı sezonların maçları güvenle birleşir; sildiğin kayıtlar geri gelmez</small></button><button class="btn pset-sec opt pm-opt" data-a="impr"><span>Hepsini değiştir</span><small>Bu cihazdaki tüm kayıtlar yedekle değiştirilir</small></button><div class="bar"><button class="btn pset-sec" data-a="no" style="flex:1">Vazgeç</button></div></div></div>`};
 async function exportFile(){
   const pl=store.lb,pm=store.lbm;
-  store.tn=TN;store.v=4;store.app=VER;store.lb=Date.now();store.lbm=nMatch();
+  store.tn=TN;store.v=4;store.app=VER;store.lb=Date.now();store.lbm=nMatch();delete store.bksn;
   const name=bkName(),json=JSON.stringify(store);
   let ok=false;
   try{
@@ -792,12 +809,13 @@ function iosPwaRemind(){
   return `<div class="big" role="alert" style="text-align:left;border:2px solid var(--gold)"><b class="ui-lbl">${uiIco("phone")}<span>Verilerinizin Silinmemesi İçin Uygulamayı Ana Ekranınıza Ekleyin</span></b><div class="note" style="margin:4px 0 8px">iOS Safari, ana ekrana eklenmeyen sitelerin tarayıcı verilerini (<code>IndexedDB</code> / <code>localStorage</code>) 7 gün sonra otomatik silebilir. Verilerinizin silinmemesi için uygulamayı ana ekranınıza ekleyin: Safari alt çubuğundan <b>Paylaş</b> simgesine ve ardından <b>"Ana Ekrana Ekle"</b> seçeneğine dokunun.</div><button class="chip" data-a="iosok">Anladım, gizle</button></div>`;
 }
 function bkRemind(){
+  if(store.bksn&&Date.now()<store.bksn)return "";
   const s=cur(),t=nMatch(),nw=Math.max(0,t-(store.lbm||0)),days=store.lb?(Date.now()-store.lb)/864e5:0;
   const sFin=!!(s&&s.res&&(nw>=1||!store.lb||(s.ut&&store.lb&&s.ut>store.lb)));
   const need=sFin||(store.lb?(nw>=10||(nw>=1&&days>=14)||days>=30):t>=5);
   if(!need)return "";
   const msg=sFin?(store.lb?`${esc(s.name)} bitti · son yedekten beri ${nw} yeni kayıt.`:`${esc(s.name)} bitti · henüz hiç yedek almadın.`):(store.lb?(nw>0?`Son yedekten (${dTR(store.lb)}) beri ${nw} maç eklendi.`:`Son yedeğinin üzerinden ${Math.floor(days)} gün geçti.`):`${t} maç kaydettin, henüz yedek yok. Verilerini güvenceye al.`);
-  return `<div class="bks pbks" role="status"><span class="pbks-ic">${UICO.backup}</span><div class="bkt"><b>Yedek Zamanı</b><span>${msg}</span> <button class="bkl" data-t="6">Ayarlar ›</button></div><button class="btn pbks-btn" data-a="exf">Yedekle</button></div>`}
+  return `<div class="bks pbks" role="status"><span class="pbks-ic">${UICO.backup}</span><div class="bkt"><b>Yedek Zamanı</b><span>${msg}</span> <button class="bkl" data-t="6">Ayarlar ›</button></div><button class="btn pbks-btn" data-a="exf">Yedekle</button><button class="pbks-x" data-a="bksnooze" aria-label="7 gün ertele" title="7 gün ertele">✕</button></div>`}
 const sfBan=()=>`<div class="big" role="alert" style="text-align:left"><b class="wr">Değişiklikler kaydedilemedi.</b><div class="note" style="margin:4px 0 8px">Tarayıcı depolaması dolu ya da kapalı olabilir (özel sekme?). Sekmeyi kapatırsan son girdiğin veriler kaybolur. Şimdi yedek al.</div><button class="btn p" data-t="6">Yedek al</button></div>`;
 function delSeason(id){
   const x=store.seasons.find(q=>q.id==id);if(!x)return;
@@ -830,12 +848,12 @@ async function snapKeep(k){
   const others=RCV.map(x=>x[0]).filter(x=>x!==k&&rcvGet(x));
   for(const ok of others){await kv.del(ok);if(await kv.set(k,raw))return true}
   return false}
-const ownDlg=()=>`<div class="dlg"><div class="dbox" role="dialog" aria-modal="true"><div class="rs">Bu kimin kayıtları?</div><div class="note" style="margin:0 0 8px">Adın yedek dosyasının adına yazılır; başkasının yedeğini yanlışlıkla yüklemeni engeller.</div><input id="ow" class="f" maxlength="20" value="${esc(store.owner||"")}" aria-label="Ad" autocomplete="off"><div class="bar"><button class="btn p" data-a="owns">Kaydet</button><button class="btn" data-a="owno">Şimdilik atla</button></div></div></div>`;
+const ownDlg=()=>`<div class="dlg"><div class="dbox pmodal" role="dialog" aria-modal="true"><div class="pm-hd"><span class="aci">${UICO.shield}</span><div><b>Bu Kimin Kayıtları?</b><small>Yedek dosya adına ve Düello profiline yazılır</small></div></div><input id="ow" class="f" maxlength="20" placeholder="Adın" value="${esc(store.owner||"")}" aria-label="Ad" autocomplete="off"><div class="bar"><button class="btn p pset-pri" data-a="owns" style="flex:1">Kaydet</button><button class="btn pset-sec" data-a="owno">Şimdilik atla</button></div></div></div>`;
 async function resetAll(){
   if(!(await snapKeep("fc26lig4_sifirlanan")))return "Sıfırlanmadı: eski kayıt güvenliğe alınamadı (depolama dolu olabilir). Önce yedek al ya da Kurtarma kayıtlarını sil.";
-  const th=store.theme,mo=store.motion,ow=store.owner;
+  const th=store.theme,pa=store.pal,mo=store.motion,ow=store.owner;
   store={v:4,tn:TN,cur:1,nx:1,seasons:[mk(1,1)]};if(ow)store.owner=ow;
-  if(th)store.theme=th;if(mo!==undefined)store.motion=mo;
+  if(th)store.theme=th;if(pa)store.pal=pa;if(mo!==undefined)store.motion=mo;
   norm();sync();st.tab=7;st.bk="";return "Tüm veriler sıfırlandı"}
 function trashCard(){const L=store.trash||[];if(!L.length)return "";
   return psetCard("trash","org","Son Silinenler","Silinen sezonlar buradan geri alınabilir",`${L.length}/10`,
@@ -1022,7 +1040,7 @@ const groupsView=s=>{
   if(!s.lk)return `<div class="big">Önce turnuvayı kur.<br><button class="btn p" data-t="0" style="margin-top:10px">Kuruluma git</button></div>`;
   if(!s.G)return `<div class="big">${isLg(s.cfg)?"Lig tablosu":"Gruplar"} henüz belirlenmedi.<br><button class="btn p" data-t="${s.my==null?1:2}" style="margin-top:10px">${s.my==null?"Takım seç":"Kuraya git"}</button></div>`;
   const lg=isLg(s.cfg),hasTbl=(s.sim&&s.sim.w>0)||(s.mt||[]).some(m=>m.rd==="Grup");
-  return simBarHtml(s)+koLink(s)+`<div class="bar"><button class="btn pset-sec ui-btn" data-a="kurag" style="width:100%"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg><span>${lg?"Lig Tablosunu Görsel Olarak Paylaş":"Kurayı Görsel Olarak Paylaş"}</span></button></div>`+qualSummary(s)+`<div class="note" style="margin:0 0 8px">${fmt(s.cfg)}${hasTbl?" · Puan eşitliğinde sırasıyla genel averaj (AV), atılan gol (AG) ve takım gücü baz alınır.":""}</div><div class="grid${hasTbl?" tblgrid":""}">${s.G.map((g,i)=>[g,i]).sort((a,b)=>b[0].includes(s.my)-a[0].includes(s.my)).map(([g,i])=>grpCard(g,i)).join("")}</div>`+`<p class="note">${lg?"Lig usulü: tüm haftalar tamamlandığında «Turnuvayı Sonlandır» ile şampiyonu kaydedebilirsin.":"Grup maçları bittiğinde Eleme Ağacı (Bracket) otomatik kurulur; elensen bile finale kadar tüm turları simüle edebilirsin."}</p>`};
+  return simBarHtml(s)+koLink(s)+`<div class="bar"><button class="btn pset-sec ui-btn" data-a="kurag" style="width:100%"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg><span>${hasTbl?(lg?"Lig Puan Durumunu Görsel Olarak Paylaş":"Puan Durumunu Görsel Olarak Paylaş"):(lg?"Lig Tablosunu Görsel Olarak Paylaş":"Kurayı Görsel Olarak Paylaş")}</span></button></div>`+qualSummary(s)+`<div class="note" style="margin:0 0 8px">${fmt(s.cfg)}${hasTbl?" · Puan eşitliğinde sırasıyla genel averaj (AV), atılan gol (AG) ve takım gücü baz alınır.":""}</div><div class="grid${hasTbl?" tblgrid":""}">${s.G.map((g,i)=>[g,i]).sort((a,b)=>b[0].includes(s.my)-a[0].includes(s.my)).map(([g,i])=>grpCard(g,i)).join("")}</div>`};
 
 function stage(s,k,N,Gn,pot,last){
   const mine=last[0]===s.my,t=T[last[0]];
@@ -1086,6 +1104,16 @@ function teamView(s){
   const ro=resRanks(s.cfg),lg=isLg(s.cfg);if(s.res&&!ro.includes(s.res.st)){ro.push(s.res.st);ro.sort((a,b)=>a-b)}
   const c=s.res?s.res.st:(lg?7:ro[0]),isChamp=s.res&&s.res.st==7,hasPtsAuto=!(s.res&&s.res.pts!=null)&&grpPts(s)!=="";
   const savedBanner=s.res?`<div class="fin-ban${isChamp?" gold":""}"><span class="fin-bic">${UICO.trophy}</span><div class="fin-bm"><b>${esc(rlb(s.res,s.cfg,s.grk))}</b><small>Kaydedildi · ${esc(s.res.date||"")}</small></div></div>`:"";
+  if(s.res&&!st.fined){
+    const noteBox=s.res.note?`<div class="sc-note" style="margin:0 0 12px">${esc(s.res.note)}</div>`:"";
+    const sumBody=savedBanner+noteBox+
+      `<div class="fin-acts saved">`+
+        `<button class="btn p pset-pri fin-save" data-a="karne">${UICO.trophy}<span>Karneyi Paylaş</span></button>`+
+        `<button class="btn pset-sec" data-a="fined">${SBI.edit}<span>Düzenle</span></button>`+
+        `<button class="mb sc-ic dl fin-del" data-a="unfin" aria-label="Sonucu sil" title="Sonucu sil">${SBI.del}</button>`+
+      `</div>`;
+    return h+`<div id="fincard" class="fin-wrap">${psetCard("trophy",isChamp?"gold":"emr","Sezon Sonucu","Kariyer kaydı tamamlandı",esc(s.name),sumBody)}</div>`;
+  }
   const rkSel=!lg&&s.cfg.gs?`<div class="su-fld"><label for="fgrk">Gruptaki Sıran</label><select id="fgrk" class="sel">${rg(s.cfg.gs||4).map(i=>{const rk=(s.res&&s.res.grk)||s.grk||Math.min(s.cfg.gs||4,(s.cfg.q||2)+1);return `<option value="${i+1}" ${rk===i+1?"selected":""}>${i+1}. sıra</option>`}).join("")}</select></div>`:"";
   const ptsFld=`<div class="su-fld${!rkSel?" full":""}"><label for="pts">${lg?"Lig Puanı":"Grup Puanı"}</label><input id="pts" class="sel fin-inp" inputmode="numeric" maxlength="3" placeholder="${lg?"Toplam puan":"Grup puanı"}" value="${s.res&&s.res.pts!=null?s.res.pts:grpPts(s)}"></div>`;
   const finBody=savedBanner+
@@ -1094,7 +1122,7 @@ function teamView(s){
     `<div class="su-fld" style="margin-bottom:12px"><label for="note">Sezon Notu <small style="font-weight:400">(isteğe bağlı)</small></label><input id="note" class="sel fin-inp" maxlength="200" placeholder="Örn: Penaltılarla elendik, harika sezondu…" value="${s.res?esc(s.res.note||""):""}"></div>`+
     `<div class="fin-acts${s.res?" saved":""}">`+
       `<button class="btn p pset-pri fin-save" data-a="fin">✓ ${s.res?"Sonucu Güncelle":"Sezonu Kaydet"}</button>`+
-      (s.res?`<button class="btn pset-sec" data-a="karne">${UICO.trophy}<span>Karne</span></button><button class="mb sc-ic dl fin-del" data-a="unfin" aria-label="Sonucu sil" title="Sonucu sil">${SBI.del}</button>`:"")+
+      (s.res?`<button class="btn pset-sec" data-a="fined">Vazgeç</button><button class="mb sc-ic dl fin-del" data-a="unfin" aria-label="Sonucu sil" title="Sonucu sil">${SBI.del}</button>`:"")+
     `</div>`;
   return h+`<div id="fincard" class="fin-wrap">${psetCard("trophy",isChamp?"gold":"emr","Sezonu Bitir","Sonucu ve kariyer kaydını onayla",esc(s.name),finBody)}</div>`}
 
@@ -1185,10 +1213,10 @@ function matchCard(s,sheet){
   const opt=i=>`<option value="${i}" ${st.mop===i?"selected":""}>${esc(T[i].n)}${qSet.has(i)?" (Çıktı ✓)":""}${riv.includes(i)&&gp(i)?(gp(i)>=c.gl?" ✓":" "+gp(i)+"/"+c.gl):""}</option>`;
   const cnt=(a,v)=>`<div class="ct"><button class="mb" data-a="${a}" data-d="-1">−</button><b class="sc2${st.bump===a?(st.bumpUp?" bump up":" bump"):""}">${v}</b><button class="mb" data-a="${a}" data-d="1">+</button></div>`;
   const FD=dotsOf(ms);
-  let h=`<div class="qh"><span class="rs">${edM?"Maçı düzenle":"Maç sonucu"}</span><span class="fm">${FD}</span><button class="btn" data-a="qx">Kapat</button></div>
-  <div class="rr"><span class="lb">Rakip</span><select id="mop" class="sel" style="flex:1">${riv.length?`<optgroup label="Grup rakipleri">${riv.map(opt).join("")}</optgroup>`:""}${qList.length?`<optgroup label="Gruptan çıkanlar (${qList.length})">${qList.map(opt).join("")}</optgroup>`:""}<optgroup label="Diğer takımlar">${oth.map(opt).join("")}</optgroup></select><button class="btn" data-a="tinfo" data-i="${st.mop}" aria-label="Rakip kadrosunu incele" style="padding:8px 12px">Kadro</button></div>
-  ${vsLine(s,st.mop)}${predLine(s,st.mop)}<div class="rr"><span class="lb">Aşama</span><select id="mrd" class="sel" style="flex:1">${RD.map(x=>`<option ${st.mrd==x?"selected":""}>${x}</option>`).join("")}</select></div>${LG.L>1?`<div class="rr"><span class="lb">Maç</span><select id="mlg" class="sel" style="flex:1">${[1,2].map(n=>`<option value="${n}" ${LG.lg==n?"selected":""}>${n}. maç</option>`).join("")}</select></div>${pv.length?`<div class="note" style="margin:0">Önceki maç: ${pv.map(m=>m.gf+"–"+m.ga).join(", ")}</div>`:""}`:""}
-  <div class="msc scb" style="--t1:${bspec(s.my).c1};--t2:${bspec(st.mop).c1}"><div>${crs(s.my,48)}<div class="lb">${esc(T[s.my].n)}</div>${cnt("mg",gf)}</div><b class="vsx">VS</b><div>${crs(st.mop,48)}<div class="lb">${esc(T[st.mop].n)}</div>${cnt("mo",ga)}</div></div><div class="note" style="margin:-2px 0 8px">Rakibin golcü ve asistçileri, rakip skoru girilince kadro gücüne göre otomatik belirlenir.</div>`;
+  let h=`<div class="qh"><span class="rs">${edM?"Maçı Düzenle":"Maç Sonucu"}</span><span class="fm">${FD}</span><button class="mb sc-ic" data-a="qx" aria-label="Kapat">✕</button></div>
+  <div class="qs-meta"><div class="qs-row"><select id="mop" class="sel" aria-label="Rakip">${riv.length?`<optgroup label="Grup rakipleri">${riv.map(opt).join("")}</optgroup>`:""}${qList.length?`<optgroup label="Gruptan çıkanlar (${qList.length})">${qList.map(opt).join("")}</optgroup>`:""}<optgroup label="Diğer takımlar">${oth.map(opt).join("")}</optgroup></select><button class="btn pset-sec qs-sq" data-a="tinfo" data-i="${st.mop}" aria-label="Rakip kadrosunu incele">Kadro</button></div><div class="qs-row qs-rd"><select id="mrd" class="sel" aria-label="Aşama">${RD.map(x=>`<option ${st.mrd==x?"selected":""}>${x}</option>`).join("")}</select>${LG.L>1?`<select id="mlg" class="sel qs-lg" aria-label="Maç ayağı">${[1,2].map(n=>`<option value="${n}" ${LG.lg==n?"selected":""}>${n}. maç</option>`).join("")}</select>`:""}</div>${LG.L>1&&pv.length?`<div class="note" style="margin:4px 0 0">Önceki maç: <b>${pv.map(m=>m.gf+"–"+m.ga).join(", ")}</b></div>`:""}</div>
+  ${vsLine(s,st.mop)}${predLine(s,st.mop)}
+  <div class="msc scb" style="--t1:${bspec(s.my).c1};--t2:${bspec(st.mop).c1}"><div>${crs(s.my,48)}<div class="lb">${esc(T[s.my].n)}</div>${cnt("mg",gf)}</div><b class="vsx">VS</b><div>${crs(st.mop,48)}<div class="lb">${esc(T[st.mop].n)}</div>${cnt("mo",ga)}</div></div>`;
   if(st.mrd!="Grup"){
     const totF=pv.reduce((a,m)=>a+m.gf,0)+gf,totA=pv.reduce((a,m)=>a+m.ga,0)+ga,canP=(LG.L==1&&gf==ga)||(LG.L>1&&pv.length>0&&totF==totA);
     if(canP&&!st.mp&&st.mp!==0)st.mp=1;
@@ -1197,8 +1225,7 @@ function matchCard(s,sheet){
   }
   if(gf>0)h+=scorerUI(s,gf,sc);
   h+=advFormUI(s);
-  h+=`<div class="bar" style="margin:10px 0 0"><button class="btn p" data-a="msave" style="flex:1">${edM?"Değişiklikleri kaydet":"Maçı kaydet"}</button>${edM?`<button class="btn" data-a="qx">Vazgeç</button>`:""}</div>`;
-  h+=`<div class="note">Maçı bitirince skoru gir. G-B-M, atılan/yenen gol ve oyuncu golleri otomatik güncellenir.</div>`;
+  h+=`<div class="qs-foot"><button class="btn p" data-a="msave" style="flex:1">${edM?"Değişiklikleri Kaydet":"Maçı Kaydet"}</button>${edM?`<button class="btn pset-sec" data-a="qx">Vazgeç</button>`:""}</div>`;
   return h}
 function statView(s){
   if(s.my==null)return `<div class="big">İstatistik girmek için önce Takımım sekmesinden takım seç.</div>`;
@@ -1323,9 +1350,9 @@ function histView(){
   const achFold=`<div class="pfold gold${achOp?" open":""}"><button class="acbtn${achOp?" open":""}" data-a="hm" data-k="ach" aria-expanded="${achOp}"><span class="aci">${UICO.trophy}</span><span class="act"><b>Rozetler</b><small>Kariyer başarımları</small></span><span class="acr"><span class="xfpill">${achDone}/${A.length}</span><span class="acc" aria-hidden="true">${UICO.chev}</span></span></button>${achOp?`<div class="acbody">${achCard()}</div>`:""}</div>`;
   const cupCnt=ss.filter(x=>!isLg(x.cfg)).length,lgCnt=ss.filter(x=>isLg(x.cfg)).length;
   const modBar=`<div class="stabs seg3" style="margin:0 0 10px" role="tablist" aria-label="Kariyer türü">${[["all",`Tümü (${ss.length})`],["cup",`Kupa (${cupCnt})`],["lg",`Lig (${lgCnt})`]].map(([k,l])=>`<button class="chip ${hmod==k?"on":""}" role="tab" aria-selected="${hmod==k}" data-a="hmod" data-v="${k}">${l}</button>`).join("")}</div>`;
-  const ht=(st.ht&&st.ht!="b")?st.ht:"o",nav=`<div class="ptabs htabs htabs6" role="tablist" aria-label="Geçmiş bölümleri">${[["o","Özet"],["r","Rekorlar"],["s","Sezonlar"],["p","Rakipler"],["m","Maçlar"],["d","Düello"]].map(([k,l])=>`<button class="chip ${ht==k?"on":""}" role="tab" aria-selected="${ht==k}" data-a="ht" data-v="${k}">${l}</button>`).join("")}</div>`;
+  const ht=(st.ht&&st.ht!="b")?st.ht:"o",nav=`<div class="ptabs-wrap"><div class="ptabs htabs htabs6 htabs7" role="tablist" aria-label="Geçmiş bölümleri">${[["o","Özet"],["r","Rekorlar"],["e","Evren"],["s","Sezonlar"],["p","Rakipler"],["m","Maçlar"],["d","Düello"]].map(([k,l])=>`<button class="chip ${ht==k?"on":""}" role="tab" aria-selected="${ht==k}" data-a="ht" data-v="${k}">${l}</button>`).join("")}</div></div>`;
   const ovBody=!filtS.length?cd(isL?"Lig kariyeri":"Kupa kariyeri",emp(isL?"Henüz puan usulü lig sezonu oluşturmadın. Kurulumdan «Lig» şablonunu seçerek başlayabilirsin.":"Henüz kupa sezonu bulunmuyor.")):careerCard(hmod)+xpCard(hmod)+powerCard(hmod)+A1+A2+A3+tsCard(filtS)+chartCard(filtS);
-  const body=ht=="r"?recCard()+A4+posDistCard(store.seasons)+A5+cmpCard():ht=="s"?seasonsView(ss,A6c):ht=="p"?oppCard():ht=="m"?matchTab():ht=="d"?(typeof duelView==="function"?duelView():""):modBar+ovBody+achFold;
+  const body=ht=="r"?recCard()+A4+posDistCard(store.seasons)+A5+cmpCard():ht=="e"?(typeof universeView==="function"?universeView():""):ht=="s"?seasonsView(ss,A6c):ht=="p"?oppCard():ht=="m"?matchTab():ht=="d"?(typeof duelView==="function"?duelView():""):modBar+ovBody+achFold;
   return nav+(ht=="o"?vitrinCard():"")+body}
 
 const TPL=[["Dünya Kupası","32 takım · 8 grup × 4",32,4,2],["Klasik 64","64 takım · 8 grup × 8",64,8,2],["Mini Lig","16 takım · 4 grup × 4",16,4,2],["Direkt Eleme","8 takım · grup yok",8,0,0],["Lig","4–24 takım · eleme yok",16,16,0]];
@@ -1765,13 +1792,12 @@ function fixtureView(s){
     const blks=order.map(gi=>{const d=wkData(gi,w);pl+=d.played;tt+=d.total;return d.h?`<div class="wkblk">${s.G.length>1?`<div class="fgh"><span>${gname(s,gi)}</span></div>`:""}<div class="fml">${d.h}</div></div>`:""}).join("");
     const pct=tt?Math.round(pl/tt*100):0;
     return `<section class="fxw"><div class="fwh"><h3>${w}. Hafta</h3>${tt?`<span class="fwp"><b>${pl}/${tt}</b> maç oynandı</span>`:""}</div>${tt?`<div class="fwbar" role="progressbar" aria-label="Oynanan maç" aria-valuemin="0" aria-valuemax="${tt}" aria-valuenow="${pl}"><i style="width:${pct}%"></i></div>`:""}${blks||`<div class="note">Bu hafta için maç yok.</div>`}</section>`}).join("");
-  const unp=weeks.some(w=>w>maxW)?`<div class="note" style="margin:0 0 8px">Oynanmamış maçlarda senin rakibin, maç giriş ekranındaki sırayla aynıdır (sıradaki oynanmamış grup rakibi). Rakibi giriş ekranında değiştirirsen fikstür de ona göre güncellenir.</div>`:"";
   if(koHtml){
     const fxv=st.fxv==="grp"?"grp":"ko";
     const swBar=`<div class="stabs seg2" style="margin:0 0 10px" role="tablist" aria-label="Fikstür görünümü"><button class="chip ui-btn ${fxv==="ko"?"on":""}" role="tab" aria-selected="${fxv==="ko"}" data-a="fxv" data-v="ko">${uiIco("tree")}<span>Eleme Ağacı</span></button><button class="chip ui-btn ${fxv==="grp"?"on":""}" role="tab" aria-selected="${fxv==="grp"}" data-a="fxv" data-v="grp">${uiIco("cal")}<span>Grup Fikstürü</span></button></div>`;
-    return swBar+(fxv==="ko"?koHtml:wkTabs+body+unp);
+    return swBar+(fxv==="ko"?koHtml:wkTabs+body);
   }
-  return wkTabs+body+unp}
+  return wkTabs+body}
 const emp=t=>`<div class="emp">${PITCH}${t}</div>`;
 const qOk=s=>!!(s.lk&&s.my!=null&&s.G&&s.P);
 const NAV5=[["Sezon",'<path d="M5 21V4M5 5h11l-2 3.5L16 12H5"/>',[7,0,1],7],["Turnuva",'<path d="M4 6h5M4 18h5M9 6v12M9 12h6M15 12h5"/>',[2,3,8,9],2],["İstat.",'<path d="M5 20V10M12 20V4M19 20v-7"/>',[4],4],["Geçmiş",'<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5v1a3 3 0 0 0 3 3M16 6h3v1a3 3 0 0 1-3 3M12 13v4M8 20h8"/>',[5],5],["Ayarlar",'<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>',[6],6]];
@@ -1913,16 +1939,17 @@ function grpBox(s){
     if(sim.w<totW&&g.played>sim.w)h+=`<div class="bar" style="margin:10px 0 0"><button class="btn p ui-btn" data-a="simw" style="flex:1">${uiIco("bolt")}<span>${sim.w+1}. Hafta Maçlarını Simüle Et</span></button></div>`;
     return h+`</div>`;
   }
-  if(g.pend){
-    const rk=st.grk||s.grk||1;
-    h+=`<div class="gq"><b>Gruptan çıktın mı?</b><div class="note" style="margin:2px 0 6px">Gruptaki sıranı seçip onayla:</div><div class="grk">${rg(gs).map(i=>`<button class="chip ${rk===i+1?"on":""}" data-a="grk" data-v="${i+1}">${i+1}. sıra</button>`).join("")}</div><div class="bar" style="margin:0"><button class="btn p" data-a="gqy" style="flex:1">Evet, çıktım</button><button class="btn" data-a="gqn" style="flex:1">Hayır, elendim</button></div></div>`;
+  const sim=ensureSim(s),totW=((s.cfg.gs||s.cfg.N)-1)*(s.cfg.gl||1);
+  if(g.done&&sim.w<totW&&!s.res){
+    h+=`<div class="pgmath info">${uiIco("bolt")}<span>Grup maçlarını tamamladın · sıralamayı ve eleme ağacını kesinleştirmek için son haftayı simüle et</span></div>`;
   }else if(g.gq&&!s.res){
     h+=`<div class="pgst ok">✓ Gruptan ${s.grk?s.grk+". sırada ":""}çıktın · Eleme turundasın</div>`;
+  }else if(g.done&&sim.w>=totW&&!g.gq&&!s.res){
+    h+=`<div class="pgmath warn">${uiIco("trophy")}<span>Grupta ${s.grk||myRk}. sırada kaldın · Eleme ağacını takip edip turnuvayı sonlandırabilirsin</span></div>`;
   }
-  const sim=ensureSim(s),totW=((s.cfg.gs||s.cfg.N)-1)*(s.cfg.gl||1);
   if(sim.w<totW&&g.played>sim.w)h+=`<div class="bar" style="margin:10px 0 0"><button class="btn p ui-btn" data-a="simw" style="flex:1">${uiIco("bolt")}<span>${sim.w+1}. Hafta Maçlarını Simüle Et</span></button></div>`;
   const gi=gInfo(s);
-  if(gi&&!g.pend){
+  if(gi){
     const isDead=gi.includes("☠");
     h+=`<div class="pgft${isDead?" dead":""}">${esc(gi)}</div>`;
   }
@@ -2040,12 +2067,16 @@ function homeView(s){
         `<button class="ph-tm op" data-a="tinfo" data-i="${opp}" aria-label="${esc(op.n)} kadrosunu incele">${badge(opp,50)}<b>${esc(op.n)}</b><span class="ph-g">${op.g} GEN · Kadro ›</span></button>`+
         `</div>`;
     }else{
-      ey=isLg(s.cfg)?"LİG TAMAMLANDI":(gz&&gz.pend?"GRUP AŞAMASI BİTTİ":"SAHAYA ÇIK");
-      ttl=isLg(s.cfg)?"Lig Maçları Bitti":(gz&&gz.pend?"Gruptan Çıktın mı?":"Sahaya Çık");
-      txt=isLg(s.cfg)?"Lig dereceni kaydedip sezonu tamamlayabilirsin.":(gz&&gz.pend?"Aşağıdan gruptaki sıranı seçip eleme turuna geç.":"Sıradaki maçı Turnuva ekranından gir veya sezonu bitir.");
+      const sim0=ensureSim(s),totW0=s.cfg.gs?(s.cfg.gs-1)*(s.cfg.gl||1):0;
+      const needSimEnd=!isLg(s.cfg)&&gz&&gz.done&&sim0.w<totW0;
+      const elimGrp=!isLg(s.cfg)&&gz&&gz.done&&sim0.w>=totW0&&!gz.gq;
+      ey=isLg(s.cfg)?"LİG TAMAMLANDI":needSimEnd?"SON HAFTA SİMÜLASYONU":elimGrp?"GRUP AŞAMASI BİTTİ":"SAHAYA ÇIK";
+      ttl=isLg(s.cfg)?"Lig Maçları Bitti":needSimEnd?"Son Haftayı Simüle Et":elimGrp?"Eleme Aşaması Devam Ediyor":"Sahaya Çık";
+      txt=isLg(s.cfg)?"Lig dereceni kaydedip sezonu tamamlayabilirsin.":needSimEnd?"Grup maçların tamamlandı; diğer maçları simüle edip eleme ağacını kur.":elimGrp?"Gruptan çıkamadın; eleme ağacını simüle edip turnuva şampiyonunu görebilirsin.":"Sıradaki maçı Turnuva ekranından gir veya sezonu bitir.";
       mid=`<div class="ph-head"><div class="ph-crest">${badge(s.my,46)}</div><div><div class="rs">${esc(ttl)}</div><div class="hn">${esc(txt)}</div></div></div>`;
     }
-    main=`<button class="btn p ph-cta" data-t="3">${playIc}<span>Maç Merkezi · Skoru Gir</span></button>`;
+    const sim1=ensureSim(s),totW1=s.cfg.gs?(s.cfg.gs-1)*(s.cfg.gl||1):0,needSimCta=opp==null&&!isLg(s.cfg)&&gz&&gz.done&&sim1.w<totW1;
+    main=needSimCta?`<button class="btn p ph-cta" data-a="simw">${UICO.bolt}<span>${sim1.w+1}. Haftayı Simüle Et</span></button>`:`<button class="btn p ph-cta" data-t="3">${playIc}<span>Maç Merkezi · Skoru Gir</span></button>`;
     sec=`<button class="btn ph-sec" data-a="gofin">${flagIc}<span>Sezonu Bitir</span></button>`;
   }else{
     const ch=s.res.st==7,ts=s.ts||{};
@@ -2067,7 +2098,7 @@ function homeView(s){
     if(hasAw){const aw=seasonAwards(s);if(aw)h+=fold("aw","trophy","gold","Sezon Ödülleri",s.res?"Kesinleşti":"Canlı liderler",esc(aw.mvp.n.split(" ").pop())+" · "+aw.mvp.g+"G",()=>awardsCard(s,true))}
     const rvL=!fin?rivals(s):[];
     if(rvL.length)h+=fold("an","radar","sky","Rakip Analizi","Grup rakipleriyle güç farkın",rvL.length+" rakip",()=>analCard(s));
-    h+=fold("oy","sliders","emr","Oyun Ayarları","Zorluk, yarı süresi ve kontrol",esc(oyTxt(s)||"Seçilmedi"),()=>oyCard(s));
+    h+=fold("oy","sliders","emr","Oyun Ayarları","Zorluk, yarı süresi ve kontrol",esc(oyTxt(s)||"Seçilmedi"),()=>oyCard(s,true));
   }
   return h}
 /* ---------- OYUNCU ADI TAMAMLAMA / KADRO TAŞIMA ---------- */
@@ -2574,13 +2605,15 @@ function render(){
   const tiEl=document.querySelector("#dlg .tisheet"),tiTop=tiEl?tiEl.scrollTop:0;
   const ptEl=document.querySelector(".ptabs.htabs6"),ptLeft=ptEl?ptEl.scrollLeft:0;
   const ae=document.activeElement,aeId=ae&&ae.id?ae.id:null,aeSel=ae&&typeof ae.selectionStart=="number"?ae.selectionStart:null;
-  const de=document.documentElement;if(store.theme)de.setAttribute("data-theme",store.theme);else de.removeAttribute("data-theme");syncThemeColor();if(store.motion===0)de.setAttribute("data-motion","off");else de.removeAttribute("data-motion");
-  $("sbar").innerHTML=`<select id="ss" class="sel">${store.seasons.map(x=>`<option value="${x.id}" ${x.id==store.cur?"selected":""}>${esc(x.name)}${x.res?" ✓":""}</option>`).join("")}</select><button class="btn" data-a="ns" aria-label="Yeni sezon">＋</button><button class="btn" data-a="gs" aria-label="Ara"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button>`;
-  $("tabs").innerHTML=NAV5.map(([t,ic,g,d])=>{const on=g.includes(st.tab);return `<button role="tab" aria-selected="${on}" ${on?'aria-current="page"':""} class="${on?"cur":""}" data-t="${d}"><svg viewBox="0 0 24 24" aria-hidden="true">${ic}</svg><span>${t}</span></button>`}).join("");
-  $("dlg").innerHTML=st.slot?slotDlg():st.own?ownDlg():st.gs?gsDlg():st.img?imgDlg():st.ren?`<div class="dlg"><div class="dbox" role="dialog" aria-modal="true"><div class="rs">Sezon adını değiştir</div><input id="rn" class="f" maxlength="24" value="${esc(st.ren.v)}" aria-label="Sezon adı" autocomplete="off"><div class="bar"><button class="btn p" data-a="rens">Kaydet</button><button class="btn" data-a="no">Vazgeç</button></div></div></div>`:st.imp?impDlg():st.ask?`<div class="dlg"><div class="dbox" role="dialog" aria-modal="true"><div>${esc(st.ask.m)}</div><div class="bar">${st.ask.fn?`<button class="btn p" data-a="yes">Evet</button><button class="btn" data-a="no">Vazgeç</button>`:`<button class="btn p" data-a="no">Tamam</button>`}</div></div></div>`:st.guide?guideDlg():st.dlLive&&typeof duelLiveDlg==="function"?duelLiveDlg():st.tpi?tpDlg():st.totsv?totsDlg():st.pi?plDlg():st.ti!=null?withSn(cur(),tiDlg):"";
   const s0=cur();
-  {const de2=document.documentElement;let cb=null;try{cb=(s0&&s0.my!=null&&T[s0.my])?bspec(s0.my):null}catch(e){cb=null}
-  if(cb&&cb.c1&&cb.c2){de2.style.setProperty("--club1",cb.c1);de2.style.setProperty("--club2",cb.c2);de2.setAttribute("data-club","1")}else{de2.removeAttribute("data-club");de2.style.removeProperty("--club1");de2.style.removeProperty("--club2")}}
+  const de=document.documentElement;if(store.theme)de.setAttribute("data-theme",store.theme);else de.removeAttribute("data-theme");if(store.motion===0)de.setAttribute("data-motion","off");else de.removeAttribute("data-motion");
+  {let cb=null;try{cb=(s0&&s0.my!=null&&T[s0.my])?bspec(s0.my):null}catch(e){cb=null}
+  if(cb&&cb.c1&&cb.c2){de.style.setProperty("--club1",cb.c1);de.style.setProperty("--club2",cb.c2);de.setAttribute("data-club","1")}else{de.removeAttribute("data-club");de.style.removeProperty("--club1");de.style.removeProperty("--club2")}
+  applyPalette(cb);syncThemeColor();}
+  const hdCrest=(s0&&s0.my!=null&&T[s0.my])?`<button class="hd-cr" data-a="tinfo" data-i="${s0.my}" aria-label="${esc(T[s0.my].n)} kadrosu">${badge(s0.my,24)}</button>`:"";
+  $("sbar").innerHTML=`${hdCrest}<select id="ss" class="sel">${store.seasons.map(x=>`<option value="${x.id}" ${x.id==store.cur?"selected":""}>${esc(x.name)}${x.res?" ✓":""}</option>`).join("")}</select><button class="btn" data-a="ns" aria-label="Yeni sezon">＋</button><button class="btn" data-a="gs" aria-label="Ara"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button>`;
+  $("tabs").innerHTML=NAV5.map(([t,ic,g,d])=>{const on=g.includes(st.tab);return `<button role="tab" aria-selected="${on}" ${on?'aria-current="page"':""} class="${on?"cur":""}" data-t="${d}"><svg viewBox="0 0 24 24" aria-hidden="true">${ic}</svg><span>${t}</span></button>`}).join("");
+  $("dlg").innerHTML=st.slot?slotDlg():st.own?ownDlg():st.gs?gsDlg():st.img?imgDlg():st.ren?`<div class="dlg"><button class="tibk" data-a="no" aria-label="Kapat"></button><div class="dbox pmodal" role="dialog" aria-modal="true"><div class="pm-hd"><span class="aci">${SBI.edit}</span><div><b>Sezon Adını Değiştir</b><small>En fazla 24 karakter</small></div></div><input id="rn" class="f" maxlength="24" value="${esc(st.ren.v)}" aria-label="Sezon adı" autocomplete="off"><div class="bar"><button class="btn p pset-pri" data-a="rens" style="flex:1">Kaydet</button><button class="btn pset-sec" data-a="no">Vazgeç</button></div></div></div>`:st.imp?impDlg():st.ask?`<div class="dlg"><button class="tibk" data-a="no" aria-label="Kapat"></button><div class="dbox pmodal" role="dialog" aria-modal="true"><div class="pm-hd"><span class="aci ${st.ask.fn?"warn":""}">${st.ask.fn?UICO.bug:UICO.app}</span><div><b>${st.ask.fn?"Onay Gerekiyor":"Bilgi"}</b></div></div><div class="pm-msg">${esc(st.ask.m)}</div><div class="bar">${st.ask.fn?`<button class="btn p pset-pri" data-a="yes" style="flex:1">Evet, Devam Et</button><button class="btn pset-sec" data-a="no">Vazgeç</button>`:`<button class="btn p pset-pri" data-a="no" style="flex:1">Tamam</button>`}</div></div></div>`:st.guide?guideDlg():st.dlLive&&typeof duelLiveDlg==="function"?duelLiveDlg():st.tpi?tpDlg():st.totsv?totsDlg():st.pi?plDlg():st.ti!=null?withSn(cur(),tiDlg):"";
   const chg=st.lt!==st.tab;st.lt=st.tab;if(st.qs&&!qOk(s0))st.qs=false;
   const fresh=st.qs&&!$("qs").firstChild,qsOnly=!!(st.qs&&!fresh&&!chg&&$("app").firstChild);
   if(!qsOnly){
@@ -2608,7 +2641,7 @@ function render(){
   const focusEl=aeId?$(aeId):null;
   if(focusEl&&document.activeElement!==focusEl){focusEl.focus();if(aeSel!=null&&typeof focusEl.setSelectionRange=="function")try{focusEl.setSelectionRange(aeSel,aeSel)}catch(e){}}}
 
-const UI_ONLY=new Set(["stab","mexp","fxw","fxv","bkv","adv","cust","roall","vitall","sall","rstopen","sfopen","hm","grk","tropen","trclose","bkadv","madv","qs","medit","mall","qx","gofin","mg","mo","mu","mp","mpf","mpa","glsc","glas","glclr","glasclr","glasno","glasopen","tel","tpl","ht","hmod","sfm","sfr","sv","sfd","sfx","ro","dcancel","next","all","no","tinfo","pinfo","tpinfo","tpclose","totsv","guide","cmpsw","gs","gsgo","tif","tiv","ren","own","owno","mman","ex","im","rcv","imgpg","oldlsx","dljoin","dlsync","dledit","dlcancel","dlleave","dlsel","dldel","dlcpcode","dlmycode","dladdcode","dlposter","dlsposter","dlcposter","dlmod","dltab","dlslatest","dllive","dllivetab","dllivewho"]);
+const UI_ONLY=new Set(["stab","mexp","fxw","fxv","bkv","adv","cust","roall","vitall","sall","rstopen","sysopen","fined","sfopen","hm","grk","tropen","trclose","bkadv","madv","qs","medit","mall","qx","gofin","mg","mo","mu","mp","mpf","mpa","glsc","glas","glclr","glasclr","glasno","glasopen","tel","tpl","ht","hmod","sfm","sfr","sv","sfd","sfx","ro","dcancel","next","all","no","tinfo","pinfo","tpinfo","tpclose","totsv","guide","cmpsw","gs","gsgo","tif","tiv","ren","own","owno","mman","ex","im","rcv","imgpg","oldlsx","dljoin","dlsync","dledit","dlcancel","dlleave","dlsel","dldel","dlcpcode","dlmycode","dladdcode","dlposter","dlsposter","dlcposter","dlmod","dltab","dlslatest","dllive","dllivetab","dllivewho"]);
 document.addEventListener("click",async e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.t!==undefined){hideToast();st.tab=+b.dataset.t;if(st.tab==6)refreshQuota(true);render();scrollTo(0,0);return}
@@ -2627,6 +2660,9 @@ document.addEventListener("click",async e=>{
   else if(a=="sall")st.sall=!st.sall;
   else if(a=="iosok"){store.iosok=1;st.iosWarnDismissed=true}
   else if(a=="rstopen")st.rstopen=!st.rstopen;
+  else if(a=="sysopen")st.sysopen=!st.sysopen;
+  else if(a=="fined")st.fined=!st.fined;
+  else if(a=="bksnooze"){store.bksn=Date.now()+7*864e5;un="Yedek hatırlatması 7 gün ertelendi"}
   else if(a=="hm"){st.hm=st.hm||nob();st.hm[dk]=!st.hm[dk]}
   else if(a=="lgchamp"){const pt=grpPts(s),sn=snapshotSeasonAwards(s);s.res={st:7,pts:pt===""?null:pt,ch:s.my,topG:sn.topG,mvp:sn.mvp,tots:sn.tots,note:"",date:today()};pruneSimDetails(s);st.cel=1;st.tab=7;un="Lig Şampiyonu olarak kaydedildi 🏆"}
   else if(a=="grk")st.grk=+dv;
@@ -2686,21 +2722,101 @@ document.addEventListener("click",async e=>{
       if(need>0&&sqO.length){const ix=simGoalAssign(op,need),as=simAssistsFor(op,ix);ix.forEach((v,k)=>old.push({sc:sqO[v].n,as:as[k]>=0&&sqO[as[k]]?sqO[as[k]].n:""}))}
       m.og=old;
       m.omom=m.mom?"":(pickOppMom(op,old,m.gf,m.ga)||"")}
-    let editRolled=false;
-    if(oldM&&oldM.rd==="Grup"&&(oldM.opp!==op||st.mrd!=="Grup")){
+    const sim=ensureSim(s),totW=((s.cfg.gs||s.cfg.N)-1)*(s.cfg.gl||1);
+    const hasKo=Object.keys(sim.ko||{}).some(rd=>Array.isArray(sim.ko[rd])&&sim.ko[rd].length);
+    const RDs=isLg(s.cfg)?[]:rds(s.cfg).filter(r=>r!=="Grup");
+    let warnMsg="",plan="none",planIdx=-1,planRdIdx=-1;
+    if(oldM&&oldM.rd==="Grup"){
       const grpIdx=(s.mt||[]).filter(x=>x.rd==="Grup").findIndex(x=>x.id==oldM.id);
-      if(grpIdx>=0&&s.sim&&s.sim.w>grpIdx){
-        const sim=ensureSim(s),totW=((s.cfg.gs||s.cfg.N)-1)*(s.cfg.gl||1);
+      if((oldM.opp!==op||st.mrd!=="Grup")&&grpIdx>=0&&sim.w>grpIdx){
+        plan="rollback";planIdx=grpIdx;
+        warnMsg=`${grpIdx+1}. hafta maçının rakibini veya aşamasını değiştirirsen ${grpIdx+1}. haftadan sonraki simüle edilmiş haftalar${hasKo?" ve eleme ağacı":""} sıfırlanacak. Devam edilsin mi?`;
+      }else if((oldM.gf!==m.gf||oldM.ga!==m.ga)&&!isLg(s.cfg)&&s.G&&s.my!=null&&hasKo){
+        const gi=s.G.findIndex(g=>g.includes(s.my));
+        if(gi>=0){
+          const qMax=s.cfg.q||2,oldQ=((s.gqs&&s.gqs[gi])||[]).slice(0,qMax);
+          const oIdx=s.mt.indexOf(oldM),bak=s.mt[oIdx];
+          s.mt[oIdx]=m;const newRows=calcGroupTable(s,gi);s.mt[oIdx]=bak;
+          const newQ=newRows.slice(0,qMax).map(r=>r.ti);
+          if(oldQ.length===newQ.length&&oldQ.some((v,k)=>v!==newQ[k])){
+            plan="rebracket";planIdx=gi;
+            warnMsg="Bu skoru değiştirince grup sıralaması ve gruptan çıkanlar değişiyor. Mevcut eleme ağacı yeni sıralamaya göre sıfırlanıp yeniden kurulacak. Devam edilsin mi?";
+          }else{plan="resync_grp";planIdx=gi}
+        }
+      }
+    }else if(oldM&&oldM.rd!=="Grup"&&hasKo){
+      const rIdx=RDs.indexOf(oldM.rd);
+      const laterHas=rIdx>=0&&RDs.slice(rIdx+1).some(rd=>Array.isArray(sim.ko[rd])&&sim.ko[rd].some(p=>p&&p.w!=null));
+      if(laterHas&&(oldM.gf!==m.gf||oldM.ga!==m.ga||oldM.pf!==m.pf||oldM.pa!==m.pa||oldM.opp!==op||oldM.rd!==m.rd)){
+        plan="ko_trim";planRdIdx=rIdx;
+        warnMsg=`Bu eleme maçını (${oldM.rd}) değiştirirsen sonraki turlardaki simüle edilmiş eşleşmeler sıfırlanacak. Devam edilsin mi?`;
+      }
+    }
+    const doCommit=()=>{
+      let noteExtra="";
+      if(plan==="rollback"&&planIdx>=0){
+        Object.keys(sim.gm).forEach(gi=>{if(Array.isArray(sim.gm[gi]))sim.gm[gi].length=Math.min(sim.gm[gi].length,planIdx)});
+        sim.w=planIdx;sim.ko=nob();
+        if(sim.w<totW){s.gqs=nob();s.gq=null;s.grk=null;st.grk=null}
+        noteExtra=" · ilgili hafta simülasyonu geri alındı";
+      }
+      if(oldM)s.mt[s.mt.indexOf(oldM)]=m;else s.mt.push(m);
+      if((plan==="rebracket"||plan==="resync_grp")&&planIdx>=0){
+        const rows=calcGroupTable(s,planIdx),qMax=s.cfg.q||2;
+        s.gqs=s.gqs||nob();s.gqs[planIdx]=rows.slice(0,qMax).map(r=>r.ti);
+        const myRk=rows.findIndex(r=>r.ti===s.my)+1;
+        if(myRk>0){s.grk=myRk;st.grk=myRk;s.gq=myRk<=qMax?1:null}
+        if(plan==="rebracket"){initKoBracket(s,true);noteExtra=" · eleme ağacı yeni sıralamaya göre yeniden kuruldu"}
+      }else if(plan==="ko_trim"&&planRdIdx>=0){
+        for(let k=planRdIdx+1;k<RDs.length;k++)delete sim.ko[RDs[k]];
+        noteExtra=" · sonraki eleme turları sıfırlandı";
+      }
+      if(oldM&&isLg(s.cfg)&&s.G&&s.my!=null){
+        const rows=calcGroupTable(s,0),myRk=rows.findIndex(r=>r.ti===s.my)+1;
+        if(myRk>0){s.grk=myRk;st.grk=myRk}
+      }
+      const des=matchDeserve(m);
+      mApply(s);syncUserMatchesToBracket(s);rebuildSimScorers(s);
+      st.med=null;st.mg=0;st.mo=0;st.mu=0;st.mp=undefined;st.mpf=0;st.mpa=0;st.mgls=[];st.msc=nob();st.mas=nob();st.mmom="";st.mop=null;st.mlg=null;st.qs=false;st.madv=false;st.mst=defMst();
+      const msg=(oldM?"Güncellendi · ":"Kaydedildi · ")+m.on+" "+mscTxt(m)+noteExtra+(des&&des.k!="fair"?" · "+des.t:"")+(st.stwarn?" ("+st.stwarn+")":"");
+      st.stwarn=null;
+      if(!oldM){const df=m.gf-m.ga,pw=pf!=null&&pa!=null&&pf>pa;st.fw=df>0?(df>=3?3:df==2?2:1):(pw?2:0)}
+      return msg;
+    };
+    if(warnMsg){ask(warnMsg,doCommit);render();return}
+    un=doCommit();}
+  else if(a=="mdel"){const m=s.mt.find(x=>x.id==id);if(m){
+    const sim=ensureSim(s),totW=((s.cfg.gs||s.cfg.N)-1)*(s.cfg.gl||1);
+    const hasKo=Object.keys(sim.ko||{}).some(rd=>Array.isArray(sim.ko[rd])&&sim.ko[rd].length);
+    const grpIdx=m.rd==="Grup"?(s.mt||[]).filter(x=>x.rd==="Grup").findIndex(x=>x.id==id):-1;
+    const RDs=isLg(s.cfg)?[]:rds(s.cfg).filter(r=>r!=="Grup");
+    const koIdx=m.rd!=="Grup"?RDs.indexOf(m.rd):-1;
+    const willRollGrp=grpIdx>=0&&sim.w>grpIdx;
+    const willTrimKo=koIdx>=0&&RDs.slice(koIdx+1).some(rd=>Array.isArray(sim.ko[rd])&&sim.ko[rd].some(p=>p&&p.w!=null));
+    const doDel=()=>{
+      s.delM=Array.from(new Set([...(s.delM||[]),m.id]));
+      s.mt=s.mt.filter(x=>x.id!=id);
+      let extra="";
+      if(willRollGrp){
         Object.keys(sim.gm).forEach(gi=>{if(Array.isArray(sim.gm[gi]))sim.gm[gi].length=Math.min(sim.gm[gi].length,grpIdx)});
         sim.w=grpIdx;sim.ko=nob();
         if(sim.w<totW){s.gqs=nob();s.gq=null;s.grk=null;st.grk=null}
-        rebuildSimScorers(s);editRolled=true;
+        rebuildSimScorers(s);extra=" · ilgili hafta simülasyonu geri alındı";
+      }else if(willTrimKo){
+        for(let k=koIdx+1;k<RDs.length;k++)delete sim.ko[RDs[k]];
+        rebuildSimScorers(s);extra=" · sonraki eleme turları sıfırlandı";
       }
+      mApply(s);if(s.G&&!isLg(s.cfg))syncUserMatchesToBracket(s);
+      return "Maç silindi"+extra;
+    };
+    if(willRollGrp){
+      ask(`${grpIdx+1}. hafta maçını (${m.on}) silersen ${grpIdx+1}. haftadan sonraki simüle edilmiş haftalar${hasKo?" ve eleme ağacı":""} sıfırlanacak. Silinsin mi?`,doDel);
+      render();return;
+    }else if(willTrimKo){
+      ask(`${m.rd} maçını (${m.on}) silersen sonraki turlardaki simüle edilmiş eşleşmeler sıfırlanacak. Silinsin mi?`,doDel);
+      render();return;
     }
-    if(oldM)s.mt[s.mt.indexOf(oldM)]=m;else s.mt.push(m);
-    const des=matchDeserve(m);
-    mApply(s);syncUserMatchesToBracket(s);st.med=null;st.mg=0;st.mo=0;st.mu=0;st.mp=undefined;st.mpf=0;st.mpa=0;st.mgls=[];st.msc=nob();st.mas=nob();st.mmom="";st.mop=null;st.mlg=null;st.qs=false;st.madv=false;st.mst=defMst();un=(oldM?"Güncellendi · ":"Kaydedildi · ")+m.on+" "+mscTxt(m)+(editRolled?" · ilgili hafta simülasyonu geri alındı":"")+(des&&des.k!="fair"?" · "+des.t:"")+(st.stwarn?" ("+st.stwarn+")":"");st.stwarn=null;if(!oldM){const df=m.gf-m.ga,pw=pf!=null&&pa!=null&&pf>pa;st.fw=df>0?(df>=3?3:df==2?2:1):(pw?2:0)}}
-  else if(a=="mdel"){const m=s.mt.find(x=>x.id==id);if(m){const grpIdx=m.rd==="Grup"?(s.mt||[]).filter(x=>x.rd==="Grup").findIndex(x=>x.id==id):-1;s.delM=Array.from(new Set([...(s.delM||[]),m.id]));s.mt=s.mt.filter(x=>x.id!=id);let rolled=false;if(grpIdx>=0&&s.sim&&s.sim.w>grpIdx){const sim=ensureSim(s),totW=((s.cfg.gs||s.cfg.N)-1)*(s.cfg.gl||1);Object.keys(sim.gm).forEach(gi=>{if(Array.isArray(sim.gm[gi]))sim.gm[gi].length=Math.min(sim.gm[gi].length,grpIdx)});sim.w=grpIdx;sim.ko=nob();if(sim.w<totW){s.gqs=nob();s.gq=null;s.grk=null;st.grk=null}rebuildSimScorers(s);rolled=true}mApply(s);if(s.G&&!isLg(s.cfg))syncUserMatchesToBracket(s);un=rolled?"Maç silindi · ilgili hafta simülasyonu geri alındı":"Maç silindi"}}
+    un=doDel();}}
   else if(a=="kurag"){mkImg("kura",s);return}
   else if(a=="kog"){mkImg("ko",s);return}
   else if(a=="totsg"){mkImg("tots",store.seasons.find(y=>y.id==id)||s);return}
@@ -2764,20 +2880,21 @@ document.addEventListener("click",async e=>{
   else if(a=="mman")st.mode="man";
   else if(a=="ns"){store.nx=nextNo();const n=mk(Date.now(),store.nx,s);store.seasons.push(n);store.cur=n.id;sync();st.mode=null;st.tab=7}
   else if(a=="pick"){if(tmLock(s)||st.dr){ask("Takım kilitli. Değiştirmek için önce Takımı değiştir ya da Kurayı iptal et’i kullan.");render();return}withSn(s,()=>spin(s));return}
-  else if(a=="fin"){const c=+$("stg").value,p=$("pts").value,fg=$("fgrk"),prevR=s.res||{},was=prevR.st==7,lg=isLg(s.cfg),rk=c==0&&!lg&&fg?+fg.value:(s.grk||null);if(c==0&&rk)s.grk=rk;const snap=snapshotSeasonAwards(s);s.res={st:c,grk:c==0&&!lg?rk:null,pts:(c==0||lg)&&p!==""&&Number.isFinite(+p)?+p:null,ch:prevR.ch!=null?prevR.ch:(c==7?s.my:null),ru:prevR.ru!=null?prevR.ru:null,topG:prevR.topG||snap.topG,mvp:prevR.mvp||snap.mvp,tots:prevR.tots||snap.tots,note:$("note").value.trim().slice(0,200),date:today()};if(c==0){s.gq=null;if(s.G&&s.my!=null){const gi=s.G.findIndex(g=>g.includes(s.my));if(gi>=0&&s.gqs&&s.gqs[gi])s.gqs[gi]=s.gqs[gi].filter(x=>x!==s.my)}}pruneSimDetails(s);if(c==7&&!was){st.cel=1;st.tab=7}}
+  else if(a=="fin"){const c=+$("stg").value,p=$("pts").value,fg=$("fgrk"),prevR=s.res||{},was=prevR.st==7,lg=isLg(s.cfg),rk=c==0&&!lg&&fg?+fg.value:(s.grk||null);if(c==0&&rk)s.grk=rk;const snap=snapshotSeasonAwards(s);s.res={st:c,grk:c==0&&!lg?rk:null,pts:(c==0||lg)&&p!==""&&Number.isFinite(+p)?+p:null,ch:prevR.ch!=null?prevR.ch:(c==7?s.my:null),ru:prevR.ru!=null?prevR.ru:null,topG:prevR.topG||snap.topG,mvp:prevR.mvp||snap.mvp,tots:prevR.tots||snap.tots,note:$("note").value.trim().slice(0,200),date:today()};if(c==0){s.gq=null;if(s.G&&s.my!=null){const gi=s.G.findIndex(g=>g.includes(s.my));if(gi>=0&&s.gqs&&s.gqs[gi])s.gqs[gi]=s.gqs[gi].filter(x=>x!==s.my)}}pruneSimDetails(s);st.fined=false;if(c==7&&!was){st.cel=1;st.tab=7}}
   else if(a=="unfin"){s.res=null;un="Sonuç silindi"}
   else if(a=="skip"){if(st.slot&&st.slot.done)st.slot.done();return}
   else if(a=="open"){store.cur=id;sync();st.mode=null;st.tab=7}
   else if(a=="del"){const x=store.seasons.find(q=>q.id==id);if(!x)return;
     ask("“"+x.name+"” silinsin mi? "+(x.mt||[]).length+" maç ve sezonun tüm kayıtları çöp kutusuna taşınır (Ayarlar › Son silinenler).",()=>delSeason(id));render();return}
   else if(a=="theme")store.theme=dv;
+  else if(a=="pal")store.pal=dv;
   else if(a=="ex"){st.bkadv=true;store.tn=TN;store.v=4;st.bk=b64Enc(JSON.stringify(store))}
-  else if(a=="cpb"){const t=$("bk");t.select();if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t.value).catch(()=>{try{document.execCommand("copy")}catch(e){}})}else{try{document.execCommand("copy")}catch(e){}}if(st.bk&&t.value==st.bk){store.lb=Date.now();store.lbm=nMatch();save()}b.textContent="Kopyalandı";return}
+  else if(a=="cpb"){const t=$("bk");t.select();if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t.value).catch(()=>{try{document.execCommand("copy")}catch(e){}})}else{try{document.execCommand("copy")}catch(e){}}if(st.bk&&t.value==st.bk){store.lb=Date.now();store.lbm=nMatch();delete store.bksn;save()}b.textContent="Kopyalandı";return}
   else if(a=="im"){const o=parseBk($("bk").value);if(o)st.imp={o,src:"yedek kodu"};else ask("Yedek kodu geçersiz.")}
   else if(a=="exf"){exportFile();return}
   else if(a=="imfb"){const e=$("imf");if(e)e.click();return}
   else if(a=="impm"&&st.imp){const o=st.imp.o;st.imp=null;un=await mergeBk(o)}
-  else if(a=="impr"&&st.imp){const o=st.imp.o;st.imp=null;if(!(await snapKeep("fc26lig4_degisim_oncesi"))){ask("Yedek yüklenmedi: mevcut kayıtlar güvenliğe alınamadı (depolama dolu olabilir). Önce Kurtarma kayıtlarını sil ya da yedek al.")}else{const th=store.theme,mo=store.motion,ow0=store.owner;DROP=[];store=mig(o);if(!store.owner&&ow0)store.owner=ow0;if(store.theme===undefined&&th!==undefined)store.theme=th;if(store.motion===undefined&&mo!==undefined)store.motion=mo;const dr=[...new Set(DROP)];DROP=[];norm();sync();st.tab=7;un="Yedek yüklendi, mevcut kayıtlar değiştirildi"+(dr.length?" · "+dr.length+" takım güncel listede yok, atlandı":"")}}
+  else if(a=="impr"&&st.imp){const o=st.imp.o;st.imp=null;if(!(await snapKeep("fc26lig4_degisim_oncesi"))){ask("Yedek yüklenmedi: mevcut kayıtlar güvenliğe alınamadı (depolama dolu olabilir). Önce Kurtarma kayıtlarını sil ya da yedek al.")}else{const th=store.theme,pa=store.pal,mo=store.motion,ow0=store.owner;DROP=[];store=mig(o);if(!store.owner&&ow0)store.owner=ow0;if(store.theme===undefined&&th!==undefined)store.theme=th;if(store.pal===undefined&&pa!==undefined)store.pal=pa;if(store.motion===undefined&&mo!==undefined)store.motion=mo;const dr=[...new Set(DROP)];DROP=[];norm();sync();st.tab=7;un="Yedek yüklendi, mevcut kayıtlar değiştirildi"+(dr.length?" · "+dr.length+" takım güncel listede yok, atlandı":"")}}
   else if(a=="trs"){un=restoreSeason(id)}
   else if(a=="trse"){ask("Çöp kutusundaki tüm sezonlar kalıcı olarak silinsin mi?",()=>{store.trash=[]});render();return}
   else if(a=="rcv"){if(RCV.some(x=>x[0]==dk)){st.bk=(await kv.get(dk))||rcvGet(dk)||"";st.bkadv=true}}
@@ -2819,13 +2936,13 @@ document.addEventListener("change",e=>{
 function errReport(){const S=store.seasons,nm=S.reduce((a,x)=>a+(x.mt||[]).length,0),L=elogGet().slice().reverse();let sz="?";try{sz=Math.round(JSON.stringify(store).length/1024)+" KB"}catch(e){}const bm=(typeof kv!=="undefined"&&kv.mode)?kv.mode():"?";
   return ["FC 27 Grup Ligi · hata raporu","Sürüm: "+VER+" ("+bm+")","Tarih: "+new Date().toISOString(),"Tarayıcı: "+navigator.userAgent,"Ekran: "+innerWidth+"x"+innerHeight+(matchMedia("(display-mode: standalone)").matches?" · kurulu uygulama":""),"Sezon: "+S.length+" · maç: "+nm+" · kayıt boyutu: "+sz,"Sekme: "+st.tab+(st.sf?" · kayıt hatası var":"")+(loadWarn?" · açılış uyarısı: "+loadWarn.slice(0,120):""),"","Son hatalar ("+L.length+"):"].concat(L.length?L.map(o=>"- "+new Date(o.t).toISOString().slice(0,19)+" ["+o.k+"] "+o.m+(o.w?" @ "+o.w:"")):["(kayıtlı hata yok)"]).join("\n")}
 const updBan=()=>`<div class="big" role="status" style="text-align:left"><b>Yeni sürüm var</b><div class="note" style="margin:4px 0 8px">Uygulama güncellendi. Yenileyince yeni sürümü kullanırsın, verilerin korunur.</div><button class="btn p" data-a="reload">Yenile</button></div>`;
-const appCard=()=>{const n=elogGet().length;
-  return psetCard("app","emr","Uygulama","Sürüm ve profil bilgileri","v"+VER,
+const appCard=()=>psetCard("app","emr","Uygulama","Sürüm ve profil bilgileri","v"+VER,
     `<div class="pset-row"><div><span class="pset-rl">Kayıt Sahibi</span><b>${esc(store.owner||"Belirtilmedi")}</b></div><button class="chip" data-a="own" style="min-height:36px">Değiştir</button></div>`+
     `<div class="note" style="margin:8px 0 10px">${st.upd?"Yeni sürüm hazır, yenileyince kullanılır.":esc(st.uchk||"Güncellemeler açılışta kendiliğinden denetlenir.")}</div>`+
     `<button class="btn${st.upd?" p pset-pri":" pset-sec"}" data-a="${st.upd?"reload":"upchk"}" style="width:100%">${st.upd?"Yeni Sürümü Yükle (Yenile)":"Güncellemeyi Denetle"}</button>`
-  )
-  +psetCard("bug",n?"org":"emr","Hata Raporu","Tanılama günlüğü",n?`${n} hata`:"Temiz",
+  );
+const errCard=()=>{const n=elogGet().length;
+  return psetCard("bug",n?"org":"emr","Hata Raporu","Tanılama günlüğü",n?`${n} hata`:"Temiz",
     `<div class="note" style="margin:0 0 10px">${n?n+" hata kaydedildi.":"Kayıtlı hata yok."} Sorun yaşarsan raporu kopyalayıp paylaşabilirsin; sezon ve maç verilerin rapora girmez.</div>`+
     `<div class="bar" style="margin:0"><button class="btn pset-sec" data-a="errcp" style="flex:1">Hata Raporunu Kopyala</button>${n?`<button class="btn" data-a="elclr">Temizle</button>`:""}</div>`+
     `${st.rep?`<textarea id="rp" class="f" rows="6" readonly>${esc(st.rep)}</textarea><div class="note">Otomatik kopyalanamadı. Metni seçip kopyala.</div>`:""}`
@@ -2834,8 +2951,9 @@ const appCard=()=>{const n=elogGet().length;
 /* Oyun ayarları: zorluk, yarı süresi, kontrol (sezon başına) */
 const OYD=["Acemi","Amatör","Yarı Profesyonel","Profesyonel","Dünya Klasmanı","Efsane","Ultimate"],OYH=["4","5","6","8","10","12","15","20"],OYC=["Klasik","Alternatif","Diğer"];
 const oyOf=x=>(x&&x.oy)||{},oyTxt=x=>{const o=oyOf(x);return [o.d,o.h?o.h+" dk":"",o.c].filter(Boolean).join(" · ")};
-function oyCard(s){const o=oyOf(s),op=a=>[["","Seçilmedi"]].concat(a.map(v=>[v,v]));
-  return cd(`Oyun ayarları<small>${esc(s.name)}</small>`,`<div class="note" style="margin:0 0 6px">Zorluk, yarı süresi ve kontrol sonuçları etkiler. İstatistikleri zorluğa göre süzebilirsin.</div>`+rrow("Zorluk",sel("sg","d",op(OYD),o.d||""))+rrow("Yarı süresi",sel("sg","h",[["","Seçilmedi"]].concat(OYH.map(v=>[v,v+" dk"])),o.h||""))+rrow("Kontrol",sel("sg","c",op(OYC),o.c||"")))}
+function oyCard(s,inFold){const o=oyOf(s),op=a=>[["","Seçilmedi"]].concat(a.map(v=>[v,v]));
+  const inner=`<div class="note" style="margin:0 0 6px">Zorluk, yarı süresi ve kontrol sonuçları etkiler. İstatistikleri zorluğa göre süzebilirsin.</div>`+rrow("Zorluk",sel("sg","d",op(OYD),o.d||""))+rrow("Yarı süresi",sel("sg","h",[["","Seçilmedi"]].concat(OYH.map(v=>[v,v+" dk"])),o.h||""))+rrow("Kontrol",sel("sg","c",op(OYC),o.c||""));
+  return inFold?inner:cd(`Oyun ayarları<small>${esc(s.name)}</small>`,inner)}
 const dOf=e=>oyOf(e.x).d||"—";
 function oyFilter(A0,fd){if(!A0.some(e=>oyOf(e.x).d))return "";const set=[...new Set(A0.map(dOf))];
   return psetCard("sliders","sky","Zorluğa Göre Süz","Maç istatistiklerini oyun zorluğuna göre filtrele",fd||( "Tümü"),`<div class="cw" style="margin:0">${[["","Tümü"]].concat(set.map(v=>[v,v=="—"?"Seçilmedi":v])).map(([v,l])=>`<button class="chip ${fd==v?"on":""}" data-a="sfd" data-v="${esc(v)}">${esc(l)}</button>`).join("")}</div>`)}
@@ -2879,10 +2997,10 @@ function guideDlg(){
       `<ul class="glist"><li><b>3 Simülasyon Modu:</b> <i>Gerçekçi</i> (gerçek futbol skorları ve İlk 11/kaleci etkisi), <i>Dengeli</i> ve <i>Sürprizli</i>.</li><li><b>Haftalık İlerleme:</b> Kendi hafta maçını girdikten sonra <b>Haftayı Simüle Et</b> açılır; hata yaparsan <b>↩ Geri Al</b> ile son haftayı geri alabilirsin.</li><li><b>Eleme Ağacı:</b> Gruplar bitince çapraz eşleşmeler otomatik kurulur. Elensen bile <b>Finale Kadar Simüle Et</b> ile turnuvanın şampiyonunu görebilirsin.</li><li><b>Görünüm:</b> <i>Ağaç Görünümü</i> yatay kaydırılabilir diyagram sunar; gol/asist detayları için <i>Detaylı Liste</i>’ye geçebilirsin.</li></ul>`)+
     sec("3. Maç Girişi & Gelişmiş Analitik",
       `<ul class="glist"><li><b>Gol & Asist:</b> Her gol için golcüyü ve isteğe bağlı asistçiyi seç; rakibin kendi kalesine golü için <b>KK</b> kullan.</li><li><b>5 Altın Veri (Opsiyonel):</b> Topla Oynama, Toplam/İsabetli Şut, Pas İsabeti ve xG girerek <b>xG/xPts</b>, <b>Hak Ediş</b> ve <b>Taktiksel DNA</b> radarını aç.</li><li><b>Otomatik MOTM:</b> Kendi takımından Maçın Adamı seçmezsen sistem rakipten en etkili oyuncuyu otomatik belirler.</li></ul>`)+
-    sec("4. Paylaşılabilir PNG Posterler (7 Tür)",
-      `<ul class="glist"><li><b>Kura / Lig Tablosu:</b> <i>Turnuva › Gruplar</i> ekranından.</li><li><b>Eleme Ağacı (Bracket):</b> <i>Turnuva › Fikstür › Eleme Ağacı</i> altından.</li><li><b>Turnuvanın En İyi 11’i (TOTS):</b> <i>Turnuva › İstatistik</i> veya <i>Geçmiş › Sezonlar</i> arşivinden.</li><li><b>Maç Kartı:</b> <i>İstat. › Maçlar</i> içindeki her maçın görsel ikonundan.</li><li><b>Sezon Karnesi & Kariyer Özeti:</b> <i>Takımım</i> veya <i>Geçmiş</i> ekranlarından.</li><li><b>1v1 Menajer Düellosu Posteri:</b> <i>Geçmiş › Düello</i> sahnesinden.</li></ul>`)+
+    sec("4. Paylaşılabilir PNG Posterler (9 Tür)",
+      `<ul class="glist"><li><b>Kura / Canlı Puan Durumu:</b> <i>Turnuva › Gruplar</i> ekranından (maçlar oynandıkça canlı puan tablosunu çizer).</li><li><b>Eleme Ağacı (Bracket):</b> <i>Turnuva › Fikstür › Eleme Ağacı</i> altından.</li><li><b>Turnuvanın En İyi 11’i (TOTS):</b> <i>Turnuva › İstatistik</i> veya <i>Geçmiş › Sezonlar</i> arşivinden.</li><li><b>Maç Kartı:</b> <i>İstat. › Maçlar</i> içindeki her maçın görsel ikonundan.</li><li><b>Sezon Karnesi & Kariyer Özeti:</b> <i>Takımım</i> veya <i>Geçmiş</i> ekranlarından.</li><li><b>1v1, Sezon vs. Sezon ve Kulüp vs. Kulüp Posterleri:</b> <i>Geçmiş › Düello</i> stüdyosundan.</li></ul>`)+
     sec("5. Kadro, Oyuncu Profili & Arama",
-      `<ul class="glist"><li><b>Kadro İnceleme:</b> Uygulamadaki herhangi bir takım adına dokunarak İlk 11, yedekler, mevki rozetleri ve sezon gol/asist sayılarını görebilirsin.</li><li><b>Oyuncu Profili:</b> <i>Sezon Ödülleri</i>, <i>Kariyer Yıldızları</i> ve <i>TOTS</i> kartlarında kendi oyuncularına dokunarak kariyer grafiği, en çok gol attığı rakipler ve asist partnerlerini incele.</li><li><b>Global Arama:</b> Sağ üstteki büyüteçten 108 kulüp ve 3.200+ oyuncu içinde anında ara.</li></ul>`)+
+      `<ul class="glist"><li><b>Kadro İnceleme:</b> Uygulamadaki herhangi bir takım adına dokunarak İlk 11, yedekler, mevki rozetleri ve sezon gol/asist sayılarını görebilirsin.</li><li><b>Oyuncu Profili:</b> <i>Sezon Ödülleri</i>, <i>Kariyer Yıldızları</i> ve <i>TOTS</i> kartlarında kendi oyuncularına dokunarak kariyer grafiği, en çok gol attığı rakipler ve asist partnerlerini incele.</li><li><b>Turnuva Evreni Tarihi:</b> <i>Geçmiş › Evren</i> sekmesinden tüm sezonların şampiyonlarını, lanetli finalistlerini ve TOTS efsanelerini incele.</li><li><b>Global Arama:</b> Sağ üstteki büyüteçten 108 kulüp ve 3.200+ oyuncu içinde anında ara.</li></ul>`)+
     sec("6. Canlı Menajer Düellosu (VS)",
       `<ul class="glist"><li><b>Ortak Oda:</b> <i>Geçmiş › Düello</i> ekranında arkadaşınla aynı 6+ karakterli oda kodunu gir; maç kaydettikçe yalnızca hafif özetin otomatik eşitlenir, ana verilerin cihazında kalır.</li><li><b>4 Sekmeli Stüdyo:</b> <i>Genel</i> (kariyer & kupa karnesi), <i>Sezonlar</i> (sezon vs. sezon), <i>Takımlar</i> (GEN kademeleri, ortak kulüpler ve kulüp vs. kulüp) ve <i>DNA & xG</i> (çift renkli radar).</li><li><b>Canlı Sezon İnceleme:</b> Arkadaşının aktif sezonundaki puan durumunu, fikstürünü, eleme eşleşmelerini ve sezon DNA’sını tek dokunuşla aç.</li></ul>`)+
     sec("7. Yedekleme & Telefon Kurulumu (PWA)",
@@ -2928,7 +3046,7 @@ async function initApp(){
   }
   if(!store){
     store={v:4,tn:TN,cur:1,nx:1,seasons:[mk(1,1)]};
-    try{const th=localStorage.getItem("fc26lig4_theme"),mo=localStorage.getItem("fc26lig4_motion");if(th)store.theme=th;if(mo!==null&&mo!=="")store.motion=+mo}catch(e){}
+    try{const th=localStorage.getItem("fc26lig4_theme"),pa=localStorage.getItem("fc26lig4_pal"),mo=localStorage.getItem("fc26lig4_motion");if(th)store.theme=th;if(pa)store.pal=pa;if(mo!==null&&mo!=="")store.motion=+mo}catch(e){}
   }
   norm();sync();
   st.tab=7;
@@ -2988,6 +3106,44 @@ try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().
   document.addEventListener("gesturechange",noPinch,{passive:false});
   document.addEventListener("gestureend",noPinch,{passive:false});
 })();
+
+// --- v21.0: Küratörlü Stadyum Renk Paletleri + Kontrast Korumalı Kulüp Rengi ---
+function parseColorToHsl(str){
+  if(!str)return null;
+  const s=String(str).trim();
+  const hm=/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(s);
+  if(hm){
+    let x=hm[1];if(x.length===3)x=x[0]+x[0]+x[1]+x[1]+x[2]+x[2];
+    const r=parseInt(x.slice(0,2),16)/255,g=parseInt(x.slice(2,4),16)/255,b=parseInt(x.slice(4,6),16)/255;
+    const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn,l=(mx+mn)/2;
+    let h=0,sat=0;
+    if(d>0){sat=d/(1-Math.abs(2*l-1));h=(mx===r?((g-b)/d+(g<b?6:0)):mx===g?((b-r)/d+2):((r-g)/d+4))*60}
+    return{h:Math.round(h),s:Math.round(sat*100),l:Math.round(l*100)};
+  }
+  const lm=/^hsl\(\s*([\d.]+)\s*,\s*([\d.]+)%\s*,\s*([\d.]+)%\s*\)$/i.exec(s);
+  if(lm)return{h:Math.round(+lm[1]),s:Math.round(+lm[2]),l:Math.round(+lm[3])};
+  return null;
+}
+function isDarkMode(){
+  return store.theme==="dark"||(!store.theme&&typeof matchMedia==="function"&&matchMedia("(prefers-color-scheme:dark)").matches);
+}
+function applyPalette(cb){
+  const de=document.documentElement,pal=store.pal||"";
+  if(pal)de.setAttribute("data-pal",pal);else de.removeAttribute("data-pal");
+  if(pal==="club"&&cb){
+    const dark=isDarkMode();
+    const p1=parseColorToHsl(cb.c1),p2=parseColorToHsl(cb.c2);
+    const pick=(p1&&p1.s>=24&&p1.l>=12&&p1.l<=88)?p1:(p2&&p2.s>=24&&p2.l>=12&&p2.l<=88)?p2:{h:42,s:78,l:50};
+    const sat=Math.max(58,Math.min(84,pick.s));
+    const lig=dark?Math.max(58,Math.min(68,pick.l)):Math.max(30,Math.min(39,pick.l));
+    de.style.setProperty("--ac",`hsl(${pick.h}, ${sat}%, ${lig}%)`);
+    de.style.setProperty("--acx",dark?"#081018":"#ffffff");
+  }else{
+    de.style.removeProperty("--ac");
+    de.style.removeProperty("--acx");
+  }
+}
+
 // --- Dinamik PWA theme-color (v20.0) ---
 function syncThemeColor(){
   try{
@@ -2999,6 +3155,6 @@ function syncThemeColor(){
 try{
   if(typeof matchMedia==="function"){
     const mq=matchMedia("(prefers-color-scheme:dark)");
-    if(mq.addEventListener)mq.addEventListener("change",syncThemeColor);
+    if(mq.addEventListener)mq.addEventListener("change",()=>{syncThemeColor();try{const s0=cur();applyPalette(s0&&s0.my!=null&&T[s0.my]?bspec(s0.my):null)}catch(e){}});
   }
 }catch(e){}

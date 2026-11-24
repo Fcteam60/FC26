@@ -1,4 +1,4 @@
-# FC 27 Grup Ligi — Kullanım Kılavuzu (v20.48)
+# FC 27 Grup Ligi — Kullanım Kılavuzu (v21.0)
 
 FC 27 Grup Ligi; çevrimdışı çalışabilen (PWA), kupa ve lig turnuvalarını takip etmeni ve arkadaşlarınla canlı kariyer düellosu yapmanı sağlayan kapsamlı bir futbol takip uygulamasıdır.
 
@@ -45,7 +45,7 @@ FC 27 Grup Ligi; çevrimdışı çalışabilen (PWA), kupa ve lig turnuvaların�
 
 ## 5. Paylaşılabilir PNG Posterler (9 Tür)
 Uygulama 1080px+ yüksek çözünürlükte, gerçek kulüp armalı 9 farklı Broadcast PNG posteri üretir:
-* **Kura / Lig Tablosu:** `Turnuva › Gruplar`
+* **Kura / Canlı Puan Durumu:** `Turnuva › Gruplar` (maçlar oynandıkça canlı sıralamayı, O/G/B/M/AV/P ve eleme çizgisini çizer)
 * **Eleme Ağacı (Bracket):** `Turnuva › Fikstür › Eleme Ağacı`
 * **Turnuvanın En İyi 11'i (TOTS):** `Turnuva › İstatistik` ve `Geçmiş › Sezonlar` arşivi
 * **Maç Kartı:** `İstat. › Maçlar` (her maç kartının görsel simgesi)
@@ -60,6 +60,8 @@ Uygulama 1080px+ yüksek çözünürlükte, gerçek kulüp armalı 9 farklı Bro
 ## 6. Kadro İnceleme, Oyuncu Profili & Arama
 * **İlk 11 Saha & Kadro:** Herhangi bir takım adına dokunarak İlk 11 saha dizilişini, yedekleri, renkli mevki rozetlerini ve o sezonki gol/asist/MOTM katkılarını inceleyebilirsin.
 * **Oyuncu Profili:** *Sezon Ödülleri*, *Kariyer Yıldızları* ve *TOTS* kartlarında kendi oyuncularına dokunarak sezon ivmesi grafiği, en çok gol attığı rakipler ve asist partnerlerini görebilirsin.
+* **Turnuva Evreni Tarihi:** `Geçmiş › Evren` sekmesinden tüm sezonların şampiyonlarını (Sen + Yapay Zekâ), en çok final kaybeden lanetli kulüpleri, TOTS efsanelerini ve sezon kronolojisini inceleyebilirsin.
+* **Renk Paletleri:** `Ayarlar › Görünüm ve Deneyim` altından 5 küratörlü stadyum paleti (*Zümrüt Saha, Şampiyonlar Gecesi, Kraliyet Altını, Kızıl Arena, Kulübümün Rengi*) seçebilirsin.
 * **Global Arama:** Sağ üstteki büyüteç simgesiyle 108 kulüp ve 3.200+ oyuncu arasında anında arama yapabilirsin.
 
 ---
