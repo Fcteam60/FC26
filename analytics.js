@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — Analitik, xG/xPts, Taktiksel DNA ve Kariyer Motoru (analytics.js · v22.3) */
+/* FC 27 Grup Ligi — Analitik, xG/xPts, Taktiksel DNA ve Kariyer Motoru (analytics.js · v23.6) */
 const RS=["Grup","S64","S32","S16","ÇF","YF","Final","Şamp."];
 /* ---------- RAKİPLER ---------- */
 function oppData(){const M=nob();

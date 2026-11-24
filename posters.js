@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — Broadcast PNG Poster Motoru (posters.js · v22.3) */
+/* FC 27 Grup Ligi — Broadcast PNG Poster Motoru (posters.js · v23.6) */
 /* ---------- PAYLAŞILABİLİR GÖRSELLER ---------- */
 const NUMF='"FC Sayi","Barlow Condensed","Oswald","Bahnschrift","Avenir Next Condensed","Roboto Condensed","Arial Narrow",sans-serif';
 const TCOL={1:["#fbeaa8","#e0b43a","#2b2000"],2:["#f3f6f8","#b9c3cb","#1b2328"],3:["#f0c9a2","#be7f47","#2a1500"],0:["#ffffff","#dfeee6","#12211a"]};
@@ -13,7 +13,7 @@ const mkCv=(w,h)=>{const cv=document.createElement("canvas");cv.width=w;cv.heigh
 async function kuraCv(s){
   if(typeof preloadLogos==="function"&&s&&s.G)await preloadLogos(s.G.flat());
   const G=s.G,gs=G[0].length,n=G.length,lg=isLg(s.cfg);
-  const sim=ensureSim(s),hasTbl=(s.cfg.gs||lg||isUcl(s.cfg))&&((sim&&sim.w>0)||(s.mt||[]).some(m=>m.rd==="Grup"));
+  const sim=ensureSim(s),hasTbl=(s.cfg.gs||lg||isUcl(s.cfg))&&(s._hasTbl!==undefined?!!s._hasTbl:((sim&&sim.w>0)||(s.mt||[]).some(m=>m.rd==="Grup")));
   if(isUcl(s.cfg)){
     const W=1080,P=40,gap=20,cb=s.my!=null&&T[s.my]?bspec(s.my):null;
     if(hasTbl){
@@ -21,12 +21,12 @@ async function kuraCv(s){
       const cw=(W-2*P-gap)/2,rh=52,hh=64,ch=hh+18*rh+22,HH=184,H=HH+ch+124;
       const cv=mkCv(W,H),c=cv.getContext("2d");
       dkBg(c,W,H,cb?cb.c1:"#38bdf8",cb?cb.c2:"#f0c24b",false);
-      const maxW=Math.max(sim.w||0,(s.mt||[]).filter(m=>m.rd==="Grup").length);
+      const maxW=s._maxW!==undefined?s._maxW:Math.max(sim.w||0,(s.mt||[]).filter(m=>m.rd==="Grup").length);
       drawPill(c,"ŞAMPİYONLAR LİGİ · LİG AŞAMASI",44,40,348,38,"rgba(56,189,248,.18)","rgba(56,189,248,.06)","rgba(56,189,248,.52)","#7dd3fc",19);
       tx(c,s.name.toLocaleUpperCase("tr")+" · PUAN DURUMU",44,114,48,"#f8fafc","left",700);
       drawPill(c,(maxW?maxW+"/8 HAFTA":"CANLI"),W-44-142,42,142,34,"rgba(16,185,129,.18)",null,"rgba(62,230,168,.48)","#3ee6a8",19);
       tx(c,"36 TAKIM · İLK 8 SON 16 · 9–24 PLAY-OFF",W-44,112,20,"#94a3b8","right",600);
-      const tbl=withSn(s,()=>calcGroupTable(s,0));
+      const tbl=s._calcTbl?s._calcTbl(0):withSn(s,()=>calcGroupTable(s,0));
       const colDef=[{k:"o",l:"O",x:cw-188},{k:"w",l:"G",x:cw-156},{k:"d",l:"B",x:cw-126},{k:"l",l:"M",x:cw-96},{k:"gd",l:"AV",x:cw-62},{k:"pts",l:"P",x:cw-26}];
       [0,1].forEach(colI=>{
         const x=P+colI*(cw+gap),y=HH,slice=tbl.slice(colI*18,(colI+1)*18);
@@ -37,14 +37,14 @@ async function kuraCv(s){
         colDef.forEach(cd=>tx(c,cd.l,x+cd.x,y+33,15,cd.k==="pts"?"#f8fafc":"#94a3b8","center",700));
         slice.forEach((r,si)=>{
           const rk=colI*18+si+1,ry=y+hh+si*rh,yy=ry+rh/2,ti=r.ti,t=T[ti];
-          const isMe=ti===s.my,isL1=rk===1,isTop8=rk<=8,isPo=rk>=9&&rk<=24;
-          const bgCol=isMe?"rgba(240,194,75,.18)":isL1?"rgba(240,194,75,.10)":isTop8?"rgba(16,185,129,.08)":isPo?"rgba(56,189,248,.065)":"rgba(255,255,255,.024)";
+          const isMe=ti===s.my,isGu=s._gTi!=null&&ti===s._gTi,isL1=rk===1,isTop8=rk<=8,isPo=rk>=9&&rk<=24;
+          const bgCol=isMe?"rgba(240,194,75,.18)":isGu?"rgba(56,189,248,.20)":isL1?"rgba(240,194,75,.10)":isTop8?"rgba(16,185,129,.08)":isPo?"rgba(56,189,248,.065)":"rgba(255,255,255,.024)";
           c.fillStyle=bgCol;rr(c,x+12,ry+3,cw-24,rh-6,9);c.fill();
-          if(isMe||isTop8||isPo){
-            c.fillStyle=isMe||isL1?"#f0c24b":isTop8?"#3ee6a8":"#38bdf8";
+          if(isMe||isGu||isTop8||isPo){
+            c.fillStyle=isMe||isL1?"#f0c24b":isGu?"#38bdf8":isTop8?"#3ee6a8":"#38bdf8";
             rr(c,x+13,ry+10,3.5,rh-20,2);c.fill();
           }
-          if(isMe){c.lineWidth=1.1;c.strokeStyle="rgba(240,194,75,.50)";rr(c,x+12,ry+3,cw-24,rh-6,9);c.stroke()}
+          if(isMe||isGu){c.lineWidth=1.1;c.strokeStyle=isMe?"rgba(240,194,75,.50)":"rgba(56,189,248,.58)";rr(c,x+12,ry+3,cw-24,rh-6,9);c.stroke()}
           const rbx=x+18,rby=yy-11;
           if(isL1){c.fillStyle=grad(c,rbx,rbx+24,"#f8e08a","#d4a017");rr(c,rbx,rby,24,22,6);c.fill();tx(c,rk,rbx+12,yy+1,15,"#2b2000","center",700)}
           else if(isTop8){c.fillStyle="rgba(16,185,129,.22)";rr(c,rbx,rby,24,22,6);c.fill();tx(c,rk,rbx+12,yy+1,15,"#3ee6a8","center",700)}
@@ -52,7 +52,7 @@ async function kuraCv(s){
           else{tx(c,rk,rbx+12,yy+1,15,"#64748b","center",700)}
           drawBadge(c,ti,x+47,yy-12,20);
           c.font="700 20px "+NUMF;
-          tx(c,fit(c,(isMe?"★ ":"")+t.n,cw-272),x+73,yy+1,20,isMe?"#fbeaa8":rk>24?"#94a3b8":"#f1f5f9","left",700);
+          tx(c,fit(c,(isMe?"★ ":isGu?"◆ ":"")+t.n,cw-272),x+73,yy+1,20,isMe?"#fbeaa8":isGu?"#7dd3fc":rk>24?"#94a3b8":"#f1f5f9","left",700);
           const avStr=(r.gd>0?"+":r.gd<0?"−":"")+Math.abs(r.gd);
           colDef.forEach(cd=>{
             if(cd.k==="pts"){
@@ -120,13 +120,14 @@ async function kuraCv(s){
       tx(c,"TORBA "+(pi+1),x+60,y+31,26,mine?"#fbeaa8":"#f8fafc","left",700);
       drawPill(c,"ORT "+fx(avg(pt,"g")),x+cw-100,y+17,86,26,"rgba(255,255,255,.07)",null,"rgba(255,255,255,.14)","#cbd5e1",16);
       pt.forEach((ti,ri)=>{
-        const ry=y+hh+ri*rh,yy=ry+rh/2,t=T[ti],tc=TCOL[tierOf(t.g)],im=imgs[t.c],isMe=ti===s.my,isOp=myOpps.has(ti);
-        c.fillStyle=isMe?"rgba(240,194,75,.16)":isOp?"rgba(56,189,248,.11)":"rgba(255,255,255,.03)";
+        const ry=y+hh+ri*rh,yy=ry+rh/2,t=T[ti],tc=TCOL[tierOf(t.g)],im=imgs[t.c],isMe=ti===s.my,isGu=s._gTi!=null&&ti===s._gTi,isOp=myOpps.has(ti);
+        c.fillStyle=isMe?"rgba(240,194,75,.16)":isGu?"rgba(56,189,248,.22)":isOp?"rgba(56,189,248,.11)":"rgba(255,255,255,.03)";
         rr(c,x+12,ry+2,cw-24,rh-4,8);c.fill();
+        if(isGu){c.lineWidth=1.1;c.strokeStyle="rgba(56,189,248,.58)";c.stroke()}
         drawBadge(c,ti,x+18,yy-11,20);
         if(im)c.drawImage(im,x+44,yy-8,24,16);
         c.font="700 22px "+NUMF;
-        tx(c,fit(c,(isMe?"★ ":"")+t.n,cw-172),x+75,yy+1,22,isMe?"#fbeaa8":isOp?"#7dd3fc":"#f1f5f9","left",700);
+        tx(c,fit(c,(isMe?"★ ":isGu?"◆ ":"")+t.n,cw-172),x+75,yy+1,22,isMe?"#fbeaa8":isGu||isOp?"#7dd3fc":"#f1f5f9","left",700);
         if(isOp)drawPill(c,myOpps.get(ti)?"EV":"DEP",x+cw-104,yy-11,42,22,myOpps.get(ti)?"rgba(16,185,129,.22)":"rgba(56,189,248,.22)",null,null,myOpps.get(ti)?"#3ee6a8":"#7dd3fc",13);
         c.fillStyle=grad(c,x+cw-54,x+cw-14,tc[0],tc[1]);rr(c,x+cw-54,yy-12,40,24,7);c.fill();
         tx(c,t.g,x+cw-34,yy+1,18,tc[2],"center",700);
@@ -144,7 +145,7 @@ async function kuraCv(s){
     if(sc<1)c.scale(sc,sc);
     const cb=s.my!=null&&T[s.my]?bspec(s.my):null;
     dkBg(c,W,rawH,cb?cb.c1:"#38bdf8",cb?cb.c2:"#f0c24b",false);
-    const maxW=Math.max(sim.w||0,(s.mt||[]).filter(m=>m.rd==="Grup").length);
+    const maxW=s._maxW!==undefined?s._maxW:Math.max(sim.w||0,(s.mt||[]).filter(m=>m.rd==="Grup").length);
     drawPill(c,lg?"LİG PUAN DURUMU":"PUAN DURUMU",44,40,lg?218:192,38,"rgba(240,194,75,.18)","rgba(240,194,75,.06)","rgba(240,194,75,.52)","#fbeaa8",20);
     tx(c,s.name.toLocaleUpperCase("tr")+(lg?" · LİG TABLOSU":" · GRUPLAR"),44,114,50,"#f8fafc","left",700);
     drawPill(c,(maxW?maxW+". HAFTA":"CANLI"),W-44-136,42,136,34,"rgba(16,185,129,.18)",null,"rgba(62,230,168,.48)","#3ee6a8",19);
@@ -156,7 +157,7 @@ async function kuraCv(s){
     const nameMaxW=cols==1?(cw-496):(cw-296);
     withSn(s,()=>G.forEach((g,gi)=>{
       const x=P+(gi%cols)*(cw+gap),y=HH+Math.floor(gi/cols)*(ch+gap),mine=gi==myg;
-      const tbl=calcGroupTable(s,gi),qL=(s.gqs&&s.gqs[gi])||[];
+      const tbl=s._calcTbl?s._calcTbl(gi):calcGroupTable(s,gi),qL=(s.gqs&&s.gqs[gi])||[];
       glassBox(c,x,y,cw,ch,22,mine?"rgba(240,194,75,.65)":"rgba(255,255,255,.12)",mine?"#f0c24b":null);
       const gl=lg?"★":s.cfg.gs?GL(gi):String(gi+1);
       c.fillStyle=mine?grad(c,x+14,x+54,"#f8e08a","#d4a017"):grad(c,x+14,x+54,"#12b886","#0a7c56");
@@ -173,14 +174,14 @@ async function kuraCv(s){
       colDef.forEach(cd=>tx(c,cd.l,x+cd.x,chY+16,16,cd.k==="pts"?"#f8fafc":"#94a3b8","center",700));
       tbl.forEach((r,idx)=>{
         const ry=y+hh+idx*rh,yy=ry+rh/2,ti=r.ti,t=T[ti];
-        const isMe=ti===s.my,isQ=!lg&&idx<qMax,okQ=isQ||qL.indexOf(ti)>=0,lead1=idx===0&&(okQ||lg);
-        const bgCol=isMe?"rgba(240,194,75,.16)":lead1?"rgba(240,194,75,.09)":okQ?"rgba(16,185,129,.08)":"rgba(255,255,255,.028)";
+        const isMe=ti===s.my,isGu=s._gTi!=null&&ti===s._gTi,isQ=!lg&&idx<qMax,okQ=isQ||qL.indexOf(ti)>=0,lead1=idx===0&&(okQ||lg);
+        const bgCol=isMe?"rgba(240,194,75,.16)":isGu?"rgba(56,189,248,.18)":lead1?"rgba(240,194,75,.09)":okQ?"rgba(16,185,129,.08)":"rgba(255,255,255,.028)";
         c.fillStyle=bgCol;rr(c,x+12,ry+3,cw-24,rh-6,10);c.fill();
-        if(isMe||lead1||okQ){
-          c.fillStyle=isMe||lead1?"#f0c24b":"#3ee6a8";
+        if(isMe||isGu||lead1||okQ){
+          c.fillStyle=isMe||lead1?"#f0c24b":isGu?"#38bdf8":"#3ee6a8";
           rr(c,x+13,ry+10,3.5,rh-20,2);c.fill();
         }
-        if(isMe){c.lineWidth=1.1;c.strokeStyle="rgba(240,194,75,.45)";rr(c,x+12,ry+3,cw-24,rh-6,10);c.stroke()}
+        if(isMe||isGu){c.lineWidth=1.1;c.strokeStyle=isMe?"rgba(240,194,75,.45)":"rgba(56,189,248,.55)";rr(c,x+12,ry+3,cw-24,rh-6,10);c.stroke()}
         // Rank badge
         const rbx=x+19,rby=yy-12;
         if(lead1){c.fillStyle=grad(c,rbx,rbx+22,"#f8e08a","#d4a017");rr(c,rbx,rby,22,24,6);c.fill();tx(c,idx+1,rbx+11,yy+1,16,"#2b2000","center",700)}
@@ -189,7 +190,7 @@ async function kuraCv(s){
         drawBadge(c,ti,x+47,yy-13,22);
         const fsN=cols==1?26:22;
         c.font="700 "+fsN+"px "+NUMF;
-        tx(c,fit(c,(isMe?"★ ":"")+t.n,nameMaxW),x+76,yy+1,fsN,isMe?"#fbeaa8":"#f1f5f9","left",700);
+        tx(c,fit(c,(isMe?"★ ":isGu?"◆ ":"")+t.n,nameMaxW),x+76,yy+1,fsN,isMe?"#fbeaa8":isGu?"#7dd3fc":"#f1f5f9","left",700);
         const avStr=(r.gd>0?"+":r.gd<0?"−":"")+Math.abs(r.gd);
         colDef.forEach(cd=>{
           if(cd.k==="pts"){
@@ -239,15 +240,15 @@ async function kuraCv(s){
     drawPill(c,"ORT "+fx(avg(g,"g")),x+cw-104,y+21,90,28,mine?"rgba(240,194,75,.18)":"rgba(255,255,255,.07)",null,mine?"rgba(240,194,75,.45)":"rgba(255,255,255,.14)",mine?"#fbeaa8":"#cbd5e1",17);
     g.slice().sort((a,b)=>V(T[b])-V(T[a])).forEach((i,r)=>{
       const ry=y+hh+r*rh,yy=ry+rh/2,t=T[i],tc=TCOL[tierOf(t.g)],im=imgs[t.c],bw=46,bx=x+cw-14-bw;
-      const isMe=i===s.my;
-      c.fillStyle=isMe?"rgba(240,194,75,.14)":"rgba(255,255,255,.032)";
+      const isMe=i===s.my,isGu=s._gTi!=null&&i===s._gTi;
+      c.fillStyle=isMe?"rgba(240,194,75,.14)":isGu?"rgba(56,189,248,.18)":"rgba(255,255,255,.032)";
       rr(c,x+12,ry+3,cw-24,rh-6,10);c.fill();
-      if(isMe){c.lineWidth=1.2;c.strokeStyle="rgba(240,194,75,.45)";c.stroke()}
+      if(isMe||isGu){c.lineWidth=1.2;c.strokeStyle=isMe?"rgba(240,194,75,.45)":"rgba(56,189,248,.58)";c.stroke()}
       drawBadge(c,i,x+20,yy-14,24);
       if(im)c.drawImage(im,x+50,yy-9,28,18);
       const qL=(s.gqs&&s.gqs[gi])||[],qr=qL.indexOf(i);
       c.font="700 "+fs+"px "+NUMF;
-      tx(c,fit(c,(isMe?"★ ":"")+(qr>=0?`[${qr+1}] `:"")+t.n,cw-156),x+86,yy+1,fs,isMe?"#fbeaa8":qr>=0?"#3ee6a8":"#f1f5f9");
+      tx(c,fit(c,(isMe?"★ ":isGu?"◆ ":"")+(qr>=0?`[${qr+1}] `:"")+t.n,cw-156),x+86,yy+1,fs,isMe?"#fbeaa8":isGu?"#7dd3fc":qr>=0?"#3ee6a8":"#f1f5f9");
       c.fillStyle=grad(c,bx,bx+bw,tc[0],tc[1]);rr(c,bx,yy-15,bw,30,8);c.fill();
       tx(c,t.g,bx+bw/2,yy+1,fs-3,tc[2],"center",700);
     });
@@ -549,11 +550,11 @@ async function karneCv(x,p,targetCv){p=p==null?1:p;const cu=n=>Math.round(n*p);
   drawPosterFooter(c,W,H,x.name.toLocaleUpperCase("tr")+" · "+t.n.toLocaleUpperCase("tr"));
   return cv}
 async function totsCv(s){
-  const st2=tourneyStats(s),xi=tourneyTots(s,st2);
+  const st2=s._st2||tourneyStats(s),xi=tourneyTots(s,st2);
   if(!xi)throw new Error("TOTS için yeterli veri yok");
   if(typeof preloadLogos==="function")await preloadLogos([].concat(xi.F||[],xi.M||[],xi.D||[],xi.K||[]).map(p=>p.ti));
   const W=1080,H=1460,cv=mkCv(W,H),c=cv.getContext("2d");
-  const cb=s.my!=null&&T[s.my]?bspec(s.my):null,champ=!!(s.res&&s.res.st===7);
+  const cb=s.my!=null&&T[s.my]?bspec(s.my):null,champ=!!((s.res&&(s.res.st===7||s.res.hSt===7||s.res.gSt===7))||(s._out&&s._out.done&&(s._out.ch===s.my||s._out.ch===s._gTi)));
   dkBg(c,W,H,cb?cb.c1:"#3ee6a8",cb?cb.c2:"#f0c24b",champ);
 
   // Header
@@ -607,7 +608,8 @@ async function totsCv(s){
     if(p.a)parts.push(`${p.a}A`);
     if(p.mom)parts.push(`${p.mom}★`);
     const statStr=parts.length?parts.join(" · "):(p.cs?`${p.cs} TK`:`${p.ovr} GEN`);
-    const dispNm=(p.mine&&!isMvp?"★ ":"")+totsDispName(p.n,cw<=220?4:3);
+    const isGu=s._gTi!=null&&p.ti===s._gTi;
+    const dispNm=(p.mine&&!isMvp?"★ ":isGu&&!isMvp?"◆ ":"")+totsDispName(p.n,cw<=220?4:3);
     c.save();
     if(isMvp){
       const ch=244,x=Math.round(cx-cw/2),y=Math.round(cy-ch/2);
@@ -644,9 +646,9 @@ async function totsCv(s){
       c.save();c.shadowColor="rgba(0,0,0,.45)";c.shadowBlur=12;c.shadowOffsetY=4;
       c.fillStyle="rgba(10,28,22,.86)";rr(c,nx,ny,nw,48,14);c.fill();
       c.restore();
-      c.lineWidth=1.8;c.strokeStyle=p.mine?"rgba(240,194,75,.65)":"rgba(110,231,183,.34)";rr(c,nx,ny,nw,48,14);c.stroke();
+      c.lineWidth=1.8;c.strokeStyle=p.mine?"rgba(240,194,75,.65)":isGu?"rgba(56,189,248,.75)":"rgba(110,231,183,.34)";rr(c,nx,ny,nw,48,14);c.stroke();
       c.font="700 28px "+NUMF;
-      tx(c,fit(c,dispNm,nw-20),cx,ny+25,28,p.mine?"#fbeaa8":"#ffffff","center",700);
+      tx(c,fit(c,dispNm,nw-20),cx,ny+25,28,p.mine?"#fbeaa8":isGu?"#7dd3fc":"#ffffff","center",700);
       // Compact stat pill
       const sw=Math.min(nw-16,Math.max(106,statStr.length*15+36));
       drawPill(c,statStr,Math.round(cx-sw/2),ny+54,sw,34,"rgba(8,24,18,.90)",null,"rgba(62,230,168,.44)","#5eead4",20);
@@ -674,10 +676,10 @@ async function totsCv(s){
   return cv}
 async function koCv(s){
   if(isLg(s.cfg)||!s.G)throw new Error("Eleme ağacı yok");
-  initKoBracket(s,false);
+  if(!s._coop)initKoBracket(s,false);
   const sim=ensureSim(s),ko=sim.ko,RDs=rds(s.cfg).filter(r=>r!=="Grup");
   if(!RDs.length||!RDs.some(rd=>Array.isArray(ko[rd])&&ko[rd].length))throw new Error("Eleme ağacı henüz oluşmadı");
-  const out=getTourneyOutcome(s),champTi=out&&out.done&&T[out.ch]?out.ch:null;
+  const out=s._out!==undefined?s._out:getTourneyOutcome(s),champTi=out&&out.done&&T[out.ch]?out.ch:null;
   if(typeof preloadLogos==="function"){
     const _ki=[];
     if(champTi!=null)_ki.push(champTi);
@@ -771,9 +773,11 @@ async function koCv(s){
       const p=pairs[pIdx]||null,done=!!(p&&p.w!=null);
       const isChampPath=!!(champTi!=null&&p&&p.w===champTi);
       const isMine=!!(p&&(p.t1===s.my||p.t2===s.my));
+      const isGuestPath=!!(s._gTi!=null&&p&&(p.t1===s._gTi||p.t2===s._gTi));
       const y1=curC[pIdx],y2=(ucl&&rIdx===0)?nxtC[pIdx]:nxtC[Math.floor(pIdx/2)];
       if(isChampPath)drawConnector(xRight,y1,xNext,y2,"#f0c24b",3.2,true);
       else if(isMine)drawConnector(xRight,y1,xNext,y2,"#eab308",2.6,true);
+      else if(isGuestPath)drawConnector(xRight,y1,xNext,y2,"#38bdf8",2.6,true);
       else if(done)drawConnector(xRight,y1,xNext,y2,"rgba(62,230,168,.62)",2.2,false);
       else drawConnector(xRight,y1,xNext,y2,"rgba(148,163,184,.24)",1.8,false);
     }
@@ -832,21 +836,20 @@ async function koCv(s){
           tx(c,"—",x+colW-33,ry+1,21,"#475569","center",700);
           return;
         }
-        const isMe=ti===s.my,isChampRow=isFin&&isW;
-        if(isW||isMe){
-          const bg1=isChampRow?"rgba(240,194,75,.28)":isMe?"rgba(240,194,75,.18)":"rgba(16,185,129,.16)";
+        const isMe=ti===s.my,isGu=s._gTi!=null&&ti===s._gTi,isChampRow=isFin&&isW;
+        if(isW||isMe||isGu){
+          const bg1=isChampRow?"rgba(240,194,75,.28)":isMe?"rgba(240,194,75,.18)":isGu?"rgba(56,189,248,.20)":"rgba(16,185,129,.16)";
           const bg2="rgba(255,255,255,0)";
           c.fillStyle=grad(c,x+3,x+colW-3,bg1,bg2);
           rr(c,x+3,rowTop+2,colW-6,rowH-4,11);c.fill();
-          // Crisp left accent bar
-          c.fillStyle=isChampRow||isMe?"#f0c24b":"#3ee6a8";
+          c.fillStyle=isChampRow||isMe?"#f0c24b":isGu?"#38bdf8":"#3ee6a8";
           rr(c,x+4,rowTop+10,4,rowH-20,2);c.fill();
         }
-        drawCrestPlate(ti,x+31,ry,25,isL&&!isMe?0.55:1);
-        const nmCol=isChampRow?"#fff7d6":isMe?"#fbeaa8":(isW?"#ffffff":"#94a3b8");
-        const prefix=(isChampRow?"🏆 ":"")+(isMe?"★ ":"");
-        c.font=(isW||isMe?"700":"600")+" 23px "+NUMF;
-        tx(c,fit(c,prefix+T[ti].n,colW-118),x+58,ry+1,23,nmCol,"left",isW||isMe?700:600);
+        drawCrestPlate(ti,x+31,ry,25,isL&&!isMe&&!isGu?0.55:1);
+        const nmCol=isChampRow?"#fff7d6":isMe?"#fbeaa8":isGu?"#7dd3fc":(isW?"#ffffff":"#94a3b8");
+        const prefix=(isChampRow?"🏆 ":"")+(isMe?"★ ":isGu?"◆ ":"");
+        c.font=(isW||isMe||isGu?"700":"600")+" 23px "+NUMF;
+        tx(c,fit(c,prefix+T[ti].n,colW-118),x+58,ry+1,23,nmCol,"left",isW||isMe||isGu?700:600);
 
         // Broadcast Score Capsule
         const sx=x+colW-52,sy=ry-16,sw=40,sh=32;
@@ -1112,15 +1115,15 @@ async function mkImg(kind,x){
   await new Promise(r=>{if(typeof requestAnimationFrame=="function")requestAnimationFrame(()=>setTimeout(r,16));else setTimeout(r,16)});
   try{
     try{await document.fonts.load('700 30px "FC Sayi"')}catch(e){}
-    const cv=kind=="kura"?await kuraCv(x):kind=="tots"?await totsCv(x):kind=="ko"?await koCv(x):kind=="kariyer"?await kariyerCv():kind=="mac"?await macCv(x):kind=="duello"?await duelloCv(x):kind=="duello-sezon"?await duelloSezonCv(x):kind=="duello-kulup"?await duelloKulupCv(x):await karneCv(x);
+    const cv=kind=="kura"?await kuraCv(x):kind=="tots"?await totsCv(x):kind=="ko"?await koCv(x):kind=="kariyer"?await kariyerCv():kind=="mac"?await macCv(x):kind=="duello"?await duelloCv(x):kind=="duello-sezon"?await duelloSezonCv(x):kind=="duello-kulup"?await duelloKulupCv(x):kind=="coop-hist"?await coopHistCv(x):await karneCv(x);
     const toImgObj=async(canvas,ttl,fn)=>{
       const blob=await new Promise(r=>canvas.toBlob(r,"image/png"));
       const url=blob&&typeof URL!="undefined"&&URL.createObjectURL?URL.createObjectURL(blob):canvas.toDataURL("image/png");
       return{title:ttl,name:fn,url,blob,w:canvas.width,h:canvas.height};
     };
     const baseSlug=x.name.replace(/[^\wÀ-ɏ]+/g,"-").replace(/^-+|-+$/g,"").toLowerCase();
-    const kuraLive=kind=="kura"&&x&&((x.sim&&x.sim.w>0)||(x.mt||[]).some(m=>m.rd==="Grup"));
-    const mainTitle=kind=="kariyer"?"Kariyer özeti":kind=="mac"?"Maç kartı":kind=="duello"?"Menajer Düellosu (1v1)":kind=="duello-sezon"?"Sezon vs. Sezon Posteri":kind=="duello-kulup"?"Kulüp vs. Kulüp Posteri":kind=="tots"?x.name+" · En İyi 11 (TOTS)":kind=="ko"?x.name+" · Eleme Ağacı":x.name+(kind=="kura"?(kuraLive?(isUcl(x.cfg)?" ŞL puan durumu":isLg(x.cfg)?" lig puan durumu":" puan durumu"):(isUcl(x.cfg)?" ŞL kurası":" kurası")):" karnesi");
+    const kuraLive=kind=="kura"&&x&&(x._hasTbl!==undefined?!!x._hasTbl:((x.sim&&x.sim.w>0)||(x.mt||[]).some(m=>m.rd==="Grup")));
+    const mainTitle=kind=="kariyer"?"Kariyer özeti":kind=="mac"?"Maç kartı":kind=="duello"?"Menajer Düellosu (1v1)":kind=="duello-sezon"?"Sezon vs. Sezon Posteri":kind=="duello-kulup"?"Kulüp vs. Kulüp Posteri":kind=="coop-hist"?"Ortak Kupa Geçmişi Posteri":kind=="tots"?x.name+" · En İyi 11 (TOTS)":kind=="ko"?x.name+" · Eleme Ağacı":x.name+(kind=="kura"?(kuraLive?(isUcl(x.cfg)?" ŞL puan durumu":isLg(x.cfg)?" lig puan durumu":" puan durumu"):(isUcl(x.cfg)?" ŞL kurası":" kurası")):" karnesi");
     const mainName="fc27-"+kind+"-"+baseSlug+".png";
     const p1=await toImgObj(cv,mainTitle,mainName);
     let pages=null;
@@ -1764,5 +1767,90 @@ async function duelloKulupCv(x){
     if(bw2>0){c.fillStyle=neu?"rgba(148,163,184,.52)":(w2?"#e8be54":"rgba(232,190,84,.48)");rr(c,W-82-430,ry+20,bw2,9,4);c.fill()}
   });
   tx(c,"FC 27 LİG · KULÜP vs. KULÜP DÜELLOSU",W/2,H-32,19,"rgba(255,255,255,.45)","center",700);
+  return cv;
+}
+
+
+/* ---------- v23.0: ORTAK KUPA GEÇMİŞİ POSTERİ (2P CO-OP TROPHY HISTORY) ---------- */
+async function coopHistCv(x){
+  const W=1080,H=1460,cv=mkCv(W,H),c=cv.getContext("2d");
+  const hist=Array.isArray(x.hist)?x.hist:[];
+  const logosToLoad=[];
+  hist.slice(0,8).forEach(s=>{[s.ch,s.hTi,s.gTi].forEach(ti=>{if(ti!=null&&T[ti])logosToLoad.push(ti)})});
+  if(typeof preloadLogos==="function"&&logosToLoad.length)await preloadLogos([...new Set(logosToLoad)]);
+  dkBg(c,W,H,"#2dd496","#38bdf8",false);
+
+  drawPill(c,"2P ORTAK TURNUVA · KUPA TARİHİ",48,40,368,38,"rgba(240,194,75,.18)","rgba(240,194,75,.06)","rgba(240,194,75,.52)","#fbeaa8",19);
+  tx(c,"ORTAK KUPA GEÇMİŞİ",48,114,52,"#f8fafc","left",700);
+  tx(c,(x.room||"CO-OP")+" · "+today(),W-48,66,22,"#94a3b8","right",600);
+  drawPill(c,(x.cnt||0)+" SEZON",W-48-140,92,140,32,"rgba(45,212,150,.16)",null,"rgba(45,212,150,.45)","#3ee6a8",18);
+
+  const hy=176,hh=228;
+  glassBox(c,44,hy,992,hh,26,"rgba(240,194,75,.36)","#f0c24b");
+  const hNm=(x.hName||"KURUCU").toLocaleUpperCase("tr"),gNm=(x.gName||"MİSAFİR").toLocaleUpperCase("tr");
+  c.font="700 24px "+NUMF;
+  tx(c,"★ "+fit(c,hNm,280),96,hy+52,24,"#3ee6a8","left",700);
+  tx(c,String(x.hCh||0),96,hy+132,96,"#3ee6a8","left",700);
+  tx(c,"ŞAMPİYONLUK 🏆",96,hy+190,18,"#94a3b8","left",700);
+
+  drawPill(c,"DOĞRUDAN H2H",W/2-96,hy+28,192,32,"rgba(255,255,255,.08)",null,"rgba(255,255,255,.18)","#e2e8f0",16);
+  const hh2=x.h2h||{hw:0,d:0,gw:0,hgf:0,ggf:0,tot:0};
+  tx(c,hh2.tot?`${hh2.hw} – ${hh2.d} – ${hh2.gw}`:"0 – 0 – 0",W/2,hy+106,48,"#f8fafc","center",700);
+  tx(c,hh2.tot?`GOL: ${hh2.hgf} – ${hh2.ggf}`:"HENÜZ KARŞILAŞMADI",W/2,hy+150,18,"#cbd5e1","center",600);
+  drawPill(c,`YAPAY ZEKÂ: ${x.aiCh||0} 🏆`,W/2-104,hy+174,208,30,"rgba(240,194,75,.14)",null,"rgba(240,194,75,.38)","#fbeaa8",16);
+
+  c.font="700 24px "+NUMF;
+  tx(c,"◆ "+fit(c,gNm,280),W-96,hy+52,24,"#7dd3fc","right",700);
+  tx(c,String(x.gCh||0),W-96,hy+132,96,"#7dd3fc","right",700);
+  tx(c,"ŞAMPİYONLUK 🏆",W-96,hy+190,18,"#94a3b8","right",700);
+
+  const by=426,bh=310;
+  glassBox(c,44,by,992,bh,24,"rgba(255,255,255,.12)",null);
+  tx(c,"ORTAK KARİYER PERFORMANS KIYASI",82,by+34,20,"#94a3b8","left",700);
+  const hS=x.h||{},gS=x.g||{};
+  const pctF=v=>v==null?"—":"%"+Math.round(v),fxF=v=>v==null?"—":fx(v);
+  const cmpRows=[
+    ["GALİBİYET ORANI",hS.wr,gS.wr,pctF(hS.wr),pctF(gS.wr),false],
+    ["MAÇ BAŞI PUAN",hS.ppm,gS.ppm,fxF(hS.ppm),fxF(gS.ppm),false],
+    ["ATILAN GOL / MAÇ",hS.gpm,gS.gpm,fxF(hS.gpm),fxF(gS.gpm),false],
+    ["YENİLEN GOL / MAÇ",hS.gapm,gS.gapm,fxF(hS.gapm),fxF(gS.gapm),true]
+  ];
+  cmpRows.forEach(([lbl,v1,v2,f1,f2,low],idx)=>{
+    const ry=by+80+idx*58;
+    const b=duelBarCalc(v1,v2,low);
+    tx(c,f1,82,ry,26,b.w1?"#3ee6a8":"#cbd5e1","left",700);
+    tx(c,lbl,W/2,ry,17,"#94a3b8","center",700);
+    tx(c,f2,W-82,ry,26,b.w2?"#7dd3fc":"#cbd5e1","right",700);
+    const bw1=Math.round(b.p1/100*426),bw2=Math.round(b.p2/100*426);
+    c.fillStyle="rgba(255,255,255,.07)";rr(c,82,ry+18,426,8,4);c.fill();rr(c,W-82-426,ry+18,426,8,4);c.fill();
+    if(bw1>0){c.fillStyle=b.w1?"#2dd496":"rgba(45,212,150,.48)";rr(c,82+(426-bw1),ry+18,bw1,8,4);c.fill()}
+    if(bw2>0){c.fillStyle=b.w2?"#38bdf8":"rgba(56,189,248,.48)";rr(c,W-82-426,ry+18,bw2,8,4);c.fill()}
+  });
+
+  const ty=758,th=620;
+  glassBox(c,44,ty,992,th,24,"rgba(255,255,255,.12)",null);
+  tx(c,"SEZON KRONOLOJİSİ · ŞAMPİYONLAR",82,ty+36,20,"#f0c24b","left",700);
+  if(x.topS){c.font="700 15px "+NUMF;drawPill(c,fit(c,`GOL KRALI: ${x.topS.n.toLocaleUpperCase("tr")} (${x.topS.g}G)`,288),W-44-340,ty+18,308,32,"rgba(45,212,150,.14)",null,"rgba(45,212,150,.38)","#3ee6a8",15)}
+  hist.slice(0,7).forEach((s,idx)=>{
+    const ry=ty+74+idx*76;
+    c.fillStyle="rgba(255,255,255,.038)";rr(c,72,ry,936,64,14);c.fill();
+    c.strokeStyle="rgba(255,255,255,.09)";c.lineWidth=1;rr(c,72,ry,936,64,14);c.stroke();
+    c.font="700 20px "+NUMF;
+    tx(c,fit(c,(s.name||"Sezon").toLocaleUpperCase("tr"),210),92,ry+24,20,"#f8fafc","left",700);
+    tx(c,s.date||"",92,ry+48,14,"#94a3b8","left",600);
+    const chN=s.ch!=null&&T[s.ch]?T[s.ch].n:"?";
+    const who=s.ch===s.hTi&&s.hSt===7?hNm:s.ch===s.gTi&&s.gSt===7?gNm:"YAPAY ZEKÂ";
+    const wCol=s.ch===s.hTi&&s.hSt===7?"#3ee6a8":s.ch===s.gTi&&s.gSt===7?"#7dd3fc":"#fbeaa8";
+    if(s.ch!=null&&T[s.ch])drawBadge(c,s.ch,326,ry+14,34);
+    c.font="700 22px "+NUMF;
+    tx(c,"🏆 "+fit(c,chN.toLocaleUpperCase("tr"),230),370,ry+25,22,"#fff7d6","left",700);
+    tx(c,who,370,ry+48,15,wCol,"left",700);
+    const hClub=s.hTi!=null&&T[s.hTi]?T[s.hTi].n:"?",gClub=s.gTi!=null&&T[s.gTi]?T[s.gTi].n:"?";
+    c.font="700 17px "+NUMF;
+    tx(c,"★ "+fit(c,hClub,210),988,ry+23,17,"#3ee6a8","right",700);
+    tx(c,"◆ "+fit(c,gClub,210),988,ry+47,17,"#7dd3fc","right",700);
+  });
+
+  drawPosterFooter(c,W,H,"FC 27 LİG · 2P ORTAK KUPA GEÇMİŞİ");
   return cv;
 }
