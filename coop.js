@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — coop.js · v23.8
+   FC 27 Grup Ligi — coop.js · v23.9
    İzole 2 Kişilik Online Ortak Turnuva (Co-op Oda) Modülü
    - Tek kişilik IndexedDB / JSON yedeğe hiç dokunmaz
    - Çakışmasız 2 düğümlü Firebase mimarisi (/rooms/{room}/host.json & guest.json)
@@ -852,27 +852,80 @@ function coopSetupView(S){
       `<button class="btn p pset-pri" data-a="cpref" style="width:100%">Durumu Yenile</button>`
     );
   }
-  const tplMatch=p=>{const q=p[2];return !!q.ucl===isUcl(c)&&!!q.lg===isLg(c)&&(isUcl(c)||isLg(c)||(c.N===q.N&&(c.gs||0)===(q.gs||0)))};
-  const segBtn=(k,v,l,on)=>`<button class="chip ${on?"on":""}" data-a="cpcfg" data-k="${k}" data-v="${v}">${l}</button>`;
-  const A=avail(t),ok=A>=c.N;
+  const uclMode=isUcl(c),lgMode=isLg(c);
+  const tplMatch=p=>{const q=p[2];return !!q.ucl===uclMode&&!!q.lg===lgMode&&(uclMode||lgMode||(c.N===q.N&&(c.gs||0)===(q.gs||0)))};
+  const segBtn=(a,k,v,l,on)=>`<button class="chip ${on?"on":""}" data-a="${a}" data-k="${k}" data-v="${v}">${l}</button>`;
+  const M=elig(r).length,A=avail(t),ok=A>=c.N;
   const tplHtml=`<div class="su-tpl">${COOP_TPL.map((p,idx)=>`<button class="su-tcard${p[2].ucl?" ucl":""}${tplMatch(p)?" on":""}" data-a="cptpl" data-v="${idx}"><span class="su-tic">${TPLI[idx%TPLI.length]}</span><span class="su-tm"><b>${p[0]}</b><small>${p[1]}</small></span></button>`).join("")}</div>`;
+
   let extra="";
-  if(isLg(c)){
-    extra=`<div class="su-mgrid" style="margin-top:10px"><div class="su-mrow"><span>Takım</span><div class="stabs" style="grid-template-columns:repeat(4,1fr)">${[8,12,16,20].map(n=>segBtn("N",n,n,c.N===n)).join("")}</div></div><div class="su-mrow"><span>Devre</span><div class="stabs seg2">${segBtn("gl",1,"1 Devre",c.gl===1)}${segBtn("gl",2,"2 Devre",c.gl===2)}</div></div></div>`;
-  }else if(isUcl(c)){
+  if(uclMode){
     extra=`<div class="ucl-note" style="margin-top:10px"><b>Gerçek 36 Takımlı UEFA Formatı:</b> 4 torba, 8 maç (4 EV / 4 DEP), İlk 8 doğrudan Son 16, 9–24 Play-Off.</div>`+
-      `<div class="su-mgrid"><div class="su-mrow"><span>Play-Off & Eleme</span><div class="stabs seg2">${segBtn("kl",1,"Tek maç",c.kl===1)}${segBtn("kl",2,"Çift maç",c.kl===2)}</div></div><div class="su-mrow"><span>Final</span><div class="stabs seg2">${segBtn("fl",1,"Tek maç",c.fl===1)}${segBtn("fl",2,"Çift maç",c.fl===2)}</div></div></div>`;
-  }else if(!c.gs){
-    extra=`<div class="su-mgrid" style="margin-top:10px"><div class="su-mrow"><span>Takım</span><div class="stabs seg3">${[8,16,32].map(n=>segBtn("N",n,n,c.N===n)).join("")}</div></div><div class="su-mrow"><span>Eleme</span><div class="stabs seg2">${segBtn("kl",1,"Tek maç",c.kl===1)}${segBtn("kl",2,"Çift maç",c.kl===2)}</div></div><div class="su-mrow"><span>Final</span><div class="stabs seg2">${segBtn("fl",1,"Tek maç",c.fl===1)}${segBtn("fl",2,"Çift maç",c.fl===2)}</div></div></div>`;
+      `<div class="su-mgrid"><div class="su-mrow"><span>Play-Off & Eleme</span><div class="stabs seg2">${segBtn("cpcfg","kl",1,"Tek maç",c.kl===1)}${segBtn("cpcfg","kl",2,"Çift maç",c.kl===2)}</div></div><div class="su-mrow"><span>Final</span><div class="stabs seg2">${segBtn("cpcfg","fl",1,"Tek maç",c.fl===1)}${segBtn("cpcfg","fl",2,"Çift maç",c.fl===2)}</div></div></div>`;
+  }else if(lgMode){
+    extra=`<div class="su-div"></div>`+
+      `<div class="pset-lbl">Lig Takım Sayısı <small style="text-transform:none;font-weight:400">(en fazla 24)</small></div>`+
+      `<div class="su-nums">${LGN.map(n=>`<button class="su-nbtn${c.N===n?" on":""}" data-a="cpcfg" data-k="N" data-v="${n}">${n}</button>`).join("")}</div>`+
+      `<div class="su-mgrid" style="margin-top:10px"><div class="su-mrow"><span>Lig Maçları</span><div class="stabs seg2">${segBtn("cpcfg","gl",1,"1 Devre",c.gl===1)}${segBtn("cpcfg","gl",2,"2 Devre",c.gl===2)}</div></div></div>`;
   }else{
-    extra=`<div class="su-mgrid" style="margin-top:10px"><div class="su-mrow"><span>Grup</span><div class="stabs seg2">${segBtn("gl",1,"Tek maç",c.gl===1)}${segBtn("gl",2,"Çift maç",c.gl===2)}</div></div><div class="su-mrow"><span>Eleme</span><div class="stabs seg2">${segBtn("kl",1,"Tek maç",c.kl===1)}${segBtn("kl",2,"Çift maç",c.kl===2)}</div></div><div class="su-mrow"><span>Final</span><div class="stabs seg2">${segBtn("fl",1,"Tek maç",c.fl===1)}${segBtn("fl",2,"Çift maç",c.fl===2)}</div></div></div>`;
+    const gsO=gsOpts(c.N),qO=c.gs?qOpts(c.N,c.gs):[];
+    extra=`<div class="su-div"></div>`+
+      `<div class="pset-lbl">Katılacak Takım Sayısı</div>`+
+      `<div class="stabs su-s5" style="margin-bottom:10px">${[4,8,16,32,64].map(n=>segBtn("cpcfg","N",n,n,c.N===n)).join("")}</div>`;
+    if(c.gs){
+      extra+=`<div class="pset-lbl">Grup Büyüklüğü</div><div class="stabs" style="grid-template-columns:repeat(${gsO.length},1fr);margin-bottom:10px">${gsO.map(n=>segBtn("cpcfg","gs",n,n+"’lü",c.gs===n)).join("")}</div>`;
+      extra+=`<div class="pset-lbl">Gruptan Çıkacak Takım</div><div class="stabs" style="grid-template-columns:repeat(${qO.length},1fr);margin-bottom:10px">${qO.map(n=>segBtn("cpcfg","q",n,n+" takım",c.q===n)).join("")}</div>`;
+    }
+    const mrows=[];
+    if(c.gs)mrows.push(`<div class="su-mrow"><span>Grup Maçları</span><div class="stabs seg2">${segBtn("cpcfg","gl",1,"Tek maç",c.gl===1)}${segBtn("cpcfg","gl",2,"Çift maç",c.gl===2)}</div></div>`);
+    if(hasKO(c))mrows.push(`<div class="su-mrow"><span>Eleme Turları</span><div class="stabs seg2">${segBtn("cpcfg","kl",1,"Tek maç",c.kl===1)}${segBtn("cpcfg","kl",2,"Çift maç",c.kl===2)}</div></div>`);
+    mrows.push(`<div class="su-mrow"><span>Final Maçı</span><div class="stabs seg2">${segBtn("cpcfg","fl",1,"Tek maç",c.fl===1)}${segBtn("cpcfg","fl",2,"Çift maç",c.fl===2)}</div></div>`);
+    extra+=`<div class="su-mgrid">${mrows.join("")}</div>`;
   }
-  const poolBar=`<div class="su-mgrid" style="margin-top:10px"><div class="su-mrow"><span>Bölge</span><div class="stabs seg2"><button class="chip ${r.rg==="all"?"on":""}" data-a="cprl" data-k="rg" data-v="all">Tümü</button><button class="chip ${r.rg==="eu"?"on":""}" data-a="cprl" data-k="rg" data-v="eu">Avrupa</button></div></div></div>`;
-  return psetCard("sliders","emr",`${esc(t.name)} · Kurulum`,"4 formattan birini seç ve arkadaşınla takım seçimine geç",`${c.N} takım`,
-    tplHtml+extra+poolBar+
-    `<div class="note" style="margin:10px 0">${fmt(c)} · Havuz: <b>${A}/${c.N}</b> kulüp</div>`+
-    `<button class="btn p pset-pri" data-a="cplock" ${ok?"":"disabled"} style="width:100%">Kurulumu Onayla ve Takım Seçimine Geç ›</button>`
+
+  // Gelişmiş Kurallar (GEN, Ülke, Sınırlar, Seçim & Kura — Şampiyonlar Ligi hariç!)
+  let advFold="";
+  if(!uclMode){
+    const cc=nob();T.forEach(tm=>{if(rgOk(r,tm))cc[tm.c]=(cc[tm.c]||0)+1});
+    const cs=Object.keys(cc).sort((a,b)=>cc[b]-cc[a]||TR_CMP(CN[a][0],CN[b][0]));
+    const sc=[[0,"Yok"],70,72,74,75,76,77,78,80,82,84,86,88].map(v=>Array.isArray(v)?v:[v,v+"+"]);
+    const gmn=[[0,"Yok"]].concat(rg(15).map(i=>[71+i,71+i])),gmx=[[99,"Yok"]].concat(rg(15).map(i=>[85-i,85-i]));
+    const capO=[[0,"Sınırsız"]].concat([1,2,3,4,5,6,8,10,12].map(v=>[v,"En fazla "+v]));
+    const gcO=c.gs?[[0,"Sınırsız"],[1,"En fazla 1"],[2,"En fazla 2"],[3,"En fazla 3"],[4,"En fazla 4"],[5,"En fazla 5"]]:[[0,"Sınırsız"],[1,"Aynı ülke eşleşmesin"]];
+    const isDefRl=r.rg==="all"&&!(r.xc&&r.xc.length)&&!r.gmin&&r.gmax===99&&!r.amin&&!r.mmin&&!r.dmin&&!r.cap&&r.gcap===DEFR.gcap&&r.pick==="top"&&r.dm==="pot";
+    const actC=cs.length-(r.xc||[]).filter(k=>cs.includes(k)).length;
+    const limCnt=[r.gmin>0,r.gmax<99,r.amin>0,r.mmin>0,r.dmin>0,r.cap>0,r.gcap!==DEFR.gcap].filter(Boolean).length;
+    const advBody=`<div class="pset-lbl">Takım Bölgesi</div>`+
+      `<div class="stabs seg3" style="margin-bottom:11px">${Object.keys(RGN).map(k=>segBtn("cprl","rg",k,k==="all"?"Tümü":k==="eu"?"Avrupa":"Avrupa Dışı",r.rg===k)).join("")}</div>`+
+      `<details class="xfold su-ctfold"${r.xc.length?" open":""}><summary><span class="ui-lbl">${uiIco("sliders")}<span>Ülke Filtresi</span></span><span class="xfpill${r.xc.length?" org":""}">${actC}/${cs.length}</span></summary><div class="xfb">`+
+        `<div class="su-cthd"><span class="pset-lbl" style="margin:0">Ülkeler <small style="text-transform:none;font-weight:400">(dokunarak çıkar / ekle)</small></span>${r.xc.length?`<button class="sf-clr" data-a="cpxcall">Hepsini seç</button>`:""}</div>`+
+        `<div class="su-cgrid">${cs.map(k=>`<button class="su-cchip${!r.xc.includes(k)?" on":""}" data-a="cpxc" data-v="${k}">${fl(k)}<span>${CN[k][0]}</span><em>${cc[k]}</em></button>`).join("")}</div>`+
+      `</div></details>`+
+      `<details class="xfold su-limfold"${limCnt?" open":""}><summary><span class="ui-lbl">${uiIco("sliders")}<span>Güç (GEN) ve Ülke Sınırları</span></span><span class="xfpill ${limCnt?"gold":"mut"}">${limCnt?limCnt+" sınır aktif":"Varsayılan"}</span></summary><div class="su-fgrid" style="margin-top:10px">`+
+        `<div class="su-fld"><label>Genel En Az</label>${sel("cprs","gmin",gmn,r.gmin)}</div>`+
+        `<div class="su-fld"><label>Genel En Çok</label>${sel("cprs","gmax",gmx,r.gmax)}</div>`+
+        `<div class="su-fld"><label>Hücum</label>${sel("cprs","amin",sc,r.amin)}</div>`+
+        `<div class="su-fld"><label>Orta Saha</label>${sel("cprs","mmin",sc,r.mmin)}</div>`+
+        `<div class="su-fld"><label>Defans</label>${sel("cprs","dmin",sc,r.dmin)}</div>`+
+        `<div class="su-fld"><label>Ülke Limiti (Turnuva)</label>${sel("cprs","cap",capO,r.cap)}</div>`+
+        `<div class="su-fld full"><label>${c.gs?"Aynı Grupta Aynı Ülkeden":"İlk Turda Aynı Ülke"}</label>${sel("cprs","gcap",gcO,r.gcap)}</div>`+
+      `</div></details>`+
+      `<div class="su-mgrid" style="margin-top:11px">`+
+        `<div class="su-mrow"><span>Katılımcı Seçimi</span><div class="stabs seg2">${segBtn("cprl","pick","top","En Güçlü",r.pick==="top")}${segBtn("cprl","pick","rnd","Rastgele",r.pick==="rnd")}</div></div>`+
+        `<div class="su-mrow"><span>Kura Yöntemi</span><div class="stabs seg2">${segBtn("cprl","dm","pot","Torbalı",r.dm==="pot")}${segBtn("cprl","dm","rnd","Rastgele",r.dm==="rnd")}</div></div>`+
+      `</div>`+
+      (!isDefRl?`<button class="btn pset-sec" data-a="cprlrst" style="width:100%;margin-top:10px">Kuralları Varsayılana Sıfırla</button>`:"");
+    advFold=`<div class="pfold ${isDefRl?"sky":"gold"}${st.cpAdv?" open":""}" style="margin:0 0 10px"><button class="acbtn${st.cpAdv?" open":""}" data-a="cpadv" aria-expanded="${!!st.cpAdv}"><span class="aci">${UICO.sliders}</span><span class="act"><b>Turnuva Detay Ayarları (GEN & Ülke)</b><small>${isDefRl?"Varsayılan havuz · dilediğin gibi özelleştir":"Özel GEN, bölge veya ülke kuralları aktif"}</small></span><span class="acr"><span class="xfpill ${isDefRl?"sky":"gold"}">${isDefRl?"Varsayılan":"Özel"}</span><span class="acc" aria-hidden="true">${UICO.chev}</span></span></button>${st.cpAdv?`<div class="acbody">${advBody}</div>`:""}</div>`;
+  }
+
+  const card1=psetCard("sliders","emr",`${esc(t.name)} · Kurulum`,"4 formattan birini seç ve arkadaşınla takım seçimine geç",`${c.N} takım`,tplHtml+extra);
+  const poolNote=ok
+    ? `<div class="pgmath ok" style="margin:0 0 10px">${fmt(c)} · Uygun: <b>${M}</b> · Havuz: <b>${A}/${c.N}</b> kulüp</div>`
+    : `<div class="pgmath dead" style="margin:0 0 10px">Yetersiz havuz: <b>${A}/${c.N}</b> kulüp (Uygun: ${M}). GEN veya ülke sınırını gevşet.</div>`;
+  const confirmCard=psetCard("trophy",ok?"emr":"gold","Kurulumu Onayla",ok?"Takım seçimine geçmeye hazır":"Havuz sayısını en az "+c.N+" kulüp yap",`${A}/${c.N}`,
+    poolNote+`<button class="btn p pset-pri" data-a="cplock" ${ok?"":"disabled"} style="width:100%">Kurulumu Onayla ve Takım Seçimine Geç ›</button>`
   );
+  return card1+advFold+confirmCard;
 }
 
 function coopPickView(S){
@@ -888,7 +941,7 @@ function coopPickView(S){
   const grid=`<div class="cp-tgrid">${filtered.map(i=>{
     const isH=i===S.hTi,isG=i===S.gTi,takenByOp=i===opPick;
     return `<button class="cp-tbtn${isH?" is-h":""}${isG?" is-g":""}${takenByOp?" dis":""}" data-a="cppick" data-i="${i}" ${takenByOp?"disabled":""}>`+
-      `${badge(i,26)}<span class="n">${esc(T[i].n)}</span>${isH?`<em class="cp-tg h">K</em>`:isG?`<em class="cp-tg g">M</em>`:""}${rb(T[i].g)}`+
+      `${badge(i,26)}<span class="n">${esc(T[i].n)}</span>${isH?`<em class="cp-tg h">K</em>`:isG?`<em class="cp-tg cp-g">M</em>`:""}${rb(T[i].g)}`+
     `</button>`;
   }).join("")}</div>`;
   const actions=S.role==="host"
@@ -927,7 +980,7 @@ function coopPlayView(S){
     if(out&&out.done){
       const endAction=S.role==="host"
         ? (t.phase!=="done"
-            ? `<button class="btn p cta" data-a="cpfin" style="width:100%;margin-top:10px">${UICO.trophy}<span>Turnuvayı Sonlandır ve Ortak Arşive Kaydet</span></button>`
+            ? `<button class="btn p cta ui-btn" data-a="cpfin" style="width:100%;margin-top:10px">${UICO.trophy}<span>Turnuvayı Sonlandır ve Ortak Arşive Kaydet</span></button>`
             : `<button class="btn p pset-pri" data-a="cpnew" style="width:100%;margin-top:10px">${UICO.spark}<span>Yeni Ortak Sezon Başlat</span></button>`)
         : (t.phase!=="done"
             ? `<div class="pgmath info" style="margin-top:10px">Kurucu (${esc(S.hName)}) turnuvayı ortak arşive kaydettiğinde yeni sezona geçilecek.</div><button class="btn pset-sec" data-a="cpref" style="width:100%;margin-top:6px">↻ Durumu Yenile</button>`
@@ -981,10 +1034,10 @@ function coopPlayView(S){
       let hostSim="";
       if(S.role==="host"){
         if(inGrpStage&&simW<totW){
-          hostSim=`<button class="btn p" data-a="cpsimw" style="width:100%;margin-top:8px">${UICO.bolt}<span>${simW+1}. Hafta Diğer (YZ) Maçlarını Simüle Et</span></button>`;
+          hostSim=`<button class="btn p ui-btn" data-a="cpsimw" style="width:100%;margin-top:8px">${UICO.bolt}<span>${simW+1}. Hafta Diğer (YZ) Maçlarını Simüle Et</span></button>`;
         }else if(inGrpStage&&simW>=totW&&!lg){
           if(coopAllHumanGrpDone(S)){
-            hostSim=`<button class="btn p cta" data-a="cpbuildko" style="width:100%;margin-top:8px">${UICO.trophy}<span>Eleme Ağacını Kur</span></button>`;
+            hostSim=`<button class="btn p cta ui-btn" data-a="cpbuildko" style="width:100%;margin-top:8px">${UICO.trophy}<span>Eleme Ağacını Kur</span></button>`;
           }else{
             const totRem=hPend.length+gPend.length-hPend.filter(x=>x.h2h).length;
             hostSim=`<div class="pgmath info" style="margin-top:8px">Diğer tüm YZ maçları simüle edildi (${totW}/${totW}) · Eleme ağacı kalan ${totRem} oyuncu maçı girilince otomatik kurulacak.</div>`;
@@ -997,8 +1050,8 @@ function coopPlayView(S){
             const pairs=t.sim.ko[activeRd]||[];
             const blocked=pairs.some(p=>p.w==null&&((p.t1===S.hTi||p.t2===S.hTi)||(p.t1===S.gTi||p.t2===S.gTi))&&p.t1!=null&&p.t2!=null);
             const bothElim=![S.hTi,S.gTi].some(ti=>RDs.some(rd=>(t.sim.ko[rd]||[]).some(p=>p.w==null&&(p.t1===ti||p.t2===ti))));
-            hostSim=`<div class="bar" style="margin:8px 0 0"><button class="btn p" data-a="cpsimko" ${blocked?"disabled":""} style="flex:1">${UICO.bolt}<span>${blocked?`${activeRd} İnsan Maçları Bekleniyor`:`${activeRd} Turunu Simüle Et`}</span></button>`+
-              (bothElim&&RDs.indexOf(activeRd)<RDs.length-1?`<button class="btn" data-a="cpsimall" style="flex:1">${uiIco("ff")}<span>Finale Kadar</span></button>`:"")+`</div>`;
+            hostSim=`<div class="bar" style="margin:8px 0 0"><button class="btn p ui-btn" data-a="cpsimko" ${blocked?"disabled":""} style="flex:1">${UICO.bolt}<span>${blocked?`${activeRd} İnsan Maçları Bekleniyor`:`${activeRd} Turunu Simüle Et`}</span></button>`+
+              (bothElim&&RDs.indexOf(activeRd)<RDs.length-1?`<button class="btn ui-btn" data-a="cpsimall" style="flex:1">${uiIco("ff")}<span>Finale Kadar</span></button>`:"")+`</div>`;
           }
         }
       }
@@ -1009,7 +1062,7 @@ function coopPlayView(S){
     const hs=coopMgrStats(S.hMt),gs=coopMgrStats(S.gMt);
     const glance=`<div class="cp-gl">`+
       `<div class="cp-glc h"><div class="cp-glh">${badge(S.hTi,26)}<div><b>${esc(S.hName)}</b><small>${esc(T[S.hTi].n)}</small></div></div><div class="cp-gln"><b>${hs.w}G ${hs.d}B ${hs.l}M</b><span>${hs.gf}:${hs.ga} · ${hs.pts}P</span></div></div>`+
-      `<div class="cp-glc g"><div class="cp-glh">${badge(S.gTi,26)}<div><b>${esc(S.gName)}</b><small>${esc(T[S.gTi].n)}</small></div></div><div class="cp-gln"><b>${gs.w}G ${gs.d}B ${gs.l}M</b><span>${gs.gf}:${gs.ga} · ${gs.pts}P</span></div></div>`+
+      `<div class="cp-glc cp-g"><div class="cp-glh">${badge(S.gTi,26)}<div><b>${esc(S.gName)}</b><small>${esc(T[S.gTi].n)}</small></div></div><div class="cp-gln"><b>${gs.w}G ${gs.d}B ${gs.l}M</b><span>${gs.gf}:${gs.ga} · ${gs.pts}P</span></div></div>`+
     `</div>`;
 
     const pBar=`<div class="cp-pbar">`+
@@ -1123,7 +1176,7 @@ function coopPlayView(S){
       let hw=0,hd=0,gw=0,hgf=0,ggf=0;
       h2hMs.forEach(m=>{const r=mres(m);if(r==="w")hw++;else if(r==="d")hd++;else gw++;hgf+=+m.gf||0;ggf+=+m.ga||0});
       h2hHtml=psetCard("trophy","gold","Bu Turnuvadaki Doğrudan H2H",`${esc(S.hName)} vs ${esc(S.gName)}`,`${h2hMs.length} maç`,
-        `<div class="cp-h2h"><b>${hw}G</b><span>${hd}B</span><b class="g">${gw}G</b><em>Gol: ${hgf}–${ggf}</em></div>`
+        `<div class="cp-h2h"><b>${hw}G</b><span>${hd}B</span><b class="cp-g">${gw}G</b><em>Gol: ${hgf}–${ggf}</em></div>`
       );
     }
     const pctF=v=>v==null?"—":"%"+Math.round(v),fxF=v=>v==null?"—":fx(v);
@@ -1137,7 +1190,7 @@ function coopPlayView(S){
       ...(hs.posM!=null||gs.posM!=null?[["Topla Oynama %",hs.posM,gs.posM,pctF(hs.posM),pctF(gs.posM),false]]:[])
     ].map(([l,v1,v2,f1,f2,low])=>typeof duelCompareRow==="function"?duelCompareRow(l,v1,v2,f1,f2,low,false):"").join("");
     const dnaRow=(hs.dna||gs.dna)?`<div class="cp-dnas"><div><small>${esc(S.hName)} DNA</small><b>${esc(hs.dna?hs.dna.title:"—")}</b></div><div><small>${esc(S.gName)} DNA</small><b>${esc(gs.dna?gs.dna.title:"—")}</b></div></div>`:"";
-    const cmpHead=`<div class="cp-cmphd"><span class="h">${badge(S.hTi,20)}<b>★ ${esc(S.hName)}</b></span><small>VS</small><span class="g"><b>◆ ${esc(S.gName)}</b>${badge(S.gTi,20)}</span></div>`;
+    const cmpHead=`<div class="cp-cmphd"><span class="h">${badge(S.hTi,20)}<b>★ ${esc(S.hName)}</b></span><small>VS</small><span class="cp-g"><b>◆ ${esc(S.gName)}</b>${badge(S.gTi,20)}</span></div>`;
     const cmpCard=psetCard("chart","sky","Turnuva İçi Menajer Kıyası",`${esc(T[S.hTi].n)} vs ${esc(T[S.gTi].n)}`,`${hs.m} / ${gs.m} maç`,
       cmpHead+`<div class="dl-tlist">${cmpRows}</div>`+dnaRow
     );
@@ -1183,7 +1236,7 @@ function coopHistCard(S){
     `<div class="ck sky"><b>${hs.gCh}</b><span>${esc(hs.gName)} 🏆</span></div>`+
     `<div class="ck gold"><b>${hs.aiCh}</b><span>YZ 🏆</span></div>`+
   `</div>`;
-  const h2hBar=hs.h2h.tot?`<div class="cp-h2h" style="margin-bottom:10px"><b>${esc(hs.hName)} ${hs.h2h.hw}G</b><span>${hs.h2h.d}B</span><b class="g">${hs.h2h.gw}G ${esc(hs.gName)}</b><em>Toplam Gol: ${hs.h2h.hgf}–${hs.h2h.ggf}</em></div>`:"";
+  const h2hBar=hs.h2h.tot?`<div class="cp-h2h" style="margin-bottom:10px"><b>${esc(hs.hName)} ${hs.h2h.hw}G</b><span>${hs.h2h.d}B</span><b class="cp-g">${hs.h2h.gw}G ${esc(hs.gName)}</b><em>Toplam Gol: ${hs.h2h.hgf}–${hs.h2h.ggf}</em></div>`:"";
   const tl=hs.hist.map(x=>`<div class="cp-tl">`+
     `<div class="cp-tlh"><b>${esc(x.name)}</b><small>${esc(x.date||"")}</small></div>`+
     `<div class="cp-tlc">🏆 <b>${x.ch!=null&&T[x.ch]?esc(T[x.ch].n):"?"}</b>${x.ch===x.hTi&&x.hSt===7?` (${esc(hs.hName)})`:x.ch===x.gTi&&x.gSt===7?` (${esc(hs.gName)})`:" (YZ)"}</div>`+
@@ -1288,8 +1341,22 @@ async function coopSpin(S){
   st.slt=setTimeout(tick,60);
 }
 
+async function coopSetRuleNum(k,val){
+  if(st.cpLock)return;
+  const S=coopState();
+  if(!S||S.role!=="host"||S.t.phase!=="setup"||isUcl(S.t.cfg))return;
+  st.cpLock=true;
+  try{
+    S.t.rl[k]=+val;
+    if(k==="gmin"&&S.t.rl.gmax<S.t.rl.gmin)S.t.rl.gmax=99;
+    if(k==="gmax"&&S.t.rl.gmin>S.t.rl.gmax)S.t.rl.gmin=0;
+    await coopPushHost(S.host);
+    render();
+  }finally{st.cpLock=false}
+}
+
 /* ---------- CO-OP ACTION HANDLER (All data-a="cp...") ---------- */
-const COOP_NET_ACTS=new Set(["cpcreate","cpjoin","cptpl","cpcfg","cprl","cplock","cpbacksetup","cppick","cpdraw","cpmsave","cpsimw","cpbuildko","cpsimko","cpsimall","cpfin","cpnew"]);
+const COOP_NET_ACTS=new Set(["cpcreate","cpjoin","cptpl","cpcfg","cprl","cpxc","cpxcall","cprlrst","cplock","cpbacksetup","cppick","cpdraw","cpmsave","cpsimw","cpbuildko","cpsimko","cpsimall","cpfin","cpnew"]);
 async function handleCoopAction(a,dv,dk,i,b){
   if(COOP_NET_ACTS.has(a)){
     if(st.cpLock)return true;
@@ -1311,6 +1378,7 @@ async function handleCoopActionInner(a,dv,dk,i,b){
   if(a==="cpexit"){st.coopMode=false;st.cpM=null;render();return true}
   if(a==="cpclose"){st.cpM=null;st.cpErr="";render();return true}
   if(a==="cphisttog"){st.cpShowHist=!st.cpShowHist;render();return true}
+  if(a==="cpadv"){st.cpAdv=!st.cpAdv;render();return true}
   if(a==="cptab"){st.cpTab=dv||"genel";render();return true}
   if(a==="cpfxw"){st.cpFxw=+dv||1;render();return true}
   if(a==="cppickw"){st.cpPickW=+dv||0;render();return true}
@@ -1368,17 +1436,34 @@ async function handleCoopActionInner(a,dv,dk,i,b){
   if(a==="cptpl"&&S.role==="host"&&S.t.phase==="setup"){
     const p=COOP_TPL[+dv],wasUcl=isUcl(S.t.cfg);if(!p)return true;
     S.t.cfg=cp(p[2]);fixC(S.t.cfg);
-    if(isUcl(S.t.cfg)){S.t.rl.rg="eu";S.t.rl.cap=4;S.t.rl.gcap=1}
-    else{S.t.rl.cap=0;if(wasUcl&&S.t.rl.rg==="eu")S.t.rl.rg="all"}
+    if(isUcl(S.t.cfg)){
+      S.t.rl=Object.assign(cp(DEFR),{rg:"eu",cap:4,gcap:1});
+      st.cpAdv=false;
+    }else{
+      S.t.rl.cap=0;if(wasUcl&&S.t.rl.rg==="eu")S.t.rl.rg="all";
+    }
     await coopPushHost(S.host);render();return true;
   }
   if(a==="cpcfg"&&S.role==="host"&&S.t.phase==="setup"){
     S.t.cfg[dk]=+dv;if(isLg(S.t.cfg)&&dk==="N")S.t.cfg.gs=S.t.cfg.N;fixC(S.t.cfg);
     await coopPushHost(S.host);render();return true;
   }
-  if(a==="cprl"&&S.role==="host"&&S.t.phase==="setup"){
+  if(a==="cprl"&&S.role==="host"&&S.t.phase==="setup"&&!isUcl(S.t.cfg)){
     S.t.rl[dk]=dv;
     await coopPushHost(S.host);render();return true;
+  }
+  if(a==="cpxc"&&S.role==="host"&&S.t.phase==="setup"&&!isUcl(S.t.cfg)){
+    const x=S.t.rl.xc||(S.t.rl.xc=[]),j=x.indexOf(dv);
+    if(j<0)x.push(dv);else x.splice(j,1);
+    await coopPushHost(S.host);render();return true;
+  }
+  if(a==="cpxcall"&&S.role==="host"&&S.t.phase==="setup"&&!isUcl(S.t.cfg)){
+    S.t.rl.xc=[];
+    await coopPushHost(S.host);render();return true;
+  }
+  if(a==="cprlrst"&&S.role==="host"&&S.t.phase==="setup"&&!isUcl(S.t.cfg)){
+    S.t.rl=cp(DEFR);
+    await coopPushHost(S.host);ntf("Kurallar varsayılana sıfırlandı");render();return true;
   }
   if(a==="cplock"&&S.role==="host"&&S.t.phase==="setup"){
     if(avail(S.t)<S.t.cfg.N){ask("Yeterli takım yok; bölge veya kuralı gevşet.");render();return true}

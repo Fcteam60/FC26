@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="23.8",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="23.9",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -3250,6 +3250,7 @@ document.addEventListener("change",e=>{
   hideToast();
   const d=e.target.dataset,v=e.target.value;
   if(d.rs){cur().rl[d.rs]=+v;save();render()}
+  else if(d.cprs&&typeof coopSetRuleNum==="function"){coopSetRuleNum(d.cprs,+v);return}
   else if(d.sg){const s=cur();s.oy=s.oy?toNob(s.oy):Object.assign(nob(),{d:"",h:"",c:""});s.oy[d.sg]=v;save();render()}
   else if(e.target.id=="df"){store.diff=+v;save();render()}
   else if(e.target.id=="sft"){st.sft=v;render()}

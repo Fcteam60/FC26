@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — Broadcast PNG Poster Motoru (posters.js · v23.8) */
+/* FC 27 Grup Ligi — Broadcast PNG Poster Motoru (posters.js · v23.9) */
 /* ---------- PAYLAŞILABİLİR GÖRSELLER ---------- */
 const NUMF='"FC Sayi","Barlow Condensed","Oswald","Bahnschrift","Avenir Next Condensed","Roboto Condensed","Arial Narrow",sans-serif';
 const TCOL={1:["#fbeaa8","#e0b43a","#2b2000"],2:["#f3f6f8","#b9c3cb","#1b2328"],3:["#f0c9a2","#be7f47","#2a1500"],0:["#ffffff","#dfeee6","#12211a"]};

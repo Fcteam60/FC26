@@ -1,3 +1,9 @@
+## v23.9 (2026-11-25) — 2P Turnuva Detay Ayarları (GEN & Ülke, CL Hariç) & 3 Görsel Hata Düzeltmesi
+- **2P Turnuva Detay Ayarları (`coop.js`, `app.js`):** Şampiyonlar Ligi hariç tüm ortak turnuva formatlarında (Gruplu, Puan Ligi, Direkt Eleme) kurulum ekranına tam özelleştirme eklendi: Takım/Grup/Çıkan takım sayıları, Bölge (Tümü / Avrupa / Avrupa Dışı), Ülke Filtresi (ülke çıkar/ekle), Güç (GEN En Az/En Çok, Hücum, Orta Saha, Defans), Ülke Limiti, Grupta Aynı Ülke Koruması, Katılımcı Seçimi (En Güçlü / Rastgele), Kura Yöntemi (Torbalı / Rastgele) ve Varsayılana Sıfırla.
+- **Dev Şimşek İkonu Düzeltmesi (`coop.js`, `style.css`):** `cpsimw`, `cpsimko`, `cpsimall`, `cpbuildko` ve `cpfin` butonlarına `ui-btn` ve `.btn.ui-btn svg` (`17×17px`) boyutu eklenerek simülasyon butonundaki SVG taşması giderildi.
+- **Sağ Oyuncu Kartı `.g` Çakışması Düzeltmesi (`coop.js`, `style.css`):** Global `.g` rozet sınıfıyla çakışan tüm 2P `g` sınıfları `.cp-g` olarak ayrıştırıldı ve `.cp-gl` `minmax(0, 1fr)` ile sabitlendi.
+- **Eleme Ağacı Tur Başlığı (`style.css`):** `.bkrh` başlık şeridine flex aralığı eklenerek `Play-Off8/8` bitişikliği giderildi.
+
 ## v23.8 (2026-11-24) — 2P Tepkisizlik Düzeltmesi (`t.rl.xc`), 2P Slot Takım Çekilişi & Takım Izgarası Taşma Düzeltmesi
 - **2P Butonunun Tepki Vermemesi Düzeltildi (`coop.js`, `app.js`):** Firebase’in boş `rl.xc: []` dizisini silmesi nedeniyle kurulum ekranı (`avail` → `elig`) açılırken oluşan `TypeError` hatası `coopNormSim` içinde `t.rl` ve `t.rl.xc` varsayılanlarıyla onarıldı; ayrıca `coopView()` çağrısı `try/catch` korumasına alındı ve `cpopen` açık bireysel panelleri (`st.qs` vb.) temizleyecek şekilde güncellendi.
 - **2P Takım Seçiminde 3 Makaralı Slot Çekilişi (`coop.js` `coopSpin`):** Ortak turnuvadaki **🎲 Rastgele** butonu artık bireysel moddaki 3 makaralı çekiliş animasyonunu (`.slotbox`, `Atla` destekli) rakibin seçtiği takımı dışlayarak çalıştırır ve bitince sunucuya kaydeder.
