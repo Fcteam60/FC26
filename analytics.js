@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — Analitik, xG/xPts, Taktiksel DNA ve Kariyer Motoru (analytics.js · v21.3) */
+/* FC 27 Grup Ligi — Analitik, xG/xPts, Taktiksel DNA ve Kariyer Motoru (analytics.js · v22.0) */
 const RS=["Grup","S64","S32","S16","ÇF","YF","Final","Şamp."];
 /* ---------- RAKİPLER ---------- */
 function oppData(){const M=nob();
@@ -32,7 +32,7 @@ function oppCard(){
   return sumCard+revCard(L)+listCard}
 /* ---------- BEKLENENE GÖRE PERFORMANS / TAKIM GÜCÜ ---------- */
 const d1=v=>(v>0?"+":v<0?"−":"")+Math.abs(v).toFixed(1).replace(".",","),dI=v=>(v>0?"+":v<0?"−":"")+Math.abs(v);
-function expSt(r,c){r=Math.ceil(r);if(r<=1)return 7;if(r==2)return 6;if(isLg(c))return r==3?5:r<=Math.ceil(c.N/2)?4:0;if(c.gs&&r>adv(c))return 0;let t=1;while(t<r)t*=2;return RKM[t]!==undefined?RKM[t]:0}
+function expSt(r,c){r=Math.ceil(r);if(r<=1)return 7;if(r==2)return 6;if(isLg(c))return r==3?5:r<=Math.ceil(c.N/2)?4:0;if(isUcl(c))return r<=4?5:r<=8?4:r<=16?3:r<=24?2:0;if(c.gs&&r>adv(c))return 0;let t=1;while(t<r)t*=2;return RKM[t]!==undefined?RKM[t]:0}
 function xpData(mode){return store.seasons.filter(x=>(!mode||mode=="all"||(mode=="lg"?isLg(x.cfg):!isLg(x.cfg)))&&x.res&&x.my!=null&&T[x.my]&&x.cfg&&x.P&&x.P.length>=4&&x.P.includes(x.my)).map(x=>withSn(x,()=>{
   const m=V(T[x.my]),gt=x.P.filter(i=>V(T[i])>m).length,eq=x.P.filter(i=>V(T[i])==m).length,r=1+gt+(eq-1)/2,N=x.P.length;
   const rk=resRanks(x.cfg),pos=v=>{let i=-1;rk.forEach((q,j)=>{if(q<=v)i=j});return i},ex=expSt(r,x.cfg),ac=x.res.st;
@@ -79,10 +79,10 @@ function powerCard(mode){const D=xpData(mode);if(D.length<2)return "";
   if(st_.length>=2&&wk.length>=2){const df=av(wk)-av(st_);tip=df>=.5?"Zayıf takımla daha iyi oynuyorsun: beklentinin ortalama "+d1(av(wk))+" kademe üstündesin.":df<=-.5?"Güçlü takımla daha iyi oynuyorsun, zayıf takımda beklentinin altında kalıyorsun.":"Takım gücü ne olursa olsun beklentiyle uyumlu oynuyorsun."}
   return psetCard("radar","pur","Takım Gücü ve Sonuç","Takım gücüne göre sezon başarısı",`${D.length} sezon`,sc+rs+`<div class="note" style="margin:8px 0 0"><b>${tip}</b> Sağdaki değer, sezon başına ortalama fark.</div>`)}
 /* ---------- SEZON YOLU / FİLTRE / GALERİ ---------- */
-function pathSvg(x){if(!x.res||!x.cfg)return "";const rk=resRanks(x.cfg),n=rk.length,W=n*40,sv=x.res.st,ch=sv==7,cx=i=>20+i*40,lg=isLg(x.cfg),LRS={0:"Alt",4:"Orta",5:"3.",6:"2.",7:"Şamp."};
+function pathSvg(x){if(!x.res||!x.cfg)return "";const rk=resRanks(x.cfg),n=rk.length,W=n*40,sv=x.res.st,ch=sv==7,cx=i=>20+i*40,lg=isLg(x.cfg),ucl=isUcl(x.cfg),LRS={0:"Alt",4:"Orta",5:"3.",6:"2.",7:"Şamp."};
   let li=-1;rk.forEach((r,i)=>{if(r<=sv)li=i});
   const cl=ch?" ch":"",ln=rk.slice(1).map((r,j)=>`<line class="${j<li?"ln"+cl:"lm"}" x1="${cx(j)}" x2="${cx(j+1)}" y1="14" y2="14"/>`).join("");
-  const nd=rk.map((r,i)=>`<circle class="${i<li?"dn"+cl:i==li?"dn "+(ch?"ch":"el"):"em"}" cx="${cx(i)}" cy="14" r="5.5"/><text x="${cx(i)}" y="31" text-anchor="middle">${lg?(LRS[r]||RS[r]):RS[r]}</text>`).join("");
+  const nd=rk.map((r,i)=>`<circle class="${i<li?"dn"+cl:i==li?"dn "+(ch?"ch":"el"):"em"}" cx="${cx(i)}" cy="14" r="5.5"/><text x="${cx(i)}" y="31" text-anchor="middle">${lg?(LRS[r]||RS[r]):ucl?(RSU[r]||RS[r]):RS[r]}</text>`).join("");
   return `<svg class="spt" viewBox="0 0 ${W} 36" style="max-width:${n*56}px" role="img" aria-label="Sezon yolu: ${esc(stTxt(x.cfg,sv).trim())}">${ln}${nd}</svg>`}
 const SFR=[["all","Tümü"],["champ","Şampiyonluk"],["fin","Finalist / İlk 2"],["semi","Yarı final+ / İlk 3"],["grp","Grupta elendi"],["live","Devam eden"]];
 const SFM=[["all","Tümü"],["cup","Kupa"],["lg","Lig"]];

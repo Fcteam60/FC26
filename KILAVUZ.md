@@ -1,11 +1,11 @@
-# FC 27 Grup Ligi — Kullanım Kılavuzu (v21.3)
+# FC 27 Grup Ligi — Kullanım Kılavuzu (v22.0)
 
 FC 27 Grup Ligi; çevrimdışı çalışabilen (PWA), kupa ve lig turnuvalarını takip etmeni ve arkadaşlarınla canlı kariyer düellosu yapmanı sağlayan kapsamlı bir futbol takip uygulamasıdır.
 
 ---
 
 ## 1. Hızlı Başlangıç (5 Adım)
-1. **Kurulum (`Sezon › Kurulum`):** Hazır şablonlardan (*Dünya Kupası, Klasik 64, Mini Lig, Direkt Eleme, Lig*) birini seç veya **Gelişmiş Kurallar** altından bölge, açılır **Ülke Filtresi**, güç aralığı ve kura yöntemini özelleştirip onayla.
+1. **Kurulum (`Sezon › Kurulum`):** Hazır şablonlardan (*Dünya Kupası, Klasik 64, Mini Lig, Direkt Eleme, Lig, Şampiyonlar Ligi 36 Takım*) birini seç veya **Gelişmiş Kurallar** altından bölge, açılır **Ülke Filtresi**, güç aralığı ve kura yöntemini özelleştirip onayla.
 2. **Takım Seçimi (`Sezon › Takım`):** *Benim İçin Takım Seç* ile obsidiyen slot çekilişi üzerinden zorluk seviyesine göre rastgele kulüp çek (son 3 sezonda oynadığın takımlar tekrar gelmez) veya kulübünü kendin seç.
 3. **Kura (`Turnuva › Kura`):** *Yeni kura hazırla* ile takımları torba torba çek veya *En dengeli kurayı otomatik kur* ile grupları tek dokunuşta oluştur.
 4. **Oyna (`Turnuva › Gruplar`):** Sıradaki maçını **Maç Merkezi**nden gir, ardından diğer maçları **Haftayı Simüle Et** ile oynat.

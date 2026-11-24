@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v21.3)
+   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v22.0)
    - Obsidian Broadcast Arena, 4 sekmeli Düello Stüdyosu (Genel · Sezonlar · Takımlar · DNA & xG)
    - Sıfır harici SDK: Firebase Realtime Database REST API + çevrimdışı IndexedDB uyumu
    - Canlı Sezon İnceleme (Puan Durumu, Maçlar, Eleme, Sezon DNA) & Yedek Manuel Kıyas Kodu
@@ -134,13 +134,18 @@ function buildDuelLiveSeason(cs){
         tbl=rows.map(r=>[T[r.ti]?T[r.ti].n:"?",r.o,r.w,r.d,r.l,r.gf,r.ga,r.pts,r.ti===my?1:0]);
       }
       if(my!=null){
-        const maxGl=cs.cfg.gl||1,played=nob();
-        (cs.mt||[]).filter(m=>m.rd==="Grup"&&m.opp!=null).forEach(m=>{played[m.opp]=(played[m.opp]||0)+1});
-        cs.G[gi].forEach(ti=>{
-          if(ti===my)return;
-          const left=maxGl-(played[ti]||0);
-          if(left>0&&T[ti])rem.push([T[ti].n,left]);
-        });
+        if(isUcl(cs.cfg)&&typeof uclMySchedule==="function"){
+          const pl=new Set((cs.mt||[]).filter(m=>m.rd==="Grup"&&m.opp!=null).map(m=>m.opp));
+          uclMySchedule(cs).forEach(x=>{if(!pl.has(x.opp)&&T[x.opp])rem.push([T[x.opp].n,1])});
+        }else{
+          const maxGl=cs.cfg.gl||1,played=nob();
+          (cs.mt||[]).filter(m=>m.rd==="Grup"&&m.opp!=null).forEach(m=>{played[m.opp]=(played[m.opp]||0)+1});
+          cs.G[gi].forEach(ti=>{
+            if(ti===my)return;
+            const left=maxGl-(played[ti]||0);
+            if(left>0&&T[ti])rem.push([T[ti].n,left]);
+          });
+        }
       }
     }
   }
@@ -620,6 +625,8 @@ function duelShortRes(raw,stCode){
   if(/Yarı final/i.test(t))return "Yarı Final";
   if(/Çeyrek final/i.test(t))return "Çeyrek Final";
   if(/Son 16/i.test(t))return "Son 16";
+  if(/Play-Off/i.test(t))return "Play-Off";
+  if(/Lig aşama/i.test(t))return "Lig Aşaması";
   if(/Son 32/i.test(t))return "Son 32";
   if(/Son 64/i.test(t))return "Son 64";
   if(/Grup aşama/i.test(t))return "Grup Aşaması";

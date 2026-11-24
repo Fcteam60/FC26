@@ -5216,3 +5216,90 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
 /* 2) Sezon Karşılaştır (H2H): sol taraf sabit --ok yeşili, sağ taraf sabit #38bdf8 mavisi (mavi palette çakışmasın) */
 .cmp-rh b.a.ld{color:var(--ok)!important}
 .cmp-bar i.a{background:linear-gradient(90deg,color-mix(in srgb,var(--ok) 78%,#000),var(--ok))!important}
+
+/* ==========================================================================
+   v22.0: Gerçek 36 Takımlı UEFA Şampiyonlar Ligi (3 Bölgeli Puan Tablosu,
+   4 Torba Kura Sahnesi, EV/DEP Rozetleri & Play-Off -> Son 16 Bağlantısı)
+   ========================================================================== */
+
+/* 1) Kurulum: 6. Şampiyonlar Ligi Kartı & Bilgi Kutusu */
+.su-tcard.ucl{
+  border-color:rgba(56,189,248,.34);
+  background:radial-gradient(95% 120% at 0% 50%,rgba(56,189,248,.14),transparent 68%),rgba(127,150,140,.08);
+}
+.su-tcard.ucl .su-tic{color:#38bdf8;border-color:rgba(56,189,248,.35);background:rgba(56,189,248,.14)}
+.ucl-note{
+  margin:0 0 10px;padding:9px 11px;border-radius:12px;font-size:12px;line-height:1.42;color:var(--mut);
+  background:rgba(56,189,248,.09);border:1px solid rgba(56,189,248,.28);
+}
+.ucl-note b{color:var(--tx)}
+
+/* 2) 36 Takımlı Puan Tablosu: 9–24 Play-Off Bölgesi (.tpo, .qpo, .qcut-po) & Üst Özet (.ucl-me) */
+.ucl-me{
+  display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:8px 11px;border-radius:12px;
+  border:1px solid var(--gbd);background:var(--hi);font-size:12.5px;
+}
+.ucl-me b{font-family:var(--num);font-size:17px;white-space:nowrap}
+.ucl-me span{flex:1;min-width:0;color:var(--tx);font-weight:600;line-height:1.25}
+.ucl-me em{
+  font-style:normal;font-family:var(--num);font-size:16px;font-weight:700;
+  padding:2px 9px;border-radius:8px;background:var(--gcard);border:1px solid var(--gbd);color:var(--tx);
+}
+.ucl-me.ok{border-color:color-mix(in srgb,var(--ok) 40%,var(--gbd));background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.ucl-me.ok b,.ucl-me.ok em{color:var(--ok)}
+.ucl-me.po{border-color:rgba(56,189,248,.40);background:rgba(56,189,248,.11)}
+.ucl-me.po b,.ucl-me.po em{color:#38bdf8}
+.ucl-me.out{border-color:rgba(224,49,49,.38);background:rgba(224,49,49,.10)}
+.ucl-me.out b,.ucl-me.out em{color:var(--wr)}
+
+.ptbl .gtbl.row.tb.pt-r.tpo{
+  background:linear-gradient(90deg,rgba(56,189,248,.11),rgba(56,189,248,.015) 65%);
+}
+.ptbl .gtbl.row.tb.pt-r.tpo::before{background:linear-gradient(180deg,#7dd3fc,#0284c7)}
+.ptbl .pt-r .grk2.qpo{
+  background:rgba(56,189,248,.16);color:#0284c7;border:1px solid rgba(56,189,248,.34);
+}
+.ptbl .pt-r.tpo .gpts{
+  background:rgba(56,189,248,.14);border-color:rgba(56,189,248,.32);color:#0284c7;
+}
+:root[data-theme="dark"] .ptbl .pt-r .grk2.qpo,
+:root[data-theme="dark"] .ptbl .pt-r.tpo .gpts{color:#7dd3fc}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .ptbl .pt-r .grk2.qpo,
+  :root:not([data-theme="light"]) .ptbl .pt-r.tpo .gpts{color:#7dd3fc}
+}
+.ptbl .gtbl.row.tb.pt-r.qcut-po{
+  border-bottom-color:rgba(56,189,248,.58)!important;
+}
+.gleg .lgpo{background:linear-gradient(180deg,#7dd3fc,#0284c7)}
+.pgrk.rpo{background:rgba(56,189,248,.16);color:#0284c7;border-color:rgba(56,189,248,.38)}
+:root[data-theme="dark"] .pgrk.rpo{color:#7dd3fc}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .pgrk.rpo{color:#7dd3fc}}
+
+/* 3) UCL Kura Ekranı: 8 Maçlık Fikstür & Torba Satırları */
+.sky-t{color:#38bdf8;font-weight:700}
+.ucl-fx{display:grid;gap:5px}
+.ucl-fxr{
+  width:100%;display:flex;align-items:center;gap:7px;padding:6px 8px;min-height:42px;
+  border-radius:11px;border:1px solid var(--gbd);background:var(--hi);
+  color:var(--tx);font:inherit;text-align:left;cursor:pointer;
+}
+.ucl-fxr:active{transform:scale(.99);border-color:var(--ac)}
+.ucl-fxr .n{flex:1;min-width:0;font-size:13.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ucl-wk,.ucl-pt{
+  font-family:var(--num);font-size:12px;font-weight:700;padding:2px 6px;border-radius:6px;
+  background:var(--gcard);border:1px solid var(--gbd);color:var(--mut);flex:0 0 auto;
+}
+.ucl-ha{
+  font-family:var(--num);font-size:11.5px;font-weight:800;letter-spacing:.03em;
+  padding:2px 7px;border-radius:99px;flex:0 0 auto;white-space:nowrap;
+}
+.ucl-ha.h{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok);border:1px solid color-mix(in srgb,var(--ok) 36%,transparent)}
+.ucl-ha.a{background:rgba(56,189,248,.16);color:#0284c7;border:1px solid rgba(56,189,248,.36)}
+:root[data-theme="dark"] .ucl-ha.a{color:#7dd3fc}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .ucl-ha.a{color:#7dd3fc}}
+.ucl-pr{gap:8px;padding:6px 4px}
+.ucl-pr .n{font-size:13.5px;font-weight:600}
+
+/* 4) Eleme Ağacı: Play-Off -> Son 16 Düz Yatay Bağlantı (.bkt-slot.straight) */
+.bkt-slot.straight:not(.lst)::after{width:16px}

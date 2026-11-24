@@ -1,6 +1,88 @@
-/* FC 27 Grup Ligi — 4 Katmanlı Gerçekçi Simülasyon, Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v21.3) */
+/* FC 27 Grup Ligi — 4 Katmanlı Gerçekçi Simülasyon, Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v22.0) */
 /* ---------- AŞAMA 1, 2 & 3: HAFTALIK SİMÜLASYON, ELEME AĞACI (BRACKET), GOL KRALLIĞI VE TURNUVA BİTİŞİ ---------- */
 const SIM_MODES=[[0,"Gerçekçi","Güç farkı ve gerçek futbol skorları (1-0, 2-1, 1-1 ağırlıklı)"],[1,"Dengeli","Standart güç ve günlük form dengesi"],[2,"Sürprizli","Yüksek şans faktörü, kupa sürprizlerine açık"]];
+
+/* ---------- v22.0: GERÇEK 36 TAKIMLI ŞAMPİYONLAR LİGİ (4 TORBA · 8 HAFTA · PLAY-OFF) ---------- */
+const UCL_TPL_RAW="18-0,1-15,4-2,30-3,6-5,7-19,8-32,23-9,21-10,28-11,12-13,14-22,20-16,26-17,24-34,33-25,35-27,31-29;0-12,1-27,2-9,17-3,13-4,11-5,6-34,7-35,28-8,16-10,19-14,15-29,23-18,20-22,32-21,30-24,26-25,33-31;0-24,1-18,2-22,21-3,4-17,34-5,35-6,16-7,12-8,9-26,32-10,15-11,33-13,29-14,28-19,25-20,23-31,27-30;0-1,20-2,7-3,29-4,26-5,6-11,24-8,13-9,10-12,14-16,18-15,17-31,22-19,21-27,34-23,25-30,28-35,32-33;27-0,22-1,2-33,3-20,8-4,5-13,19-6,25-7,9-15,10-30,11-32,34-12,17-14,31-16,35-18,21-26,24-23,29-28;15-0,9-1,2-6,3-31,4-30,5-7,8-25,10-23,11-21,24-12,13-34,14-33,16-18,27-17,19-35,20-28,22-32,29-26;0-28,33-1,31-2,3-14,23-4,5-29,6-26,7-10,8-16,30-9,11-17,12-25,22-13,35-15,18-21,19-24,27-20,34-32;3-0,1-8,14-2,4-21,5-23,10-6,32-7,9-27,25-11,12-28,13-24,15-19,16-35,17-20,18-29,31-22,26-33,30-34";
+const UCL_TPL=UCL_TPL_RAW.split(";").map(r=>r.split(",").map(p=>{const q=p.split("-");return[+q[0],+q[1]]}));
+const UCL_ADJ=(()=>{const a=Array.from({length:36},()=>[]);UCL_TPL.forEach(r=>r.forEach(([h,aw])=>{a[h].push(aw);a[aw].push(h)}));return a})();
+
+function genUclDraw(s){
+  const P=s.P;if(!P||P.length!==36)return null;
+  const potMode=s.rl.dm!=="rnd",cProt=!!s.rl.gcap;
+  const src=potMode?P.slice().sort((a,b)=>V(T[b])-V(T[a])):sh(P);
+  const pots=[src.slice(0,9),src.slice(9,18),src.slice(18,27),src.slice(27,36)];
+  const calcPen=arr=>{
+    let pen=0;
+    for(let u=0;u<36;u++){
+      const cu=T[arr[u]].c,cnt=nob();
+      const nb=UCL_ADJ[u];
+      for(let k=0;k<nb.length;k++){
+        const cv=T[arr[nb[k]]].c;
+        if(cv===cu)pen+=100;
+        cnt[cv]=(cnt[cv]||0)+1;
+      }
+      for(const c in cnt)if(cnt[c]>2)pen+=10*(cnt[c]-2);
+    }
+    return pen;
+  };
+  let bestArr=null,bestPen=1e9;
+  const restarts=cProt?6:1;
+  for(let tr=0;tr<restarts&&bestPen>0;tr++){
+    const curArr=[];
+    for(let pk=0;pk<4;pk++)curArr.push(...sh(pots[pk]));
+    let curP=cProt?calcPen(curArr):0;
+    if(cProt){
+      for(let step=0;step<200&&curP>0;step++){
+        const pk=(Math.random()*4)|0,base=pk*9;
+        const i=base+((Math.random()*9)|0);
+        let j=base+((Math.random()*8)|0);if(j>=i)j++;
+        const tmp=curArr[i];curArr[i]=curArr[j];curArr[j]=tmp;
+        const np=calcPen(curArr);
+        if(np<=curP)curP=np;
+        else{curArr[j]=curArr[i];curArr[i]=tmp}
+      }
+    }
+    if(curP<bestPen){bestPen=curP;bestArr=curArr.slice()}
+  }
+  const rOrd=sh([0,1,2,3,4,5,6,7]);
+  const rounds=rOrd.map(r=>UCL_TPL[r].map(([h,aw])=>[bestArr[h],bestArr[aw]]));
+  const potOf=ti=>{for(let k=0;k<4;k++)if(pots[k].includes(ti))return k;return 0};
+  const seq=[];
+  if(s.my!=null){
+    rounds.forEach((rnd,wIdx)=>{
+      const pr=rnd.find(([h,aw])=>h===s.my||aw===s.my);
+      if(pr){
+        const isH=pr[0]===s.my,opp=isH?pr[1]:pr[0];
+        seq.push([opp,potOf(opp),isH?1:0,wIdx+1]);
+      }
+    });
+    seq.sort((a,b)=>a[1]-b[1]||b[2]-a[2]||a[3]-b[3]);
+  }
+  return{ucl:true,G:[src],pots,rounds,seq,pen:bestPen};
+}
+
+function uclMySchedule(s){
+  if(!isUcl(s.cfg)||!s.ucl||!Array.isArray(s.ucl.fx)||s.my==null)return [];
+  const potOf=ti=>{if(!s.ucl.pots)return 0;for(let k=0;k<4;k++)if(s.ucl.pots[k]&&s.ucl.pots[k].includes(ti))return k;return 0};
+  const out=[];
+  s.ucl.fx.forEach((rnd,wIdx)=>{
+    if(!Array.isArray(rnd))return;
+    const pr=rnd.find(p=>Array.isArray(p)&&(p[0]===s.my||p[1]===s.my));
+    if(pr){
+      const home=pr[0]===s.my,opp=home?pr[1]:pr[0];
+      out.push({w:wIdx+1,opp,home,pot:potOf(opp)});
+    }
+  });
+  return out;
+}
+
+function uclNextMatch(s,excludeId){
+  const sched=uclMySchedule(s);if(!sched.length)return null;
+  const played=new Set((s.mt||[]).filter(m=>m.id!==excludeId&&m.rd==="Grup"&&m.opp!=null).map(m=>m.opp));
+  return sched.find(x=>!played.has(x.opp))||null;
+}
+
 function ensureSim(s){
   if(!s.sim||typeof s.sim!=="object")s.sim={m:0,w:0,gm:nob(),ko:nob(),sc:nob(),as:nob(),mom:nob()};
   if(![0,1,2].includes(s.sim.m))s.sim.m=0;
@@ -490,6 +572,10 @@ function circleRounds(teams,doubleLeg){
   if(doubleLeg){const rev=rounds.map(rnd=>rnd.map(([a,b])=>[b,a]));return rounds.concat(rev)}
   return rounds}
 function simWeekPairs(s,gi,w){
+  if(isUcl(s.cfg)&&s.ucl&&Array.isArray(s.ucl.fx)){
+    const rnd=s.ucl.fx[w-1];if(!Array.isArray(rnd))return [];
+    return rnd.filter(p=>Array.isArray(p)&&p[0]!==s.my&&p[1]!==s.my);
+  }
   const g=s.G&&s.G[gi];if(!g||g.length<2)return [];
   const gl=s.cfg.gl||1,hasMe=s.my!=null&&g.includes(s.my);
   if(!hasMe){const rnds=circleRounds(g,gl===2);return rnds[w-1]||[]}
@@ -527,10 +613,10 @@ function calcGroupTable(s,gi){
   }
   const sim=ensureSim(s),gSim=sim.gm[gi]||[];
   gSim.forEach(wkList=>{if(Array.isArray(wkList))wkList.forEach(arr=>{if(Array.isArray(arr)&&arr.length>=4)addM(arr[0],arr[1],+arr[2]||0,+arr[3]||0)})});
-  return g.map(ti=>tbl[ti]).sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf||V(RT(s,b.ti))-V(RT(s,a.ti)))}
+  return g.map(ti=>tbl[ti]).sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf||(isUcl(s.cfg)?(b.w-a.w):0)||V(RT(s,b.ti))-V(RT(s,a.ti)))}
 function simNextWeek(s){
-  if(!s.G||(!s.cfg.gs&&!isLg(s.cfg)))return null;
-  const sim=ensureSim(s),totW=((s.cfg.gs||s.cfg.N)-1)*(s.cfg.gl||1);
+  if(!s.G||(!s.cfg.gs&&!isLg(s.cfg)&&!isUcl(s.cfg)))return null;
+  const sim=ensureSim(s),totW=totWeeks(s.cfg);
   if(sim.w>=totW)return "Tüm grup/lig haftaları zaten simüle edildi";
   const myGm=(s.mt||[]).filter(m=>m.rd==="Grup").length,targetW=sim.w+1;
   if(!s.res&&s.my!=null&&myGm<targetW)return `Önce kendi ${targetW}. hafta maçını girmelisin`;
@@ -546,8 +632,8 @@ function simNextWeek(s){
   sim.w=targetW;
   rebuildSimScorers(s);
   if(sim.w>=totW){
-    const lg=isLg(s.cfg),qMax=s.cfg.q||2;
-    if(!lg&&s.cfg.gs){
+    const lg=isLg(s.cfg),ucl=isUcl(s.cfg),qMax=ucl?24:(s.cfg.q||2);
+    if(!lg&&(s.cfg.gs||ucl)){
       s.gqs=s.gqs||nob();
       s.G.forEach((g,gi)=>{
         const rows=calcGroupTable(s,gi);
@@ -565,12 +651,12 @@ function simNextWeek(s){
       const rows=calcGroupTable(s,0),myRk=rows.findIndex(r=>r.ti===s.my)+1;
       if(myRk>0){s.grk=myRk;st.grk=myRk}
     }
-    return `${targetW}. hafta simüle edildi · ${lg?"Lig":"Grup"} aşaması tamamlandı!`;
+    return `${targetW}. hafta simüle edildi · ${ucl?"Lig Aşaması tamamlandı · Play-Off & Son 16 kuruldu!":(lg?"Lig":"Grup")+" aşaması tamamlandı!"}`;
   }
   return `${targetW}. hafta maçları simüle edildi`}
 function simUndoWeek(s){
   const sim=ensureSim(s);if(sim.w<=0)return null;
-  const w=sim.w,totW=((s.cfg.gs||s.cfg.N)-1)*(s.cfg.gl||1);
+  const w=sim.w,totW=totWeeks(s.cfg);
   Object.keys(sim.gm).forEach(gi=>{if(Array.isArray(sim.gm[gi]))sim.gm[gi].splice(w-1,1)});
   sim.w=w-1;
   sim.ko=nob();
@@ -629,12 +715,38 @@ function buildInitialKoPairs(s){
   }
   return out}
 
+function buildUclBracket(s){
+  const q=s.gqs&&s.gqs[0];
+  if(!Array.isArray(q)||q.length<24)return null;
+  const mkP=(t1,t2,l1,l2,sa)=>({t1,t2,l1,l2,sa:sa||0,g1:null,g2:null,et:0,pf:null,pa:null,w:null,s1:[],s2:[],a1:[],a2:[]});
+  const coin=a=>Math.random()<0.5?[a[0],a[1]]:[a[1],a[0]];
+  // Official UEFA paired seeding symmetry: #1/#2 only meet in Final; #1-#4 only in Semis
+  const [s1,s2]=coin([0,1]),[s3,s4]=coin([2,3]),[s5,s6]=coin([4,5]),[s7,s8]=coin([6,7]);
+  const [p9,p10]=coin([8,9]),[p11,p12]=coin([10,11]),[p13,p14]=coin([12,13]),[p15,p16]=coin([14,15]);
+  const [p17,p18]=coin([16,17]),[p19,p20]=coin([18,19]),[p21,p22]=coin([20,21]),[p23,p24]=coin([22,23]);
+  const poPairs=[
+    [p15,p17],[p9,p23],[p11,p21],[p13,p19],
+    [p14,p20],[p12,p22],[p10,p24],[p16,p18]
+  ].map(([a,b])=>mkP(q[a],q[b],`#${a+1}`,`#${b+1}`,0.8));
+  const r16Seeds=[s1,s7,s5,s3,s4,s6,s8,s2];
+  const r16Pairs=r16Seeds.map((sd,idx)=>mkP(q[sd],null,`#${sd+1}`,`PO${idx+1}`,1.0));
+  return{po:poPairs,r16:r16Pairs};
+}
+
 function initKoBracket(s,forceReset){
   if(isLg(s.cfg)||!s.G)return null;
   const sim=ensureSim(s),RDs=rds(s.cfg).filter(r=>r!=="Grup");
   if(!RDs.length)return null;
-  const firstRd=RDs[0];
   if(forceReset)sim.ko=nob();
+  if(isUcl(s.cfg)){
+    if(!Array.isArray(sim.ko["Play-Off"])||!sim.ko["Play-Off"].length){
+      const ub=buildUclBracket(s);
+      if(ub){sim.ko["Play-Off"]=ub.po;sim.ko["Son 16"]=ub.r16}
+    }
+    syncUserMatchesToBracket(s);
+    return sim.ko;
+  }
+  const firstRd=RDs[0];
   if(!Array.isArray(sim.ko[firstRd])||!sim.ko[firstRd].length){
     const initP=buildInitialKoPairs(s);
     if(initP.length)sim.ko[firstRd]=initP;
@@ -695,6 +807,15 @@ function syncUserMatchesToBracket(s){
         }
       }
     });
+    if(isUcl(s.cfg)&&rd==="Play-Off"&&rIdx+1<RDs.length){
+      const nextRd=RDs[rIdx+1],r16=ko[nextRd];
+      if(Array.isArray(r16)&&r16.length===pairs.length){
+        for(let i=0;i<pairs.length;i++){
+          if(r16[i]&&r16[i].w==null)r16[i].t2=pairs[i].w!=null?pairs[i].w:null;
+        }
+      }
+      continue;
+    }
     if(!pairs.every(p=>p.w!=null)){
       for(let k=rIdx+1;k<RDs.length;k++){
         const nxt=ko[RDs[k]];
@@ -731,7 +852,8 @@ function getAutoKoOpponent(s,rdName){
   if(!Array.isArray(pairs))return null;
   const m=pairs.find(p=>p.t1===s.my||p.t2===s.my);
   if(!m)return null;
-  return m.t1===s.my?m.t2:m.t1}
+  const op=m.t1===s.my?m.t2:m.t1;
+  return op!=null&&T[op]?op:null}
 
 function simOneKoTie(s,p,rd){
   const sim=ensureSim(s),legs=lgs(s.cfg,rd),sa=p.sa||0;
@@ -796,11 +918,12 @@ function isUserEliminated(s){
   if(s.my==null||isLg(s.cfg))return false;
   if(s.res&&s.res.st<7)return true;
   const g=grpState(s);
-  const sim=ensureSim(s),totW=s.cfg.gs?(s.cfg.gs-1)*(s.cfg.gl||1):0;
-  if(s.cfg.gs&&g&&g.done&&sim.w>=totW){
+  const sim=ensureSim(s),totW=totWeeks(s.cfg);
+  if((s.cfg.gs||isUcl(s.cfg))&&g&&g.done&&sim.w>=totW){
     const gi=s.G.findIndex(grp=>grp.includes(s.my));
     const qL=(s.gqs&&s.gqs[gi])||[];
-    if(qL.length>=(s.cfg.q||2)&&!qL.includes(s.my)&&!s.gq)return true;
+    const qNeed=isUcl(s.cfg)?24:(s.cfg.q||2);
+    if(qL.length>=qNeed&&!qL.includes(s.my)&&!s.gq)return true;
   }
   syncUserMatchesToBracket(s);
   const ko=sim.ko,RDs=rds(s.cfg).filter(r=>r!=="Grup");
@@ -814,10 +937,10 @@ function isUserEliminated(s){
 
 function simKoStage(s,onlyCurrentRd){
   if(isLg(s.cfg))return "Lig modunda eleme turu yoktur";
-  if(s.cfg.gs){
-    const sim=ensureSim(s),totW=(s.cfg.gs-1)*(s.cfg.gl||1);
-    const qCnt=Object.values(s.gqs||{}).reduce((a,l)=>a+(l?l.length:0),0),totQ=s.G.length*(s.cfg.q||2);
-    if(sim.w<totW&&qCnt<totQ)return "Önce grup aşaması maçlarını tamamlamalısın";
+  if(s.cfg.gs||isUcl(s.cfg)){
+    const sim=ensureSim(s),totW=totWeeks(s.cfg);
+    const qCnt=Object.values(s.gqs||{}).reduce((a,l)=>a+(l?l.length:0),0),totQ=isUcl(s.cfg)?24:(s.G.length*(s.cfg.q||2));
+    if(sim.w<totW&&qCnt<totQ)return isUcl(s.cfg)?"Önce 8 haftalık Lig Aşamasını tamamlamalısın":"Önce grup aşaması maçlarını tamamlamalısın";
   }
   initKoBracket(s,false);
   const sim=ensureSim(s),ko=sim.ko,RDs=rds(s.cfg).filter(r=>r!=="Grup");
@@ -829,12 +952,14 @@ function simKoStage(s,onlyCurrentRd){
     const pairs=ko[rd];
     if(!Array.isArray(pairs)||!pairs.length)break;
     if(pairs.every(p=>p.w!=null))continue;
+    if(pairs.some(p=>p.t1==null||p.t2==null))break;
     const userTie=pairs.find(p=>p.t1===s.my||p.t2===s.my);
     if(userTie&&userTie.w==null&&!s.res){
-      return `Önce ${rd} turundaki kendi maçını (${T[userTie.t1===s.my?userTie.t2:userTie.t1].n}) oynamalısın`;
+      const opIdx=userTie.t1===s.my?userTie.t2:userTie.t1;
+      return `Önce ${rd} turundaki kendi maçını${opIdx!=null&&T[opIdx]?" ("+T[opIdx].n+")":""} oynamalısın`;
     }
     pairs.forEach(p=>{
-      if(p.w==null)simOneKoTie(s,p,rd);
+      if(p.w==null&&p.t1!=null&&p.t2!=null)simOneKoTie(s,p,rd);
     });
     lastSimRd=rd;
     syncUserMatchesToBracket(s);
@@ -889,6 +1014,7 @@ function getTourneyOutcome(s){
       const pairs=sim.ko[rd]||[];
       const m=pairs.find(p=>p.t1===s.my||p.t2===s.my);
       if(m&&m.w!=null&&m.w!==s.my){
+        if(rd==="Play-Off"){stVal=2;pts=null;break}
         const kNum=+Object.keys(RN).find(k=>RN[k]===rd);
         stVal=RKM[kNum]||0;pts=null;break;
       }
@@ -941,9 +1067,11 @@ function finishTournament(s){
   return `Turnuva sonlandırıldı! 🏆 Şampiyon: ${T[out.ch].n}`}
 
 function koTreeHtml(s,ko,RDs){
-  const firstCnt=(ko[RDs[0]]&&ko[RDs[0]].length)||Math.max(1,Math.floor(adv(s.cfg)/2));
+  const ucl=isUcl(s.cfg);
+  const firstCnt=ucl?8:((ko[RDs[0]]&&ko[RDs[0]].length)||Math.max(1,Math.floor(adv(s.cfg)/2)));
   const cols=RDs.map((rd,rIdx)=>{
-    const expCnt=Math.max(1,Math.round(firstCnt/Math.pow(2,rIdx)));
+    const expCnt=ucl?(rIdx===0?8:Math.max(1,Math.round(8/Math.pow(2,rIdx-1)))):Math.max(1,Math.round(firstCnt/Math.pow(2,rIdx)));
+    const isStraight=ucl&&rIdx===0;
     const pairs=Array.isArray(ko[rd])?ko[rd]:[];
     const doneCnt=pairs.filter(p=>p&&p.w!=null).length;
     const isFirst=rIdx===0,isLast=rIdx===RDs.length-1;
@@ -951,7 +1079,7 @@ function koTreeHtml(s,ko,RDs){
       const p=pairs[pIdx]||null;
       const done=!!(p&&p.w!=null),mine=!!(p&&(p.t1===s.my||p.t2===s.my));
       const w1=done&&p.w===p.t1,w2=done&&p.w===p.t2;
-      const sideCls=isLast?"":(pIdx%2===0?" top":" bot");
+      const sideCls=isLast?"":isStraight?" straight":(pIdx%2===0?" top":" bot");
       const armCls=mine?" mine":done?" dn":"";
       const tmRow=(ti,g,isW,isL)=>{
         if(ti==null||!T[ti])return `<div class="bkt-tm tbd"><span class="bkt-ph">?</span><span class="n">Bekleniyor</span><b class="bkt-sc">—</b></div>`;
@@ -971,7 +1099,7 @@ function koTreeHtml(s,ko,RDs){
         tmRow(p?p.t1:null,p?p.g1:null,w1,done&&!w1)+
         tmRow(p?p.t2:null,p?p.g2:null,w2,done&&!w2)+
         meta+`</div>`;
-      return `<div class="bkt-slot${isFirst?" fst":""}${isLast?" lst":""}${sideCls}${armCls}">${node}${!isLast?`<i class="bkt-arm" aria-hidden="true"></i>`:""}</div>`;
+      return `<div class="bkt-slot${isFirst?" fst":""}${isLast?" lst":""}${sideCls}${armCls}">${node}${!isLast&&!isStraight?`<i class="bkt-arm" aria-hidden="true"></i>`:""}</div>`;
     }).join("");
     const colDone=doneCnt>=expCnt&&expCnt>0;
     return `<div class="bkt-col${isLast?" fin":""}${colDone?" cdone":""}"><div class="bkt-chd"><span class="bkt-cpill">${isLast?uiIco("trophy"):""}${esc(rd)}<em>${doneCnt}/${expCnt}</em></span></div><div class="bkt-colb">${slots}</div></div>`;
@@ -989,9 +1117,10 @@ function koBracketCard(s){
   if(activeRd){
     const pairs=ko[activeRd]||[];
     const userTie=pairs.find(p=>p.t1===s.my||p.t2===s.my);
-    const needUser=userTie&&userTie.w==null&&!s.res;
+    const opTmp=userTie?(userTie.t1===s.my?userTie.t2:userTie.t1):null;
+    const needUser=!!(userTie&&userTie.w==null&&opTmp!=null&&T[opTmp]&&!s.res);
     if(needUser){
-      const opp=userTie.t1===s.my?userTie.t2:userTie.t1;
+      const opp=opTmp;
       simBtns=`<div class="bar" style="margin:0 0 10px"><button class="btn p qgo ui-btn" data-a="qs" style="flex:1">${uiIco("ball")}<span>${activeRd} Maçını Gir (Rakip: ${esc(T[opp].n)})</span></button></div>`;
     }else{
       simBtns=`<div class="bar" style="margin:0 0 10px"><button class="btn p ui-btn" data-a="simko" style="flex:1">${uiIco("bolt")}<span>${activeRd} Turunu Simüle Et</span></button>${RDs.indexOf(activeRd)<RDs.length-1?`<button class="btn ui-btn" data-a="simallko" style="flex:1">${uiIco("ff")}<span>Finale Kadar Simüle Et</span></button>`:""}</div>`;
@@ -1013,10 +1142,12 @@ function koBracketCard(s){
         const ck='<i class="bkck" role="img" aria-label="Turu geçti" title="Turu geçti">✓</i>';
         const scStr=done?`${p.g1}–${p.g2}${p.pf!=null?` <small>(P ${p.pf}-${p.pa})</small>`:p.et?` <small>(UZ)</small>`:""}${isTwo?` <small class="bkleg" title="1.M ${p.leg1[0]}–${p.leg1[1]} · 2.M ${p.leg2[0]}–${p.leg2[1]}">RÖVANŞLI</small>`:""}`:"vs";
         const det=done?simMetaLine(p.t1,p.t2,p.g1,p.g2,p.s1,p.s2,p.a1,p.a2,p.leg1,p.leg2):"";
+        const t1H=p.t1!=null&&T[p.t1]?`${w1?ck:""}${p.l1?`<small class="bksd">${p.l1}</small>`:""}<span class="n">${nm(p.t1)}</span>${badge(p.t1,18)}`:`<span class="n lb">Bekleniyor</span>`;
+        const t2H=p.t2!=null&&T[p.t2]?`${badge(p.t2,18)}<span class="n">${nm(p.t2)}</span>${p.l2?`<small class="bksd">${p.l2}</small>`:""}${w2?ck:""}`:`<span class="n lb">${p.l2||"Bekleniyor"}</span>`;
         return `<div class="bktie${mine?" mine":""}${done?" dn":""}${isFin?" fin":""}">`+
-          `<span class="bktm hm${w1?" w":""}">${w1?ck:""}${p.l1?`<small class="bksd">${p.l1}</small>`:""}<span class="n">${nm(p.t1)}</span>${badge(p.t1,18)}</span>`+
+          `<span class="bktm hm${w1?" w":""}">${t1H}</span>`+
           `<b class="bksc">${scStr}</b>`+
-          `<span class="bktm aw${w2?" w":""}">${badge(p.t2,18)}<span class="n">${nm(p.t2)}</span>${p.l2?`<small class="bksd">${p.l2}</small>`:""}${w2?ck:""}</span>`+
+          `<span class="bktm aw${w2?" w":""}">${t2H}</span>`+
           (det?`<div class="simdet">${det}</div>`:"")+
           `</div>`;
       }).join("");
@@ -1033,7 +1164,7 @@ function weekBulletinData(s){
   if(!s||!s.G||(!s.cfg.gs&&!isLg(s.cfg)))return null;
   const sim=ensureSim(s),w=sim.w||0;
   if(w<=0)return null;
-  const lg=isLg(s.cfg);
+  const lg=isLg(s.cfg)||isUcl(s.cfg);
   const myGi=s.my!=null?s.G.findIndex(g=>g.includes(s.my)):-1;
   const groupMatches=[],allMatches=[],hatTricks=[];
   const nmOf=(ti,v)=>{const q=squadOf(ti);return typeof v==="number"?(q[v]&&q[v].n):v};
