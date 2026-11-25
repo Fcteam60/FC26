@@ -1,3 +1,9 @@
+## v25.0 (2026-11-25) — Premium Kupa Şablonları Tasarımı & Konferans/Avrupa Ligi İlk 4 Çıkış Güncellemesi
+- **Konferans Ligi & Avrupa Ligi Gruptan Çıkanlar `4` Yapıldı (`app.js` `CUP_PRESETS`):** İki şablonda da `q: 4` (4×8 grup, her gruptan ilk 4 takım → 16 takımlı Son 16 eleme ağacı) tanımlandı.
+- **Broadcast-Kalite Kupa Şablon Kartları (`app.js`, `style.css`):**
+  - Siyah dolguya düşen eski ikonlar yerine her turnuvaya özel ince çizgili vektörel amblemler (`CUP_SVGS`: zümrüt kalkan, turuncu Avrupa kupası, gökyüzü ŞL yıldız topu) eklendi; aktif seçili kartta renkli madalyon ve `✓ Seçili` rozetine dönüşür.
+  - Satır sonundan kırılan düz metin açıklamaları kaldırılıp kırpılmayan yapılandırılmış mikro rozetlere (`32T · 4×8`, `İlk 4 Çıkar`, `≤80 GEN`, `Ülke 8 · Grup 2`, `Rastgele`) geçildi; her karta kupa renginde dikey sol vurgu şeridi ve hafif köşe ışıması eklendi.
+
 ## v24.10 (2026-11-25) — 3 Hazır Kupa Şablonu (Konferans · Avrupa · Şampiyonlar Ligi) & 2P İnce Cilalar
 - **Hazır Kupa Şablonları (`app.js`, `coop.js`, `style.css`):** Hem Bireysel hem 2P kurulum ekranında 6 format kartının hemen altına tek dokunuşla format + GEN + ülke kurallarını birlikte uygulayan 3 hazır kupa şablonu eklendi:
   - **Konferans Ligi:** 32 takım · 4×8 grup · gruptan 2 çıkar · Grup tek maç / Eleme çift maç / Final tek maç · Tüm bölgeler · En çok 80 GEN · Ülke limiti 8 · Aynı grupta 2 · Rastgele seçim · Torbalı kura (68/32 kulüp).

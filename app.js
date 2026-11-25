@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="24.10",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="25.0",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -1513,19 +1513,29 @@ function histView(){
 
 const TPL=[["Dünya Kupası","32T · 8×4 grup",32,4,2,0],["Klasik 64","64T · 8×8 grup",64,8,2,0],["Mini Lig","16T · 4×4 grup",16,4,2,0],["Direkt Eleme","8T · Eleme",8,0,0,0],["Puan Ligi","4–24T · Lig",16,16,0,0],["Şamp. Ligi","36T · 8 maç + PO",36,36,24,1]];
 const tplOn=(c,p)=>p[5]?isUcl(c):(p[4]===0&&p[2]===p[3]?isLg(c):(c.N==p[2]&&(c.gs||0)==p[3]&&(!p[3]||c.q==p[4])&&!isLg(c)&&!isUcl(c)));
+const CUP_SVGS={
+  uecl:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5.4c0 4.5-3 8.1-7 9.6-4-1.5-7-5.1-7-9.6V6l7-3z"/><path d="M9.2 11.8l2 2 3.8-4.2"/></svg>',
+  uel:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5.5a4 4 0 0 1-8 0V4z"/><path d="M8 6.5H5.5a2 2 0 0 0 0 4H8M16 6.5h2.5a2 2 0 0 1 0 4H16"/><path d="M12 13.5V18M8.5 20h7M10 18h4"/></svg>',
+  ucl:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.8"/><polygon points="12 6.8 13.5 10.1 17.1 10.5 14.4 12.9 15.1 16.4 12 14.6 8.9 16.4 9.6 12.9 6.9 10.5 10.5 10.1"/></svg>',
+  chk:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 12.5l4.2 4.2L18.5 7.8"/></svg>',
+  arr:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6.5L15 12l-5.5 5.5"/></svg>'
+};
 const CUP_PRESETS=[
   {
-    id:"uecl",name:"Konferans Ligi",sub:"32T · 4×8 · ≤80 GEN · Rastgele · Ülke 8 / Grup 2",tier:"emr",ico:"shield",
-    cfg:{N:32,gs:8,q:2,gl:1,kl:2,fl:1},
+    id:"uecl",code:"UECL · KONFERANS",name:"Konferans Ligi",tier:"emr",
+    specs:[["32T · 4×8",1],["İlk 4 Çıkar",1],["≤80 GEN",1],["Ülke 8 · Grup 2",0],["Rastgele",0]],
+    cfg:{N:32,gs:8,q:4,gl:1,kl:2,fl:1},
     rl:{rg:"all",xc:[],gmin:0,gmax:80,amin:0,mmin:0,dmin:0,cap:8,gcap:2,pick:"rnd",dm:"pot"}
   },
   {
-    id:"uel",name:"Avrupa Ligi",sub:"32T · 4×8 · 78+ GEN · Rastgele · Ülke 8 / Grup 2",tier:"org",ico:"flame",
-    cfg:{N:32,gs:8,q:2,gl:1,kl:2,fl:1},
+    id:"uel",code:"UEL · AVRUPA",name:"Avrupa Ligi",tier:"org",
+    specs:[["32T · 4×8",1],["İlk 4 Çıkar",1],["78+ GEN",1],["Ülke 8 · Grup 2",0],["Rastgele",0]],
+    cfg:{N:32,gs:8,q:4,gl:1,kl:2,fl:1},
     rl:{rg:"all",xc:[],gmin:78,gmax:99,amin:0,mmin:0,dmin:0,cap:8,gcap:2,pick:"rnd",dm:"pot"}
   },
   {
-    id:"ucl",name:"Şampiyonlar Ligi",sub:"36T · 8 Maç + PO · 77+ GEN · Avrupa · Ülke 10",tier:"sky",ico:"trophy",
+    id:"ucl",code:"UCL · ŞAMPİYONLAR",name:"Şampiyonlar Ligi",tier:"sky",
+    specs:[["36T · 8 Maç + PO",1],["77+ GEN",1],["Avrupa",1],["Ülke 10",0],["En Güçlü",0]],
     cfg:{N:36,gs:36,q:24,gl:1,kl:2,fl:1,ucl:1},
     rl:{rg:"eu",xc:[],gmin:77,gmax:99,amin:0,mmin:0,dmin:0,cap:10,gcap:0,pick:"top",dm:"pot"}
   }
@@ -1538,15 +1548,21 @@ function cupPresetOn(c,r,p){
   return (r.rg||"all")===pr.rg&&!(r.xc&&r.xc.length)&&(+r.gmin||0)===pr.gmin&&(r.gmax==null?99:+r.gmax)===pr.gmax&&(+r.amin||0)===0&&(+r.mmin||0)===0&&(+r.dmin||0)===0&&(+r.cap||0)===pr.cap&&(+r.gcap||0)===pr.gcap&&(r.pick||"top")===pr.pick&&(r.dm||"pot")===pr.dm;
 }
 function cupPresetsHtml(c,r,act){
-  return `<div class="su-cpblk"><div class="su-cphd"><span class="pset-lbl" style="margin:0">Hazır Kupa Şablonları</span><small>Format + GEN &amp; Ülke Kuralları</small></div>`+
+  return `<div class="su-cpblk">`+
+    `<div class="su-cphd"><span class="su-cpttl">${uiIco("trophy")}<span>Hazır Kupa Şablonları</span></span><span class="su-cpbadge">Tek tıkla kur</span></div>`+
     `<div class="su-cplist">${CUP_PRESETS.map((p,idx)=>{
       const on=cupPresetOn(c,r,p);
+      const specs=p.specs.map(([lbl,hi])=>`<span class="su-cpsp${hi?" hi":""}">${lbl}</span>`).join("");
       return `<button class="su-cpcard ${p.tier}${on?" on":""}" data-a="${act}" data-v="${idx}" aria-pressed="${on}">`+
-        `<span class="su-cpic">${UICO[p.ico]||UICO.trophy}</span>`+
-        `<span class="su-cptxt"><b>${p.name}</b><small>${p.sub}</small></span>`+
-        `<span class="su-cpr">${on?`<span class="xfpill ${p.tier}">Aktif</span>`:`<span class="su-cparr" aria-hidden="true">›</span>`}</span>`+
+        `<div class="su-cptop">`+
+          `<span class="su-cpic">${CUP_SVGS[p.id]}</span>`+
+          `<span class="su-cptxt"><span class="su-cpcode">${p.code}</span><b>${p.name}</b></span>`+
+          `<span class="su-cpr">${on?`<span class="su-cpst">${CUP_SVGS.chk}<span>Seçili</span></span>`:`<span class="su-cpgo" aria-hidden="true">${CUP_SVGS.arr}</span>`}</span>`+
+        `</div>`+
+        `<div class="su-cpspecs">${specs}</div>`+
       `</button>`;
-    }).join("")}</div></div>`;
+    }).join("")}</div>`+
+  `</div>`;
 }
 /* ---------- SEZON ANA EKRANI, 5'Lİ GEZİNME, HIZLI SKOR PANELİ ---------- */
 const crs=(i,w)=>`<div style="display:flex;justify-content:center;margin-bottom:2px">${badge(i,w||36)}</div>`;
