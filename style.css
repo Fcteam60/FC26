@@ -5424,8 +5424,9 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
 .cp-fpbtn b{font-family:var(--num);font-size:12px;color:var(--mut)}
 .cp-fpbtn span{font-weight:700}
 .cp-fpbtn.h2h{border-color:rgba(240,194,75,.45);background:rgba(240,194,75,.08)}
-.cp-fpbtn.on{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 16%,var(--gcard))}
-.cp-fpbtn.on b{color:var(--ac)}
+.cp-fpbtn.on{border-color:var(--ac);background:var(--ac);color:var(--acx)}
+.cp-fpbtn.on b{color:var(--acx)!important;opacity:.88}
+.cp-fpbtn.on span{color:var(--acx)!important}
 
 /* v23.5: 2P Geçmiş geçiş butonu aktif stili */
 .cp-sm.on{background:var(--ac)!important;color:var(--acx)!important;border-color:var(--ac)!important}
@@ -5641,3 +5642,46 @@ button.bktm:active{opacity:.72}
   :root:not([data-theme="dark"]) .cp-vmid span,
   :root:not([data-theme="dark"]) .cp-mchip.h2h{color:#9a6700}
 }
+
+/* ==========================================================================
+   v24.4: 2P Uyarlanabilir Üst Çubuk (Oda Kodu + Yenile) & Oda Yönetimi Modalı
+   ========================================================================== */
+header .btn.cp-hdroom{
+  width:auto;min-width:0;padding:0 9px;gap:5px;
+  font-family:var(--num);font-size:13px;font-weight:800;letter-spacing:.04em;white-space:nowrap;
+  border-color:color-mix(in srgb,var(--ac) 42%,var(--gbd));
+  background:color-mix(in srgb,var(--ac) 12%,var(--hi));
+  color:var(--tx);
+}
+header .btn.cp-hdroom .cp-chev{font-style:normal;font-size:11px;opacity:.72;margin-left:-1px}
+header .btn.cp-hdref{width:38px;padding:0}
+header .btn.cp-hdref svg{
+  width:16px;height:16px;flex:0 0 auto;
+  fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
+}
+header .btn.cp-hdref.spin svg{animation:dlSpin .85s linear infinite}
+@media(max-width:440px){
+  header .btn.cp-hdroom{padding:0 7px;gap:4px;font-size:12px}
+  header .btn.cp-hdref{width:34px}
+}
+@media(max-width:359px){
+  h1 .hd-ttl{font-size:15px}
+  header .btn.cp-hdroom{padding:0 6px;font-size:11.5px}
+}
+
+.cp-rmstat{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  margin:0 0 12px;padding:9px 11px;border-radius:12px;
+  background:var(--hi);border:1px solid var(--gbd);
+  font-size:12px;color:var(--mut);
+}
+.cp-rmstat span{display:inline-flex;align-items:center;gap:6px}
+.cp-rmstat b{font-family:var(--num);font-size:15px;letter-spacing:.06em;color:var(--tx)}
+.cp-rmleave{
+  background:rgba(224,49,49,.12);border:1px solid rgba(224,49,49,.36);color:#f87171;
+  font-weight:700;
+}
+:root[data-theme="light"] .cp-rmleave{color:#c92a2a;background:rgba(224,49,49,.09);border-color:rgba(224,49,49,.32)}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]) .cp-rmleave{color:#c92a2a;background:rgba(224,49,49,.09);border-color:rgba(224,49,49,.32)}}
+.cp-psinv{text-align:left;cursor:pointer;font:inherit;border-style:dashed;border-color:color-mix(in srgb,var(--ac) 48%,var(--gbd))}
+.cp-psinv b{color:var(--ac)}

@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — 4 Katmanlı Gerçekçi Simülasyon, Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v24.3) */
+/* FC 27 Grup Ligi — 4 Katmanlı Gerçekçi Simülasyon, Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v24.4) */
 /* ---------- AŞAMA 1, 2 & 3: HAFTALIK SİMÜLASYON, ELEME AĞACI (BRACKET), GOL KRALLIĞI VE TURNUVA BİTİŞİ ---------- */
 const SIM_MODES=[[0,"Gerçekçi","Güç farkı ve gerçek futbol skorları (1-0, 2-1, 1-1 ağırlıklı)"],[1,"Dengeli","Standart güç ve günlük form dengesi"],[2,"Sürprizli","Yüksek şans faktörü, kupa sürprizlerine açık"]];
 

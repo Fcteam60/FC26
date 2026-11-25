@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — coop.js · v24.3
+   FC 27 Grup Ligi — coop.js · v24.4
    İzole 2 Kişilik Online Ortak Turnuva (Co-op Oda) Modülü
    - Tek kişilik IndexedDB / JSON yedeğe hiç dokunmaz
    - Çakışmasız 2 düğümlü Firebase mimarisi (/rooms/{room}/host.json & guest.json)
@@ -975,7 +975,7 @@ function coopPickView(S){
   const bothReady=S.hTi!=null&&S.gTi!=null;
   const statusCard=`<div class="cp-pstatus">`+
     `<div class="cp-ps me${S.hTi!=null?" ok":""}"><span>${esc(S.hName)} (Kurucu)</span><b>${S.hTi!=null?`${badge(S.hTi,20)} ${esc(T[S.hTi].n)}`:"Seçmedi"}</b></div>`+
-    `<div class="cp-ps op${S.gTi!=null?" ok":""}"><span>${S.guest&&S.guest.name&&S.gName!=="Misafir"?`${esc(S.gName)} (Misafir)`:"Misafir · Arkadaşın"}</span><b>${S.gTi!=null?`${badge(S.gTi,20)} ${esc(T[S.gTi].n)}`:"Seçmedi"}</b></div>`+
+    (!S.guest&&S.role==="host"?`<button class="cp-ps op cp-psinv" data-a="cpshare" type="button"><span>Misafir · Arkadaşın</span><b>Davet Et ›</b></button>`:`<div class="cp-ps op${S.gTi!=null?" ok":""}"><span>${S.guest&&S.guest.name&&S.gName!=="Misafir"?`${esc(S.gName)} (Misafir)`:"Misafir · Arkadaşın"}</span><b>${S.gTi!=null?`${badge(S.gTi,20)} ${esc(T[S.gTi].n)}`:"Seçmedi"}</b></div>`)+
   `</div>`;
   const q=nz(st.cpQ||"");
   const filtered=q?P.filter(i=>nz(T[i].n).includes(q)||nz(CN[T[i].c][0]).includes(q)):P;
@@ -1353,43 +1353,63 @@ function coopHistCard(S){
   );
 }
 
+function coopHeaderControls(){
+  const cfg=coopLoadCfg();
+  if(!cfg.room||!cfg.role)return "";
+  return `<button class="btn cp-hdroom" data-a="cproom" aria-label="Oda bilgileri ve davet" title="Oda bilgileri ve davet"><i class="cp-dot"></i><span>${esc(cfg.room)}</span><i class="cp-chev">▾</i></button>`+
+    `<button class="btn cp-hdref${st.cpBusy?" spin":""}" data-a="cpref" ${st.cpBusy?"disabled":""} aria-label="Odayı yenile" title="Odayı yenile">${CPICO.ref}</button>`;
+}
+
+function coopRoomDlg(){
+  const cfg=coopLoadCfg();
+  if(!cfg.room||!cfg.role)return "";
+  const S=coopState();
+  const roleLbl=(S?S.role:cfg.role)==="host"?"Kurucu":"Misafir";
+  const roleCls=(S?S.role:cfg.role)==="host"?"gold":"sky";
+  const syncAge=S&&S.lastSync?Math.max(0,Math.round((Date.now()-S.lastSync)/1000)):null;
+  const syncLbl=syncAge==null?"":syncAge<60?`${syncAge} sn önce`:`${Math.round(syncAge/60)} dk önce`;
+  const playersLbl=S?`${esc(S.hName)} & ${esc(S.gName)}`:"Bağlanılıyor…";
+  const inBetween=S&&(S.t.phase==="setup"||S.t.phase==="pick")&&S.hist.length>0;
+  return `<div class="dlg"><button class="tibk" data-a="no" aria-label="Kapat"></button><div class="dbox pmodal cp-rmodal" role="dialog" aria-modal="true">`+
+    `<div class="pm-hd"><span class="aci">${UICO.duo}</span><div style="min-width:0;flex:1"><b>Ortak Oda</b><small>${playersLbl}</small></div><span class="xfpill ${roleCls}">${roleLbl}</span></div>`+
+    `<div class="cp-rmstat"><span><i class="cp-dot"></i>${syncLbl?`Güncel · ${syncLbl}`:(S?"Bağlı":"Oda verisi bekleniyor")}</span><b>${esc(cfg.room)}</b></div>`+
+    `<div class="bar" style="margin:0 0 8px">`+
+      `<button class="btn p pset-pri ui-btn" data-a="cpcopy" style="flex:1">${CPICO.copy}<span>Kodu Kopyala</span></button>`+
+      `<button class="btn pset-sec ui-btn" data-a="cpshare" style="flex:1">${CPICO.share}<span>Davet Paylaş</span></button>`+
+    `</div>`+
+    (inBetween?`<button class="btn pset-sec ui-btn" data-a="cphisttog" style="width:100%;margin:0 0 8px">${UICO.trophy}<span>${st.cpShowHist?"Kuruluma / Takıma Dön":`Ortak Kupa Geçmişi (${S.hist.length})`}</span></button>`:"")+
+    `<div class="bar" style="margin:0 0 8px">`+
+      `<button class="btn pset-sec ui-btn" data-a="cpref" ${st.cpBusy?"disabled":""} style="flex:1">${CPICO.ref}<span>Yenile</span></button>`+
+      `<button class="btn pset-sec" data-a="cpexit" style="flex:1">‹ Bireysel Mod</button>`+
+    `</div>`+
+    `<div class="bar" style="margin:0">`+
+      `<button class="btn cp-rmleave ui-btn" data-a="cpleave" style="flex:1">${CPICO.leave}<span>Odadan Ayrıl</span></button>`+
+      `<button class="btn pset-sec" data-a="no" style="flex:1">Kapat</button>`+
+    `</div>`+
+  `</div></div>`;
+}
+
 function coopView(){
   const cfg=coopLoadCfg();
   if(!cfg.room||!cfg.role)return coopLobbyView();
   const S=coopState();
   if(!S){
-    return `<div class="cp-top"><div class="cp-tleft"><span class="xfpill emr">${esc(cfg.room)}</span></div><div class="cp-tright"><button class="btn pset-sec cp-icb" data-a="cpref" title="Yenile" aria-label="Yenile">${CPICO.ref}</button><button class="btn pset-sec cp-icb" data-a="cpleave" title="Odadan ayrıl" aria-label="Odadan ayrıl">${CPICO.leave}</button><button class="chip backpill cp-back" data-a="cpexit">‹ Bireysel</button></div></div>`+
-      (st.cpErr?`<div class="pgmath dead" style="margin-bottom:10px">${esc(st.cpErr)}</div>`:"")+
+    return (st.cpErr?`<div class="pgmath dead" style="margin-bottom:10px">${esc(st.cpErr)}</div>`:"")+
       psetCard("sliders","sky","Odaya Bağlanılıyor…","Ortak turnuva verisi çekiliyor",cfg.room,
-        `<button class="btn p pset-pri" data-a="cpref" style="width:100%">Tekrar Dene</button>`
+        `<div class="bar"><button class="btn p pset-pri" data-a="cpref" style="flex:1">Tekrar Dene</button><button class="btn pset-sec" data-a="cpleave">Odadan Ayrıl</button></div>`
       );
   }
-  const syncAge=S.lastSync?Math.max(0,Math.round((Date.now()-S.lastSync)/1000)):null;
-  const syncLbl=syncAge==null?"":syncAge<60?`${syncAge} sn önce`:`${Math.round(syncAge/60)} dk önce`;
   const inBetween=(S.t.phase==="setup"||S.t.phase==="pick")&&S.hist.length>0;
   if(!inBetween&&st.cpShowHist)st.cpShowHist=false;
-  const histBtn=inBetween?`<button class="btn pset-sec cp-icb${st.cpShowHist?" on":""}" data-a="cphisttog" title="Ortak Kupa Geçmişi" aria-label="Ortak Kupa Geçmişi">${UICO.trophy}</button>`:"";
-  const topBar=`<div class="cp-top">`+
-    `<div class="cp-tleft">`+
-      `<button class="cp-code" data-a="cpcopy" title="Oda kodunu kopyala"><span>${esc(cfg.room)}</span>${CPICO.copy}</button>`+
-      `<button class="btn pset-sec cp-icb" data-a="cpshare" title="Arkadaşını davet et" aria-label="Arkadaşını davet et">${CPICO.share}</button>`+
-    `</div>`+
-    `<div class="cp-tright">`+
-      histBtn+
-      `<button class="btn pset-sec cp-icb${st.cpBusy?" spin":""}" data-a="cpref" ${st.cpBusy?"disabled":""} title="Yenile" aria-label="Yenile">${CPICO.ref}</button>`+
-      `<button class="btn pset-sec cp-icb" data-a="cpleave" title="Odadan ayrıl" aria-label="Odadan ayrıl">${CPICO.leave}</button>`+
-      `<button class="chip backpill cp-back" data-a="cpexit">‹ Bireysel</button>`+
-    `</div>`+
-  `</div>`+
-  `<div class="cp-meta"><span><i class="cp-dot"></i>${syncLbl?`Güncel · ${syncLbl}`:"Bağlı"}</span><div class="cp-mr"><span class="xfpill ${S.role==="host"?"gold":"sky"} cp-rpill">${S.role==="host"?"Kurucu":"Misafir"}</span><b>${esc(S.hName)} & ${esc(S.gName)}</b></div></div>`+
-  (st.cpErr?`<div class="pgmath dead" style="margin-bottom:10px">${esc(st.cpErr)}</div>`:"");
+  const errBan=st.cpErr?`<div class="pgmath dead" style="margin-bottom:10px">${esc(st.cpErr)}</div>`:"";
 
   let content="";
-  if(inBetween&&st.cpShowHist)content=coopHistCard(S);
-  else if(S.t.phase==="setup")content=coopSetupView(S);
+  if(inBetween&&st.cpShowHist){
+    content=`<div class="bar" style="margin:0 0 10px"><button class="btn pset-sec" data-a="cphisttog" style="width:100%">‹ ${S.t.phase==="setup"?"Kuruluma":"Takım Seçimine"} Dön</button></div>`+coopHistCard(S);
+  }else if(S.t.phase==="setup")content=coopSetupView(S);
   else if(S.t.phase==="pick")content=coopPickView(S);
   else content=coopPlayView(S);
-  return topBar+content;
+  return errBan+content;
 }
 
 
@@ -1475,8 +1495,10 @@ async function handleCoopAction(a,dv,dk,i,b){
 }
 async function handleCoopActionInner(a,dv,dk,i,b){
   if(a==="cpjrole"){if($("cp_hname"))st.cpHName=$("cp_hname").value;if($("cp_gname"))st.cpGName=$("cp_gname").value;if($("cp_code"))st.cpCode=$("cp_code").value;st.cpJoinRole=dv==="host"?"host":"guest";render();return true}
+  if(a==="cproom"){st.cpRoomDlg=!st.cpRoomDlg;render();return true}
   if(a==="cpopen"){
     st.coopMode=!st.coopMode;
+    st.cpRoomDlg=false;
     if(st.coopMode){st.qs=false;st.ti=null;st.pi=null;st.tpi=null;st.gs=false}
     else{st.cpM=null;st.cpErr=""}
     if(st.coopMode&&coopHasRoom()&&(Date.now()-(st.cpLastAuto||0)>12000)){
@@ -1484,20 +1506,22 @@ async function handleCoopActionInner(a,dv,dk,i,b){
     }
     render();return true;
   }
-  if(a==="cpexit"){st.coopMode=false;st.cpM=null;render();return true}
+  if(a==="cpexit"){st.coopMode=false;st.cpM=null;st.cpRoomDlg=false;render();return true}
   if(a==="cpclose"){st.cpM=null;st.cpErr="";render();return true}
-  if(a==="cphisttog"){st.cpShowHist=!st.cpShowHist;render();return true}
+  if(a==="cphisttog"){st.cpRoomDlg=false;st.cpShowHist=!st.cpShowHist;render();return true}
   if(a==="cpadv"){st.cpAdv=!st.cpAdv;render();return true}
   if(a==="cptab"){st.cpTab=dv||"genel";render();return true}
   if(a==="cpfxw"){st.cpFxw=+dv||1;render();return true}
   if(a==="cppickw"){st.cpPickW=+dv||0;render();return true}
   if(a==="cpcopy"){
     const c=coopLoadCfg();
+    st.cpRoomDlg=false;render();
     try{await navigator.clipboard.writeText(c.room);ntf("Oda kodu kopyalandı: "+c.room)}catch(e){ntf("Oda kodu: "+c.room)}
     return true;
   }
   if(a==="cpshare"){
     const c=coopLoadCfg();
+    st.cpRoomDlg=false;render();
     const txt=`FC 27 · 2 Kişilik Ortak Turnuva odasına katıl!\nOda Kodu: ${c.room}\nUygulamada üst çubuktan 2P › Mevcut Odaya Katıl bölümüne bu kodu gir.`;
     try{
       if(navigator.share){await navigator.share({title:"FC 27 · 2P Ortak Turnuva",text:txt});return true}
@@ -1507,8 +1531,9 @@ async function handleCoopActionInner(a,dv,dk,i,b){
   }
   if(a==="cpmlog"){st.cpLogSide=dv==="guest"?"guest":"host";st.cpLogAll=false;render();return true}
   if(a==="cpmlogall"){st.cpLogAll=!st.cpLogAll;render();return true}
-  if(a==="cpref"){await coopPull(false);render();return true}
+  if(a==="cpref"){st.cpRoomDlg=false;await coopPull(false);render();return true}
   if(a==="cpleave"){
+    st.cpRoomDlg=false;
     ask("Bu ortak odadan ayrılmak istiyor musun? (Oda sunucuda kalır, kodla tekrar katılabilirsin.)",()=>{
       coopSaveCfg({room:"",role:"",name:coopLoadCfg().name});
       coopSaveCache({room:"",host:null,guest:null,lastSync:0});
