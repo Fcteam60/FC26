@@ -1,3 +1,10 @@
+## v24.9 (2026-11-25) — 2P Kurulum Görsel Düzeltmeleri & UX Cilaları
+- **Kurulum Onay Bandı Flex Dağılması Düzeltildi (`coop.js`, `style.css`):** `Kurulumu Onayla` içindeki yeşil/kırmızı havuz bilgi bandı ve Misafir H2H bilgilendirme şeridi tek `<span>` içine sarılarak `.pgmath` flex sütun bölünmesi giderildi.
+- **`YZ Simülasyon` Orta Düğme Kırpılması Düzeltildi (`style.css`):** `.su-mrow .stabs.seg3` esnek genişliğe (`flex: 1; max-width: 236px`) alınarak `Gerçekçi` seçeneğinin `Gerç...` şeklinde kesilmesi giderildi.
+- **2P Şablon Kartı Kısaltmaları (`coop.js` `COOP_TPL`):** `Şamp. Ligi` (`36T · 8 maç + PO`), `Puan Ligi` (`16T · 1–2 devre`) ve grup alt başlıkları (`32T · 8×4 grup`, `64T · 8×8 grup`, `16T · 4×4 grup`) 393 px ekranlarda üç nokta kesilmesi olmadan tek bakışta okunacak hâle getirildi.
+- **`Topla Oynama` Sonrası Akıllı `Enter` Atlaması (`app.js`):** Sol `Topla Oynama (%)` kutusuna geçerli bir yüzde girilip sağ kutu otomatik dolduğunda klavyeden `Enter / İleri` tuşuna basınca doğrudan `Toplam Şut` kutusuna odaklanır.
+- **Ortak Maç Günlüğü Rakip Golcüleri & Çoklu Gol Gruplama (`coop.js` `coopMatchLogCard`):** Yapay zekâ maçlarında rakip golcüleri de kompakt biçimde (`Real Madrid: K. Mbappé ×5, V. Jr.`) günlüğe yansıtılır.
+
 ## v24.8 (2026-11-25) — Otomatik MOTM Düzeltmesi, Kaleci MOTM Kalibrasyonu, 2P Pas İsabeti & UX Cilası
 - **Otomatik MOTM Mantığı Düzeltildi (`coop.js` `coopAutoMom`, `cpmsave`):** 2P maç girişinde `Maçın Adamı (MOTM)` **`Otomatik`** bırakıldığında artık doğrudan rakip takımdan (`pickOppMom`) değil, iki takımın gol, asist ve temiz kasa katkısını değerlendiren `pickSimMom` motoruyla gerçek en iyi oyuncu seçilip doğru takıma (`mom`, `gMom` veya `omom`) kaydedilir.
 - **Kaleci MOTM Kalibrasyonu (`sim.js` `pickSimMom`):** Gol yemeyen kaleci bonusu `+1,25/+1,45` seviyesinden `+0,85/+0,97` (sürpriz farkta `+0,30` ek) seviyesine dengelendi; `1–0` ve `2–0` maçlarda gol atan oyuncuların yerine sürekli kalecilerin MOTM seçilmesi giderildi (1–0 maçta kaleci MOTM oranı %91,6 → %24,2; genel kaleci MOTM payı %36,9 → %15,6).

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — coop.js · v24.8
+   FC 27 Grup Ligi — coop.js · v24.9
    İzole 2 Kişilik Online Ortak Turnuva (Co-op Oda) Modülü
    - Tek kişilik IndexedDB / JSON yedeğe hiç dokunmaz
    - Çakışmasız 2 düğümlü Firebase mimarisi (/rooms/{room}/host.json & guest.json)
@@ -47,12 +47,12 @@ const COOP_GUEST_UID="u_cpguest1";
 const coopRoomKey=r=>String(r||"").trim().toLowerCase().replace(/[^a-z0-9_-]/g,"");
 const COOP_CACHE_K="fc27lig_coop_cache";
 const COOP_TPL=[
-  ["Dünya Kupası","32 takım · 8×4",{N:32,gs:4,q:2,gl:1,kl:1,fl:1}],
-  ["Klasik 64","64 takım · 8×8",{N:64,gs:8,q:2,gl:1,kl:1,fl:1}],
-  ["Mini Lig","16 takım · 4×4",{N:16,gs:4,q:2,gl:1,kl:1,fl:1}],
-  ["Şampiyonlar Ligi","36 takım · 8 maç + PO",{N:36,gs:36,q:24,gl:1,kl:2,fl:1,ucl:1}],
-  ["Puan Ligi","16 takım · Tek/Çift devre",{N:16,gs:16,q:0,gl:1,kl:1,fl:1,lg:1}],
-  ["Direkt Eleme","16 takım · Eleme",{N:16,gs:0,q:0,gl:1,kl:1,fl:1}]
+  ["Dünya Kupası","32T · 8×4 grup",{N:32,gs:4,q:2,gl:1,kl:1,fl:1}],
+  ["Klasik 64","64T · 8×8 grup",{N:64,gs:8,q:2,gl:1,kl:1,fl:1}],
+  ["Mini Lig","16T · 4×4 grup",{N:16,gs:4,q:2,gl:1,kl:1,fl:1}],
+  ["Şamp. Ligi","36T · 8 maç + PO",{N:36,gs:36,q:24,gl:1,kl:2,fl:1,ucl:1}],
+  ["Puan Ligi","16T · 1–2 devre",{N:16,gs:16,q:0,gl:1,kl:1,fl:1,lg:1}],
+  ["Direkt Eleme","16T · Eleme",{N:16,gs:0,q:0,gl:1,kl:1,fl:1}]
 ];
 
 let _coopMemCfg=null,_coopMemCache=null,_coopCfgDirty=false,_coopCacheDirty=false;
@@ -972,8 +972,8 @@ function coopSetupView(S){
 
   const card1=psetCard("sliders","emr",`${esc(t.name)} · Kurulum`,"4 formattan birini seç ve arkadaşınla takım seçimine geç",`${c.N} takım`,tplHtml+extra);
   const poolNote=ok
-    ? `<div class="pgmath ok" style="margin:0 0 10px">${fmt(c)} · Uygun: <b>${M}</b> · Havuz: <b>${A}/${c.N}</b> kulüp</div>`
-    : `<div class="pgmath dead" style="margin:0 0 10px">Yetersiz havuz: <b>${A}/${c.N}</b> kulüp (Uygun: ${M}). GEN veya ülke sınırını gevşet.</div>`;
+    ? `<div class="pgmath ok" style="margin:0 0 10px"><span>${fmt(c)} · Uygun: <b>${M}</b> · Havuz: <b>${A}/${c.N}</b> kulüp</span></div>`
+    : `<div class="pgmath dead" style="margin:0 0 10px"><span>Yetersiz havuz: <b>${A}/${c.N}</b> kulüp (Uygun: ${M}). GEN veya ülke sınırını gevşet.</span></div>`;
   const simM=(t.sim&&t.sim.m)||0;
   const simBar=`<div class="su-mgrid" style="margin:0 0 10px"><div class="su-mrow"><span>YZ Simülasyon</span><div class="stabs seg3">${[["0","Dengeli"],["1","Gerçekçi"],["2","Sürpriz"]].map(([v,l])=>`<button class="chip ${simM===+v?"on":""}" data-a="cpsimm" data-v="${v}">${l}</button>`).join("")}</div></div></div>`;
   const confirmCard=psetCard("trophy",ok?"emr":"gold","Kurulumu Onayla",ok?"Takım seçimine geçmeye hazır":"Havuz sayısını en az "+c.N+" kulüp yap",`${A}/${c.N}`,
@@ -1063,20 +1063,39 @@ function coopMatchLogCard(S){
     `<button class="chip ${side==="host"?"on":""}" role="tab" aria-selected="${side==="host"}" data-a="cpmlog" data-v="host">★ ${esc(S.hName)} (${hCnt})</button>`+
     `<button class="chip ${side==="guest"?"on":""}" role="tab" aria-selected="${side==="guest"}" data-a="cpmlog" data-v="guest">◆ ${esc(S.gName)} (${gCnt})</button>`+
   `</div>`;
-  const fmtGls=arr=>(Array.isArray(arr)?arr:[]).filter(g=>g&&g.sc).map(g=>`${esc(g.sc)}${g.as?` (${esc(g.as)})`:""}`).join(", ");
+  const fmtGls=(arr,compact)=>{
+    const valid=(Array.isArray(arr)?arr:[]).filter(g=>g&&g.sc);
+    if(!valid.length)return "";
+    if(compact||valid.length>=4){
+      const map=new Map();
+      valid.forEach(g=>{
+        const k=isKK(g.sc)?"KK":g.sc;
+        const cur=map.get(k)||{n:k,c:0,as:[]};
+        cur.c++;
+        if(g.as&&!isKK(g.sc)&&!isKK(g.as))cur.as.push(g.as);
+        map.set(k,cur);
+      });
+      return [...map.values()].map(x=>{
+        const nm=x.n==="KK"?"KK":esc(x.n);
+        const cnt=x.c>1?` ×${x.c}`:"";
+        const asStr=x.c===1&&x.as.length?` (${esc(x.as[0])})`:"";
+        return nm+cnt+asStr;
+      }).join(", ");
+    }
+    return valid.map(g=>`${isKK(g.sc)?"KK":esc(g.sc)}${g.as&&!isKK(g.sc)&&!isKK(g.as)?` (${esc(g.as)})`:""}`).join(", ");
+  };
   const rows=shown.map(m=>{
     if(!m||m.opp==null||!T[m.opp])return "";
     const r=mres(m),rLbl=m.rd==="Grup"?`H${m.w||"?"}`:(m.rd+(m.lg?` · ${m.lg}.M`:""));
     const scTxt=`${m.gf}–${m.ga}${m.pf!=null&&m.pa!=null?` (P ${m.pf}–${m.pa})`:m.et?" (UZ)":""}`;
-    const mySc=fmtGls(m.gls),opSc=m.h2h?fmtGls(m.og):"";
+    const mySc=fmtGls(m.gls,false),opSc=fmtGls(m.og,!m.h2h);
     let goalHtml="";
-    if(m.h2h&&(mySc||opSc)){
-      const parts=[];
-      if(mySc)parts.push(`<b>${esc(T[meTi].n)}:</b> ${mySc}`);
-      if(opSc)parts.push(`<b>${esc(T[m.opp].n)}:</b> ${opSc}`);
-      goalHtml=`<div class="cp-mlg">${uiIco("ball")}<span>${parts.join(" · ")}</span></div>`;
+    if(mySc&&opSc){
+      goalHtml=`<div class="cp-mlg">${uiIco("ball")}<span><b>${esc(T[meTi].n)}:</b> ${mySc} · <b>${esc(T[m.opp].n)}:</b> ${opSc}</span></div>`;
     }else if(mySc){
       goalHtml=`<div class="cp-mlg">${uiIco("ball")}<span>${mySc}</span></div>`;
+    }else if(opSc){
+      goalHtml=`<div class="cp-mlg">${uiIco("ball")}<span><b>${esc(T[m.opp].n)}:</b> ${opSc}</span></div>`;
     }
     let momTxt="",momOpp=false;
     if(m.mom)momTxt=m.mom;
@@ -1255,7 +1274,7 @@ function coopPlayView(S){
       if(myAct&&!myAct.waitPo){
         const rdL=myAct.rd==="Grup"?`${myAct.w}. Hafta`:(myAct.rd+(myAct.lg?` · ${myAct.lg}. Maç`:""));
         if(myAct.h2h&&S.role==="guest"){
-          myCard=`<div class="pgmath info" style="margin:8px 0">🤝 <b>${esc(rdL)} · Doğrudan Karşılaşma:</b> ${esc(T[S.hTi].n)} vs ${esc(T[S.gTi].n)} maçını müsait olduğunuzda Kurucu (${esc(S.hName)}) girecek.${myPend.some(x=>!x.h2h)?" Bu arada yukarıdan diğer maçlarını oynayabilirsin!":""}</div>`;
+          myCard=`<div class="pgmath info" style="margin:8px 0"><span>🤝 <b>${esc(rdL)} · Doğrudan Karşılaşma:</b> ${esc(T[S.hTi].n)} vs ${esc(T[S.gTi].n)} maçını müsait olduğunuzda Kurucu (${esc(S.hName)}) girecek.${myPend.some(x=>!x.h2h)?" Bu arada yukarıdan diğer maçlarını oynayabilirsin!":""}</span></div>`;
         }else{
           myCard=`<div class="cp-vs"><div class="cp-vtm">${badge(S.myTi,40)}<b>${esc(T[S.myTi].n)}</b><small>${T[S.myTi].g} GEN</small></div><div class="cp-vmid"><span>${esc(rdL)}</span><b>VS</b></div><div class="cp-vtm">${badge(myAct.opp,40)}<b>${esc(T[myAct.opp].n)}</b><small>${T[myAct.opp].g} GEN</small></div></div>`+
             `<button class="btn p pset-pri" data-a="cpmopen" data-v="${myAct.w||0}" style="width:100%;margin-top:8px">${uiIco("ball")}<span>${myAct.h2h?"🤝 Doğrudan Düello Skorunu Gir":`${rdL} Skorunu Gir`}</span></button>`;

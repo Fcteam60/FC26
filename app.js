@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="24.8",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="24.9",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -2657,7 +2657,13 @@ addEventListener("keydown",e=>{
     const sel=e.target.closest(".cp-adv")?"#qs .cp-adv input.f":"#qs .advbox input.tin";
     const list=[...document.querySelectorAll(sel)];
     const idx=list.indexOf(e.target);
-    if(idx>=0&&idx<list.length-1)list[idx+1].focus();
+    let nextIdx=idx+1;
+    const isMyPos=(e.target.dataset&&(e.target.dataset.cpmst==="myPos"||e.target.dataset.mst==="myPos"))||e.target.id==="mst_myPos"||e.target.id==="cpmst_myPos";
+    if(isMyPos&&list[nextIdx]&&list[nextIdx].value.trim()!==""){
+      const n=parseInt(e.target.value);
+      if(Number.isFinite(n)&&n>=0&&n<=100&&nextIdx+1<list.length)nextIdx++;
+    }
+    if(idx>=0&&nextIdx<list.length)list[nextIdx].focus();
     else e.target.blur();
     return;
   }
