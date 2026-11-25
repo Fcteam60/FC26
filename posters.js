@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — Broadcast PNG Poster Motoru (posters.js · v23.9) */
+/* FC 27 Grup Ligi — Broadcast PNG Poster Motoru (posters.js · v24.3) */
 /* ---------- PAYLAŞILABİLİR GÖRSELLER ---------- */
 const NUMF='"FC Sayi","Barlow Condensed","Oswald","Bahnschrift","Avenir Next Condensed","Roboto Condensed","Arial Narrow",sans-serif';
 const TCOL={1:["#fbeaa8","#e0b43a","#2b2000"],2:["#f3f6f8","#b9c3cb","#1b2328"],3:["#f0c9a2","#be7f47","#2a1500"],0:["#ffffff","#dfeee6","#12211a"]};
@@ -23,7 +23,7 @@ async function kuraCv(s){
       dkBg(c,W,H,cb?cb.c1:"#38bdf8",cb?cb.c2:"#f0c24b",false);
       const maxW=s._maxW!==undefined?s._maxW:Math.max(sim.w||0,(s.mt||[]).filter(m=>m.rd==="Grup").length);
       drawPill(c,"ŞAMPİYONLAR LİGİ · LİG AŞAMASI",44,40,348,38,"rgba(56,189,248,.18)","rgba(56,189,248,.06)","rgba(56,189,248,.52)","#7dd3fc",19);
-      tx(c,s.name.toLocaleUpperCase("tr")+" · PUAN DURUMU",44,114,48,"#f8fafc","left",700);
+      c.font="700 48px "+NUMF;tx(c,fit(c,s.name.toLocaleUpperCase("tr")+" · PUAN DURUMU",610),44,114,48,"#f8fafc","left",700);
       drawPill(c,(maxW?maxW+"/8 HAFTA":"CANLI"),W-44-142,42,142,34,"rgba(16,185,129,.18)",null,"rgba(62,230,168,.48)","#3ee6a8",19);
       tx(c,"36 TAKIM · İLK 8 SON 16 · 9–24 PLAY-OFF",W-44,112,20,"#94a3b8","right",600);
       const tbl=s._calcTbl?s._calcTbl(0):withSn(s,()=>calcGroupTable(s,0));
@@ -89,7 +89,7 @@ async function kuraCv(s){
     const cv=mkCv(W,H),c=cv.getContext("2d");
     dkBg(c,W,H,cb?cb.c1:"#38bdf8",cb?cb.c2:"#f0c24b",false);
     drawPill(c,"ŞAMPİYONLAR LİGİ KURASI",44,40,290,38,"rgba(56,189,248,.18)","rgba(56,189,248,.06)","rgba(56,189,248,.52)","#7dd3fc",19);
-    tx(c,s.name.toLocaleUpperCase("tr")+" · 4 TORBA & 8 RAKİP",44,114,48,"#f8fafc","left",700);
+    c.font="700 48px "+NUMF;tx(c,fit(c,s.name.toLocaleUpperCase("tr")+" · 4 TORBA & 8 RAKİP",680),44,114,48,"#f8fafc","left",700);
     tx(c,s.date,W-44,66,24,"#94a3b8","right",600);
     tx(c,"36 TAKIM · 4 EV · 4 DEPLASMAN",W-44,112,21,"#3ee6a8","right",600);
     const imgs=nob();
@@ -147,23 +147,23 @@ async function kuraCv(s){
     dkBg(c,W,rawH,cb?cb.c1:"#38bdf8",cb?cb.c2:"#f0c24b",false);
     const maxW=s._maxW!==undefined?s._maxW:Math.max(sim.w||0,(s.mt||[]).filter(m=>m.rd==="Grup").length);
     drawPill(c,lg?"LİG PUAN DURUMU":"PUAN DURUMU",44,40,lg?218:192,38,"rgba(240,194,75,.18)","rgba(240,194,75,.06)","rgba(240,194,75,.52)","#fbeaa8",20);
-    tx(c,s.name.toLocaleUpperCase("tr")+(lg?" · LİG TABLOSU":" · GRUPLAR"),44,114,50,"#f8fafc","left",700);
+    c.font="700 50px "+NUMF;tx(c,fit(c,s.name.toLocaleUpperCase("tr")+(lg?" · LİG TABLOSU":" · GRUPLAR"),580),44,114,50,"#f8fafc","left",700);
     drawPill(c,(maxW?maxW+". HAFTA":"CANLI"),W-44-136,42,136,34,"rgba(16,185,129,.18)",null,"rgba(62,230,168,.48)","#3ee6a8",19);
-    c.font="600 22px "+NUMF;tx(c,fit(c,fmt(s.cfg),520),W-44,112,22,"#94a3b8","right",600);
-    const myg=s.my!=null?G.findIndex(g=>g.includes(s.my)):-1,qMax=s.cfg.q||2;
+    c.font="600 22px "+NUMF;tx(c,fit(c,fmt(s.cfg),380),W-44,112,22,"#94a3b8","right",600);
+    const myg=s.my!=null?G.findIndex(g=>g.includes(s.my)):-1,gug=s._gTi!=null?G.findIndex(g=>g.includes(s._gTi)):-1,qMax=s.cfg.q||2;
     const colDef=cols==1
       ? [{k:"o",l:"O",x:cw-378},{k:"w",l:"G",x:cw-332},{k:"d",l:"B",x:cw-286},{k:"l",l:"M",x:cw-240},{k:"gf",l:"AG",x:cw-190},{k:"ga",l:"YG",x:cw-142},{k:"gd",l:"AV",x:cw-90},{k:"pts",l:"P",x:cw-36}]
       : [{k:"o",l:"O",x:cw-202},{k:"w",l:"G",x:cw-168},{k:"d",l:"B",x:cw-136},{k:"l",l:"M",x:cw-104},{k:"gd",l:"AV",x:cw-68},{k:"pts",l:"P",x:cw-28}];
     const nameMaxW=cols==1?(cw-496):(cw-296);
     withSn(s,()=>G.forEach((g,gi)=>{
-      const x=P+(gi%cols)*(cw+gap),y=HH+Math.floor(gi/cols)*(ch+gap),mine=gi==myg;
+      const x=P+(gi%cols)*(cw+gap),y=HH+Math.floor(gi/cols)*(ch+gap),mine=gi==myg,guGrp=!mine&&gi==gug;
       const tbl=s._calcTbl?s._calcTbl(gi):calcGroupTable(s,gi),qL=(s.gqs&&s.gqs[gi])||[];
-      glassBox(c,x,y,cw,ch,22,mine?"rgba(240,194,75,.65)":"rgba(255,255,255,.12)",mine?"#f0c24b":null);
+      glassBox(c,x,y,cw,ch,22,mine?"rgba(240,194,75,.65)":guGrp?"rgba(56,189,248,.62)":"rgba(255,255,255,.12)",mine?"#f0c24b":guGrp?"#38bdf8":null);
       const gl=lg?"★":s.cfg.gs?GL(gi):String(gi+1);
-      c.fillStyle=mine?grad(c,x+14,x+54,"#f8e08a","#d4a017"):grad(c,x+14,x+54,"#12b886","#0a7c56");
+      c.fillStyle=mine?grad(c,x+14,x+54,"#f8e08a","#d4a017"):guGrp?grad(c,x+14,x+54,"#38bdf8","#0284c7"):grad(c,x+14,x+54,"#12b886","#0a7c56");
       rr(c,x+14,y+14,38,38,11);c.fill();
       tx(c,gl,x+33,y+34,23,mine?"#2b2000":"#fff","center",700);
-      tx(c,gname(s,gi).toLocaleUpperCase("tr"),x+62,y+34,cols==1?32:27,mine?"#fbeaa8":"#f8fafc","left",700);
+      tx(c,gname(s,gi).toLocaleUpperCase("tr"),x+62,y+34,cols==1?32:27,mine?"#fbeaa8":guGrp?"#7dd3fc":"#f8fafc","left",700);
       const tagTxt=lg?(s.cfg.N+" TAKIM"):("İLK "+qMax+" ÇIKAR");
       drawPill(c,tagTxt,x+cw-124,y+19,110,28,mine?"rgba(240,194,75,.18)":"rgba(255,255,255,.07)",null,mine?"rgba(240,194,75,.45)":"rgba(255,255,255,.14)",mine?"#fbeaa8":"#cbd5e1",16);
       // Column header strip
@@ -223,21 +223,21 @@ async function kuraCv(s){
 
   // Header cleanly positioned above y=154 divider
   drawPill(c,lg?"LİG TABLOSU":"KURA SONUCU",44,40,176,38,"rgba(240,194,75,.16)","rgba(240,194,75,.06)","rgba(240,194,75,.48)","#fbeaa8",20);
-  tx(c,s.name.toLocaleUpperCase("tr")+(lg?"":(!s.cfg.gs?" · EŞLEŞMELER":" · GRUPLAR")),44,114,52,"#f8fafc","left",700);
+  c.font="700 52px "+NUMF;tx(c,fit(c,s.name.toLocaleUpperCase("tr")+(lg?"":(!s.cfg.gs?" · EŞLEŞMELER":" · GRUPLAR")),580),44,114,52,"#f8fafc","left",700);
   tx(c,s.date,W-44,66,25,"#94a3b8","right",600);
-  c.font="600 22px "+NUMF;tx(c,fit(c,fmt(s.cfg),520),W-44,112,22,"#3ee6a8","right",600);
+  c.font="600 22px "+NUMF;tx(c,fit(c,fmt(s.cfg),380),W-44,112,22,"#3ee6a8","right",600);
 
-  const myg=s.my!=null?G.findIndex(g=>g.includes(s.my)):-1,imgs=nob();
+  const myg=s.my!=null?G.findIndex(g=>g.includes(s.my)):-1,gug=s._gTi!=null?G.findIndex(g=>g.includes(s._gTi)):-1,imgs=nob();
   await Promise.all([...new Set(G.flat().map(i=>T[i].c))].map(async k=>{imgs[k]=await flagImg(k)}));
   withSn(s,()=>G.forEach((g,gi)=>{
-    const x=P+(gi%cols)*(cw+gap),y=HH+Math.floor(gi/cols)*(ch+gap),mine=gi==myg;
-    glassBox(c,x,y,cw,ch,22,mine?"rgba(240,194,75,.65)":"rgba(255,255,255,.12)",mine?"#f0c24b":null);
+    const x=P+(gi%cols)*(cw+gap),y=HH+Math.floor(gi/cols)*(ch+gap),mine=gi==myg,guGrp=!mine&&gi==gug;
+    glassBox(c,x,y,cw,ch,22,mine?"rgba(240,194,75,.65)":guGrp?"rgba(56,189,248,.62)":"rgba(255,255,255,.12)",mine?"#f0c24b":guGrp?"#38bdf8":null);
     const gl=lg?"★":s.cfg.gs?GL(gi):String(gi+1);
-    c.fillStyle=mine?grad(c,x+14,x+56,"#f8e08a","#d4a017"):grad(c,x+14,x+56,"#12b886","#0a7c56");
+    c.fillStyle=mine?grad(c,x+14,x+56,"#f8e08a","#d4a017"):guGrp?grad(c,x+14,x+56,"#38bdf8","#0284c7"):grad(c,x+14,x+56,"#12b886","#0a7c56");
     rr(c,x+14,y+15,40,40,11);c.fill();
     tx(c,gl,x+34,y+36,24,mine?"#2b2000":"#fff","center",700);
-    tx(c,gname(s,gi).toLocaleUpperCase("tr"),x+64,y+36,cols==3?25:30,mine?"#fbeaa8":"#f8fafc","left",700);
-    drawPill(c,"ORT "+fx(avg(g,"g")),x+cw-104,y+21,90,28,mine?"rgba(240,194,75,.18)":"rgba(255,255,255,.07)",null,mine?"rgba(240,194,75,.45)":"rgba(255,255,255,.14)",mine?"#fbeaa8":"#cbd5e1",17);
+    tx(c,gname(s,gi).toLocaleUpperCase("tr"),x+64,y+36,cols==3?25:30,mine?"#fbeaa8":guGrp?"#7dd3fc":"#f8fafc","left",700);
+    drawPill(c,"ORT "+fx(avg(g,"g")),x+cw-104,y+21,90,28,mine?"rgba(240,194,75,.18)":guGrp?"rgba(56,189,248,.18)":"rgba(255,255,255,.07)",null,mine?"rgba(240,194,75,.45)":guGrp?"rgba(56,189,248,.48)":"rgba(255,255,255,.14)",mine?"#fbeaa8":guGrp?"#7dd3fc":"#cbd5e1",17);
     g.slice().sort((a,b)=>V(T[b])-V(T[a])).forEach((i,r)=>{
       const ry=y+hh+r*rh,yy=ry+rh/2,t=T[i],tc=TCOL[tierOf(t.g)],im=imgs[t.c],bw=46,bx=x+cw-14-bw;
       const isMe=i===s.my,isGu=s._gTi!=null&&i===s._gTi;
@@ -695,7 +695,7 @@ async function koCv(s){
   const cv=mkCv(Math.round(W*sc),Math.round(H*sc)),c=cv.getContext("2d");
   if(sc<1)c.scale(sc,sc);
   const refTi=champTi!=null?champTi:(s.my!=null&&T[s.my]?s.my:null);
-  const cb=refTi!=null?bspec(refTi):null,isMyChamp=!!(champTi!=null&&champTi===s.my);
+  const cb=refTi!=null?bspec(refTi):null,isMyChamp=!!(champTi!=null&&(champTi===s.my||(s._gTi!=null&&champTi===s._gTi)));
   dkBg(c,W,H,cb?cb.c1:"#38bdf8",champTi!=null?"#f0c24b":(cb?cb.c2:"#f0c24b"),isMyChamp);
 
   // Subtle architectural dot grid over bracket stage
@@ -824,8 +824,9 @@ async function koCv(s){
       const y=Math.round(cy-cardH/2);
       if(isFin){finalCardTop=y;finalX=x}
 
-      const bdrCol=isFin?"rgba(240,194,75,.82)":mine?"rgba(240,194,75,.72)":(done?"rgba(62,230,168,.30)":"rgba(255,255,255,.12)");
-      const tint=isFin||mine?"#f0c24b":(done?"#12b886":null);
+      const guestTie=!!(s._gTi!=null&&p&&(p.t1===s._gTi||p.t2===s._gTi));
+      const bdrCol=isFin?"rgba(240,194,75,.82)":mine?"rgba(240,194,75,.72)":guestTie?"rgba(56,189,248,.72)":(done?"rgba(62,230,168,.30)":"rgba(255,255,255,.12)");
+      const tint=isFin||mine?"#f0c24b":guestTie?"#38bdf8":(done?"#12b886":null);
       glassBox(c,x,y,colW,cardH,16,bdrCol,tint);
 
       const drawRow=(ti,g,isW,isL,rowTop)=>{
@@ -864,10 +865,10 @@ async function koCv(s){
           c.lineWidth=1.3;c.strokeStyle="rgba(62,230,168,.55)";c.stroke();
           tx(c,done?String(g):"·",sx+sw/2,ry+1,24,"#3ee6a8","center",700);
         }else{
-          c.fillStyle=isMe?"rgba(240,194,75,.14)":"rgba(255,255,255,.06)";
+          c.fillStyle=isMe?"rgba(240,194,75,.14)":isGu?"rgba(56,189,248,.16)":"rgba(255,255,255,.06)";
           rr(c,sx,sy,sw,sh,9);c.fill();
-          if(isMe){c.lineWidth=1.1;c.strokeStyle="rgba(240,194,75,.38)";c.stroke()}
-          tx(c,done?String(g):"·",sx+sw/2,ry+1,23,isMe?"#fbeaa8":"#94a3b8","center",700);
+          if(isMe||isGu){c.lineWidth=1.1;c.strokeStyle=isMe?"rgba(240,194,75,.38)":"rgba(56,189,248,.46)";c.stroke()}
+          tx(c,done?String(g):"·",sx+sw/2,ry+1,23,isMe?"#fbeaa8":isGu?"#7dd3fc":"#94a3b8","center",700);
         }
         c.restore();
       };
@@ -960,7 +961,7 @@ async function karneDnaCv(x){
 
   // Header
   drawPill(c,"MENAJER KİMLİĞİ · SAYFA 2/2",48,42,304,38,"rgba(240,194,75,.18)","rgba(240,194,75,.06)","rgba(240,194,75,.52)","#fbeaa8",20);
-  tx(c,x.name.toLocaleUpperCase("tr")+" · TAKTİKSEL DNA",48,114,48,"#f8fafc","left",700);
+  c.font="700 48px "+NUMF;tx(c,fit(c,x.name.toLocaleUpperCase("tr")+" · TAKTİKSEL DNA",730),48,114,48,"#f8fafc","left",700);
   tx(c,t.n.toLocaleUpperCase("tr"),W-48,70,26,"#fbeaa8","right",700);
   tx(c,dna.n+" İSTATİSTİKLİ MAÇ",W-48,112,22,"#3ee6a8","right",700);
 
@@ -1302,8 +1303,10 @@ async function macCv(q){const x=q.x,m=q.m,r=mres(m),oi=m.opp!=null&&T[m.opp]?m.o
     if(stObj.myXg!=null||stObj.oppXg!=null){const a=stObj.myXg??0,b=stObj.oppXg??0;stRows.push(["GOL BEKLENTİSİ (xG)",a.toFixed(2).replace(".",","),b.toFixed(2).replace(".",","),a,b])}
   }
   const stBoxH=stRows.length?(90+stRows.length*72+(eff?62:0)+16):0;
-  const momStr=m.mom||(m.omom||(oi!=null&&oi>=0&&T[oi]?pickOppMom(oi,m.og,m.gf,m.ga):""));
-  const momDisp=m.mom?m.mom:(momStr?`${momStr} (${m.on})`:"");
+  const autoH2h=m.h2h&&!m.mom&&!m.gMom&&typeof coopAutoH2hMom==="function"?coopAutoH2hMom(m,me):null;
+  const momStr=m.mom||(m.h2h&&m.gMom?m.gMom:autoH2h?autoH2h.n:(m.omom||(oi!=null&&oi>=0&&T[oi]?pickOppMom(oi,m.og,m.gf,m.ga):"")));
+  const momIsMine=!!(m.mom||(autoH2h&&autoH2h.ti===me));
+  const momDisp=momIsMine?momStr:(momStr?`${momStr} (${m.on})`:"");
   const gRowCnt=n+(ex?1:0)+(na?1:0);
   const hasOppG=ogList.length>0;
   const ogLines=[];
@@ -1331,7 +1334,8 @@ async function macCv(q){const x=q.x,m=q.m,r=mres(m),oi=m.opp!=null&&T[m.opp]?m.o
   const stageTag=(rdDisp+(m.lg?" · "+m.lg+". MAÇ":"")).toLocaleUpperCase("tr");
   drawPill(c,"MAÇ SONUCU",48,40,164,38,"rgba(240,194,75,.18)","rgba(240,194,75,.06)","rgba(240,194,75,.52)","#fbeaa8",20);
   drawPill(c,stageTag,224,40,Math.min(340,Math.max(120,stageTag.length*15+36)),38,"rgba(255,255,255,.08)",null,"rgba(255,255,255,.18)","#e2e8f0",19);
-  tx(c,x.name.toLocaleUpperCase("tr"),48,114,50,"#f8fafc","left",700);
+  c.font="700 50px "+NUMF;
+  tx(c,fit(c,x.name.toLocaleUpperCase("tr"),800),48,114,50,"#f8fafc","left",700);
   tx(c,new Date(m.id).toLocaleDateString("tr-TR"),W-48,112,26,"#94a3b8","right",600);
 
   // Hero Broadcast Scoreboard

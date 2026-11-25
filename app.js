@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="23.9",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="24.3",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -1654,12 +1654,13 @@ function totsDispName(n,cols){
   if(cols>=4)return s.length>9?last:s;
   return s.length>11?last:s;
 }
-function totsPitchHtml(xi,sid){
+function totsPitchHtml(xi,sid,gTi){
   const mvpP=totsFindMvp(xi),fmtStr=totsFmtOf(xi);
   const F=totsOrderLine(xi.F,"F"),M=totsOrderLine(xi.M,"M"),D=totsOrderLine(xi.D,"D"),K=xi.K||[];
   const bSz=n=>n===4?34:n===5?35:38;
   const node=(p,cols)=>{
     const isMvp=mvpP&&p.n===mvpP.n&&p.ti===mvpP.ti;
+    const isGu=gTi!=null&&p.ti===gTi;
     const parts=[];
     if(p.g)parts.push(`${p.g}G`);
     if(p.a)parts.push(`${p.a}A`);
@@ -1667,10 +1668,10 @@ function totsPitchHtml(xi,sid){
     if(!parts.length)parts.push(p.cs?`${p.cs} TK`:`${p.ovr} GEN`);
     const sep=cols>=4?`<i class="tots-dot">·</i>`:` <i class="tots-dot">·</i> `;
     const statHtml=parts.join(sep);
-    const cls=`tots-pl${isMvp?" mvp":""}${p.mine?" mine":""}`;
+    const cls=`tots-pl${isMvp?" mvp":""}${p.mine?" mine":""}${isGu?" cp-gpl":""}`;
     const sidAttr=sid!=null?` data-s="${sid}"`:"";
     const nmTxt=totsDispName(p.n,cols);
-    const minePip=p.mine&&!isMvp?`<i class="tots-mine-pip" aria-hidden="true">★</i>`:"";
+    const minePip=p.mine&&!isMvp?`<i class="tots-mine-pip" aria-hidden="true">★</i>`:(isGu&&!isMvp?`<i class="tots-guest-pip" aria-hidden="true">◆</i>`:"");
     return `<button class="${cls}" data-a="tpinfo" data-n="${esc(p.n)}" data-i="${p.ti}"${sidAttr} aria-label="${esc(p.n)} (${esc(T[p.ti].n)}) sezon istatistikleri">`+
       (isMvp?`<span class="tots-mvp">MVP</span>`:"")+
       `<span class="tots-bdg">${minePip}${badge(p.ti,bSz(cols))}<i class="tots-pos p-${p.grp}">${esc(p.pos)}</i></span>`+
@@ -1722,12 +1723,18 @@ function tourneyPlayerDetail(s,name,ti){
           Object.entries(m.sc||{}).forEach(([pn,v])=>{if(nz(pn)===k)g+=+v||0});
           Object.entries(m.as||{}).forEach(([pn,v])=>{if(nz(pn)===k)a+=+v||0});
         }
-        const mom=!!(m.mom&&nz(m.mom)===k);
+        let mom=!!(m.mom&&nz(m.mom)===k);
+        if(!mom&&m.h2h&&!m.mom&&!m.gMom&&typeof coopAutoH2hMom==="function"){
+          const am=coopAutoH2hMom(m,actorTi);if(am&&am.ti===actorTi&&nz(am.n)===k)mom=true;
+        }
         pushM(m.opp,rd,+m.gf||0,+m.ga||0,g,a,mom);
       }else if(ti===m.opp){
         let g=0,a=0;
         (m.og||[]).forEach(o=>{if(o&&o.sc&&nz(o.sc)===k)g++;if(o&&o.as&&nz(o.as)===k)a++});
-        const om=m.h2h?(m.gMom||""):(!m.mom?(m.omom||pickOppMom(m.opp,m.og,m.gf,m.ga)):"");
+        let om=m.h2h?(m.gMom||""):(!m.mom?(m.omom||pickOppMom(m.opp,m.og,m.gf,m.ga)):"");
+        if(!om&&m.h2h&&!m.mom&&!m.gMom&&typeof coopAutoH2hMom==="function"){
+          const am=coopAutoH2hMom(m,actorTi);if(am&&am.ti===m.opp)om=am.n;
+        }
         const mom=!!(om&&nz(om)===k);
         pushM(actorTi,rd,+m.ga||0,+m.gf||0,g,a,mom);
       }
@@ -2336,7 +2343,10 @@ const sqChips=(a,c)=>`<div class="cw">${[["A","Hepsi"],["F","Forvet"],["M","Orta
 function tiActiveSeason(){
   if(st.coopMode&&typeof coopState==="function"){
     const cs=coopState();
-    if(cs&&cs.t&&cs.t.G)return coopAsPosterSeason(cs);
+    if(cs&&cs.t){
+      if(cs.t.G)return coopAsPosterSeason(cs);
+      return Object.assign({},cs.t,{my:cs.hTi,mt:[],_coop:true,_gTi:cs.gTi,_gMt:[],_hName:cs.hName,_gName:cs.gName,_st2:{players:[],teams:[]}});
+    }
   }
   return cur();
 }
@@ -2900,12 +2910,13 @@ function render(){
   $("dlg").innerHTML=st.slot?slotDlg():st.own?ownDlg():st.gs?gsDlg():st.img?imgDlg():st.ren?`<div class="dlg"><button class="tibk" data-a="no" aria-label="Kapat"></button><div class="dbox pmodal" role="dialog" aria-modal="true"><div class="pm-hd"><span class="aci">${SBI.edit}</span><div><b>Sezon Adını Değiştir</b><small>En fazla 24 karakter</small></div></div><input id="rn" class="f" maxlength="24" value="${esc(st.ren.v)}" aria-label="Sezon adı" autocomplete="off"><div class="bar"><button class="btn p pset-pri" data-a="rens" style="flex:1">Kaydet</button><button class="btn pset-sec" data-a="no">Vazgeç</button></div></div></div>`:st.imp?impDlg():st.ask?`<div class="dlg"><button class="tibk" data-a="no" aria-label="Kapat"></button><div class="dbox pmodal" role="dialog" aria-modal="true"><div class="pm-hd"><span class="aci ${st.ask.fn?"warn":""}">${st.ask.fn?UICO.bug:UICO.app}</span><div><b>${st.ask.fn?"Onay Gerekiyor":"Bilgi"}</b></div></div><div class="pm-msg">${esc(st.ask.m)}</div><div class="bar">${st.ask.fn?`<button class="btn p pset-pri" data-a="yes" style="flex:1">Evet, Devam Et</button><button class="btn pset-sec" data-a="no">Vazgeç</button>`:`<button class="btn p pset-pri" data-a="no" style="flex:1">Tamam</button>`}</div></div></div>`:st.guide?guideDlg():st.dlLive&&typeof duelLiveDlg==="function"?duelLiveDlg():st.tpi?tpDlg():st.totsv?totsDlg():st.pi?plDlg():st.ti!=null?withSn(cur(),tiDlg):"";
   const chg=st.lt!==st.tab;st.lt=st.tab;if(st.qs&&!qOk(s0))st.qs=false;
   const fresh=st.qs&&!$("qs").firstChild,qsOnly=!!(st.qs&&!fresh&&!chg&&$("app").firstChild);
-  if(!qsOnly){
-    let viewHtml="";try{viewHtml=withSn(s0,()=>([setupView,teamView,drawView,groupsView,statView,histView,setView,homeView,fixtureView,tstatView][st.tab]||homeView)(s0))}catch(err){elog("render",err&&err.message,err&&err.stack);viewHtml=`<div class="big"><b class="wr">Görünüm yüklenirken hata oluştu</b><div class="note" style="margin:6px 0">${esc(err&&err.message?err.message:String(err))}</div><button class="btn p" data-t="7">Ana ekrana dön</button></div>`}
+  const cpOnly=!!(st.coopMode&&st.cpM&&!chg&&$("qs").firstChild&&$("app").firstChild);
+  if(!qsOnly&&!cpOnly){
     if(st.coopMode&&typeof coopView==="function"){
       let cpHtml="";try{cpHtml=coopView()}catch(err){elog("coopRender",err&&err.message,err&&err.stack);cpHtml=`<div class="big"><b class="wr">2P görünümü yüklenirken hata oluştu</b><div class="note" style="margin:6px 0">${esc(err&&err.message?err.message:String(err))}</div><div class="bar"><button class="btn p" data-a="cpref" style="flex:1">Yenile</button><button class="btn" data-a="cpleave" style="flex:1">Odadan Ayrıl</button><button class="btn" data-a="cpexit" style="flex:1">Bireysel Mod</button></div></div>`}
       $("app").innerHTML=(st.upd?updBan():"")+cpHtml;
     }else{
+      let viewHtml="";try{viewHtml=withSn(s0,()=>([setupView,teamView,drawView,groupsView,statView,histView,setView,homeView,fixtureView,tstatView][st.tab]||homeView)(s0))}catch(err){elog("render",err&&err.message,err&&err.stack);viewHtml=`<div class="big"><b class="wr">Görünüm yüklenirken hata oluştu</b><div class="note" style="margin:6px 0">${esc(err&&err.message?err.message:String(err))}</div><button class="btn p" data-t="7">Ana ekrana dön</button></div>`}
       $("app").innerHTML=(st.upd?updBan():"")+(st.sf?sfBan():"")+tabPre(st.tab)+viewHtml;
     }
     const ap=$("app");if(chg||st.lht!==st.ht){ap.classList.remove("sw");void ap.offsetWidth;ap.classList.add("sw");clearTimeout(st.swt);st.swt=setTimeout(()=>ap.classList.remove("sw"),800)}st.lht=st.ht;
@@ -3448,7 +3459,7 @@ if("serviceWorker" in navigator){const had=!!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!st.upd){st.upd=true;render()}});
   navigator.serviceWorker.addEventListener("message",e=>{if(had&&e.data&&e.data.type==="SW_UPDATED"&&!st.upd){st.upd=true;render()}});
   addEventListener("load",()=>{navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>{SWR=r;r.update().catch(()=>{})}).catch(e=>elog("sw",e&&e.message))});
-  document.addEventListener("visibilitychange",()=>{if(!document.hidden&&SWR)SWR.update().catch(()=>{})})}
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden){if(SWR)SWR.update().catch(()=>{});if(typeof coopAutoPullOnVisible==="function")coopAutoPullOnVisible()}})}
 try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().then(ok=>{st.pers=!!ok;if(!ok)render()}).catch(()=>{})}catch(e){}
 // --- Mobil yakınlaştırma (iki parmak / pinch-zoom) koruması (v19.3) ---
 (function(){

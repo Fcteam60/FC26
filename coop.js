@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — coop.js · v23.9
+   FC 27 Grup Ligi — coop.js · v24.3
    İzole 2 Kişilik Online Ortak Turnuva (Co-op Oda) Modülü
    - Tek kişilik IndexedDB / JSON yedeğe hiç dokunmaz
    - Çakışmasız 2 düğümlü Firebase mimarisi (/rooms/{room}/host.json & guest.json)
@@ -7,6 +7,30 @@
    - Yan yana detaylı kıyas, TOTS, Puan Durumu, Eleme Ağacı & Ortak Kupa Geçmişi
    ========================================================================== */
 
+const CPICO={
+  copy:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+  share:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>',
+  ref:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>',
+  leave:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>',
+  dice:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.2" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.2" fill="currentColor"/></svg>',
+  card:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="3"/><circle cx="9" cy="10.2" r="1.5"/><path d="M4 17.5l5-4.5 3.5 3 3-2.5 4.5 4"/></svg>'
+};
+function coopAutoH2hMom(m,meTi){
+  if(!m||!m.h2h||meTi==null||m.opp==null)return null;
+  const gf=+m.gf||0,ga=+m.ga||0;
+  const gls=Array.isArray(m.gls)?m.gls:[],og=Array.isArray(m.og)?m.og:[];
+  const winH=gf>ga||(gf===ga&&m.pf!=null&&m.pa!=null&&m.pf>m.pa);
+  const winG=ga>gf||(gf===ga&&m.pf!=null&&m.pa!=null&&m.pa>m.pf);
+  const ti=winH?meTi:winG?m.opp:(gls.length>=og.length?meTi:m.opp);
+  const pGls=ti===meTi?gls:og;
+  const n=pickOppMom(ti,pGls,ti===meTi?ga:gf,ti===meTi?gf:ga);
+  return n?{n,ti}:null;
+}
+function coopAutoPullOnVisible(){
+  if(!st.coopMode||!coopHasRoom()||st.cpM||st.cpLock||st.slot)return;
+  if(Date.now()-(st.cpLastAuto||0)<10000)return;
+  coopPull(true).then(ok=>{if(ok&&st.coopMode)render()}).catch(()=>{});
+}
 const COOP_CFG_K="fc27lig_coop_cfg";
 const COOP_HOST_UID="u_cphost01";
 const COOP_GUEST_UID="u_cpguest1";
@@ -21,9 +45,14 @@ const COOP_TPL=[
   ["Direkt Eleme","16 takım · Eleme",{N:16,gs:0,q:0,gl:1,kl:1,fl:1}]
 ];
 
+let _coopMemCfg=null,_coopMemCache=null,_coopCfgDirty=false,_coopCacheDirty=false;
+const coopClone=v=>{if(v==null)return null;try{return JSON.parse(JSON.stringify(v))}catch(e){return null}};
 function coopLoadCfg(){
   let c=null;
-  try{c=JSON.parse(localStorage.getItem(COOP_CFG_K)||"null")}catch(e){}
+  if(!_coopCfgDirty){
+    try{c=JSON.parse(localStorage.getItem(COOP_CFG_K)||"null")}catch(e){}
+  }
+  if((!c||typeof c!=="object")&&_coopMemCfg)c=Object.assign({},_coopMemCfg);
   if(!c||typeof c!=="object")c={};
   const dcfg=typeof duelLoadCfg==="function"?duelLoadCfg():{};
   return{
@@ -33,16 +62,23 @@ function coopLoadCfg(){
   };
 }
 function coopSaveCfg(c){
-  try{localStorage.setItem(COOP_CFG_K,JSON.stringify({room:c.room||"",role:c.role||"",name:c.name||""}))}catch(e){}
+  const obj={room:c.room||"",role:c.role||"",name:c.name||""};
+  _coopMemCfg=Object.assign({},obj);
+  try{localStorage.setItem(COOP_CFG_K,JSON.stringify(obj));_coopCfgDirty=false}catch(e){_coopCfgDirty=true}
 }
 function coopLoadCache(){
   let c=null;
-  try{c=JSON.parse(localStorage.getItem(COOP_CACHE_K)||"null")}catch(e){}
+  if(!_coopCacheDirty){
+    try{c=JSON.parse(localStorage.getItem(COOP_CACHE_K)||"null")}catch(e){}
+  }
+  if((!c||typeof c!=="object")&&_coopMemCache)c=coopClone(_coopMemCache);
   if(!c||typeof c!=="object")return{room:"",host:null,guest:null,lastSync:0};
   return{room:String(c.room||""),host:c.host||null,guest:c.guest||null,lastSync:+c.lastSync||0};
 }
 function coopSaveCache(c){
-  try{localStorage.setItem(COOP_CACHE_K,JSON.stringify(c))}catch(e){}
+  const obj={room:String((c&&c.room)||""),host:coopClone(c&&c.host),guest:coopClone(c&&c.guest),lastSync:+(c&&c.lastSync)||0};
+  _coopMemCache=obj;
+  try{localStorage.setItem(COOP_CACHE_K,JSON.stringify(obj));_coopCacheDirty=false}catch(e){_coopCacheDirty=true}
 }
 function coopHasRoom(){
   const c=coopLoadCfg();
@@ -264,7 +300,7 @@ function coopState(){
         pf:m.pa!=null?+m.pa:null,pa:m.pf!=null?+m.pf:null,
         gls:Array.isArray(m.og)?m.og.map(o=>({sc:o.sc,as:o.as||""})):[],
         og:Array.isArray(m.gls)?m.gls.map(g=>({sc:g.sc,as:g.as||""})):[],
-        mom:m.gMom||"",omom:m.mom||"",stats:mirSt,h2h:1,dt:m.dt||""
+        mom:m.gMom||"",gMom:m.mom||"",omom:m.mom||"",stats:mirSt,h2h:1,dt:m.dt||""
       });
     });
   }
@@ -383,8 +419,9 @@ function coopSyncKo(S){
     }
     if(!pairs.every(p=>p.w!=null)){
       for(let k=rIdx+1;k<RDs.length;k++){
-        const nxt=ko[RDs[k]];
-        if(Array.isArray(nxt)&&nxt.every(x=>x&&x.w==null))delete ko[RDs[k]];
+        const rdK=RDs[k],nxt=ko[rdK];
+        const hasHm=S.hMt.some(m=>m&&m.rd===rdK)||S.gMt.some(m=>m&&m.rd===rdK);
+        if(Array.isArray(nxt)&&!hasHm&&nxt.every(x=>x&&x.w==null&&!x.leg1&&!x.leg2))delete ko[rdK];
       }
     }
     if(pairs.every(p=>p.w!=null)&&rIdx+1<RDs.length){
@@ -501,7 +538,14 @@ function coopCanUndoLast(S){
     return last;
   }
   const RDs=rds(t.cfg).filter(r=>r!=="Grup"),ri=RDs.indexOf(last.rd);
-  if(ri>=0&&RDs.slice(ri+1).some(rd=>Array.isArray(t.sim.ko[rd])&&t.sim.ko[rd].some(p=>p&&p.w!=null)))return null;
+  if(ri>=0){
+    const laterRds=RDs.slice(ri+1);
+    const hasLater=laterRds.some(rd=>
+      (Array.isArray(t.sim.ko[rd])&&t.sim.ko[rd].some(p=>p&&(p.w!=null||p.leg1!=null||p.leg2!=null)))
+      ||S.hMt.some(m=>m&&m.rd===rd)||S.gMt.some(m=>m&&m.rd===rd)
+    );
+    if(hasLater)return null;
+  }
   return last;
 }
 
@@ -625,13 +669,8 @@ function coopTourneyStats(S){
     if(m.mom){const e=ent(m.mom,meTi);if(e)e.mom++}
     else if(m.gMom&&m.h2h){const e=ent(m.gMom,m.opp);if(e)e.mom++}
     else if(m.h2h){
-      const gf=+m.gf||0,ga=+m.ga||0;
-      const winH=gf>ga||(gf===ga&&m.pf!=null&&m.pa!=null&&m.pf>m.pa);
-      const winG=ga>gf||(gf===ga&&m.pf!=null&&m.pa!=null&&m.pa>m.pf);
-      const pTi=winH?meTi:winG?m.opp:(gls.length>=og.length?meTi:m.opp);
-      const pGls=pTi===meTi?gls:og;
-      const om=pickOppMom(pTi,pGls,pTi===meTi?ga:gf,pTi===meTi?gf:ga);
-      if(om){const e=ent(om,pTi);if(e)e.mom++}
+      const am=coopAutoH2hMom(m,meTi);
+      if(am){const e=ent(am.n,am.ti);if(e)e.mom++}
     }else{
       const om=m.omom||pickOppMom(m.opp,og,+m.gf||0,+m.ga||0);
       if(om){const e=ent(om,m.opp);if(e)e.mom++}
@@ -773,7 +812,7 @@ function coopMatchDlg(S){
   };
   const glBlock=(label,ti,arr,side)=>{
     if(!arr.length)return "";
-    return `<div class="cp-gblk"><div class="pset-lbl">${label} (${arr.length})</div>`+arr.map((g,idx)=>
+    return `<div class="cp-gblk"><div class="pset-lbl">${esc(label)} (${arr.length})</div>`+arr.map((g,idx)=>
       `<div class="cp-grow"><span>${idx+1}.</span><select class="sel" data-cpgs="${side}:${idx}">${sqOpts(ti,g.sc)}</select>`+
       (g.sc&&!isKK(g.sc)?`<select class="sel" data-cpga="${side}:${idx}">${asOpts(ti,g.as,g.sc)}</select>`:"")+`</div>`
     ).join("")+`</div>`;
@@ -892,9 +931,9 @@ function coopSetupView(S){
     const gmn=[[0,"Yok"]].concat(rg(15).map(i=>[71+i,71+i])),gmx=[[99,"Yok"]].concat(rg(15).map(i=>[85-i,85-i]));
     const capO=[[0,"Sınırsız"]].concat([1,2,3,4,5,6,8,10,12].map(v=>[v,"En fazla "+v]));
     const gcO=c.gs?[[0,"Sınırsız"],[1,"En fazla 1"],[2,"En fazla 2"],[3,"En fazla 3"],[4,"En fazla 4"],[5,"En fazla 5"]]:[[0,"Sınırsız"],[1,"Aynı ülke eşleşmesin"]];
-    const isDefRl=r.rg==="all"&&!(r.xc&&r.xc.length)&&!r.gmin&&r.gmax===99&&!r.amin&&!r.mmin&&!r.dmin&&!r.cap&&r.gcap===DEFR.gcap&&r.pick==="top"&&r.dm==="pot";
+    const isDefRl=r.rg==="all"&&!(r.xc&&r.xc.length)&&!r.gmin&&r.gmax===99&&!r.amin&&!r.mmin&&!r.dmin&&!r.cap&&(lgMode||r.gcap===DEFR.gcap)&&r.pick==="top"&&(lgMode||r.dm==="pot");
     const actC=cs.length-(r.xc||[]).filter(k=>cs.includes(k)).length;
-    const limCnt=[r.gmin>0,r.gmax<99,r.amin>0,r.mmin>0,r.dmin>0,r.cap>0,r.gcap!==DEFR.gcap].filter(Boolean).length;
+    const limCnt=[r.gmin>0,r.gmax<99,r.amin>0,r.mmin>0,r.dmin>0,r.cap>0,!lgMode&&r.gcap!==DEFR.gcap].filter(Boolean).length;
     const advBody=`<div class="pset-lbl">Takım Bölgesi</div>`+
       `<div class="stabs seg3" style="margin-bottom:11px">${Object.keys(RGN).map(k=>segBtn("cprl","rg",k,k==="all"?"Tümü":k==="eu"?"Avrupa":"Avrupa Dışı",r.rg===k)).join("")}</div>`+
       `<details class="xfold su-ctfold"${r.xc.length?" open":""}><summary><span class="ui-lbl">${uiIco("sliders")}<span>Ülke Filtresi</span></span><span class="xfpill${r.xc.length?" org":""}">${actC}/${cs.length}</span></summary><div class="xfb">`+
@@ -908,11 +947,11 @@ function coopSetupView(S){
         `<div class="su-fld"><label>Orta Saha</label>${sel("cprs","mmin",sc,r.mmin)}</div>`+
         `<div class="su-fld"><label>Defans</label>${sel("cprs","dmin",sc,r.dmin)}</div>`+
         `<div class="su-fld"><label>Ülke Limiti (Turnuva)</label>${sel("cprs","cap",capO,r.cap)}</div>`+
-        `<div class="su-fld full"><label>${c.gs?"Aynı Grupta Aynı Ülkeden":"İlk Turda Aynı Ülke"}</label>${sel("cprs","gcap",gcO,r.gcap)}</div>`+
+        (!lgMode?`<div class="su-fld full"><label>${c.gs?"Aynı Grupta Aynı Ülkeden":"İlk Turda Aynı Ülke"}</label>${sel("cprs","gcap",gcO,r.gcap)}</div>`:"")+
       `</div></details>`+
       `<div class="su-mgrid" style="margin-top:11px">`+
         `<div class="su-mrow"><span>Katılımcı Seçimi</span><div class="stabs seg2">${segBtn("cprl","pick","top","En Güçlü",r.pick==="top")}${segBtn("cprl","pick","rnd","Rastgele",r.pick==="rnd")}</div></div>`+
-        `<div class="su-mrow"><span>Kura Yöntemi</span><div class="stabs seg2">${segBtn("cprl","dm","pot","Torbalı",r.dm==="pot")}${segBtn("cprl","dm","rnd","Rastgele",r.dm==="rnd")}</div></div>`+
+        (!lgMode?`<div class="su-mrow"><span>Kura Yöntemi</span><div class="stabs seg2">${segBtn("cprl","dm","pot","Torbalı",r.dm==="pot")}${segBtn("cprl","dm","rnd","Rastgele",r.dm==="rnd")}</div></div>`:"")+
       `</div>`+
       (!isDefRl?`<button class="btn pset-sec" data-a="cprlrst" style="width:100%;margin-top:10px">Kuralları Varsayılana Sıfırla</button>`:"");
     advFold=`<div class="pfold ${isDefRl?"sky":"gold"}${st.cpAdv?" open":""}" style="margin:0 0 10px"><button class="acbtn${st.cpAdv?" open":""}" data-a="cpadv" aria-expanded="${!!st.cpAdv}"><span class="aci">${UICO.sliders}</span><span class="act"><b>Turnuva Detay Ayarları (GEN & Ülke)</b><small>${isDefRl?"Varsayılan havuz · dilediğin gibi özelleştir":"Özel GEN, bölge veya ülke kuralları aktif"}</small></span><span class="acr"><span class="xfpill ${isDefRl?"sky":"gold"}">${isDefRl?"Varsayılan":"Özel"}</span><span class="acc" aria-hidden="true">${UICO.chev}</span></span></button>${st.cpAdv?`<div class="acbody">${advBody}</div>`:""}</div>`;
@@ -922,8 +961,10 @@ function coopSetupView(S){
   const poolNote=ok
     ? `<div class="pgmath ok" style="margin:0 0 10px">${fmt(c)} · Uygun: <b>${M}</b> · Havuz: <b>${A}/${c.N}</b> kulüp</div>`
     : `<div class="pgmath dead" style="margin:0 0 10px">Yetersiz havuz: <b>${A}/${c.N}</b> kulüp (Uygun: ${M}). GEN veya ülke sınırını gevşet.</div>`;
+  const simM=(t.sim&&t.sim.m)||0;
+  const simBar=`<div class="su-mgrid" style="margin:0 0 10px"><div class="su-mrow"><span>YZ Simülasyon</span><div class="stabs seg3">${[["0","Dengeli"],["1","Gerçekçi"],["2","Sürpriz"]].map(([v,l])=>`<button class="chip ${simM===+v?"on":""}" data-a="cpsimm" data-v="${v}">${l}</button>`).join("")}</div></div></div>`;
   const confirmCard=psetCard("trophy",ok?"emr":"gold","Kurulumu Onayla",ok?"Takım seçimine geçmeye hazır":"Havuz sayısını en az "+c.N+" kulüp yap",`${A}/${c.N}`,
-    poolNote+`<button class="btn p pset-pri" data-a="cplock" ${ok?"":"disabled"} style="width:100%">Kurulumu Onayla ve Takım Seçimine Geç ›</button>`
+    simBar+poolNote+`<button class="btn p pset-pri" data-a="cplock" ${ok?"":"disabled"} style="width:100%">Kurulumu Onayla ve Takım Seçimine Geç ›</button>`
   );
   return card1+advFold+confirmCard;
 }
@@ -949,8 +990,62 @@ function coopPickView(S){
     : `<div class="bar" style="margin:10px 0 0"><button class="btn p pset-pri" data-a="cpref" style="flex:1">Kurayı Kontrol Et / Yenile</button></div>`;
   return psetCard("shield","gold","Takım Seçimi",`${esc(t.name)} · İkiniz de kendi takımınızı seçin`,`${P.length} kulüp`,
     statusCard+
-    `<div class="bar" style="margin:8px 0"><input id="cp_q" class="f" placeholder="Takım ara..." value="${esc(st.cpQ||"")}" style="flex:1"><button class="btn pset-sec" data-a="cprnd">🎲 Rastgele</button></div>`+
+    `<div class="bar" style="margin:8px 0"><input id="cp_q" class="f" placeholder="Takım ara..." value="${esc(st.cpQ||"")}" style="flex:1"><button class="btn pset-sec ui-btn cp-slotbtn" data-a="cprnd">${CPICO.dice}<span>Slot Çek</span></button></div>`+
     actions+`<div style="margin-top:10px">${grid}</div>`
+  );
+}
+
+function coopMatchLogCard(S){
+  const hCnt=S.hMt.length,gCnt=S.gMt.length;
+  if(!hCnt&&!gCnt)return "";
+  const defSide=S.role==="guest"?(gCnt?"guest":"host"):(hCnt?"host":"guest");
+  const side=st.cpLogSide==="host"||st.cpLogSide==="guest"?st.cpLogSide:defSide;
+  const list=(side==="host"?S.hMt:S.gMt).slice().reverse();
+  const meTi=side==="host"?S.hTi:S.gTi;
+  const shown=st.cpLogAll?list:list.slice(0,5);
+  const switcher=`<div class="stabs seg2" style="margin:0 0 10px" role="tablist" aria-label="Maç günlüğü oyuncusu">`+
+    `<button class="chip ${side==="host"?"on":""}" role="tab" aria-selected="${side==="host"}" data-a="cpmlog" data-v="host">★ ${esc(S.hName)} (${hCnt})</button>`+
+    `<button class="chip ${side==="guest"?"on":""}" role="tab" aria-selected="${side==="guest"}" data-a="cpmlog" data-v="guest">◆ ${esc(S.gName)} (${gCnt})</button>`+
+  `</div>`;
+  const fmtGls=arr=>(Array.isArray(arr)?arr:[]).filter(g=>g&&g.sc).map(g=>`${esc(g.sc)}${g.as?` (${esc(g.as)})`:""}`).join(", ");
+  const rows=shown.map(m=>{
+    if(!m||m.opp==null||!T[m.opp])return "";
+    const r=mres(m),rLbl=m.rd==="Grup"?`H${m.w||"?"}`:(m.rd+(m.lg?` · ${m.lg}.M`:""));
+    const scTxt=`${m.gf}–${m.ga}${m.pf!=null&&m.pa!=null?` (P ${m.pf}–${m.pa})`:m.et?" (UZ)":""}`;
+    const mySc=fmtGls(m.gls),opSc=m.h2h?fmtGls(m.og):"";
+    let goalHtml="";
+    if(m.h2h&&(mySc||opSc)){
+      const parts=[];
+      if(mySc)parts.push(`<b>${esc(T[meTi].n)}:</b> ${mySc}`);
+      if(opSc)parts.push(`<b>${esc(T[m.opp].n)}:</b> ${opSc}`);
+      goalHtml=`<div class="cp-mlg">${uiIco("ball")}<span>${parts.join(" · ")}</span></div>`;
+    }else if(mySc){
+      goalHtml=`<div class="cp-mlg">${uiIco("ball")}<span>${mySc}</span></div>`;
+    }
+    let momTxt="";
+    if(m.mom)momTxt=m.mom;
+    else if(m.h2h&&m.gMom)momTxt=m.gMom;
+    else if(m.h2h){const am=coopAutoH2hMom(m,meTi);if(am)momTxt=am.n}
+    const chips=[];
+    if(m.h2h)chips.push(`<span class="cp-mchip h2h">H2H</span>`);
+    if(momTxt)chips.push(`<span class="cp-mchip mom">★ ${esc(momTxt)}</span>`);
+    if(m.stats){
+      if(m.stats.myXg!=null&&m.stats.oppXg!=null)chips.push(`<span class="cp-mchip">xG ${fx(m.stats.myXg)}–${fx(m.stats.oppXg)}</span>`);
+      if(m.stats.myPos!=null)chips.push(`<span class="cp-mchip">%${Math.round(m.stats.myPos)} Top</span>`);
+      if(m.stats.myShots!=null)chips.push(`<span class="cp-mchip">${m.stats.myShots} Şut</span>`);
+    }
+    return `<div class="cp-mlrow">`+
+      `<div class="cp-mltop">`+
+        `<button class="cp-mltm" data-a="tinfo" data-i="${m.opp}">${badge(m.opp,24)}<div><b>${esc(T[m.opp].n)}</b><small>${esc(rLbl)}</small></div></button>`+
+        `<div class="cp-mlr"><span class="podt-sc ${r}">${scTxt}</span><button class="cp-mcard" data-a="cpmpos" data-id="${m.id}" data-v="${side}" title="Maç Kartı Posteri" aria-label="Maç Kartı Posteri">${CPICO.card}</button></div>`+
+      `</div>`+
+      goalHtml+
+      (chips.length?`<div class="cp-mchips">${chips.join("")}</div>`:"")+
+    `</div>`;
+  }).filter(Boolean).join("");
+  const moreBtn=list.length>5?`<button class="btn pset-sec" data-a="cpmlogall" style="width:100%;margin-top:8px">${st.cpLogAll?"Son 5 Maçı Göster":`Tüm Maçları Göster (${list.length})`}</button>`:"";
+  return psetCard("list","sky","Ortak Maç Günlüğü","Golcüler, xG detayları ve tek tıkla Maç Kartı Posteri",`${hCnt+gCnt} kayıt`,
+    switcher+(rows||emp("Bu oyuncunun henüz oynadığı maç yok."))+moreBtn
   );
 }
 
@@ -962,7 +1057,8 @@ function coopPlayView(S){
       `<button class="btn p pset-pri" data-a="cpref" style="width:100%">↻ Durumu Yenile</button>`
     );
   }
-  const totW=totWeeks(t.cfg),simW=t.sim.w||0,lg=isLg(t.cfg),ucl=isUcl(t.cfg);
+  const totW=totWeeks(t.cfg),simW=t.sim.w||0,lg=isLg(t.cfg),ucl=isUcl(t.cfg),koOnly=!t.cfg.gs&&!lg&&!ucl;
+  const activeSub=koOnly&&sub==="tablo"?"fikstur":sub;
   const out=coopOutcome(S);
   const inGrpStage=totW>0&&!coopHasKo(t);
   const hPend=inGrpStage?coopPendingGrpFor(S,S.hTi):[],gPend=inGrpStage?coopPendingGrpFor(S,S.gTi):[];
@@ -971,11 +1067,13 @@ function coopPlayView(S){
   const myAct=coopNextActionFor(S,S.myTi,reqW);
   const hAct=coopNextActionFor(S,S.hTi),gAct=coopNextActionFor(S,S.gTi);
 
-  const tabs=[["genel","Genel"],["tablo",!t.cfg.gs?"Eşleşmeler":"Tablo"],["fikstur","Fikstür"],["kiyas","Kıyas & TOTS"],["gecmis","Kupa Geçmişi"]];
-  const tabBar=`<div class="ptabs htabs6" style="margin:0 0 10px" role="tablist">${tabs.map(([k,l])=>`<button class="chip ${sub===k?"on":""}" role="tab" aria-selected="${sub===k}" data-a="cptab" data-v="${k}">${l}</button>`).join("")}</div>`;
+  const tabs=koOnly
+    ? [["genel","Genel"],["fikstur","Eleme"],["kiyas","Kıyas"],["gecmis","Geçmiş"]]
+    : [["genel","Genel"],["tablo","Tablo"],["fikstur","Fikstür"],["kiyas","Kıyas"],["gecmis","Geçmiş"]];
+  const tabBar=`<div class="ptabs cp-tabs${koOnly?" n4":""}" style="margin:0 0 10px" role="tablist">${tabs.map(([k,l])=>`<button class="chip ${activeSub===k?"on":""}" role="tab" aria-selected="${activeSub===k}" data-a="cptab" data-v="${k}">${l}</button>`).join("")}</div>`;
 
   let body="";
-  if(sub==="genel"){
+  if(activeSub==="genel"){
     let heroBody="";
     if(out&&out.done){
       const endAction=S.role==="host"
@@ -985,7 +1083,9 @@ function coopPlayView(S){
         : (t.phase!=="done"
             ? `<div class="pgmath info" style="margin-top:10px">Kurucu (${esc(S.hName)}) turnuvayı ortak arşive kaydettiğinde yeni sezona geçilecek.</div><button class="btn pset-sec" data-a="cpref" style="width:100%;margin-top:6px">↻ Durumu Yenile</button>`
             : `<div class="pgmath ok" style="margin-top:10px">✓ Ortak arşive kaydedildi · Kurucu (${esc(S.hName)}) yeni sezonu açtığında burada görünecek.</div><button class="btn pset-sec" data-a="cpref" style="width:100%;margin-top:6px">↻ Yeni Sezonu Kontrol Et</button>`);
-      heroBody=`<div class="cp-done"><span class="cp-trp">${UICO.trophy}</span><div><b>Şampiyon: ${esc(T[out.ch].n)}</b><small>${out.ch===S.hTi?`${esc(S.hName)} kupayı kaldırdı!`:out.ch===S.gTi?`${esc(S.gName)} kupayı kaldırdı!`:"Yapay zekâ kulübü şampiyon oldu."}</small></div></div>`+endAction;
+      const doneUndo=t.phase!=="done"?coopCanUndoLast(S):null;
+      const doneUndoBtn=doneUndo?`<button class="btn pset-sec" data-a="cpmundo" style="width:100%;margin-top:6px">↩ Son Girdiğim Maçı Sil (${esc(doneUndo.on)} ${doneUndo.gf}–${doneUndo.ga})</button>`:"";
+      heroBody=`<div class="cp-done"><span class="cp-trp">${UICO.trophy}</span><div><b>Şampiyon: ${esc(T[out.ch].n)}</b><small>${out.ch===S.hTi?`${esc(S.hName)} kupayı kaldırdı!`:out.ch===S.gTi?`${esc(S.gName)} kupayı kaldırdı!`:"Yapay zekâ kulübü şampiyon oldu."}</small></div></div>`+endAction+doneUndoBtn;
     }else{
       let readyStrip="";
       if(inGrpStage){
@@ -1032,9 +1132,12 @@ function coopPlayView(S){
       const undoM=coopCanUndoLast(S);
       const undoBtn=undoM?`<button class="btn pset-sec" data-a="cpmundo" style="width:100%;margin-top:6px">↩ Son Girdiğim Maçı Sil (${esc(undoM.on)} ${undoM.gf}–${undoM.ga})</button>`:"";
       let hostSim="";
+      const simModeStrip=(S.role==="host"&&((inGrpStage&&simW<totW)||(!inGrpStage&&!lg)))
+        ? `<div class="cp-simrow"><span>YZ Modu</span><div class="stabs seg3">${[["0","Dengeli"],["1","Gerçekçi"],["2","Sürpriz"]].map(([v,l])=>`<button class="chip ${(t.sim.m||0)===+v?"on":""}" data-a="cpsimm" data-v="${v}">${l}</button>`).join("")}</div></div>`
+        : "";
       if(S.role==="host"){
         if(inGrpStage&&simW<totW){
-          hostSim=`<button class="btn p ui-btn" data-a="cpsimw" style="width:100%;margin-top:8px">${UICO.bolt}<span>${simW+1}. Hafta Diğer (YZ) Maçlarını Simüle Et</span></button>`;
+          hostSim=simModeStrip+`<button class="btn p ui-btn" data-a="cpsimw" style="width:100%;margin-top:6px">${UICO.bolt}<span>${simW+1}. Hafta Diğer (YZ) Maçlarını Simüle Et</span></button>`;
         }else if(inGrpStage&&simW>=totW&&!lg){
           if(coopAllHumanGrpDone(S)){
             hostSim=`<button class="btn p cta ui-btn" data-a="cpbuildko" style="width:100%;margin-top:8px">${UICO.trophy}<span>Eleme Ağacını Kur</span></button>`;
@@ -1050,7 +1153,7 @@ function coopPlayView(S){
             const pairs=t.sim.ko[activeRd]||[];
             const blocked=pairs.some(p=>p.w==null&&((p.t1===S.hTi||p.t2===S.hTi)||(p.t1===S.gTi||p.t2===S.gTi))&&p.t1!=null&&p.t2!=null);
             const bothElim=![S.hTi,S.gTi].some(ti=>RDs.some(rd=>(t.sim.ko[rd]||[]).some(p=>p.w==null&&(p.t1===ti||p.t2===ti))));
-            hostSim=`<div class="bar" style="margin:8px 0 0"><button class="btn p ui-btn" data-a="cpsimko" ${blocked?"disabled":""} style="flex:1">${UICO.bolt}<span>${blocked?`${activeRd} İnsan Maçları Bekleniyor`:`${activeRd} Turunu Simüle Et`}</span></button>`+
+            hostSim=simModeStrip+`<div class="bar" style="margin:6px 0 0"><button class="btn p ui-btn" data-a="cpsimko" ${blocked?"disabled":""} style="flex:1">${UICO.bolt}<span>${blocked?`${activeRd} İnsan Maçları Bekleniyor`:`${activeRd} Turunu Simüle Et`}</span></button>`+
               (bothElim&&RDs.indexOf(activeRd)<RDs.length-1?`<button class="btn ui-btn" data-a="cpsimall" style="flex:1">${uiIco("ff")}<span>Finale Kadar</span></button>`:"")+`</div>`;
           }
         }
@@ -1065,15 +1168,18 @@ function coopPlayView(S){
       `<div class="cp-glc cp-g"><div class="cp-glh">${badge(S.gTi,26)}<div><b>${esc(S.gName)}</b><small>${esc(T[S.gTi].n)}</small></div></div><div class="cp-gln"><b>${gs.w}G ${gs.d}B ${gs.l}M</b><span>${gs.gf}:${gs.ga} · ${gs.pts}P</span></div></div>`+
     `</div>`;
 
-    const pBar=`<div class="cp-pbar">`+
-      `<button class="btn pset-sec" data-a="cppos" data-v="kura">📊 Puan / Kura Posteri</button>`+
-      (!lg&&Object.keys(t.sim.ko||{}).length?`<button class="btn pset-sec" data-a="cppos" data-v="ko">🏆 Eleme Ağacı Posteri</button>`:"")+
-      `<button class="btn pset-sec" data-a="cppos" data-v="tots">⭐ En İyi 11 (TOTS) Posteri</button>`+
-    `</div>`;
+    const hasKoNow=!lg&&Object.keys(t.sim.ko||{}).length>0;
+    const pBtns=[
+      `<button class="btn pset-sec ui-btn cp-pbtn" data-a="cppos" data-v="kura">${UICO.chart}<span>Puan / Kura</span></button>`,
+      hasKoNow?`<button class="btn pset-sec ui-btn cp-pbtn" data-a="cppos" data-v="ko">${UICO.tree}<span>Eleme Ağacı</span></button>`:"",
+      `<button class="btn pset-sec ui-btn cp-pbtn" data-a="cppos" data-v="tots">${UICO.trophy}<span>En İyi 11 (TOTS)</span></button>`,
+      S.hist.length?`<button class="btn pset-sec ui-btn cp-pbtn" data-a="cppos" data-v="hist">${UICO.spark}<span>Kupa Geçmişi</span></button>`:""
+    ].filter(Boolean);
+    const pBar=`<div class="cp-pgrid${pBtns.length===3?" odd3":""}">${pBtns.join("")}</div>`;
 
-    body=heroCard+glance+pBar;
-  }else if(sub==="tablo"){
-    const pBtn=`<div class="bar" style="margin:0 0 10px"><button class="btn pset-sec" data-a="cppos" data-v="kura" style="width:100%">📊 ${ucl?"ŞL 36’lı Puan Durumu Posterini Paylaş":lg?"Lig Puan Durumu Posterini Paylaş":"Puan Durumu / Kura Posterini Paylaş"}</button></div>`;
+    body=heroCard+glance+pBar+coopMatchLogCard(S);
+  }else if(activeSub==="tablo"){
+    const pBtn=`<div class="bar" style="margin:0 0 10px"><button class="btn pset-sec ui-btn" data-a="cppos" data-v="kura" style="width:100%">${UICO.chart}<span>${ucl?"ŞL 36’lı Puan Durumu Posterini Paylaş":lg?"Lig Puan Durumu Posterini Paylaş":"Puan Durumu / Kura Posterini Paylaş"}</span></button></div>`;
     if(!t.cfg.gs&&!lg&&!ucl){
       body=pBtn+`<div class="note">Direkt Eleme formatında grup tablosu yoktur; tüm eşleşmeleri Fikstür sekmesinde görebilirsin.</div>`;
     }else{
@@ -1096,13 +1202,13 @@ function coopPlayView(S){
       }).join("");
       body=pBtn+`<div class="grid tblgrid">${cards}</div>`;
     }
-  }else if(sub==="fikstur"){
+  }else if(activeSub==="fikstur"){
     let koHtml="";
     if(!lg){
       coopInitKo(S,false);
       const RDs=rds(t.cfg).filter(r=>r!=="Grup");
       if(RDs.some(rd=>Array.isArray(t.sim.ko[rd])&&t.sim.ko[rd].length)){
-        koHtml=`<div class="bar" style="margin:0 0 10px"><button class="btn pset-sec" data-a="cppos" data-v="ko" style="width:100%">🏆 Eleme Ağacı Posterini Paylaş (PNG)</button></div>`+
+        koHtml=`<div class="bar" style="margin:0 0 10px"><button class="btn pset-sec ui-btn" data-a="cppos" data-v="ko" style="width:100%">${UICO.tree}<span>Eleme Ağacı Posterini Paylaş (PNG)</span></button></div>`+
           `<div class="card pglass" style="padding:12px;margin:0 0 12px"><div class="pset-lbl" style="margin:0 0 8px">Eleme Ağacı</div>`+
           RDs.map(rd=>{
             const ps=t.sim.ko[rd]||[];if(!ps.length)return "";
@@ -1112,7 +1218,11 @@ function coopPlayView(S){
               const legSub=hasLegs?`<div class="note" style="margin:2px 0 0;text-align:center;font-size:10.5px">Ayaklar: ${p.leg1[0]}–${p.leg1[1]} · ${p.leg2[0]}–${p.leg2[1]}</div>`:"";
               const nm1=p.t1!=null&&T[p.t1]?`${p.t1===S.hTi?"★ ":p.t1===S.gTi?"◆ ":""}${esc(T[p.t1].n)}`:(p.l1||"Bekleniyor");
               const nm2=p.t2!=null&&T[p.t2]?`${p.t2===S.hTi?"★ ":p.t2===S.gTi?"◆ ":""}${esc(T[p.t2].n)}`:(p.l2||"Bekleniyor");
-              return `<div class="bktie${done?" dn":""}"><span class="bktm hm${done&&p.w===p.t1?" w":""}"><span class="n">${nm1}</span>${p.t1!=null&&T[p.t1]?badge(p.t1,18):""}</span><b class="bksc">${sc}</b><span class="bktm aw${done&&p.w===p.t2?" w":""}">${p.t2!=null&&T[p.t2]?badge(p.t2,18):""}<span class="n">${nm2}</span></span></div>${legSub}`;
+              const has1=p.t1!=null&&T[p.t1],has2=p.t2!=null&&T[p.t2];
+              const isMineTie=p.t1===S.hTi||p.t2===S.hTi,isGuestTie=p.t1===S.gTi||p.t2===S.gTi;
+              const s1Html=has1?`<button class="bktm hm${done&&p.w===p.t1?" w":""}" data-a="tinfo" data-i="${p.t1}"><span class="n">${nm1}</span>${badge(p.t1,18)}</button>`:`<span class="bktm hm"><span class="n">${nm1}</span></span>`;
+              const s2Html=has2?`<button class="bktm aw${done&&p.w===p.t2?" w":""}" data-a="tinfo" data-i="${p.t2}">${badge(p.t2,18)}<span class="n">${nm2}</span></button>`:`<span class="bktm aw"><span class="n">${nm2}</span></span>`;
+              return `<div class="bktie${done?" dn":""}${isMineTie?" mine":isGuestTie?" cp-gtie":""}">${s1Html}<b class="bksc">${sc}</b>${s2Html}</div>${legSub}`;
             }).join("")+`</div>`;
           }).join("")+`</div>`;
       }
@@ -1168,7 +1278,7 @@ function coopPlayView(S){
       wkHtml=wkTabs+`<div class="card pglass" style="padding:10px">${innerHtml||emp("Bu hafta maçı yok.")}</div>`;
     }
     body=koHtml+wkHtml;
-  }else if(sub==="kiyas"){
+  }else if(activeSub==="kiyas"){
     const hs=coopMgrStats(S.hMt),gs=coopMgrStats(S.gMt);
     const h2hMs=S.hMt.filter(m=>m&&m.h2h);
     let h2hHtml="";
@@ -1200,25 +1310,19 @@ function coopPlayView(S){
     const xi=tourneyTots(vSeason,st2);
     let totsCard="";
     if(xi){
-      const mvpP=totsFindMvp(xi);
-      const pitchRow=(arr,cls)=>`<div class="tots-row ${cls}">${arr.map(p=>{
-        const isMvp=mvpP&&p.n===mvpP.n&&p.ti===mvpP.ti,isH=p.ti===S.hTi,isG=p.ti===S.gTi;
-        const stTxt=[p.g?p.g+"G":"",p.a?p.a+"A":"",p.mom?p.mom+"★":""].filter(Boolean).join(" · ")||(p.ovr+" GEN");
-        return `<div class="tots-pl${isMvp?" mvp":""}${isH?" mine":""}${isG?" cp-gpl":""}">${isMvp?`<span class="tots-mvp">MVP</span>`:""}<span class="tots-bdg">${badge(p.ti,34)}<i class="tots-pos p-${p.grp}">${esc(p.pos)}</i></span><span class="tots-nm">${esc(totsDispName(p.n,arr.length))}</span><span class="tots-st">${stTxt}</span></div>`;
-      }).join("")}</div>`;
-      totsCard=psetCard("trophy","gold","Turnuvanın En İyi 11’i (TOTS)",`★ ${esc(S.hName)} · ◆ ${esc(S.gName)}`,totsFmtOf(xi),
-        `<div class="tots-pitch">${pitchRow(totsOrderLine(xi.F,"F"),"r"+xi.F.length)}${pitchRow(totsOrderLine(xi.M,"M"),"r"+xi.M.length)}${pitchRow(totsOrderLine(xi.D,"D"),"r"+xi.D.length)}${pitchRow(xi.K,"r1")}</div>`+
-        `<button class="btn p pset-pri" data-a="cppos" data-v="tots" style="width:100%;margin-top:10px">⭐ TOTS Posterini Paylaş (PNG)</button>`
+      totsCard=psetCard("trophy","gold","Turnuvanın En İyi 11’i (TOTS)",`★ ${esc(S.hName)} · ◆ ${esc(S.gName)} · oyuncuya dokun`,totsFmtOf(xi),
+        totsPitchHtml(xi,t.id,S.gTi)+
+        `<button class="btn p pset-pri ui-btn" data-a="cppos" data-v="tots" style="width:100%;margin-top:10px">${UICO.trophy}<span>TOTS Posterini Paylaş (PNG)</span></button>`
       );
     }
-    const leadRow=(list,k,unit)=>list.slice(0,8).map((p,idx)=>`<div class="row"><span class="grk2${idx===0?" q1":""}">${idx+1}</span>${badge(p.ti,20)}<span class="n">${p.ti===S.hTi?"★ ":p.ti===S.gTi?"◆ ":""}${esc(p.n)} <small class="lb">${esc(T[p.ti].n)}</small></span><b>${p[k]}${unit}</b></div>`).join("");
+    const leadRow=(list,k,unit)=>list.slice(0,8).map((p,idx)=>`<button class="row tb cp-lrow${p.ti===S.hTi?" cp-lh":p.ti===S.gTi?" cp-lg":""}" data-a="tpinfo" data-n="${esc(p.n)}" data-i="${p.ti}" data-s="${t.id}"><span class="grk2${idx===0?" q1":""}">${idx+1}</span>${badge(p.ti,20)}<span class="n">${p.ti===S.hTi?"★ ":p.ti===S.gTi?"◆ ":""}${esc(p.n)} <small class="lb">${esc(T[p.ti].n)}</small></span><b>${p[k]}${unit}</b></button>`).join("");
     const leadersCard=st2.scorers.length?psetCard("list","emr","Gol & Asist Krallığı","Ortak turnuva istatistikleri",`${st2.totG} gol`,
       `<div class="pset-lbl">Gol Krallığı</div>${leadRow(st2.scorers,"g","G")}`+
       (st2.assists.length?`<div class="pset-lbl" style="margin-top:10px">Asist Krallığı</div>${leadRow(st2.assists,"a","A")}`:"")
     ):"";
 
     body=h2hHtml+cmpCard+totsCard+leadersCard;
-  }else if(sub==="gecmis"){
+  }else if(activeSub==="gecmis"){
     body=coopHistCard(S);
   }
   return tabBar+body;
@@ -1244,7 +1348,7 @@ function coopHistCard(S){
   `</div>`).join("");
   return psetCard("trophy","gold","Ortak Kupa Geçmişi",`${esc(hs.hName)} vs ${esc(hs.gName)} · Tüm Zamanlar`,`${hs.cnt} sezon`,
     kpi+h2hBar+
-    `<button class="btn p pset-pri" data-a="cppos" data-v="hist" style="width:100%;margin-bottom:12px">🏆 Ortak Kupa Geçmişi Posterini Paylaş (PNG)</button>`+
+    `<button class="btn p pset-pri ui-btn" data-a="cppos" data-v="hist" style="width:100%;margin-bottom:12px">${UICO.trophy}<span>Ortak Kupa Geçmişi Posterini Paylaş (PNG)</span></button>`+
     tl
   );
 }
@@ -1254,7 +1358,7 @@ function coopView(){
   if(!cfg.room||!cfg.role)return coopLobbyView();
   const S=coopState();
   if(!S){
-    return `<div class="cp-top"><span class="xfpill emr">${esc(cfg.room)}</span><button class="btn pset-sec" data-a="cpref">Yenile</button><button class="btn pset-sec" data-a="cpleave">Ayrıl</button><button class="chip backpill" data-a="cpexit">‹ Bireysel</button></div>`+
+    return `<div class="cp-top"><div class="cp-tleft"><span class="xfpill emr">${esc(cfg.room)}</span></div><div class="cp-tright"><button class="btn pset-sec cp-icb" data-a="cpref" title="Yenile" aria-label="Yenile">${CPICO.ref}</button><button class="btn pset-sec cp-icb" data-a="cpleave" title="Odadan ayrıl" aria-label="Odadan ayrıl">${CPICO.leave}</button><button class="chip backpill cp-back" data-a="cpexit">‹ Bireysel</button></div></div>`+
       (st.cpErr?`<div class="pgmath dead" style="margin-bottom:10px">${esc(st.cpErr)}</div>`:"")+
       psetCard("sliders","sky","Odaya Bağlanılıyor…","Ortak turnuva verisi çekiliyor",cfg.room,
         `<button class="btn p pset-pri" data-a="cpref" style="width:100%">Tekrar Dene</button>`
@@ -1264,16 +1368,20 @@ function coopView(){
   const syncLbl=syncAge==null?"":syncAge<60?`${syncAge} sn önce`:`${Math.round(syncAge/60)} dk önce`;
   const inBetween=(S.t.phase==="setup"||S.t.phase==="pick")&&S.hist.length>0;
   if(!inBetween&&st.cpShowHist)st.cpShowHist=false;
-  const histBtn=inBetween?`<button class="btn pset-sec cp-sm${st.cpShowHist?" on":""}" data-a="cphisttog" title="Ortak Kupa Geçmişi">${st.cpShowHist?"‹ Dön":"🏆 Geçmiş"}</button>`:"";
+  const histBtn=inBetween?`<button class="btn pset-sec cp-icb${st.cpShowHist?" on":""}" data-a="cphisttog" title="Ortak Kupa Geçmişi" aria-label="Ortak Kupa Geçmişi">${UICO.trophy}</button>`:"";
   const topBar=`<div class="cp-top">`+
-    `<button class="cp-code" data-a="cpcopy" title="Oda kodunu kopyala">${esc(cfg.room)} 📋</button>`+
-    `<span class="xfpill ${S.role==="host"?"gold":"sky"}">${S.role==="host"?"Kurucu":"Misafir"}</span>`+
-    histBtn+
-    `<button class="btn pset-sec cp-sm" data-a="cpref" ${st.cpBusy?"disabled":""}>${st.cpBusy?"…":"↻ Yenile"}</button>`+
-    `<button class="btn pset-sec cp-sm" data-a="cpleave" title="Odadan ayrıl">✕</button>`+
-    `<button class="chip backpill" data-a="cpexit">‹ Bireysel</button>`+
+    `<div class="cp-tleft">`+
+      `<button class="cp-code" data-a="cpcopy" title="Oda kodunu kopyala"><span>${esc(cfg.room)}</span>${CPICO.copy}</button>`+
+      `<button class="btn pset-sec cp-icb" data-a="cpshare" title="Arkadaşını davet et" aria-label="Arkadaşını davet et">${CPICO.share}</button>`+
+    `</div>`+
+    `<div class="cp-tright">`+
+      histBtn+
+      `<button class="btn pset-sec cp-icb${st.cpBusy?" spin":""}" data-a="cpref" ${st.cpBusy?"disabled":""} title="Yenile" aria-label="Yenile">${CPICO.ref}</button>`+
+      `<button class="btn pset-sec cp-icb" data-a="cpleave" title="Odadan ayrıl" aria-label="Odadan ayrıl">${CPICO.leave}</button>`+
+      `<button class="chip backpill cp-back" data-a="cpexit">‹ Bireysel</button>`+
+    `</div>`+
   `</div>`+
-  (syncLbl?`<div class="note" style="margin:0 0 8px;font-size:11.5px">Son güncelleme: ${syncLbl} · ${esc(S.hName)} & ${esc(S.gName)}</div>`:"")+
+  `<div class="cp-meta"><span><i class="cp-dot"></i>${syncLbl?`Güncel · ${syncLbl}`:"Bağlı"}</span><div class="cp-mr"><span class="xfpill ${S.role==="host"?"gold":"sky"} cp-rpill">${S.role==="host"?"Kurucu":"Misafir"}</span><b>${esc(S.hName)} & ${esc(S.gName)}</b></div></div>`+
   (st.cpErr?`<div class="pgmath dead" style="margin-bottom:10px">${esc(st.cpErr)}</div>`:"");
 
   let content="";
@@ -1356,7 +1464,7 @@ async function coopSetRuleNum(k,val){
 }
 
 /* ---------- CO-OP ACTION HANDLER (All data-a="cp...") ---------- */
-const COOP_NET_ACTS=new Set(["cpcreate","cpjoin","cptpl","cpcfg","cprl","cpxc","cpxcall","cprlrst","cplock","cpbacksetup","cppick","cpdraw","cpmsave","cpsimw","cpbuildko","cpsimko","cpsimall","cpfin","cpnew"]);
+const COOP_NET_ACTS=new Set(["cpcreate","cpjoin","cptpl","cpcfg","cprl","cpxc","cpxcall","cprlrst","cpsimm","cplock","cpbacksetup","cppick","cpdraw","cpmsave","cpsimw","cpbuildko","cpsimko","cpsimall","cpfin","cpnew"]);
 async function handleCoopAction(a,dv,dk,i,b){
   if(COOP_NET_ACTS.has(a)){
     if(st.cpLock)return true;
@@ -1370,6 +1478,7 @@ async function handleCoopActionInner(a,dv,dk,i,b){
   if(a==="cpopen"){
     st.coopMode=!st.coopMode;
     if(st.coopMode){st.qs=false;st.ti=null;st.pi=null;st.tpi=null;st.gs=false}
+    else{st.cpM=null;st.cpErr=""}
     if(st.coopMode&&coopHasRoom()&&(Date.now()-(st.cpLastAuto||0)>12000)){
       render();await coopPull(true);render();return true;
     }
@@ -1387,12 +1496,23 @@ async function handleCoopActionInner(a,dv,dk,i,b){
     try{await navigator.clipboard.writeText(c.room);ntf("Oda kodu kopyalandı: "+c.room)}catch(e){ntf("Oda kodu: "+c.room)}
     return true;
   }
+  if(a==="cpshare"){
+    const c=coopLoadCfg();
+    const txt=`FC 27 · 2 Kişilik Ortak Turnuva odasına katıl!\nOda Kodu: ${c.room}\nUygulamada üst çubuktan 2P › Mevcut Odaya Katıl bölümüne bu kodu gir.`;
+    try{
+      if(navigator.share){await navigator.share({title:"FC 27 · 2P Ortak Turnuva",text:txt});return true}
+    }catch(e){if(e&&e.name==="AbortError")return true}
+    try{await navigator.clipboard.writeText(txt);ntf("Davet mesajı kopyalandı ("+c.room+")")}catch(e){ntf("Oda kodu: "+c.room)}
+    return true;
+  }
+  if(a==="cpmlog"){st.cpLogSide=dv==="guest"?"guest":"host";st.cpLogAll=false;render();return true}
+  if(a==="cpmlogall"){st.cpLogAll=!st.cpLogAll;render();return true}
   if(a==="cpref"){await coopPull(false);render();return true}
   if(a==="cpleave"){
     ask("Bu ortak odadan ayrılmak istiyor musun? (Oda sunucuda kalır, kodla tekrar katılabilirsin.)",()=>{
       coopSaveCfg({room:"",role:"",name:coopLoadCfg().name});
       coopSaveCache({room:"",host:null,guest:null,lastSync:0});
-      st.cpM=null;st.cpTab="genel";st.cpErr="";st.cpCode="";st.cpShowHist=false;st.cpQ="";st.cpPickW=0;st.cpFxw=0;
+      st.cpM=null;st.cpTab="genel";st.cpErr="";st.cpCode="";st.cpShowHist=false;st.cpQ="";st.cpPickW=0;st.cpFxw=0;st.cpLogSide="";st.cpLogAll=false;
       return "Ortak odadan ayrıldın";
     });if(st.ask)st.ask.coop=1;
     render();return true;
@@ -1403,7 +1523,7 @@ async function handleCoopActionInner(a,dv,dk,i,b){
     const hostObj={v:1,ut:Date.now(),name:nm,code:room,cur:coopMkTour(1,null),hist:[]};
     coopSaveCfg({room,role:"host",name:nm});
     const ok=await coopPushHost(hostObj);
-    if(ok){st.cpTab="genel";st.cpShowHist=false;st.cpQ="";st.cpPickW=0;st.cpFxw=0;ntf("Ortak oda oluşturuldu: "+room)}
+    if(ok){st.cpTab="genel";st.cpShowHist=false;st.cpQ="";st.cpPickW=0;st.cpFxw=0;st.cpLogSide="";st.cpLogAll=false;ntf("Ortak oda oluşturuldu: "+room)}
     else coopSaveCfg({room:"",role:"",name:nm});
     render();return true;
   }
@@ -1420,14 +1540,14 @@ async function handleCoopActionInner(a,dv,dk,i,b){
     if(wantRole==="host"){
       const hNm=(cache.host&&cache.host.name)||nmIn||"Kurucu";
       coopSaveCfg({room,role:"host",name:hNm});
-      st.cpTab="genel";st.cpShowHist=false;st.cpQ="";st.cpPickW=0;st.cpFxw=0;st.cpJoinRole="guest";ntf("Kurucu olarak odaya geri döndün: "+room);render();return true;
+      st.cpTab="genel";st.cpShowHist=false;st.cpQ="";st.cpPickW=0;st.cpFxw=0;st.cpLogSide="";st.cpLogAll=false;st.cpJoinRole="guest";ntf("Kurucu olarak odaya geri döndün: "+room);render();return true;
     }
     const gNm=nmIn||"Misafir",tId=cache.host&&cache.host.cur?cache.host.cur.id:0;
     const prevG=cache.guest&&cache.guest.tourId===tId?cache.guest:null;
     const gOk=await coopPushGuest({v:1,ut:Date.now(),name:gNm,tourId:tId,ti:prevG?prevG.ti:null,mt:prevG?coopNormMt(prevG.mt):[]});
     if(!gOk){coopSaveCfg({room:"",role:"",name:nmIn});render();return true}
     await coopPull(true);
-    st.cpTab="genel";st.cpShowHist=false;st.cpQ="";st.cpPickW=0;st.cpFxw=0;ntf("Odaya katıldın: "+room);render();return true;
+    st.cpTab="genel";st.cpShowHist=false;st.cpQ="";st.cpPickW=0;st.cpFxw=0;st.cpLogSide="";st.cpLogAll=false;ntf("Odaya katıldın: "+room);render();return true;
   }
 
   const S=coopState();
@@ -1439,8 +1559,8 @@ async function handleCoopActionInner(a,dv,dk,i,b){
     if(isUcl(S.t.cfg)){
       S.t.rl=Object.assign(cp(DEFR),{rg:"eu",cap:4,gcap:1});
       st.cpAdv=false;
-    }else{
-      S.t.rl.cap=0;if(wasUcl&&S.t.rl.rg==="eu")S.t.rl.rg="all";
+    }else if(wasUcl){
+      S.t.rl.cap=0;if(S.t.rl.rg==="eu")S.t.rl.rg="all";
     }
     await coopPushHost(S.host);render();return true;
   }
@@ -1461,9 +1581,21 @@ async function handleCoopActionInner(a,dv,dk,i,b){
     S.t.rl.xc=[];
     await coopPushHost(S.host);render();return true;
   }
+  if(a==="cpsimm"&&S.role==="host"){
+    const nm=+dv;
+    if(nm===0||nm===1||nm===2){
+      await coopPull(true);
+      const S2=coopState();
+      if(!S2||S2.t.id!==S.t.id||(S2.t.phase!=="setup"&&S2.t.phase!=="play")){ntf("Turnuva durumu değişti, ekran yenilendi.");render();return true}
+      S2.t.sim.m=nm;
+      const ok=await coopPushHost(S2.host);
+      if(ok)ntf("YZ simülasyon modu: "+(nm===0?"Dengeli":nm===1?"Gerçekçi":"Sürpriz"));
+    }
+    render();return true;
+  }
   if(a==="cprlrst"&&S.role==="host"&&S.t.phase==="setup"&&!isUcl(S.t.cfg)){
     S.t.rl=cp(DEFR);
-    await coopPushHost(S.host);ntf("Kurallar varsayılana sıfırlandı");render();return true;
+    const ok=await coopPushHost(S.host);if(ok)ntf("Kurallar varsayılana sıfırlandı");render();return true;
   }
   if(a==="cplock"&&S.role==="host"&&S.t.phase==="setup"){
     if(avail(S.t)<S.t.cfg.N){ask("Yeterli takım yok; bölge veya kuralı gevşet.");render();return true}
@@ -1618,12 +1750,14 @@ async function handleCoopActionInner(a,dv,dk,i,b){
     }
     if(!ok){render();return true}
     st.cpM=null;st.cpPickW=0;await coopPull(true);
-    ntf(koBuilt?`Maç kaydedildi · Eleme ağacı kuruldu 🏆`:`Maç kaydedildi: ${T[m.opp].n} ${m.gf}–${m.ga}`);render();return true;
+    const wNote=csr.warns&&csr.warns.length?` · (${csr.warns[0]})`:"";
+    ntf((koBuilt?`Maç kaydedildi · Eleme ağacı kuruldu 🏆`:`Maç kaydedildi: ${T[m.opp].n} ${m.gf}–${m.ga}`)+wNote);render();return true;
   }
 
   if(a==="cpsimw"&&S.role==="host"){
     await coopPull(true);
-    const S2=coopState();if(!S2)return true;
+    const S2=coopState();
+    if(!S2||S2.t.id!==S.t.id||S2.t.phase!=="play"){ntf("Turnuva durumu değişti, ekran yenilendi.");render();return true}
     const t=S2.t,totW=totWeeks(t.cfg),targetW=(t.sim.w||0)+1;
     if(targetW>totW)return true;
     const tmpS=Object.assign({},t,{my:S2.hTi,mt:S2.hMt});
@@ -1645,7 +1779,8 @@ async function handleCoopActionInner(a,dv,dk,i,b){
   }
   if(a==="cpbuildko"&&S.role==="host"){
     await coopPull(true);
-    const S2=coopState();if(!S2)return true;
+    const S2=coopState();
+    if(!S2||S2.t.id!==S.t.id||S2.t.phase!=="play"){ntf("Turnuva durumu değişti, ekran yenilendi.");render();return true}
     if(coopMaybeFinalizeGrp(S2)){
       const ok=await coopPushHost(S2.host);
       if(ok)ntf("Eleme ağacı kuruldu 🏆");
@@ -1657,7 +1792,8 @@ async function handleCoopActionInner(a,dv,dk,i,b){
 
   if((a==="cpsimko"||a==="cpsimall")&&S.role==="host"){
     await coopPull(true);
-    const S2=coopState();if(!S2)return true;
+    const S2=coopState();
+    if(!S2||S2.t.id!==S.t.id||S2.t.phase!=="play"){ntf("Turnuva durumu değişti, ekran yenilendi.");render();return true}
     const t=S2.t;coopInitKo(S2,false);
     const RDs=rds(t.cfg).filter(r=>r!=="Grup"),onlyOne=a==="cpsimko";
     const tmpS=Object.assign({},t,{my:S2.hTi,mt:S2.hMt});
@@ -1681,7 +1817,10 @@ async function handleCoopActionInner(a,dv,dk,i,b){
 
   if(a==="cpfin"&&S.role==="host"){
     await coopPull(true);
-    const S2=coopState();if(!S2)return true;
+    const S2=coopState();
+    if(!S2||S2.t.id!==S.t.id){ntf("Turnuva durumu değişti, ekran yenilendi.");render();return true}
+    if(S2.t.phase==="done"){ntf("Bu sezon zaten ortak arşive kaydedilmiş.");render();return true}
+    if(S2.t.phase!=="play"){ntf("Turnuva henüz tamamlanmadı.");render();return true}
     const out=coopOutcome(S2);if(!out||!out.done){ask("Önce tüm turları tamamla.");render();return true}
     const st2=coopTourneyStats(S2),vS=coopAsPosterSeason(S2),xi=tourneyTots(vS,st2);
     const topG=st2.scorers[0]?{n:st2.scorers[0].n,ti:st2.scorers[0].ti,g:st2.scorers[0].g}:null;
@@ -1716,10 +1855,22 @@ async function handleCoopActionInner(a,dv,dk,i,b){
     S2.host.cur=coopMkTour(nextNo,S2.t);
     const ok=await coopPushHost(S2.host);
     if(!ok){render();return true}
-    st.cpTab="genel";st.cpShowHist=false;st.cpQ="";st.cpPickW=0;st.cpFxw=0;
+    st.cpTab="genel";st.cpShowHist=false;st.cpQ="";st.cpPickW=0;st.cpFxw=0;st.cpLogSide="";st.cpLogAll=false;
     ntf("Yeni ortak sezon açıldı: "+S2.host.cur.name);render();return true;
   }
 
+  if(a==="cpmpos"){
+    const side=dv==="guest"?"guest":"host";
+    const list=side==="host"?S.hMt:S.gMt;
+    const mid=b&&b.dataset.id?+b.dataset.id:0;
+    const m=list.find(q=>q&&+q.id===mid);
+    if(!m){ntf("Maç kaydı bulunamadı.");return true}
+    const pName=side==="host"?S.hName:S.gName;
+    const pTi=side==="host"?S.hTi:S.gTi;
+    const vx=Object.assign({},S.t,{my:pTi,mt:list,name:`${S.t.name} · ${pName}`});
+    await mkImg("mac",{id:m.id,x:vx,m,name:`cp-mac-${m.id}`});
+    return true;
+  }
   if(a==="cppos"){
     if(dv==="hist"){
       const hs=coopHistSummary(S);
@@ -1728,7 +1879,12 @@ async function handleCoopActionInner(a,dv,dk,i,b){
       return true;
     }
     const vS=coopAsPosterSeason(S);
-    if(dv==="kura")await mkImg("kura",vS);
+    if(dv==="kura"){
+      if(isUcl(S.t.cfg)&&!vS._hasTbl&&S.role==="guest"&&S.gTi!=null){
+        vS.my=S.gTi;vS._gTi=S.hTi;
+      }
+      await mkImg("kura",vS);
+    }
     else if(dv==="ko")await mkImg("ko",vS);
     else if(dv==="tots")await mkImg("tots",vS);
     return true;
