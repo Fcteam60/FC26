@@ -1,3 +1,6 @@
+## v25.2 (2026-11-25) — 108/108 Tam Kulüp Arması Seti (Son 9 Logo Eklendi)
+- **Eksik 9 Kulüp PNG Arması Tamamlandı (`data.js` `LOGOS` + `logos/`):** **River Plate**, **Boca Juniors**, **Club América**, **Toluca**, **PAOK**, **Wolfsburg**, **Alavés**, **Estudiantes** ve **Girona** kulüplerinin şeffaf PNG armaları eklendi; veritabanındaki **108/108 kulübün tamamı** artık gerçek PNG armasıyla (puan tabloları, fikstür, kadro, eleme ağacı, TOTS ve 11 Broadcast posterin tamamında) görüntülenir.
+
 ## v25.1 (2026-11-25) — Bireysel Otomatik MOTM, Şablon Kural Sıfırlama, Poster Başlık Koruması & 2P Kilit/Misafir Düzeltmeleri
 - **Bireysel Mod Otomatik MOTM Düzeltildi (`sim.js` `autoMatchMom`, `app.js` `msave`):** Bireysel maç kaydında `Maçın Adamı (MOTM)` **`Otomatik`** bırakıldığında artık doğrudan rakip takımdan (`pickOppMom`) değil, 2P ile ortak `pickSimMom` motorunu kullanan `autoMatchMom` ile iki takımın gol, asist ve temiz kasa katkısına göre gerçek en iyi oyuncu seçilir (`m.mom` veya `m.omom`).
 - **Kupa Şablonu → Genel Format Geçişinde Kural Temizliği (`app.js` `a=="tmpl"`, `coop.js` `a==="cptpl"`):** Hem Bireysel hem 2P kurulumunda hazır kupa şablonlarından (Konferans/Avrupa/Şampiyonlar Ligi) üstteki 6 format kartına geçildiğinde önceki GEN/bölge/ülke sınırlarının yapışıp havuzu kilitlemesi (`21/36`, `46/64`, `54/64`) giderildi.

@@ -1,4 +1,4 @@
-# FC 27 Grup Ligi & Turnuva Takip (PWA · v25.1)
+# FC 27 Grup Ligi & Turnuva Takip (PWA · v25.2)
 
 Arkadaş grupları ve bireysel turnuvalar için tasarlanmış, sıfır bağımlılıklı, çevrimdışı çalışabilen Progressive Web App (PWA) turnuva ve menajerlik takip uygulaması.
 
@@ -14,7 +14,7 @@ Proje hiçbir derleyiciye (Vite, Webpack vb.) veya harici SDK'ya ihtiyaç duymaz
 |---|---|
 | `index.html` | Arayüz iskeleti (HTML kabuğu), tema/hareket ön yükleyicisi ve sürüm etiketli varlık bağları |
 | `style.css` | Tüm stiller, 3 katmanlı navigasyon (obsidiyen alt dock · alt çizgili sekmeler · ince filtreler) ve gömülü "FC Sayi" yazı tipi |
-| `data.js` | 108 kulüp (`RAW`), 3.200+ oyuncu kadrosu (`SQ`) ve 99 kulüp arması eşleme haritası (`LOGOS`) |
+| `data.js` | 108 kulüp (`RAW`), 3.200+ oyuncu kadrosu (`SQ`) ve 108 kulüp arması eşleme haritası (`LOGOS`) |
 | `storage.js` | Asenkron depolama katmanı (`kv`), IndexedDB arka ucu, doğrulamalı taşıma protokolü, sıralı yazma kuyruğu (`queueSave`), `BroadcastChannel` çoklu sekme kilidi ve kurtarma kopyaları |
 | `sim.js` | Gerçekçi, Dengeli ve Sürprizli maç simülasyon motoru, puan tablosu ve eleme ağacı eşleştiricisi |
 | `analytics.js` | xG/xPts analitiği, hak ediş sınıflandırması, 4 eksenli Taktiksel DNA radarı, kariyer ve ödül istatistikleri |
@@ -22,7 +22,7 @@ Proje hiçbir derleyiciye (Vite, Webpack vb.) veya harici SDK'ya ihtiyaç duymaz
 | `posters.js` | 9 farklı 1080px+ Canvas PNG poster üreticisi (Kura, Eleme Ağacı, TOTS, Maç Kartı, Sezon Karnesi, Kariyer Özeti, 1v1 Düello, Sezon vs. Sezon, Kulüp vs. Kulüp) |
 | `app.js` | Ana uygulama orkestrasyonu, yönlendirme, olay yöneticileri ve `async initApp()` başlatıcısı |
 | `sw.js` | Service Worker (çevrimdışı önbellekleme, kalıcı `LOGO_CACHE` ve arka plan güncelleme mekanizması) |
-| `logos/` | 99 kulübün PNG armaları |
+| `logos/` | 108 kulübün PNG armaları |
 | `manifest.webmanifest` | PWA kurulum, ikon ve ana ekran kısayol tanımları |
 | `KILAVUZ.md` | Son kullanıcı için güncel kullanım kılavuzu |
 | `DEGISIKLIKLER.md` | Sürüm geçmişi ve yapılan iyileştirmeler |
