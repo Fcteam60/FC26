@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="24.7",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="24.8",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -1896,7 +1896,7 @@ function tstatView(s){
   const hi=M.slice().sort((a,b)=>(b.g1+b.g2)-(a.g1+a.g2))[0];
   const mline=m=>`<div class="simm"><button class="tl" data-a="tinfo" data-i="${m.t1}">${esc(T[m.t1].n)}</button><b>${m.g1}–${m.g2}</b><button class="tl" data-a="tinfo" data-i="${m.t2}">${esc(T[m.t2].n)}</button></div>`;
   let h=totsPitchCard(s,st2);
-  if(mvp.length)h+=psetCard("trophy","gold","Turnuva MVP’si","3×gol + 2×asist + 2×MOTM",`ilk ${mvp.length}`,podium(mvp,o=>o.mvp,"puan",o=>`${o.g}G ${o.a}A ${o.mom}MA`,o=>`${o.mvp} p <small>${o.g}G ${o.a}A ${o.mom}MA</small>`));
+  if(mvp.length)h+=psetCard("trophy","gold","Turnuva MVP’si","3×gol + 2×asist + 2×MOTM",`ilk ${mvp.length}`,podium(mvp,o=>o.mvp,"puan",o=>`${o.g}G · ${o.a}A · ${o.mom}★`,o=>`${o.mvp}p <small>${o.g}G ${o.a}A ${o.mom}★</small>`));
   if(gol.length)h+=psetCard("boot","gold","Gol Krallığı","Turnuvanın en golcü oyuncuları",`ilk ${gol.length}`,podium(gol,o=>o.g,"gol",o=>`${o.a} asist`,o=>`${o.g}G`));
   h+=psetCard("play","sky","Asist Krallığı","En çok gol pası verenler",asi.length?`ilk ${asi.length}`:"0",asi.length?podium(asi,o=>o.a,"asist",o=>`${o.g} gol`,o=>`${o.a}A`):`<div class="note" style="margin:0">Asist verisi oynanan maçlardan toplanır; henüz asist kaydı yok.</div>`);
   if(ht.length)h+=psetCard("spark","gold","Hat-Trick Yapanlar","Tek maçta 3+ gol atanlar",`${ht.length} oyuncu`,ht.map((o,i)=>prow(o,i,`${o.ht}×`)).join(""));
@@ -2652,9 +2652,10 @@ document.addEventListener("focusout",e=>{
   }
 });
 addEventListener("keydown",e=>{
-  if(e.key=="Enter"&&e.target&&e.target.matches&&e.target.matches("#qs .advbox input.tin")){
+  if(e.key=="Enter"&&e.target&&e.target.matches&&e.target.matches("#qs .advbox input.tin, #qs .cp-adv input.f")){
     e.preventDefault();
-    const list=[...document.querySelectorAll("#qs .advbox input.tin")];
+    const sel=e.target.closest(".cp-adv")?"#qs .cp-adv input.f":"#qs .advbox input.tin";
+    const list=[...document.querySelectorAll(sel)];
     const idx=list.indexOf(e.target);
     if(idx>=0&&idx<list.length-1)list[idx+1].focus();
     else e.target.blur();

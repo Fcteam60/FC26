@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — coop.js · v24.7
+   FC 27 Grup Ligi — coop.js · v24.8
    İzole 2 Kişilik Online Ortak Turnuva (Co-op Oda) Modülü
    - Tek kişilik IndexedDB / JSON yedeğe hiç dokunmaz
    - Çakışmasız 2 düğümlü Firebase mimarisi (/rooms/{room}/host.json & guest.json)
@@ -15,16 +15,26 @@ const CPICO={
   dice:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.2" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.2" fill="currentColor"/></svg>',
   card:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="3"/><circle cx="9" cy="10.2" r="1.5"/><path d="M4 17.5l5-4.5 3.5 3 3-2.5 4.5 4"/></svg>'
 };
+function coopAutoMom(meTi,oppTi,gf,ga,gls,og,pf,pa){
+  if(meTi==null||oppTi==null||!T[meTi]||!T[oppTi])return null;
+  const g1=+gf||0,g2=+ga||0;
+  const s1=[],a1=[],s2=[],a2=[];
+  (Array.isArray(gls)?gls:[]).forEach(g=>{if(g&&g.sc&&!isKK(g.sc)){s1.push(g.sc);a1.push(g.as&&!isKK(g.as)?g.as:"")}});
+  (Array.isArray(og)?og:[]).forEach(o=>{if(o&&o.sc&&!isKK(o.sc)){s2.push(o.sc);a2.push(o.as&&!isKK(o.as)?o.as:"")}});
+  // Penaltılarla biten berabere maçta kazanan tarafa hafif galibiyet önceliği ver
+  const penW=(g1===g2&&pf!=null&&pa!=null&&pf!==pa)?(pf>pa?1:-1):0;
+  const mk=pickSimMom(meTi,oppTi,g1+(penW>0?0.01:0),g2+(penW<0?0.01:0),s1,s2,a1,a2);
+  if(mk){
+    const sp=mk.lastIndexOf("|");
+    if(sp>0)return{n:mk.slice(0,sp),ti:+mk.slice(sp+1)};
+  }
+  const winTi=g1>g2||penW>0?meTi:g2>g1||penW<0?oppTi:meTi;
+  const n=pickOppMom(winTi,winTi===meTi?gls:og,winTi===meTi?g2:g1,winTi===meTi?g1:g2);
+  return n?{n,ti:winTi}:null;
+}
 function coopAutoH2hMom(m,meTi){
   if(!m||!m.h2h||meTi==null||m.opp==null)return null;
-  const gf=+m.gf||0,ga=+m.ga||0;
-  const gls=Array.isArray(m.gls)?m.gls:[],og=Array.isArray(m.og)?m.og:[];
-  const winH=gf>ga||(gf===ga&&m.pf!=null&&m.pa!=null&&m.pf>m.pa);
-  const winG=ga>gf||(gf===ga&&m.pf!=null&&m.pa!=null&&m.pa>m.pf);
-  const ti=winH?meTi:winG?m.opp:(gls.length>=og.length?meTi:m.opp);
-  const pGls=ti===meTi?gls:og;
-  const n=pickOppMom(ti,pGls,ti===meTi?ga:gf,ti===meTi?gf:ga);
-  return n?{n,ti}:null;
+  return coopAutoMom(meTi,m.opp,+m.gf||0,+m.ga||0,m.gls,m.og,m.pf,m.pa);
 }
 function coopAutoPullOnVisible(){
   if(!st.coopMode||!coopHasRoom()||st.cpM||st.cpLock||st.slot)return;
@@ -696,7 +706,7 @@ function coopTourneyStats(S){
 }
 
 function coopMgrStats(mt){
-  let w=0,d=0,l=0,gf=0,ga=0,cs=0,xg=0,oxg=0,xgN=0,pos=0,posN=0,sh=0,shN=0;
+  let w=0,d=0,l=0,gf=0,ga=0,cs=0,xg=0,oxg=0,xgN=0,pos=0,posN=0,sh=0,shN=0,pas=0,pasN=0;
   (mt||[]).forEach(m=>{
     if(!m)return;
     const r=mres(m);if(r==="w")w++;else if(r==="d")d++;else l++;
@@ -706,6 +716,7 @@ function coopMgrStats(mt){
       if(st0.myXg!=null&&st0.oppXg!=null){xg+=+st0.myXg;oxg+=+st0.oppXg;xgN++}
       if(st0.myPos!=null){pos+=+st0.myPos;posN++}
       if(st0.myShots!=null){sh+=+st0.myShots;shN++}
+      if(st0.myPass!=null){pas+=+st0.myPass;pasN++}
     }
   });
   const m=w+d+l,pts=w*3+d;
@@ -720,6 +731,7 @@ function coopMgrStats(mt){
     oxgM:xgN?Math.round(oxg/xgN*100)/100:null,
     xg,oxg,xgN,
     posM:posN?Math.round(pos/posN):null,
+    passM:pasN?Math.round(pas/pasN):null,
     shM:shN?Math.round(sh/shN*10)/10:null,
     dna:typeof calcTacticalDNA==="function"?calcTacticalDNA(null,{career:true,matches:mt}):null
   };
@@ -832,9 +844,10 @@ function coopMatchDlg(S){
   };
   const rdTitle=m.rd==="Grup"?(isUcl(S.t.cfg)?`ŞL ${m.w}. Hafta`:isLg(S.t.cfg)?`Lig ${m.w}. Hafta`:`Grup ${m.w}. Hafta`):(m.rd+(m.lg?` · ${m.lg}. Maç`:""));
   const mst=m.mst||defMst();
+  const advFields=[["myPos","oppPos","Topla Oynama (%)","50"],["myShots","oppShots","Toplam Şut","10"],["mySot","oppSot","İsabetli Şut","5"],["myPass","oppPass","Pas İsabeti (%)","85"],["myXg","oppXg","Gol Beklentisi (xG)","1.4"]];
   const advHtml=m.adv?`<div class="cp-adv">`+
-    [["myPos","oppPos","Topla Oynama (%)","50"],["myShots","oppShots","Toplam Şut","10"],["mySot","oppSot","İsabetli Şut","5"],["myXg","oppXg","Gol Beklentisi (xG)","1.4"]].map(([k1,k2,lb,ph])=>
-      `<div class="cp-arow"><input id="cpmst_${k1}" class="f" type="text" inputmode="decimal" placeholder="${ph}" data-cpmst="${k1}" value="${esc(mst[k1]||"")}"><span>${lb}</span><input id="cpmst_${k2}" class="f" type="text" inputmode="decimal" placeholder="${ph}" data-cpmst="${k2}" value="${esc(mst[k2]||"")}"></div>`
+    advFields.map(([k1,k2,lb,ph],idx)=>
+      `<div class="cp-arow"><input id="cpmst_${k1}" class="f" type="text" inputmode="decimal" enterkeyhint="next" placeholder="${ph}" data-cpmst="${k1}" value="${esc(mst[k1]||"")}"><span>${lb}</span><input id="cpmst_${k2}" class="f" type="text" inputmode="decimal" enterkeyhint="${idx===advFields.length-1?"done":"next"}" placeholder="${ph}" data-cpmst="${k2}" value="${esc(mst[k2]||"")}"></div>`
     ).join("")+`</div>`:"";
 
   return `<div class="dlg"><button class="tibk" data-a="cpclose" aria-label="Kapat"></button><div class="sheet tisheet" role="dialog" aria-modal="true">`+
@@ -1065,16 +1078,18 @@ function coopMatchLogCard(S){
     }else if(mySc){
       goalHtml=`<div class="cp-mlg">${uiIco("ball")}<span>${mySc}</span></div>`;
     }
-    let momTxt="";
+    let momTxt="",momOpp=false;
     if(m.mom)momTxt=m.mom;
-    else if(m.h2h&&m.gMom)momTxt=m.gMom;
-    else if(m.h2h){const am=coopAutoH2hMom(m,meTi);if(am)momTxt=am.n}
+    else if(m.h2h&&m.gMom){momTxt=m.gMom;momOpp=true}
+    else if(m.h2h){const am=coopAutoH2hMom(m,meTi);if(am){momTxt=am.n;momOpp=am.ti!==meTi}}
+    else if(m.omom){momTxt=m.omom;momOpp=true}
     const chips=[];
     if(m.h2h)chips.push(`<span class="cp-mchip h2h">H2H</span>`);
-    if(momTxt)chips.push(`<span class="cp-mchip mom">★ ${esc(momTxt)}</span>`);
+    if(momTxt)chips.push(`<span class="cp-mchip mom">★ ${esc(momTxt)}${momOpp?` (${esc(T[m.opp].n)})`:""}</span>`);
     if(m.stats){
       if(m.stats.myXg!=null&&m.stats.oppXg!=null)chips.push(`<span class="cp-mchip">xG ${fx(m.stats.myXg)}–${fx(m.stats.oppXg)}</span>`);
       if(m.stats.myPos!=null)chips.push(`<span class="cp-mchip">%${Math.round(m.stats.myPos)} Top</span>`);
+      if(m.stats.myPass!=null)chips.push(`<span class="cp-mchip">%${Math.round(m.stats.myPass)} Pas</span>`);
       if(m.stats.myShots!=null)chips.push(`<span class="cp-mchip">${m.stats.myShots} Şut</span>`);
     }
     return `<div class="cp-mlrow">`+
@@ -1157,7 +1172,7 @@ function coopTourneyStatsView(S,st2){
       `<button class="btn p pset-pri ui-btn" data-a="cppos" data-v="tots" style="width:100%;margin-top:10px">${UICO.trophy}<span>TOTS Posterini Paylaş (PNG)</span></button>`
     );
   }
-  if(mvp.length)h+=psetCard("trophy","gold","Turnuva MVP’si","3×gol + 2×asist + 2×MOTM",`ilk ${mvp.length}`,podium(mvp,o=>o.mvp,"puan",o=>`${o.g}G ${o.a}A ${o.mom}MA`,o=>`${o.mvp} p <small>${o.g}G ${o.a}A ${o.mom}MA</small>`));
+  if(mvp.length)h+=psetCard("trophy","gold","Turnuva MVP’si","3×gol + 2×asist + 2×MOTM",`ilk ${mvp.length}`,podium(mvp,o=>o.mvp,"puan",o=>`${o.g}G · ${o.a}A · ${o.mom}★`,o=>`${o.mvp}p <small>${o.g}G ${o.a}A ${o.mom}★</small>`));
   if(gol.length)h+=psetCard("boot","gold","Gol Krallığı","Turnuvanın en golcü oyuncuları",`ilk ${gol.length}`,podium(gol,o=>o.g,"gol",o=>`${o.a} asist`,o=>`${o.g}G`));
   h+=psetCard("play","sky","Asist Krallığı","En çok gol pası verenler",asi.length?`ilk ${asi.length}`:"0",asi.length?podium(asi,o=>o.a,"asist",o=>`${o.g} gol`,o=>`${o.a}A`):`<div class="note" style="margin:0">Asist verisi oynanan maçlardan toplanır; henüz asist kaydı yok.</div>`);
   if(ht.length)h+=psetCard("spark","gold","Hat-Trick Yapanlar","Tek maçta 3+ gol atanlar",`${ht.length} oyuncu`,ht.map((o,i)=>prow(o,i,`${o.ht}×`)).join(""));
@@ -1440,7 +1455,8 @@ function coopPlayView(S){
         ["Yenilen Gol / Maç",hs.gapm,gs.gapm,fxF(hs.gapm),fxF(gs.gapm),true],
         ["Temiz Kasa %",hs.csPct,gs.csPct,pctF(hs.csPct),pctF(gs.csPct),false],
         ...(hs.xgM!=null||gs.xgM!=null?[["xG / Maç",hs.xgM,gs.xgM,fxF(hs.xgM),fxF(gs.xgM),false],["Rakip xG / Maç",hs.oxgM,gs.oxgM,fxF(hs.oxgM),fxF(gs.oxgM),true]]:[]),
-        ...(hs.posM!=null||gs.posM!=null?[["Topla Oynama %",hs.posM,gs.posM,pctF(hs.posM),pctF(gs.posM),false]]:[])
+        ...(hs.posM!=null||gs.posM!=null?[["Topla Oynama %",hs.posM,gs.posM,pctF(hs.posM),pctF(gs.posM),false]]:[]),
+        ...(hs.passM!=null||gs.passM!=null?[["Pas İsabeti %",hs.passM,gs.passM,pctF(hs.passM),pctF(gs.passM),false]]:[])
       ].map(([l,v1,v2,f1,f2,low])=>typeof duelCompareRow==="function"?duelCompareRow(l,v1,v2,f1,f2,low,false):"").join("");
       const dnaRow=(hs.dna||gs.dna)?`<div class="cp-dnas"><div><small>${esc(S.hName)} DNA</small><b>${esc(hs.dna?hs.dna.title:"—")}</b></div><div><small>${esc(S.gName)} DNA</small><b>${esc(gs.dna?gs.dna.title:"—")}</b></div></div>`:"";
       const cmpHead=`<div class="cp-cmphd"><span class="h">${badge(S.hTi,20)}<b>★ ${esc(S.hName)}</b></span><small>VS</small><span class="cp-g"><b>◆ ${esc(S.gName)}</b>${badge(S.gTi,20)}</span></div>`;
@@ -1637,10 +1653,10 @@ async function handleCoopActionInner(a,dv,dk,i,b){
   }
   if(a==="cpexit"){st.coopMode=false;st.cpM=null;st.cpRoomDlg=false;render();return true}
   if(a==="cpclose"){st.cpM=null;st.cpErr="";render();return true}
-  if(a==="cphisttog"){st.cpRoomDlg=false;st.cpShowHist=!st.cpShowHist;render();return true}
+  if(a==="cphisttog"){st.cpRoomDlg=false;st.cpShowHist=!st.cpShowHist;render();scrollTo(0,0);return true}
   if(a==="cpadv"){st.cpAdv=!st.cpAdv;render();return true}
-  if(a==="cptab"){st.cpTab=dv||"genel";render();return true}
-  if(a==="cpkiytab"){st.cpKiyTab=dv==="tstat"?"tstat":"mgr";render();return true}
+  if(a==="cptab"){st.cpTab=dv||"genel";render();scrollTo(0,0);return true}
+  if(a==="cpkiytab"){st.cpKiyTab=dv==="tstat"?"tstat":"mgr";render();scrollTo(0,0);return true}
   if(a==="cpfxw"){st.cpFxw=+dv||1;render();return true}
   if(a==="cppickw"){st.cpPickW=+dv||0;render();return true}
   if(a==="cpcopy"){
@@ -1868,13 +1884,18 @@ async function handleCoopActionInner(a,dv,dk,i,b){
       const sqO=squadOf(m.opp);
       if(sqO.length){const ix=simGoalAssign(m.opp,m.ga),as=simAssistsFor(m.opp,ix);ix.forEach((v,k)=>cleanOg.push({sc:sqO[v].n,as:as[k]>=0&&sqO[as[k]]?sqO[as[k]].n:""}))}
     }
+    let fMom=m.mom||"",fGMom=m.h2h?(m.gMom||""):"",fOmom="";
+    if(!fMom&&!fGMom){
+      const am=coopAutoMom(S.myTi,m.opp,m.gf,m.ga,cleanGls,cleanOg,allowP?(m.mpf||0):null,allowP?(m.mpa||0):null);
+      if(am&&am.ti===S.myTi)fMom=am.n;
+      else if(am&&am.ti===m.opp){if(m.h2h)fGMom=am.n;else fOmom=am.n}
+    }
     const rec={
       id:Date.now(),rd:m.rd,w:m.w||0,lg:m.lg||0,opp:m.opp,on:T[m.opp].n,
       gf:m.gf,ga:m.ga,et:isDeciding&&(m.mu||allowP)?1:0,
       pf:allowP?(m.mpf||0):null,pa:allowP?(m.mpa||0):null,
       gls:cleanGls,og:cleanOg,
-      mom:m.mom||"",gMom:m.h2h?(m.gMom||""):"",
-      omom:m.h2h?"":(m.mom?"":(pickOppMom(m.opp,cleanOg,m.gf,m.ga)||"")),
+      mom:fMom,gMom:fGMom,omom:fOmom,
       stats:csr.s,h2h:m.h2h?1:0,dt:today()
     };
     let koBuilt=false;

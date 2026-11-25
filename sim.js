@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — 4 Katmanlı Gerçekçi Simülasyon, Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v24.7) */
+/* FC 27 Grup Ligi — 4 Katmanlı Gerçekçi Simülasyon, Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v24.8) */
 /* ---------- AŞAMA 1, 2 & 3: HAFTALIK SİMÜLASYON, ELEME AĞACI (BRACKET), GOL KRALLIĞI VE TURNUVA BİTİŞİ ---------- */
 const SIM_MODES=[[0,"Gerçekçi","Güç farkı ve gerçek futbol skorları (1-0, 2-1, 1-1 ağırlıklı)"],[1,"Dengeli","Standart güç ve günlük form dengesi"],[2,"Sürprizli","Yüksek şans faktörü, kupa sürprizlerine açık"]];
 
@@ -310,11 +310,11 @@ function pickSimMom(t1,t2,g1,g2,s1,s2,a1,a2){
   const addClean=(ti,oppG,myOvr,oppOvr)=>{
     if(oppG!==0)return;
     const sq=squadOf(ti);if(!sq.length)return;
-    const uBonus=oppOvr-myOvr>=3?0.45:0;
+    const uBonus=oppOvr-myOvr>=4?0.30:0;
     const gk=sq.find(p=>p.g==="K"&&p.t==="S")||sq.find(p=>p.g==="K");
-    if(gk){const c=ensureC(ti,gk);if(c)c.rt+=1.25+uBonus+(ti===win?0.20:0.15)}
+    if(gk){const c=ensureC(ti,gk);if(c)c.rt+=0.85+uBonus+(ti===win?0.12:0.18)}
     const cb=sq.filter(p=>p.g==="D"&&p.t==="S").sort((a,b)=>b.o-a.o)[0];
-    if(cb){const c=ensureC(ti,cb);if(c)c.rt+=0.85+uBonus*0.6+(ti===win?0.15:0.10)}
+    if(cb){const c=ensureC(ti,cb);if(c)c.rt+=0.55+uBonus*0.5+(ti===win?0.10:0.08)}
   };
   addClean(t1,g2,ovr1,ovr2);
   addClean(t2,g1,ovr2,ovr1);
