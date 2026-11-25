@@ -1,3 +1,7 @@
+## v24.5 (2026-11-25) — 2P Fikstür & Eleme Ağacında Golcüler, Asistler ve Maçın Adamı
+- **2P Grup/Lig Fikstürü Tam Detay (`coop.js` `coopFxUserDet`, `coopPlayView`):** Bireysel moddakiyle birebir aynı sütunlu golcü, asist `(parantez içinde)`, kendi kalesine (`KK`) ve **★ Maçın Adamı** bloğu (`fxSimDet` / `fxDet`) tüm 2P YZ ve oyuncu maçlarına eklendi; ev/deplasman sütun hizalaması ve galibiyet/mağlubiyet/beraberlik skor vurguları (`win`/`lose`, `.w`/`.d`/`.l`) aktif edildi.
+- **2P Eleme Ağacı Maç Detayları (`coop.js` `coopKoDet`):** Tamamlanan tüm eleme eşleşmelerinin altında çift ayak skorları, iki takımın golcü ve asist listesi ile Maçın Adamı (`.simdet`) gösterilir.
+
 ## v24.4 (2026-11-25) — 2P Uyarlanabilir Üst Çubuk (Oda Barı Temizliği), Oda Yönetimi Modalı & Seçili Maç Hapı Kontrast Düzeltmesi
 - **Uyarlanabilir 2P Üst Çubuğu (`app.js`, `coop.js`, `style.css`):** 2P modu açıkken en üst başlıktaki bireysel `[Arma · Sezon ▾ · +]` alanı yerini doğrudan **`• CP-XXXXXX ▾`** oda düğmesine ve **`↻`** yenile ikonuna bırakır; sayfa tepesinde yer kaplayan 2 satırlık sabit oda bloğu (`.cp-top` + `.cp-meta`) tamamen kaldırıldı. 2P ekranı artık doğrudan 5’li sekme çubuğuyla başlar.
 - **Oda Yönetimi Penceresi (`coop.js` `coopRoomDlg`):** Üst çubuktaki oda koduna dokununca rol, oyuncu adları, canlı eşitleme süresi, **Kodu Kopyala**, **Davet Paylaş**, **Yenile**, **Bireysel Mod** ve **Odadan Ayrıl** kontrollerini tek yerde toplayan modal açılır; takım seçimi aşamasında arkadaş henüz katılmadıysa Misafir kutusu tek dokunuşla davet gönderir.

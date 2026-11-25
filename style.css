@@ -5685,3 +5685,10 @@ header .btn.cp-hdref.spin svg{animation:dlSpin .85s linear infinite}
 @media(prefers-color-scheme:light){:root:not([data-theme="dark"]) .cp-rmleave{color:#c92a2a;background:rgba(224,49,49,.09);border-color:rgba(224,49,49,.32)}}
 .cp-psinv{text-align:left;cursor:pointer;font:inherit;border-style:dashed;border-color:color-mix(in srgb,var(--ac) 48%,var(--gbd))}
 .cp-psinv b{color:var(--ac)}
+
+/* v24.5: 2P Fikstür Doğrudan Düello etiketi (.cp-fxtag) */
+.cp-fxtag{
+  margin-top:8px;text-align:center;font-size:11px;font-weight:700;color:var(--gold);
+}
+:root[data-theme="light"] .cp-fxtag{color:#9a6700}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]) .cp-fxtag{color:#9a6700}}

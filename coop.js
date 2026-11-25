@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — coop.js · v24.4
+   FC 27 Grup Ligi — coop.js · v24.5
    İzole 2 Kişilik Online Ortak Turnuva (Co-op Oda) Modülü
    - Tek kişilik IndexedDB / JSON yedeğe hiç dokunmaz
    - Çakışmasız 2 düğümlü Firebase mimarisi (/rooms/{room}/host.json & guest.json)
@@ -995,6 +995,49 @@ function coopPickView(S){
   );
 }
 
+function coopFxUserDet(m,meTi,home){
+  if(!m)return "";
+  const conv=l=>(Array.isArray(l)?l:[]).filter(g=>g&&g.sc).map(g=>({n:g.sc,as:g.as&&!isKK(g.as)?g.as:"",kk:isKK(g.sc)}));
+  const myI=conv(m.gls),opI=conv(m.og);
+  let mom="";
+  if(m.mom)mom=m.mom;
+  else if(m.h2h&&m.gMom)mom=m.gMom;
+  else if(m.h2h){const am=coopAutoH2hMom(m,meTi);if(am)mom=am.n}
+  else mom=m.omom||(m.opp!=null?pickOppMom(m.opp,m.og,m.gf,m.ga):"");
+  return fxDet(home?myI:opI,home?opI:myI,mom);
+}
+function coopKoDet(S,rd,p){
+  if(!p||p.w==null||p.t1==null||p.t2==null||!T[p.t1]||!T[p.t2])return "";
+  const parts=[];
+  if(Array.isArray(p.leg1)&&Array.isArray(p.leg2)&&p.leg1.length>=2&&p.leg2.length>=2){
+    parts.push(`1.M: ${p.leg1[0]}–${p.leg1[1]} · 2.M: ${p.leg2[0]}–${p.leg2[1]}`);
+  }
+  const gStr1=fmtGoalList(p.t1,p.s1,p.a1),gStr2=fmtGoalList(p.t2,p.s2,p.a2);
+  if(gStr1)parts.push(`⚽ ${esc(T[p.t1].n)}: ${gStr1}`);
+  if(gStr2)parts.push(`⚽ ${esc(T[p.t2].n)}: ${gStr2}`);
+  let mom="";
+  const hasH=S.hTi!=null&&(p.t1===S.hTi||p.t2===S.hTi);
+  const hasG=S.gTi!=null&&(p.t1===S.gTi||p.t2===S.gTi);
+  if(hasH||hasG){
+    const actor=hasH?S.hTi:S.gTi,opp=p.t1===actor?p.t2:p.t1;
+    const src=hasH?S.hMt:S.gMt;
+    const ms=src.filter(m=>m&&m.rd===rd&&m.opp===opp).sort((a,b)=>(+a.lg||0)-(+b.lg||0)||(a.id||0)-(b.id||0));
+    const last=ms[ms.length-1];
+    if(last){
+      if(last.mom)mom=last.mom;
+      else if(last.h2h&&last.gMom)mom=last.gMom;
+      else if(last.h2h){const am=coopAutoH2hMom(last,actor);if(am)mom=am.n}
+      else if(last.omom)mom=last.omom;
+    }
+  }
+  if(!mom){
+    const mk=pickSimMom(p.t1,p.t2,p.g1,p.g2,p.s1,p.s2,p.a1,p.a2);
+    if(mk){const sp=mk.lastIndexOf("|");mom=sp>0?mk.slice(0,sp):mk}
+  }
+  if(mom)parts.push(`★ ${esc(mom)}`);
+  return parts.join(" · ");
+}
+
 function coopMatchLogCard(S){
   const hCnt=S.hMt.length,gCnt=S.gMt.length;
   if(!hCnt&&!gCnt)return "";
@@ -1213,16 +1256,15 @@ function coopPlayView(S){
           RDs.map(rd=>{
             const ps=t.sim.ko[rd]||[];if(!ps.length)return "";
             return `<div class="bksec"><div class="bkrh"><b>${rd}</b><small>${ps.filter(p=>p.w!=null).length}/${ps.length}</small></div>`+ps.map(p=>{
-              const done=p.w!=null,sc=done?`${p.g1}–${p.g2}${p.pf!=null?` (P ${p.pf}–${p.pa})`:""}`:"vs";
-              const hasLegs=Array.isArray(p.leg1)&&p.leg1.length>=2&&Array.isArray(p.leg2)&&p.leg2.length>=2;
-              const legSub=hasLegs?`<div class="note" style="margin:2px 0 0;text-align:center;font-size:10.5px">Ayaklar: ${p.leg1[0]}–${p.leg1[1]} · ${p.leg2[0]}–${p.leg2[1]}</div>`:"";
+              const done=p.w!=null,sc=done?`${p.g1}–${p.g2}${p.pf!=null?` (P ${p.pf}–${p.pa})`:p.et?" (UZ)":""}`:"vs";
+              const det=done?coopKoDet(S,rd,p):"";
               const nm1=p.t1!=null&&T[p.t1]?`${p.t1===S.hTi?"★ ":p.t1===S.gTi?"◆ ":""}${esc(T[p.t1].n)}`:(p.l1||"Bekleniyor");
               const nm2=p.t2!=null&&T[p.t2]?`${p.t2===S.hTi?"★ ":p.t2===S.gTi?"◆ ":""}${esc(T[p.t2].n)}`:(p.l2||"Bekleniyor");
               const has1=p.t1!=null&&T[p.t1],has2=p.t2!=null&&T[p.t2];
               const isMineTie=p.t1===S.hTi||p.t2===S.hTi,isGuestTie=p.t1===S.gTi||p.t2===S.gTi;
               const s1Html=has1?`<button class="bktm hm${done&&p.w===p.t1?" w":""}" data-a="tinfo" data-i="${p.t1}"><span class="n">${nm1}</span>${badge(p.t1,18)}</button>`:`<span class="bktm hm"><span class="n">${nm1}</span></span>`;
               const s2Html=has2?`<button class="bktm aw${done&&p.w===p.t2?" w":""}" data-a="tinfo" data-i="${p.t2}">${badge(p.t2,18)}<span class="n">${nm2}</span></button>`:`<span class="bktm aw"><span class="n">${nm2}</span></span>`;
-              return `<div class="bktie${done?" dn":""}${isMineTie?" mine":isGuestTie?" cp-gtie":""}">${s1Html}<b class="bksc">${sc}</b>${s2Html}</div>${legSub}`;
+              return `<div class="bktie${done?" dn":""}${isMineTie?" mine":isGuestTie?" cp-gtie":""}">${s1Html}<b class="bksc">${sc}</b>${s2Html}${det?`<div class="simdet">${det}</div>`:""}</div>`;
             }).join("")+`</div>`;
           }).join("")+`</div>`;
       }
@@ -1231,48 +1273,55 @@ function coopPlayView(S){
     if(totW>0){
       const selW=(st.cpFxw>=1&&st.cpFxw<=totW)?st.cpFxw:Math.max(1,Math.min(totW,simW||1));
       const wkTabs=`<div class="wktabs" style="margin-bottom:8px">${rg(totW).map(i=>`<button class="chip ${selW===i+1?"on":""}" data-a="cpfxw" data-v="${i+1}">${i+1}. Hafta</button>`).join("")}</div>`;
-      const mkRow=(t1,t2,done,g1,g2,tag)=>{
+      const mkRow=(t1,t2,done,g1,g2,tag,det)=>{
         if(!T[t1]||!T[t2])return "";
         const isH1=t1===S.hTi,isH2=t2===S.hTi,isG1=t1===S.gTi,isG2=t2===S.gTi;
         const mine=isH1||isH2||isG1||isG2;
-        return `<div class="fxm${mine?" mine":""}"><div class="fmt"><button class="ftm h" data-a="tinfo" data-i="${t1}">${badge(t1,28)}<span class="nm">${isH1?"★ ":isG1?"◆ ":""}${esc(T[t1].n)}</span></button><div class="fsc${done?"":" vs"}">${done?`<span>${g1}</span><i></i><span>${g2}</span>`:"<span>vs</span>"}</div><button class="ftm a" data-a="tinfo" data-i="${t2}">${badge(t2,28)}<span class="nm">${isH2?"★ ":isG2?"◆ ":""}${esc(T[t2].n)}</span></button></div>${tag?`<div class="note" style="margin:4px 0 0;font-size:11px">${tag}</div>`:""}</div>`;
+        const w1=done&&g1>g2,w2=done&&g2>g1;
+        let res="";
+        if(done&&mine){
+          const focusMy=(S.myTi!=null&&(t1===S.myTi||t2===S.myTi))?S.myTi:(isH1||isH2?S.hTi:S.gTi);
+          const myG=t1===focusMy?g1:g2,opG=t1===focusMy?g2:g1;
+          res=myG>opG?" w":myG<opG?" l":" d";
+        }
+        const sc=done
+          ? `<div class="fsc" role="img" aria-label="${esc(T[t1].n)} ${g1}, ${esc(T[t2].n)} ${g2}"><span${w2?' class="lose"':""}>${g1}</span><i></i><span${w1?' class="lose"':""}>${g2}</span></div>`
+          : `<div class="fsc vs"><span>vs</span></div>`;
+        return `<div class="fxm${mine?" mine":""}${res}"><div class="fmt"><button class="ftm h${w1?" win":w2?" lose":""}" data-a="tinfo" data-i="${t1}">${badge(t1,34)}<span class="nm">${isH1?"★ ":isG1?"◆ ":""}${esc(T[t1].n)}</span></button>${sc}<button class="ftm a${w2?" win":w1?" lose":""}" data-a="tinfo" data-i="${t2}">${badge(t2,34)}<span class="nm">${isH2?"★ ":isG2?"◆ ":""}${esc(T[t2].n)}</span></button></div>${tag?`<div class="cp-fxtag">${tag}</div>`:""}${det||""}</div>`;
       };
       const hSc=coopTeamSched(t,S.hTi).find(x=>x.w===selW);
       const gSc=coopTeamSched(t,S.gTi).find(x=>x.w===selW);
       const multiGrp=(t.G||[]).length>1;
+      const pushHuman=(arr,sc,ti,mt,tag)=>{
+        const m=coopFindGrpMatch(mt,selW,sc.opp);
+        const det=m?coopFxUserDet(m,ti,sc.home):"";
+        arr.push(mkRow(sc.home?ti:sc.opp,sc.home?sc.opp:ti,!!m,m?(sc.home?+m.gf||0:+m.ga||0):0,m?(sc.home?+m.ga||0:+m.gf||0):0,tag,det));
+      };
+      const pushSim=(arr,a)=>{
+        const g1=+a[2]||0,g2=+a[3]||0;
+        arr.push(mkRow(a[0],a[1],true,g1,g2,"",fxSimDet(a[0],a[1],g1,g2,a[4],a[5],a[6],a[7])));
+      };
       let innerHtml="";
       if(multiGrp){
         const secs=[];
         (t.G||[]).forEach((g,gi)=>{
           const gRows=[];
-          if(hSc&&hSc.gi===gi){
-            const m=coopFindGrpMatch(S.hMt,selW,hSc.opp);
-            gRows.push(mkRow(hSc.home?S.hTi:hSc.opp,hSc.home?hSc.opp:S.hTi,!!m,m?(hSc.home?m.gf:m.ga):0,m?(hSc.home?m.ga:m.gf):0,hSc.opp===S.gTi?"🤝 Doğrudan Düello":""));
-          }
-          if(gSc&&gSc.gi===gi&&gSc.opp!==S.hTi){
-            const m=coopFindGrpMatch(S.gMt,selW,gSc.opp);
-            gRows.push(mkRow(gSc.home?S.gTi:gSc.opp,gSc.home?gSc.opp:S.gTi,!!m,m?(gSc.home?m.gf:m.ga):0,m?(gSc.home?m.ga:m.gf):0,""));
-          }
+          if(hSc&&hSc.gi===gi)pushHuman(gRows,hSc,S.hTi,S.hMt,hSc.opp===S.gTi?"🤝 Doğrudan Düello":"");
+          if(gSc&&gSc.gi===gi&&gSc.opp!==S.hTi)pushHuman(gRows,gSc,S.gTi,S.gMt,"");
           const wkM=t.sim.gm[gi]&&t.sim.gm[gi][selW-1];
-          if(Array.isArray(wkM)&&wkM.length)wkM.forEach(a=>gRows.push(mkRow(a[0],a[1],true,a[2],a[3],"")));
-          else coopRoundPairs(t,gi,selW).filter(([a,b])=>a!==S.hTi&&b!==S.hTi&&a!==S.gTi&&b!==S.gTi).forEach(([a,b])=>gRows.push(mkRow(a,b,false,0,0,"")));
+          if(Array.isArray(wkM)&&wkM.length)wkM.forEach(a=>pushSim(gRows,a));
+          else coopRoundPairs(t,gi,selW).filter(([a,b])=>a!==S.hTi&&b!==S.hTi&&a!==S.gTi&&b!==S.gTi).forEach(([a,b])=>gRows.push(mkRow(a,b,false,0,0,"","")));
           const clean=gRows.filter(Boolean);
           if(clean.length)secs.push(`<div class="pset-lbl" style="margin:${secs.length?10:2}px 0 6px">${esc(gname(t,gi))}</div>`+clean.join(""));
         });
         innerHtml=secs.join("");
       }else{
         const rows=[];
-        if(hSc){
-          const m=coopFindGrpMatch(S.hMt,selW,hSc.opp);
-          rows.push(mkRow(hSc.home?S.hTi:hSc.opp,hSc.home?hSc.opp:S.hTi,!!m,m?(hSc.home?m.gf:m.ga):0,m?(hSc.home?m.ga:m.gf):0,hSc.opp===S.gTi?"🤝 Doğrudan Düello":""));
-        }
-        if(gSc&&gSc.opp!==S.hTi){
-          const m=coopFindGrpMatch(S.gMt,selW,gSc.opp);
-          rows.push(mkRow(gSc.home?S.gTi:gSc.opp,gSc.home?gSc.opp:S.gTi,!!m,m?(gSc.home?m.gf:m.ga):0,m?(gSc.home?m.ga:m.gf):0,""));
-        }
+        if(hSc)pushHuman(rows,hSc,S.hTi,S.hMt,hSc.opp===S.gTi?"🤝 Doğrudan Düello":"");
+        if(gSc&&gSc.opp!==S.hTi)pushHuman(rows,gSc,S.gTi,S.gMt,"");
         const wkM=t.sim.gm[0]&&t.sim.gm[0][selW-1];
-        if(Array.isArray(wkM)&&wkM.length)wkM.forEach(a=>rows.push(mkRow(a[0],a[1],true,a[2],a[3],"")));
-        else coopRoundPairs(t,0,selW).filter(([a,b])=>a!==S.hTi&&b!==S.hTi&&a!==S.gTi&&b!==S.gTi).forEach(([a,b])=>rows.push(mkRow(a,b,false,0,0,"")));
+        if(Array.isArray(wkM)&&wkM.length)wkM.forEach(a=>pushSim(rows,a));
+        else coopRoundPairs(t,0,selW).filter(([a,b])=>a!==S.hTi&&b!==S.hTi&&a!==S.gTi&&b!==S.gTi).forEach(([a,b])=>rows.push(mkRow(a,b,false,0,0,"","")));
         innerHtml=rows.filter(Boolean).join("");
       }
       wkHtml=wkTabs+`<div class="card pglass" style="padding:10px">${innerHtml||emp("Bu hafta maçı yok.")}</div>`;
