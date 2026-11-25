@@ -4856,8 +4856,8 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
   -webkit-user-select:auto!important;
   user-select:auto!important;
 }
-@keyframes imgIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
-.pimgdlg img.shimg{animation:imgIn .24s ease-out both}
+@keyframes imgIn{from{opacity:.88;transform:scale(.988)}to{opacity:1;transform:none}}
+.pimgdlg img.shimg{animation:imgIn .16s ease-out both}
 
 /* 7) Geçmiş 7'li Yatay Sekmeler & Mobil Sağ Kaydırma Solma İpucu (.ptabs-wrap) */
 .ptabs-wrap{position:relative;margin:-2px 0 14px}

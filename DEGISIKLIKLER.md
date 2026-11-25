@@ -1,3 +1,9 @@
+## v25.3 (2026-11-25) — Bireysel & Poster İnce Cila Paketi
+- **xG 2 Ondalık Hassasiyeti (`analytics.js` `xgSummaryCard`):** `Üretilen xG`, `Yenen xG`, xG paylaşım çubuğu ve koç özeti xG değerleri 2 ondalıklı (`xgN2`: `1,20`, `0,85`) biçime geçirildi; `xG Farkı` (`+0,35`) ve `Gol−xG` farklarıyla yuvarlama çelişkisi tamamen giderildi.
+- **Slot Çekilişi Sonrası Otomatik Yukarı Kaydırma (`app.js`, `coop.js`):** Hem Bireysel hem 2P modda rastgele kulüp çekilişi tamamlandığında sayfa en üste (`scrollTo(0, 0)`) alınarak çıkan kulüp kartı doğrudan ekrana getirilir.
+- **Poster Önizleme Siyah Kare & Hız İyileştirmesi (`posters.js`, `app.js`, `style.css`):** `mkImg` içinde gerçek bitmap `im.decode()` beklemesi düzeltildi, `imgIn` animasyonundaki `opacity: 0` siyah kutu parlaması giderildi, çift sayfalı Karne PNG kodlaması paralelleştirildi, geçici kanvas belleği bırakıldı ve `preloadLogos` zaman aşımı 1,2 sn’ye çekildi.
+- **Kupa Şablon Kartlarında Kompakt 4 Rozet (`app.js` `CUP_PRESETS`):** Konferans, Avrupa ve Şampiyonlar Ligi kartlarındaki özellik rozetleri bilgi kaybı olmadan 4’lü kompakt düzene (`32T · 4×8 · İlk 4`, `≤80 GEN`, `Ülke 8 · Grup 2`, `Rastgele`) alınarak 2. satıra yalnız sarkan tek rozet giderildi.
+
 ## v25.2 (2026-11-25) — 108/108 Tam Kulüp Arması Seti (Son 9 Logo Eklendi)
 - **Eksik 9 Kulüp PNG Arması Tamamlandı (`data.js` `LOGOS` + `logos/`):** **River Plate**, **Boca Juniors**, **Club América**, **Toluca**, **PAOK**, **Wolfsburg**, **Alavés**, **Estudiantes** ve **Girona** kulüplerinin şeffaf PNG armaları eklendi; veritabanındaki **108/108 kulübün tamamı** artık gerçek PNG armasıyla (puan tabloları, fikstür, kadro, eleme ağacı, TOTS ve 11 Broadcast posterin tamamında) görüntülenir.
 

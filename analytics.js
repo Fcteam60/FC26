@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — Analitik, xG/xPts, Taktiksel DNA ve Kariyer Motoru (analytics.js · v25.2) */
+/* FC 27 Grup Ligi — Analitik, xG/xPts, Taktiksel DNA ve Kariyer Motoru (analytics.js · v25.3) */
 const RS=["Grup","S64","S32","S16","ÇF","YF","Final","Şamp."];
 /* ---------- RAKİPLER ---------- */
 function oppData(){const M=nob();
@@ -980,18 +980,18 @@ function xgSummaryCard(ML){
   const ins=[];
   const finPm=n?diff/n:0,avgMyXg=n?totXg/n:0;
   if(n>=2){
-    if(finPm>=.18&&diff>=.5)ins.push(["pos","fin",`<b>Bitiriciliğin güçlü:</b> ${xgN1(totXg)} xG'lik pozisyondan ${totGf} gol çıkardın (${xgS2(diff)}, maç başı ${xgS2(finPm)}).`]);
-    else if(finPm<=-.18&&diff<=-.5)ins.push(["neg","fin",`<b>Bitiricilik beklentinin altında:</b> ${xgN1(totXg)} xG'ye karşı ${totGf} gol (${xgS2(diff)}, maç başı ${xgS2(finPm)}). Sakin bitirmeye odaklan.`]);
-    else if(avgMyXg<1.0)ins.push(["neu","fin",`<b>Bitiricilik normal ama üretim düşük:</b> ${totGf} gol, ${xgN1(totXg)} xG (maç başı ${xgN2(avgMyXg)} xG). Öncelik daha fazla net pozisyon üretmek.`]);
-    else ins.push(["neu","fin",`<b>Gollerin pozisyonlarınla uyumlu:</b> ${totGf} gol, ${xgN1(totXg)} xG (maç başı ${xgS2(finPm)}). Belirgin bir sapma yok.`]);
+    if(finPm>=.18&&diff>=.5)ins.push(["pos","fin",`<b>Bitiriciliğin güçlü:</b> ${xgN2(totXg)} xG'lik pozisyondan ${totGf} gol çıkardın (${xgS2(diff)}, maç başı ${xgS2(finPm)}).`]);
+    else if(finPm<=-.18&&diff<=-.5)ins.push(["neg","fin",`<b>Bitiricilik beklentinin altında:</b> ${xgN2(totXg)} xG'ye karşı ${totGf} gol (${xgS2(diff)}, maç başı ${xgS2(finPm)}). Sakin bitirmeye odaklan.`]);
+    else if(avgMyXg<1.0)ins.push(["neu","fin",`<b>Bitiricilik normal ama üretim düşük:</b> ${totGf} gol, ${xgN2(totXg)} xG (maç başı ${xgN2(avgMyXg)} xG). Öncelik daha fazla net pozisyon üretmek.`]);
+    else ins.push(["neu","fin",`<b>Gollerin pozisyonlarınla uyumlu:</b> ${totGf} gol, ${xgN2(totXg)} xG (maç başı ${xgS2(finPm)}). Belirgin bir sapma yok.`]);
   }
   if(nx>=2){
     if(xpDiff>=1.5)ins.push(["pos","pts",`<b>Puanların oyununun önünde:</b> beklenen ${xgN1(totXpts)} puana karşı ${actPts} topladın (${xgS1(xpDiff)}).`]);
     else if(xpDiff<=-1.5)ins.push(["neg","pts",`<b>Hak ettiğinden az puan topladın:</b> beklenen ${xgN1(totXpts)} puana karşı ${actPts} (${xgS1(xpDiff)}). Oyununu bozma.`]);
     else ins.push(["neu","pts",`<b>Puanların oyununla uyumlu:</b> ${xgN1(totXpts)} puan beklenirken ${actPts} topladın.`]);
     const dd=xaX-xaGa;
-    if(dd>=.75)ins.push(["pos","def",`<b>Savunma beklentinin üstünde:</b> rakip ${xgN1(xaX)} xG buldu, sen ${xaGa} gol yedin (${xgN1(dd)} gol önlendi).`]);
-    else if(dd<=-.75)ins.push(["neg","def",`<b>Beklenenden fazla gol yedin:</b> rakip ${xgN1(xaX)} xG'den ${xaGa} gol buldu (${xgN1(-dd)} fazla).`]);
+    if(dd>=.75)ins.push(["pos","def",`<b>Savunma beklentinin üstünde:</b> rakip ${xgN2(xaX)} xG buldu, sen ${xaGa} gol yedin (${xgN2(dd)} gol önlendi).`]);
+    else if(dd<=-.75)ins.push(["neg","def",`<b>Beklenenden fazla gol yedin:</b> rakip ${xgN2(xaX)} xG'den ${xaGa} gol buldu (${xgN2(-dd)} fazla).`]);
   }
   if(xgPSv!=null){
     if(xgPSv>=.2)ins.push(["pos","fin",`<b>Net pozisyondan şut çekiyorsun:</b> şut başına ${xgN2(xgPSv)} xG ile yüksek gol olasılığı yakalıyorsun.`]);
@@ -1010,15 +1010,15 @@ function xgSummaryCard(ML){
   // --- 1. Gol beklentisi ---
   let gol="";
   if(n){
-    const t=[xgTile(xgN1(totXg),"Üretilen xG",`gerçekte ${totGf} gol (${xgS2(diff)})`,vdCls=="pos"?"Beklentinin üstünde gol attın: bitiricilik çok iyi.":vdCls=="neg"?"Pozisyonlar golle sonuçlanmadı: bitiricilik düşük.":"Gol sayın pozisyonlarınla uyumlu.",vdCls)];
+    const t=[xgTile(xgN2(totXg),"Üretilen xG",`gerçekte ${totGf} gol (${xgS2(diff)})`,vdCls=="pos"?"Beklentinin üstünde gol attın: bitiricilik çok iyi.":vdCls=="neg"?"Pozisyonlar golle sonuçlanmadı: bitiricilik düşük.":"Gol sayın pozisyonlarınla uyumlu.",vdCls)];
     if(nx){
       const gd=xaX-xaGa,xd=(xaMyX-xaX)/nx,sh=xaMyX+xaX>0?Math.round(xaMyX/(xaMyX+xaX)*100):null;
-      t.push(xgTile(xgN1(xaX),"Yenen xG (rakibin xG'si)",`gerçekte ${xaGa} gol yedin (${xgS2(xaGa-xaX)})`,gd>=.75?"Beklenenden az gol yedin: savunma ve kaleci iyi.":gd<=-.75?"Beklenenden çok gol yedin: kaleci ya da savunma zayıf kaldı.":"Yediğin goller rakibin pozisyonlarıyla uyumlu.",xgVc(gd,.75)));
+      t.push(xgTile(xgN2(xaX),"Yenen xG (rakibin xG'si)",`gerçekte ${xaGa} gol yedin (${xgS2(xaGa-xaX)})`,gd>=.75?"Beklenenden az gol yedin: savunma ve kaleci iyi.":gd<=-.75?"Beklenenden çok gol yedin: kaleci ya da savunma zayıf kaldı.":"Yediğin goller rakibin pozisyonlarıyla uyumlu.",xgVc(gd,.75)));
       t.push(xgTile(xgS2(xd),"xG Farkı (maç başı)",`toplam ${xgS2(xaMyX-xaX)}`,xd>=.3?"Pozisyon üretiminde rakipten üstünsün.":xd<=-.3?"Rakip senden daha çok pozisyon üretiyor.":"Pozisyon üretimi başa baş.",xgVc(xd,.3)));
       if(sh!=null)t.push(xgTile("%"+sh,"Pozisyon Payı",`senin xG'nin toplam içindeki payı`,sh>=55?"Net üstünlük: pozisyonların çoğu sende.":sh<=45?"Pozisyonların çoğu rakipte.":"Pozisyonlar dengeli paylaşılıyor.",sh>=55?"pos":sh<=45?"neg":"neu"));
     }
     gol=`<div class="xtg">${t.join("")}</div>`;
-    if(nx&&xaMyX+xaX>0){const sh=xaMyX/(xaMyX+xaX)*100,shR=Math.round(sh);gol+=`<div class="xbarbox"><div class="xbarl"><span><b>${xgN1(xaMyX)}</b> xG <em>(%${shR} Sen)</em></span><span><em>(Rakip %${100-shR})</em> <b>${xgN1(xaX)}</b> xG</span></div><div class="xbar" role="img" aria-label="xG payı: sen ${xgN1(xaMyX)}, rakip ${xgN1(xaX)}"><i class="a" style="width:${sh.toFixed(1)}%"></i><i class="b" style="width:${(100-sh).toFixed(1)}%"></i></div></div>`;}
+    if(nx&&xaMyX+xaX>0){const sh=xaMyX/(xaMyX+xaX)*100,shR=Math.round(sh);gol+=`<div class="xbarbox"><div class="xbarl"><span><b>${xgN2(xaMyX)}</b> xG <em>(%${shR} Sen)</em></span><span><em>(Rakip %${100-shR})</em> <b>${xgN2(xaX)}</b> xG</span></div><div class="xbar" role="img" aria-label="xG payı: sen ${xgN2(xaMyX)}, rakip ${xgN2(xaX)}"><i class="a" style="width:${sh.toFixed(1)}%"></i><i class="b" style="width:${(100-sh).toFixed(1)}%"></i></div></div>`;}
   }
   // --- 2. Beklenen puan ---
   let puan="";

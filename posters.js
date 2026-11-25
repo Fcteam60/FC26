@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — Broadcast PNG Poster Motoru (posters.js · v25.2) */
+/* FC 27 Grup Ligi — Broadcast PNG Poster Motoru (posters.js · v25.3) */
 /* ---------- PAYLAŞILABİLİR GÖRSELLER ---------- */
 const NUMF='"FC Sayi","Barlow Condensed","Oswald","Bahnschrift","Avenir Next Condensed","Roboto Condensed","Arial Narrow",sans-serif';
 const TCOL={1:["#fbeaa8","#e0b43a","#2b2000"],2:["#f3f6f8","#b9c3cb","#1b2328"],3:["#f0c9a2","#be7f47","#2a1500"],0:["#ffffff","#dfeee6","#12211a"]};
@@ -1120,28 +1120,41 @@ async function mkImg(kind,x){
   ntf("⏳ Görsel hazırlanıyor…");render();
   await new Promise(r=>{if(typeof requestAnimationFrame=="function")requestAnimationFrame(()=>setTimeout(r,16));else setTimeout(r,16)});
   try{
-    try{await document.fonts.load('700 30px "FC Sayi"')}catch(e){}
+    try{if(document.fonts&&(!document.fonts.check||!document.fonts.check('700 30px "FC Sayi"')))await document.fonts.load('700 30px "FC Sayi"')}catch(e){}
     const cv=kind=="kura"?await kuraCv(x):kind=="tots"?await totsCv(x):kind=="ko"?await koCv(x):kind=="kariyer"?await kariyerCv():kind=="mac"?await macCv(x):kind=="duello"?await duelloCv(x):kind=="duello-sezon"?await duelloSezonCv(x):kind=="duello-kulup"?await duelloKulupCv(x):kind=="coop-hist"?await coopHistCv(x):await karneCv(x);
     const toImgObj=async(canvas,ttl,fn)=>{
+      const w=canvas.width,h=canvas.height;
       const blob=await new Promise(r=>canvas.toBlob(r,"image/png"));
       const url=blob&&typeof URL!="undefined"&&URL.createObjectURL?URL.createObjectURL(blob):canvas.toDataURL("image/png");
-      return{title:ttl,name:fn,url,blob,w:canvas.width,h:canvas.height};
+      try{canvas.width=0;canvas.height=0}catch(e){}
+      return{title:ttl,name:fn,url,blob,w,h};
     };
     const baseSlug=x.name.replace(/[^\wÀ-ɏ]+/g,"-").replace(/^-+|-+$/g,"").toLowerCase();
     const kuraLive=kind=="kura"&&x&&(x._hasTbl!==undefined?!!x._hasTbl:((x.sim&&x.sim.w>0)||(x.mt||[]).some(m=>m.rd==="Grup")));
     const mainTitle=kind=="kariyer"?"Kariyer özeti":kind=="mac"?"Maç kartı":kind=="duello"?"Menajer Düellosu (1v1)":kind=="duello-sezon"?"Sezon vs. Sezon Posteri":kind=="duello-kulup"?"Kulüp vs. Kulüp Posteri":kind=="coop-hist"?"Ortak Kupa Geçmişi Posteri":kind=="tots"?x.name+" · En İyi 11 (TOTS)":kind=="ko"?x.name+" · Eleme Ağacı":x.name+(kind=="kura"?(kuraLive?(isUcl(x.cfg)?" ŞL puan durumu":isLg(x.cfg)?" lig puan durumu":" puan durumu"):(isUcl(x.cfg)?" ŞL kurası":" kurası")):" karnesi");
     const mainName="fc27-"+kind+"-"+baseSlug+".png";
-    const p1=await toImgObj(cv,mainTitle,mainName);
-    let pages=null;
+    const p1Task=toImgObj(cv,mainTitle,mainName);
+    let p2Task=null;
     if(kind=="karne"&&x.res&&calcTacticalDNA(x,true)){
       const cv2=await karneDnaCv(x);
-      if(cv2){
-        const p2=await toImgObj(cv2,x.name+" · Menajer Kimliği","fc27-karne-"+baseSlug+"-kimlik.png");
-        pages=[p1,p2];
-      }
+      if(cv2)p2Task=toImgObj(cv2,x.name+" · Menajer Kimliği","fc27-karne-"+baseSlug+"-kimlik.png");
     }
+    const [p1,p2]=await Promise.all([p1Task,p2Task||Promise.resolve(null)]);
+    const pages=p2?[p1,p2]:null;
     if(p1&&p1.url&&typeof Image!=="undefined"){
-      await new Promise(res=>{const im=new Image();im.onload=im.onerror=res;im.src=p1.url;if(im.decode)im.decode().then(res).catch(()=>{});setTimeout(res,800)});
+      await new Promise(res=>{
+        let done=false;const fin=()=>{if(!done){done=true;res()}};
+        const im=new Image();
+        im.onerror=fin;
+        if(typeof im.decode==="function"){
+          im.src=p1.url;
+          im.decode().then(fin).catch(fin);
+        }else{
+          im.onload=fin;
+          im.src=p1.url;
+        }
+        setTimeout(fin,800);
+      });
     }
     clrImg();hideToast();
     st.img=Object.assign({},p1,{msg:"",x,pg:0,pages,anim:false});

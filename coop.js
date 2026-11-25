@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — coop.js · v25.2
+   FC 27 Grup Ligi — coop.js · v25.3
    İzole 2 Kişilik Online Ortak Turnuva (Co-op Oda) Modülü
    - Tek kişilik IndexedDB / JSON yedeğe hiç dokunmaz
    - Çakışmasız 2 düğümlü Firebase mimarisi (/rooms/{room}/host.json & guest.json)
@@ -1599,7 +1599,7 @@ async function coopSpin(S){
   let over=false;
   const done=()=>{
     if(over)return;
-    over=true;clearTimeout(st.slt);st.slot=null;render();
+    over=true;clearTimeout(st.slt);st.slot=null;render();scrollTo(0,0);
     coopCommitPick(origTid,fin);
   };
   if(rm()||c.length<2){done();return}

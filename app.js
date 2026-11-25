@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="25.2",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="25.3",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -1523,19 +1523,19 @@ const CUP_SVGS={
 const CUP_PRESETS=[
   {
     id:"uecl",code:"UECL · KONFERANS",name:"Konferans Ligi",tier:"emr",
-    specs:[["32T · 4×8",1],["İlk 4 Çıkar",1],["≤80 GEN",1],["Ülke 8 · Grup 2",0],["Rastgele",0]],
+    specs:[["32T · 4×8 · İlk 4",1],["≤80 GEN",1],["Ülke 8 · Grup 2",0],["Rastgele",0]],
     cfg:{N:32,gs:8,q:4,gl:1,kl:2,fl:1},
     rl:{rg:"all",xc:[],gmin:0,gmax:80,amin:0,mmin:0,dmin:0,cap:8,gcap:2,pick:"rnd",dm:"pot"}
   },
   {
     id:"uel",code:"UEL · AVRUPA",name:"Avrupa Ligi",tier:"org",
-    specs:[["32T · 4×8",1],["İlk 4 Çıkar",1],["78+ GEN",1],["Ülke 8 · Grup 2",0],["Rastgele",0]],
+    specs:[["32T · 4×8 · İlk 4",1],["78+ GEN",1],["Ülke 8 · Grup 2",0],["Rastgele",0]],
     cfg:{N:32,gs:8,q:4,gl:1,kl:2,fl:1},
     rl:{rg:"all",xc:[],gmin:78,gmax:99,amin:0,mmin:0,dmin:0,cap:8,gcap:2,pick:"rnd",dm:"pot"}
   },
   {
     id:"ucl",code:"UCL · ŞAMPİYONLAR",name:"Şampiyonlar Ligi",tier:"sky",
-    specs:[["36T · 8 Maç + PO",1],["77+ GEN",1],["Avrupa",1],["Ülke 10",0],["En Güçlü",0]],
+    specs:[["36T · 8 Maç + PO",1],["77+ GEN",1],["Avrupa · Ülke 10",0],["En Güçlü",0]],
     cfg:{N:36,gs:36,q:24,gl:1,kl:2,fl:1,ucl:1},
     rl:{rg:"eu",xc:[],gmin:77,gmax:99,amin:0,mmin:0,dmin:0,cap:10,gcap:0,pick:"top",dm:"pot"}
   }
@@ -2769,7 +2769,7 @@ function spin(s){
   const c=filtC.length?filtC:(baseC.filter(i=>i!==s.my).length?baseC.filter(i=>i!==s.my):baseC);
   const pk=()=>c[Math.random()*c.length|0],fin=pk(),snap=JSON.stringify(store);
   let over=false;
-  const done=()=>{if(over)return;over=true;clearTimeout(st.slt);st.slot=null;s.my=fin;st.mode="rnd";save();render();flush("Takımın: "+T[fin].n,snap)};
+  const done=()=>{if(over)return;over=true;clearTimeout(st.slt);st.slot=null;s.my=fin;st.mode="rnd";save();render();scrollTo(0,0);flush("Takımın: "+T[fin].n,snap)};
   if(rm()||c.length<2){done();return}
   const N=22;let k=0,r=[pk(),pk(),pk()];
   st.slot={r,done};st.mode="rnd";render();
@@ -2847,7 +2847,7 @@ function preloadLogos(idxs){
       let done=false;const fin=()=>{if(!done){done=true;res()}};
       im.onload=fin;im.onerror=fin;
       if(!ex)im.src=u;
-      setTimeout(fin,2500);
+      setTimeout(fin,1200);
     }));
   });
   return Promise.all(ps);
