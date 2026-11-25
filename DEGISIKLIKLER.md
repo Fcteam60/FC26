@@ -1,3 +1,10 @@
+## v25.1 (2026-11-25) — Bireysel Otomatik MOTM, Şablon Kural Sıfırlama, Poster Başlık Koruması & 2P Kilit/Misafir Düzeltmeleri
+- **Bireysel Mod Otomatik MOTM Düzeltildi (`sim.js` `autoMatchMom`, `app.js` `msave`):** Bireysel maç kaydında `Maçın Adamı (MOTM)` **`Otomatik`** bırakıldığında artık doğrudan rakip takımdan (`pickOppMom`) değil, 2P ile ortak `pickSimMom` motorunu kullanan `autoMatchMom` ile iki takımın gol, asist ve temiz kasa katkısına göre gerçek en iyi oyuncu seçilir (`m.mom` veya `m.omom`).
+- **Kupa Şablonu → Genel Format Geçişinde Kural Temizliği (`app.js` `a=="tmpl"`, `coop.js` `a==="cptpl"`):** Hem Bireysel hem 2P kurulumunda hazır kupa şablonlarından (Konferans/Avrupa/Şampiyonlar Ligi) üstteki 6 format kartına geçildiğinde önceki GEN/bölge/ülke sınırlarının yapışıp havuzu kilitlemesi (`21/36`, `46/64`, `54/64`) giderildi.
+- **4 Poster Başlığına `fit()` Çarpışma Koruması (`posters.js`):** `karneCv`, `totsCv`, `koCv` ve `kariyerCv` başlıkları sağdaki rozetlerin genişliğine göre `fit()` ile sınırlandırılarak uzun sezon/menajer adlarında üst üste binme engellendi.
+- **2P `cpmundo` Anlık Onay Kapanışı & Kilit (`app.js` `a=="yes"`, `coop.js` `cpmundo`):** 2P onay modallarında `Evet, Devam Et` dokunulduğu anda pencere kapanır ve `cpmundo` ağ işlemi boyunca `st.cpLock` tutularak çift dokunma/yenileme çakışması engellenir.
+- **2P Grup Bitişinde Misafir Yönlendirmesi (`coop.js`):** Tüm grup/lig maçları bittiğinde Misafir ekranı *"Kurucunun eleme ağacını kurması bekleniyor"* mesajı ve **`↻ Durumu Yenile`** düğmesini gösterir.
+
 ## v25.0 (2026-11-25) — Premium Kupa Şablonları Tasarımı & Konferans/Avrupa Ligi İlk 4 Çıkış Güncellemesi
 - **Konferans Ligi & Avrupa Ligi Gruptan Çıkanlar `4` Yapıldı (`app.js` `CUP_PRESETS`):** İki şablonda da `q: 4` (4×8 grup, her gruptan ilk 4 takım → 16 takımlı Son 16 eleme ağacı) tanımlandı.
 - **Broadcast-Kalite Kupa Şablon Kartları (`app.js`, `style.css`):**

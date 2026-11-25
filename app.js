@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="25.0",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="25.1",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -3015,7 +3015,7 @@ document.addEventListener("click",async e=>{
   if(a!="undo")hideToast();
   const s=cur(),id=+b.dataset.id,i=+b.dataset.i,dv=b.dataset.v,dk=b.dataset.k,uiOnly=UI_ONLY.has(a);let un=null;const snap=uiOnly?null:(lastSavedRaw||JSON.stringify(store));
   if(a=="cfg"){s.cfg[dk]=+dv;if(isLg(s.cfg)&&dk=="N")s.cfg.gs=s.cfg.N;if(dk=="N"||dk=="gs")s.G=null;fixC(s.cfg)}
-  else if(a=="tmpl"){const p=TPL[+dv],wasUcl=isUcl(s.cfg);if(p[5]){delete s.cfg.lg;s.cfg.ucl=1;s.cfg.N=36;s.cfg.gs=36;s.cfg.q=24;s.cfg.gl=1;s.cfg.kl=2;s.cfg.fl=1;if(!wasUcl){s.rl.rg="eu";s.rl.cap=4;s.rl.gcap=1;s.rl.dm="pot"}st.cust=true}else{delete s.cfg.ucl;if(wasUcl&&s.rl.rg==="eu"&&s.rl.cap===4){s.rl.rg="all";s.rl.cap=0}if(p[4]===0&&p[2]===p[3]){s.cfg.lg=1;if(!LGN.includes(s.cfg.N))s.cfg.N=p[2];s.cfg.gs=s.cfg.N;s.cfg.q=0;st.cust=true}else{delete s.cfg.lg;s.cfg.N=p[2];s.cfg.gs=p[3];s.cfg.q=p[4];if(wasUcl)s.cfg.kl=1}}s.G=null;s.ucl=null;fixC(s.cfg)}
+  else if(a=="tmpl"){const p=TPL[+dv],wasUcl=isUcl(s.cfg),wasPre=CUP_PRESETS.some(x=>cupPresetOn(s.cfg,s.rl,x));if(p[5]){delete s.cfg.lg;s.cfg.ucl=1;s.cfg.N=36;s.cfg.gs=36;s.cfg.q=24;s.cfg.gl=1;s.cfg.kl=2;s.cfg.fl=1;if(!wasUcl||wasPre){s.rl=Object.assign(cp(DEFR),{rg:"eu",cap:4,gcap:1,dm:"pot"})}st.cust=true}else{delete s.cfg.ucl;if(wasPre||wasUcl){s.rl=cp(DEFR)}if(p[4]===0&&p[2]===p[3]){s.cfg.lg=1;if(!LGN.includes(s.cfg.N))s.cfg.N=p[2];s.cfg.gs=s.cfg.N;s.cfg.q=0;st.cust=true}else{delete s.cfg.lg;s.cfg.N=p[2];s.cfg.gs=p[3];s.cfg.q=p[4];if(wasUcl||wasPre){s.cfg.gl=1;s.cfg.kl=1;s.cfg.fl=1}}}s.G=null;s.ucl=null;fixC(s.cfg)}
   else if(a=="cpreset"){const p=CUP_PRESETS[+dv];if(p){s.cfg=cp(p.cfg);fixC(s.cfg);s.rl=Object.assign(cp(DEFR),cp(p.rl));s.G=null;s.ucl=null;un=p.name+" şablonu uygulandı"}}
   else if(a=="adv")st.adv=!st.adv;
   else if(a=="cust")st.cust=!st.cust;
@@ -3111,12 +3111,18 @@ document.addEventListener("click",async e=>{
     const csr=cleanStatsW(st.mst),mStats=csr.s;st.stwarn=csr.warns.length?csr.warns.join(" · "):null;
     const cleanGls=(st.mgls||[]).slice(0,st.mg||0).filter(g=>g&&g.sc).map(g=>({sc:g.sc,as:isKK(g.sc)?"":(g.as||"")}));
     const m={id:oldM?oldM.id:Date.now(),opp:op,on:T[op].n,rd:st.mrd,lg:legInfo(s).lg,gf:st.mg||0,ga:st.mo||0,et,pf,pa,gls:cleanGls,sc:toNob(Object.fromEntries(Object.entries(st.msc||{}).filter(e=>e[1]>0))),as:toNob(Object.fromEntries(Object.entries(st.mas||{}).filter(e=>e[1]>0))),mom:st.mmom||"",stats:mStats};
-    {const pr=oldM&&oldM.pr?oldM.pr:(predict(s,op)?[predict(s,op).w,predict(s,op).d,predict(s,op).l]:null);if(pr)m.pr=pr}[...Object.keys(m.sc),...Object.keys(m.as),...(m.mom?[m.mom]:[])].forEach(n=>getOrAddPl(s,n));
+    {const pr=oldM&&oldM.pr?oldM.pr:(predict(s,op)?[predict(s,op).w,predict(s,op).d,predict(s,op).l]:null);if(pr)m.pr=pr}
     {const sqO=squadOf(op),nO=m.ga||0,old=oldM&&oldM.opp===op&&Array.isArray(oldM.og)?oldM.og.slice(0,nO):[];
       const need=nO-old.length;
       if(need>0&&sqO.length){const ix=simGoalAssign(op,need),as=simAssistsFor(op,ix);ix.forEach((v,k)=>old.push({sc:sqO[v].n,as:as[k]>=0&&sqO[as[k]]?sqO[as[k]].n:""}))}
       m.og=old;
-      m.omom=m.mom?"":(pickOppMom(op,old,m.gf,m.ga)||"")}
+      if(!m.mom){
+        const am=typeof autoMatchMom==="function"?autoMatchMom(s.my,op,m.gf,m.ga,cleanGls,old,pf,pa):null;
+        if(am&&am.ti===s.my){m.mom=am.n;m.omom=""}
+        else if(am&&am.ti===op){m.omom=am.n}
+        else{m.omom=pickOppMom(op,old,m.gf,m.ga)||""}
+      }else{m.omom=""}}
+    [...Object.keys(m.sc),...Object.keys(m.as),...(m.mom?[m.mom]:[])].forEach(n=>getOrAddPl(s,n));
     const sim=ensureSim(s),totW=totWeeks(s.cfg);
     const hasKo=Object.keys(sim.ko||{}).some(rd=>Array.isArray(sim.ko[rd])&&sim.ko[rd].length);
     const RDs=isLg(s.cfg)?[]:rds(s.cfg).filter(r=>r!=="Grup");
@@ -3275,7 +3281,7 @@ document.addEventListener("click",async e=>{
   else if(a=="all"&&st.dr)st.k=st.dr.seq.length;
   else if(a=="use"){if(!st.dr||s.G)return;if(st.dr.ucl){s.G=st.dr.G;s.ucl={pots:st.dr.pots,fx:st.dr.rounds};s.fxMix=1}else{s.G=mixG(s,st.dr.G);s.fxMix=1}const isDE=!s.cfg.gs&&!isLg(s.cfg)&&!isUcl(s.cfg);if(isDE)initKoBracket(s,true);sync();st.tab=isDE?8:3}
   else if(a=="bal"){if(s.G){ask("Kura onaylandı. Yeniden çekmek için önce kurayı sıfırla.");render();return}if(isLg(s.cfg)){s.dn=(s.dn||0)+1;s.G=[sh(s.P)];s.fxMix=1;sync();st.tab=3;un="Lig fikstürü ve tablosu oluşturuldu"}else{const d=withSn(s,()=>isUcl(s.cfg)?genUclDraw(s):genDraw(s,4000,.4,1500));if(d){s.dn=(s.dn||0)+1;if(d.ucl){s.G=d.G;s.ucl={pots:d.pots,fx:d.rounds};s.fxMix=1;un="Şampiyonlar Ligi kurası kuruldu"}else{s.G=mixG(s,d.G);s.fxMix=1;un=!s.cfg.gs?"Eleme eşleşmeleri oluşturuldu":"Gruplar otomatik kuruldu"}const isDE=!s.cfg.gs&&!isUcl(s.cfg);if(isDE)initKoBracket(s,true);sync();st.tab=isDE?8:3}else ask("Bu kurallarla kura üretilemedi. Kurulumda ülke sınırını gevşetip tekrar dene.")}}
-  else if(a=="yes"){const f=st.ask&&st.ask.fn,isCoopAsk=!!(st.ask&&st.ask.coop);st.ask=null;if(f){const r=await f();if(typeof r=="string")un=r}if(isCoopAsk){render();if(un)ntf(un);return}}
+  else if(a=="yes"){const f=st.ask&&st.ask.fn,isCoopAsk=!!(st.ask&&st.ask.coop);st.ask=null;if(isCoopAsk)render();if(f){const r=await f();if(typeof r=="string")un=r}if(isCoopAsk){render();if(un)ntf(un);return}}
   else if(a=="no"){st.ask=null;clrImg();st.ren=null;st.imp=null;st.ti=null;st.pi=null;st.tpi=null;st.totsv=null;st.dlLive=null;st.cpRoomDlg=false;st.guide=false;st.gs=false;st.tiq=""}
   else if(a=="tpclose"){st.tpi=null}
   else if(a=="tpinfo"){st.tpi={n:b.dataset.n||"",ti:i,sid:b.dataset.s?+b.dataset.s:cur().id}}

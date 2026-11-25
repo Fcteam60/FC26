@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — Broadcast PNG Poster Motoru (posters.js · v25.0) */
+/* FC 27 Grup Ligi — Broadcast PNG Poster Motoru (posters.js · v25.1) */
 /* ---------- PAYLAŞILABİLİR GÖRSELLER ---------- */
 const NUMF='"FC Sayi","Barlow Condensed","Oswald","Bahnschrift","Avenir Next Condensed","Roboto Condensed","Arial Narrow",sans-serif';
 const TCOL={1:["#fbeaa8","#e0b43a","#2b2000"],2:["#f3f6f8","#b9c3cb","#1b2328"],3:["#f0c9a2","#be7f47","#2a1500"],0:["#ffffff","#dfeee6","#12211a"]};
@@ -374,7 +374,7 @@ async function karneCv(x,p,targetCv){p=p==null?1:p;const cu=n=>Math.round(n*p);
 
   // Header
   drawPill(c,champ?"🏆 ŞAMPİYONLUK KARNESİ":"SEZON KARNESİ",48,40,champ?268:198,38,"rgba(240,194,75,.18)","rgba(240,194,75,.06)","rgba(240,194,75,.52)","#fbeaa8",20);
-  tx(c,x.name.toLocaleUpperCase("tr"),48,114,56,"#f8fafc","left",700);
+  c.font="700 56px "+NUMF;tx(c,fit(c,x.name.toLocaleUpperCase("tr"),780),48,114,56,"#f8fafc","left",700);
   tx(c,x.date,W-48,66,25,"#94a3b8","right",600);
   const fmtTag=isUcl(x.cfg)?"ŞAMPİYONLAR LİGİ":isLg(x.cfg)?"PUAN LİGİ":"KUPA TURNUVASI";
   drawPill(c,fmtTag,W-48-174,92,174,32,"rgba(16,185,129,.16)",null,"rgba(62,230,168,.42)","#3ee6a8",18);
@@ -559,7 +559,7 @@ async function totsCv(s){
 
   // Header
   drawPill(c,"TURNUVANIN EN İYİ 11'İ",48,42,272,38,"rgba(240,194,75,.18)","rgba(240,194,75,.06)","rgba(240,194,75,.52)","#fbeaa8",20);
-  tx(c,s.name.toLocaleUpperCase("tr")+" · TOTS",48,114,52,"#f8fafc","left",700);
+  c.font="700 52px "+NUMF;tx(c,fit(c,s.name.toLocaleUpperCase("tr")+" · TOTS",796),48,114,52,"#f8fafc","left",700);
   tx(c,s.date||today(),W-48,70,25,"#94a3b8","right",600);
   const fmtStr=totsFmtOf(xi);
   drawPill(c,fmtStr+" DİZİLİŞ",W-206,94,158,34,"rgba(62,230,168,.16)",null,"rgba(62,230,168,.42)","#3ee6a8",19);
@@ -710,17 +710,22 @@ async function koCv(s){
 
   // Header
   drawPill(c,"ELEME AĞACI · BRACKET",48,40,268,38,"rgba(240,194,75,.18)","rgba(240,194,75,.06)","rgba(240,194,75,.52)","#fbeaa8",20);
-  tx(c,s.name.toLocaleUpperCase("tr")+" · ELEME TURLARI",48,114,52,"#f8fafc","left",700);
   tx(c,s.date||today(),W-48,58,24,"#94a3b8","right",600);
+  let koRightW=0;
   if(champTi!=null){
     const chTxt="🏆 ŞAMPİYON: "+T[champTi].n.toLocaleUpperCase("tr");
     c.font="700 22px "+NUMF;
     const chW=Math.min(460,Math.max(220,Math.ceil(c.measureText(chTxt).width)+44));
+    koRightW=chW;
     drawPill(c,fit(c,chTxt,420),W-48-chW,84,chW,42,"#fbeaa8","#d4a017","rgba(255,255,255,.55)","#2b2000",22);
   }else{
+    const kpTxt=koPath(s.cfg).toLocaleUpperCase("tr");
     c.font="700 22px "+NUMF;
-    tx(c,fit(c,koPath(s.cfg).toLocaleUpperCase("tr"),480),W-48,108,22,"#3ee6a8","right",700);
+    const kpFit=fit(c,kpTxt,480);
+    koRightW=Math.min(480,Math.ceil(c.measureText(kpFit).width));
+    tx(c,kpFit,W-48,108,22,"#3ee6a8","right",700);
   }
+  c.font="700 52px "+NUMF;tx(c,fit(c,s.name.toLocaleUpperCase("tr")+" · ELEME TURLARI",Math.max(360,W-96-koRightW-28)),48,114,52,"#f8fafc","left",700);
 
   const totalW=RDs.length*colW+(RDs.length-1)*colGap;
   const startX=Math.round((W-totalW)/2);
@@ -1173,7 +1178,7 @@ async function kariyerCv(){const mode=st.hmod||"all",d=careerData(mode),isL=mode
   // Header
   const pillTxt=isL?"LİG KARİYERİ":isC?"KUPA KARİYERİ":"KARİYER ÖZETİ";
   drawPill(c,pillTxt,48,40,196,38,"rgba(240,194,75,.18)","rgba(240,194,75,.06)","rgba(240,194,75,.52)","#fbeaa8",20);
-  tx(c,(store.owner?store.owner.toLocaleUpperCase("tr")+" · ":"")+"MENAJER KARİYERİ",48,114,52,"#f8fafc","left",700);
+  c.font="700 52px "+NUMF;tx(c,fit(c,(store.owner?store.owner.toLocaleUpperCase("tr")+" · ":"")+"MENAJER KARİYERİ",730),48,114,52,"#f8fafc","left",700);
   tx(c,today(),W-48,66,25,"#94a3b8","right",600);
   drawPill(c,d.n+" SEZON · "+totM+" MAÇ",W-48-224,92,224,32,"rgba(16,185,129,.16)",null,"rgba(62,230,168,.42)","#3ee6a8",18);
 

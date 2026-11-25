@@ -1,4 +1,4 @@
-# FC 27 Grup Ligi & Turnuva Takip (PWA · v25.0)
+# FC 27 Grup Ligi & Turnuva Takip (PWA · v25.1)
 
 Arkadaş grupları ve bireysel turnuvalar için tasarlanmış, sıfır bağımlılıklı, çevrimdışı çalışabilen Progressive Web App (PWA) turnuva ve menajerlik takip uygulaması.
 

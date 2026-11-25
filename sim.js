@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — 4 Katmanlı Gerçekçi Simülasyon, Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v25.0) */
+/* FC 27 Grup Ligi — 4 Katmanlı Gerçekçi Simülasyon, Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v25.1) */
 /* ---------- AŞAMA 1, 2 & 3: HAFTALIK SİMÜLASYON, ELEME AĞACI (BRACKET), GOL KRALLIĞI VE TURNUVA BİTİŞİ ---------- */
 const SIM_MODES=[[0,"Gerçekçi","Güç farkı ve gerçek futbol skorları (1-0, 2-1, 1-1 ağırlıklı)"],[1,"Dengeli","Standart güç ve günlük form dengesi"],[2,"Sürprizli","Yüksek şans faktörü, kupa sürprizlerine açık"]];
 
@@ -360,6 +360,23 @@ function pickOppMom(opp,og,gf,ga){
   }
   const stL=sq.filter(p=>p.t==="S").sort((a,b)=>b.o-a.o);
   return (stL[0]||sq[0]).n}
+// Bireysel & 2P ortak "Otomatik" MOTM seçici: iki takımın gol/asist/temiz kasa katkısını birlikte değerlendirir
+function autoMatchMom(meTi,oppTi,gf,ga,gls,og,pf,pa){
+  if(meTi==null||oppTi==null||!T[meTi]||!T[oppTi])return null;
+  const g1=+gf||0,g2=+ga||0;
+  const s1=[],a1=[],s2=[],a2=[];
+  (Array.isArray(gls)?gls:[]).forEach(g=>{if(g&&g.sc&&!isKK(g.sc)){s1.push(g.sc);a1.push(g.as&&!isKK(g.as)?g.as:"")}});
+  (Array.isArray(og)?og:[]).forEach(o=>{if(o&&o.sc&&!isKK(o.sc)){s2.push(o.sc);a2.push(o.as&&!isKK(o.as)?o.as:"")}});
+  const penW=(g1===g2&&pf!=null&&pa!=null&&pf!==pa)?(pf>pa?1:-1):0;
+  const mk=pickSimMom(meTi,oppTi,g1+(penW>0?0.01:0),g2+(penW<0?0.01:0),s1,s2,a1,a2);
+  if(mk){
+    const sp=mk.lastIndexOf("|");
+    if(sp>0)return{n:mk.slice(0,sp),ti:+mk.slice(sp+1)};
+  }
+  const winTi=g1>g2||penW>0?meTi:g2>g1||penW<0?oppTi:meTi;
+  const n=pickOppMom(winTi,winTi===meTi?gls:og,winTi===meTi?g2:g1,winTi===meTi?g1:g2);
+  return n?{n,ti:winTi}:null;
+}
 
 
 function fmtGoalList(ti,sL,aL){

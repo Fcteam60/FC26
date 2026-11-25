@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — coop.js · v25.0
+   FC 27 Grup Ligi — coop.js · v25.1
    İzole 2 Kişilik Online Ortak Turnuva (Co-op Oda) Modülü
    - Tek kişilik IndexedDB / JSON yedeğe hiç dokunmaz
    - Çakışmasız 2 düğümlü Firebase mimarisi (/rooms/{room}/host.json & guest.json)
@@ -16,21 +16,7 @@ const CPICO={
   card:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="3"/><circle cx="9" cy="10.2" r="1.5"/><path d="M4 17.5l5-4.5 3.5 3 3-2.5 4.5 4"/></svg>'
 };
 function coopAutoMom(meTi,oppTi,gf,ga,gls,og,pf,pa){
-  if(meTi==null||oppTi==null||!T[meTi]||!T[oppTi])return null;
-  const g1=+gf||0,g2=+ga||0;
-  const s1=[],a1=[],s2=[],a2=[];
-  (Array.isArray(gls)?gls:[]).forEach(g=>{if(g&&g.sc&&!isKK(g.sc)){s1.push(g.sc);a1.push(g.as&&!isKK(g.as)?g.as:"")}});
-  (Array.isArray(og)?og:[]).forEach(o=>{if(o&&o.sc&&!isKK(o.sc)){s2.push(o.sc);a2.push(o.as&&!isKK(o.as)?o.as:"")}});
-  // Penaltılarla biten berabere maçta kazanan tarafa hafif galibiyet önceliği ver
-  const penW=(g1===g2&&pf!=null&&pa!=null&&pf!==pa)?(pf>pa?1:-1):0;
-  const mk=pickSimMom(meTi,oppTi,g1+(penW>0?0.01:0),g2+(penW<0?0.01:0),s1,s2,a1,a2);
-  if(mk){
-    const sp=mk.lastIndexOf("|");
-    if(sp>0)return{n:mk.slice(0,sp),ti:+mk.slice(sp+1)};
-  }
-  const winTi=g1>g2||penW>0?meTi:g2>g1||penW<0?oppTi:meTi;
-  const n=pickOppMom(winTi,winTi===meTi?gls:og,winTi===meTi?g2:g1,winTi===meTi?g1:g2);
-  return n?{n,ti:winTi}:null;
+  return typeof autoMatchMom==="function"?autoMatchMom(meTi,oppTi,gf,ga,gls,og,pf,pa):null;
 }
 function coopAutoH2hMom(m,meTi){
   if(!m||!m.h2h||meTi==null||m.opp==null)return null;
@@ -1283,7 +1269,9 @@ function coopPlayView(S){
         const remOp=S.role==="host"?gPend.length:hPend.length;
         myCard=`<div class="pgmath ok" style="margin:8px 0">✓ Tüm grup/lig maçlarını tamamladın · ${esc(S.role==="host"?S.gName:S.hName)} için kalan ${remOp} maç bekleniyor.</div>`;
       }else if(inGrpStage&&simW>=totW&&!lg){
-        myCard=`<div class="pgmath ok" style="margin:8px 0">✓ Tüm lig/grup maçları tamamlandı · Eleme ağacı kurulmaya hazır!</div>`;
+        myCard=S.role==="host"
+          ? `<div class="pgmath ok" style="margin:8px 0"><span>✓ Tüm lig/grup maçları tamamlandı · Eleme ağacı kurulmaya hazır!</span></div>`
+          : `<div class="pgmath info" style="margin:8px 0"><span>✓ Tüm lig/grup maçları tamamlandı · Kurucunun (${esc(S.hName)}) eleme ağacını kurması bekleniyor.</span></div><button class="btn pset-sec" data-a="cpref" style="width:100%;margin-bottom:6px">↻ Durumu Yenile</button>`;
       }else if(coopIsEliminated(S,S.myTi)){
         myCard=`<div class="pgmath warn" style="margin:8px 0">${uiIco("trophy")}<span>Elendin · Turnuva devam ediyor, kalan turları Fikstür’den takip edebilirsin.</span></div>`;
       }else{
@@ -1743,11 +1731,12 @@ async function handleCoopActionInner(a,dv,dk,i,b){
 
   if(a==="cptpl"&&S.role==="host"&&S.t.phase==="setup"){
     const p=COOP_TPL[+dv],wasUcl=isUcl(S.t.cfg);if(!p)return true;
+    const wasPre=typeof CUP_PRESETS!=="undefined"&&typeof cupPresetOn==="function"&&CUP_PRESETS.some(x=>cupPresetOn(S.t.cfg,S.t.rl,x));
     S.t.cfg=cp(p[2]);fixC(S.t.cfg);
     if(isUcl(S.t.cfg)){
-      S.t.rl=Object.assign(cp(DEFR),{rg:"eu",cap:4,gcap:1});
-    }else if(wasUcl){
-      S.t.rl.cap=0;if(S.t.rl.rg==="eu")S.t.rl.rg="all";
+      S.t.rl=Object.assign(cp(DEFR),{rg:"eu",cap:4,gcap:1,dm:"pot"});
+    }else if(wasPre||wasUcl){
+      S.t.rl=cp(DEFR);
     }
     await coopPushHost(S.host);render();return true;
   }
@@ -1862,24 +1851,28 @@ async function handleCoopActionInner(a,dv,dk,i,b){
     if(!lm){ntf("Bu maç geri alınamaz (hafta/tur simüle edilmiş).");render();return true}
     const origTid=S.t.id;
     ask(`Son girdiğin maç (${lm.on} ${lm.gf}–${lm.ga}) silinsin mi?`,async()=>{
-      await coopPull(true);
-      const S2=coopState();
-      if(!S2||S2.t.id!==origTid||S2.t.phase!=="play")return "Turnuva durumu değişti, maç silinemedi";
-      const curLm=coopCanUndoLast(S2);
-      if(!curLm||curLm.id!==lm.id)return "Bu maç artık geri alınamaz (sonraki aşama başlamış)";
-      let ok=false;
-      if(S2.role==="host"){
-        S2.t.hMt=(S2.t.hMt||[]).filter(x=>x.id!==lm.id);
-        S2.hMt=S2.t.hMt;
-        coopSyncKo(S2);
-        ok=await coopPushHost(S2.host);
-      }else{
-        const gMtClean=((S2.guest&&S2.guest.tourId===S2.t.id&&Array.isArray(S2.guest.mt))?S2.guest.mt:[]).filter(x=>x.id!==lm.id);
-        ok=await coopPushGuest({v:1,ut:Date.now(),name:S2.cfg.name||S2.gName,tourId:S2.t.id,ti:S2.gTi,mt:gMtClean});
-      }
-      if(!ok)return st.cpErr||"Sunucuya ulaşılamadı, maç silinemedi";
-      await coopPull(true);
-      return "Son maç silindi";
+      if(st.cpLock)return;
+      st.cpLock=true;
+      try{
+        await coopPull(true);
+        const S2=coopState();
+        if(!S2||S2.t.id!==origTid||S2.t.phase!=="play")return "Turnuva durumu değişti, maç silinemedi";
+        const curLm=coopCanUndoLast(S2);
+        if(!curLm||curLm.id!==lm.id)return "Bu maç artık geri alınamaz (sonraki aşama başlamış)";
+        let ok=false;
+        if(S2.role==="host"){
+          S2.t.hMt=(S2.t.hMt||[]).filter(x=>x.id!==lm.id);
+          S2.hMt=S2.t.hMt;
+          coopSyncKo(S2);
+          ok=await coopPushHost(S2.host);
+        }else{
+          const gMtClean=((S2.guest&&S2.guest.tourId===S2.t.id&&Array.isArray(S2.guest.mt))?S2.guest.mt:[]).filter(x=>x.id!==lm.id);
+          ok=await coopPushGuest({v:1,ut:Date.now(),name:S2.cfg.name||S2.gName,tourId:S2.t.id,ti:S2.gTi,mt:gMtClean});
+        }
+        if(!ok)return st.cpErr||"Sunucuya ulaşılamadı, maç silinemedi";
+        await coopPull(true);
+        return "Son maç silindi";
+      }finally{st.cpLock=false}
     });if(st.ask)st.ask.coop=1;
     render();return true;
   }
