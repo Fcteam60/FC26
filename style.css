@@ -5752,3 +5752,50 @@ header .btn.cp-hdref.spin svg{animation:dlSpin .85s linear infinite}
 .su-mrow .stabs.seg3{width:auto;flex:1;min-width:0;max-width:236px}
 .su-mrow .stabs.seg3 .chip{font-size:11.5px;padding:4px 2px}
 .pgmath>span{min-width:0}
+
+/* ==========================================================================
+   v24.10: Hazır Kupa Şablonları (Konferans · Avrupa · Şampiyonlar Ligi) & 2P Şerit Cilası
+   ========================================================================== */
+.su-cpblk{margin-top:12px;padding-top:11px;border-top:1px solid var(--bd)}
+.su-cphd{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px}
+.su-cphd small{font-size:11px;color:var(--mut);font-weight:500}
+.su-cplist{display:grid;gap:7px}
+.su-cpcard{
+  --cpc:var(--ac);
+  display:flex;align-items:center;gap:10px;width:100%;min-height:54px;padding:9px 11px;
+  border-radius:14px;border:1px solid var(--gbd);background:rgba(127,150,140,.07);
+  color:var(--tx);font:inherit;text-align:left;cursor:pointer;
+  transition:border-color .16s ease,background .16s ease,transform .1s ease;
+}
+.su-cpcard:active{transform:scale(.99)}
+.su-cpcard.emr{--cpc:#10b981}
+.su-cpcard.org{--cpc:#f97316}
+.su-cpcard.sky{--cpc:#38bdf8}
+.su-cpcard.on{
+  background:radial-gradient(95% 130% at 0% 50%,color-mix(in srgb,var(--cpc) 22%,transparent),transparent 68%),color-mix(in srgb,var(--cpc) 10%,var(--card))!important;
+  color:var(--tx)!important;
+  border-color:color-mix(in srgb,var(--cpc) 58%,var(--gbd))!important;
+  box-shadow:0 4px 14px color-mix(in srgb,var(--cpc) 18%,transparent),inset 0 1px 0 rgba(255,255,255,.12);
+}
+.su-cpic{
+  flex:0 0 auto;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+  color:var(--cpc);background:color-mix(in srgb,var(--cpc) 14%,transparent);
+  border:1px solid color-mix(in srgb,var(--cpc) 34%,transparent);
+}
+.su-cpic .ui-ic{width:17px;height:17px}
+.su-cpcard.on .su-cpic{
+  background:color-mix(in srgb,var(--cpc) 22%,transparent);
+  border-color:color-mix(in srgb,var(--cpc) 55%,transparent);
+}
+.su-cptxt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.su-cptxt b{font-family:var(--num);font-size:17px;line-height:1.1;color:var(--tx)}
+.su-cptxt small{font-size:11px;line-height:1.25;color:var(--mut)}
+.su-cpr{flex:0 0 auto;display:inline-flex;align-items:center}
+.su-cparr{font-size:18px;line-height:1;color:var(--mut);opacity:.65;padding:0 2px}
+:root[data-theme="light"] .su-cpcard.sky{--cpc:#0284c7}
+:root[data-theme="light"] .su-cpcard.org{--cpc:#ea580c}
+@media(prefers-color-scheme:light){
+  :root:not([data-theme="dark"]) .su-cpcard.sky{--cpc:#0284c7}
+  :root:not([data-theme="dark"]) .su-cpcard.org{--cpc:#ea580c}
+}
+.ptbl .gtbl.row.tb.pt-r.cp-rh::before{background:linear-gradient(180deg,#f8e08a,#d4a017)!important}

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — coop.js · v24.9
+   FC 27 Grup Ligi — coop.js · v24.10
    İzole 2 Kişilik Online Ortak Turnuva (Co-op Oda) Modülü
    - Tek kişilik IndexedDB / JSON yedeğe hiç dokunmaz
    - Çakışmasız 2 düğümlü Firebase mimarisi (/rooms/{room}/host.json & guest.json)
@@ -935,42 +935,40 @@ function coopSetupView(S){
     extra+=`<div class="su-mgrid">${mrows.join("")}</div>`;
   }
 
-  // Gelişmiş Kurallar (GEN, Ülke, Sınırlar, Seçim & Kura — Şampiyonlar Ligi hariç!)
-  let advFold="";
-  if(!uclMode){
-    const cc=nob();T.forEach(tm=>{if(rgOk(r,tm))cc[tm.c]=(cc[tm.c]||0)+1});
-    const cs=Object.keys(cc).sort((a,b)=>cc[b]-cc[a]||TR_CMP(CN[a][0],CN[b][0]));
-    const sc=[[0,"Yok"],70,72,74,75,76,77,78,80,82,84,86,88].map(v=>Array.isArray(v)?v:[v,v+"+"]);
-    const gmn=[[0,"Yok"]].concat(rg(15).map(i=>[71+i,71+i])),gmx=[[99,"Yok"]].concat(rg(15).map(i=>[85-i,85-i]));
-    const capO=[[0,"Sınırsız"]].concat([1,2,3,4,5,6,8,10,12].map(v=>[v,"En fazla "+v]));
-    const gcO=c.gs?[[0,"Sınırsız"],[1,"En fazla 1"],[2,"En fazla 2"],[3,"En fazla 3"],[4,"En fazla 4"],[5,"En fazla 5"]]:[[0,"Sınırsız"],[1,"Aynı ülke eşleşmesin"]];
-    const isDefRl=r.rg==="all"&&!(r.xc&&r.xc.length)&&!r.gmin&&r.gmax===99&&!r.amin&&!r.mmin&&!r.dmin&&!r.cap&&(lgMode||r.gcap===DEFR.gcap)&&r.pick==="top"&&(lgMode||r.dm==="pot");
-    const actC=cs.length-(r.xc||[]).filter(k=>cs.includes(k)).length;
-    const limCnt=[r.gmin>0,r.gmax<99,r.amin>0,r.mmin>0,r.dmin>0,r.cap>0,!lgMode&&r.gcap!==DEFR.gcap].filter(Boolean).length;
-    const advBody=`<div class="pset-lbl">Takım Bölgesi</div>`+
-      `<div class="stabs seg3" style="margin-bottom:11px">${Object.keys(RGN).map(k=>segBtn("cprl","rg",k,k==="all"?"Tümü":k==="eu"?"Avrupa":"Avrupa Dışı",r.rg===k)).join("")}</div>`+
-      `<details class="xfold su-ctfold"${r.xc.length?" open":""}><summary><span class="ui-lbl">${uiIco("sliders")}<span>Ülke Filtresi</span></span><span class="xfpill${r.xc.length?" org":""}">${actC}/${cs.length}</span></summary><div class="xfb">`+
-        `<div class="su-cthd"><span class="pset-lbl" style="margin:0">Ülkeler <small style="text-transform:none;font-weight:400">(dokunarak çıkar / ekle)</small></span>${r.xc.length?`<button class="sf-clr" data-a="cpxcall">Hepsini seç</button>`:""}</div>`+
-        `<div class="su-cgrid">${cs.map(k=>`<button class="su-cchip${!r.xc.includes(k)?" on":""}" data-a="cpxc" data-v="${k}">${fl(k)}<span>${CN[k][0]}</span><em>${cc[k]}</em></button>`).join("")}</div>`+
-      `</div></details>`+
-      `<details class="xfold su-limfold"${limCnt?" open":""}><summary><span class="ui-lbl">${uiIco("sliders")}<span>Güç (GEN) ve Ülke Sınırları</span></span><span class="xfpill ${limCnt?"gold":"mut"}">${limCnt?limCnt+" sınır aktif":"Varsayılan"}</span></summary><div class="su-fgrid" style="margin-top:10px">`+
-        `<div class="su-fld"><label>Genel En Az</label>${sel("cprs","gmin",gmn,r.gmin)}</div>`+
-        `<div class="su-fld"><label>Genel En Çok</label>${sel("cprs","gmax",gmx,r.gmax)}</div>`+
-        `<div class="su-fld"><label>Hücum</label>${sel("cprs","amin",sc,r.amin)}</div>`+
-        `<div class="su-fld"><label>Orta Saha</label>${sel("cprs","mmin",sc,r.mmin)}</div>`+
-        `<div class="su-fld"><label>Defans</label>${sel("cprs","dmin",sc,r.dmin)}</div>`+
-        `<div class="su-fld"><label>Ülke Limiti (Turnuva)</label>${sel("cprs","cap",capO,r.cap)}</div>`+
-        (!lgMode?`<div class="su-fld full"><label>${c.gs?"Aynı Grupta Aynı Ülkeden":"İlk Turda Aynı Ülke"}</label>${sel("cprs","gcap",gcO,r.gcap)}</div>`:"")+
-      `</div></details>`+
-      `<div class="su-mgrid" style="margin-top:11px">`+
-        `<div class="su-mrow"><span>Katılımcı Seçimi</span><div class="stabs seg2">${segBtn("cprl","pick","top","En Güçlü",r.pick==="top")}${segBtn("cprl","pick","rnd","Rastgele",r.pick==="rnd")}</div></div>`+
-        (!lgMode?`<div class="su-mrow"><span>Kura Yöntemi</span><div class="stabs seg2">${segBtn("cprl","dm","pot","Torbalı",r.dm==="pot")}${segBtn("cprl","dm","rnd","Rastgele",r.dm==="rnd")}</div></div>`:"")+
-      `</div>`+
-      (!isDefRl?`<button class="btn pset-sec" data-a="cprlrst" style="width:100%;margin-top:10px">Kuralları Varsayılana Sıfırla</button>`:"");
-    advFold=`<div class="pfold ${isDefRl?"sky":"gold"}${st.cpAdv?" open":""}" style="margin:0 0 10px"><button class="acbtn${st.cpAdv?" open":""}" data-a="cpadv" aria-expanded="${!!st.cpAdv}"><span class="aci">${UICO.sliders}</span><span class="act"><b>Turnuva Detay Ayarları (GEN & Ülke)</b><small>${isDefRl?"Varsayılan havuz · dilediğin gibi özelleştir":"Özel GEN, bölge veya ülke kuralları aktif"}</small></span><span class="acr"><span class="xfpill ${isDefRl?"sky":"gold"}">${isDefRl?"Varsayılan":"Özel"}</span><span class="acc" aria-hidden="true">${UICO.chev}</span></span></button>${st.cpAdv?`<div class="acbody">${advBody}</div>`:""}</div>`;
-  }
+  // Gelişmiş Kurallar (GEN, Ülke, Sınırlar, Seçim & Kura — tüm formatlarda aktif)
+  const cc=nob();T.forEach(tm=>{if(rgOk(r,tm))cc[tm.c]=(cc[tm.c]||0)+1});
+  const cs=Object.keys(cc).sort((a,b)=>cc[b]-cc[a]||TR_CMP(CN[a][0],CN[b][0]));
+  const sc=[[0,"Yok"],70,72,74,75,76,77,78,80,82,84,86,88].map(v=>Array.isArray(v)?v:[v,v+"+"]);
+  const gmn=[[0,"Yok"]].concat(rg(15).map(i=>[71+i,71+i])),gmx=[[99,"Yok"]].concat(rg(15).map(i=>[85-i,85-i]));
+  const capO=[[0,"Sınırsız"]].concat([1,2,3,4,5,6,8,10,12].map(v=>[v,"En fazla "+v]));
+  const gcO=uclMode?[[1,"UEFA Ülke Koruması (Aynı ülke yok)"],[0,"Sınırsız"]]:c.gs?[[0,"Sınırsız"],[1,"En fazla 1"],[2,"En fazla 2"],[3,"En fazla 3"],[4,"En fazla 4"],[5,"En fazla 5"]]:[[0,"Sınırsız"],[1,"Aynı ülke eşleşmesin"]];
+  const isDefRl=r.rg==="all"&&!(r.xc&&r.xc.length)&&!r.gmin&&r.gmax===99&&!r.amin&&!r.mmin&&!r.dmin&&!r.cap&&(lgMode||r.gcap===DEFR.gcap)&&r.pick==="top"&&(lgMode||r.dm==="pot");
+  const actC=cs.length-(r.xc||[]).filter(k=>cs.includes(k)).length;
+  const limCnt=[r.gmin>0,r.gmax<99,r.amin>0,r.mmin>0,r.dmin>0,r.cap>0,!lgMode&&r.gcap!==DEFR.gcap].filter(Boolean).length;
+  const advBody=`<div class="pset-lbl">Takım Bölgesi</div>`+
+    `<div class="stabs seg3" style="margin-bottom:11px">${Object.keys(RGN).map(k=>segBtn("cprl","rg",k,k==="all"?"Tümü":k==="eu"?"Avrupa":"Avrupa Dışı",r.rg===k)).join("")}</div>`+
+    `<details class="xfold su-ctfold"${r.xc.length?" open":""}><summary><span class="ui-lbl">${uiIco("sliders")}<span>Ülke Filtresi</span></span><span class="xfpill${r.xc.length?" org":""}">${actC}/${cs.length}</span></summary><div class="xfb">`+
+      `<div class="su-cthd"><span class="pset-lbl" style="margin:0">Ülkeler <small style="text-transform:none;font-weight:400">(dokunarak çıkar / ekle)</small></span>${r.xc.length?`<button class="sf-clr" data-a="cpxcall">Hepsini seç</button>`:""}</div>`+
+      `<div class="su-cgrid">${cs.map(k=>`<button class="su-cchip${!r.xc.includes(k)?" on":""}" data-a="cpxc" data-v="${k}">${fl(k)}<span>${CN[k][0]}</span><em>${cc[k]}</em></button>`).join("")}</div>`+
+    `</div></details>`+
+    `<details class="xfold su-limfold"${limCnt?" open":""}><summary><span class="ui-lbl">${uiIco("sliders")}<span>Güç (GEN) ve Ülke Sınırları</span></span><span class="xfpill ${limCnt?"gold":"mut"}">${limCnt?limCnt+" sınır aktif":"Varsayılan"}</span></summary><div class="su-fgrid" style="margin-top:10px">`+
+      `<div class="su-fld"><label>Genel En Az</label>${sel("cprs","gmin",gmn,r.gmin)}</div>`+
+      `<div class="su-fld"><label>Genel En Çok</label>${sel("cprs","gmax",gmx,r.gmax)}</div>`+
+      `<div class="su-fld"><label>Hücum</label>${sel("cprs","amin",sc,r.amin)}</div>`+
+      `<div class="su-fld"><label>Orta Saha</label>${sel("cprs","mmin",sc,r.mmin)}</div>`+
+      `<div class="su-fld"><label>Defans</label>${sel("cprs","dmin",sc,r.dmin)}</div>`+
+      `<div class="su-fld"><label>Ülke Limiti (Turnuva)</label>${sel("cprs","cap",capO,r.cap)}</div>`+
+      (!lgMode?`<div class="su-fld full"><label>${uclMode?"Lig Aşaması Ülke Koruması":c.gs?"Aynı Grupta Aynı Ülkeden":"İlk Turda Aynı Ülke"}</label>${sel("cprs","gcap",gcO,r.gcap)}</div>`:"")+
+    `</div></details>`+
+    `<div class="su-mgrid" style="margin-top:11px">`+
+      `<div class="su-mrow"><span>Katılımcı Seçimi</span><div class="stabs seg2">${segBtn("cprl","pick","top","En Güçlü",r.pick==="top")}${segBtn("cprl","pick","rnd","Rastgele",r.pick==="rnd")}</div></div>`+
+      (!lgMode?`<div class="su-mrow"><span>Kura Yöntemi</span><div class="stabs seg2">${segBtn("cprl","dm","pot","Torbalı",r.dm==="pot")}${segBtn("cprl","dm","rnd","Rastgele",r.dm==="rnd")}</div></div>`:"")+
+    `</div>`+
+    (!isDefRl?`<button class="btn pset-sec" data-a="cprlrst" style="width:100%;margin-top:10px">Kuralları Varsayılana Sıfırla</button>`:"");
+  const advFold=`<div class="pfold ${isDefRl?"sky":"gold"}${st.cpAdv?" open":""}" style="margin:0 0 10px"><button class="acbtn${st.cpAdv?" open":""}" data-a="cpadv" aria-expanded="${!!st.cpAdv}"><span class="aci">${UICO.sliders}</span><span class="act"><b>Turnuva Detay Ayarları (GEN & Ülke)</b><small>${isDefRl?"Varsayılan havuz · dilediğin gibi özelleştir":"Özel GEN, bölge veya ülke kuralları aktif"}</small></span><span class="acr"><span class="xfpill ${isDefRl?"sky":"gold"}">${isDefRl?"Varsayılan":"Özel"}</span><span class="acc" aria-hidden="true">${UICO.chev}</span></span></button>${st.cpAdv?`<div class="acbody">${advBody}</div>`:""}</div>`;
 
-  const card1=psetCard("sliders","emr",`${esc(t.name)} · Kurulum`,"4 formattan birini seç ve arkadaşınla takım seçimine geç",`${c.N} takım`,tplHtml+extra);
+  const cupGrid=typeof cupPresetsHtml==="function"?cupPresetsHtml(c,r,"cpcup"):"";
+  const card1=psetCard("sliders","emr",`${esc(t.name)} · Kurulum`,"Format veya hazır kupa şablonu seç",`${c.N} takım`,tplHtml+cupGrid+extra);
   const poolNote=ok
     ? `<div class="pgmath ok" style="margin:0 0 10px"><span>${fmt(c)} · Uygun: <b>${M}</b> · Havuz: <b>${A}/${c.N}</b> kulüp</span></div>`
     : `<div class="pgmath dead" style="margin:0 0 10px"><span>Yetersiz havuz: <b>${A}/${c.N}</b> kulüp (Uygun: ${M}). GEN veya ülke sınırını gevşet.</span></div>`;
@@ -1106,7 +1104,7 @@ function coopMatchLogCard(S){
     if(m.h2h)chips.push(`<span class="cp-mchip h2h">H2H</span>`);
     if(momTxt)chips.push(`<span class="cp-mchip mom">★ ${esc(momTxt)}${momOpp?` (${esc(T[m.opp].n)})`:""}</span>`);
     if(m.stats){
-      if(m.stats.myXg!=null&&m.stats.oppXg!=null)chips.push(`<span class="cp-mchip">xG ${fx(m.stats.myXg)}–${fx(m.stats.oppXg)}</span>`);
+      if(m.stats.myXg!=null&&m.stats.oppXg!=null){const f2=v=>(+v).toFixed(2).replace(".",",");chips.push(`<span class="cp-mchip">xG ${f2(m.stats.myXg)}–${f2(m.stats.oppXg)}</span>`)}
       if(m.stats.myPos!=null)chips.push(`<span class="cp-mchip">%${Math.round(m.stats.myPos)} Top</span>`);
       if(m.stats.myPass!=null)chips.push(`<span class="cp-mchip">%${Math.round(m.stats.myPass)} Pas</span>`);
       if(m.stats.myShots!=null)chips.push(`<span class="cp-mchip">${m.stats.myShots} Şut</span>`);
@@ -1636,7 +1634,7 @@ async function coopSpin(S){
 async function coopSetRuleNum(k,val){
   if(st.cpLock)return;
   const S=coopState();
-  if(!S||S.role!=="host"||S.t.phase!=="setup"||isUcl(S.t.cfg))return;
+  if(!S||S.role!=="host"||S.t.phase!=="setup")return;
   st.cpLock=true;
   try{
     S.t.rl[k]=+val;
@@ -1648,7 +1646,7 @@ async function coopSetRuleNum(k,val){
 }
 
 /* ---------- CO-OP ACTION HANDLER (All data-a="cp...") ---------- */
-const COOP_NET_ACTS=new Set(["cpcreate","cpjoin","cptpl","cpcfg","cprl","cpxc","cpxcall","cprlrst","cpsimm","cplock","cpbacksetup","cppick","cpdraw","cpmsave","cpsimw","cpbuildko","cpsimko","cpsimall","cpfin","cpnew"]);
+const COOP_NET_ACTS=new Set(["cpcreate","cpjoin","cptpl","cpcup","cpcfg","cprl","cpxc","cpxcall","cprlrst","cpsimm","cplock","cpbacksetup","cppick","cpdraw","cpmsave","cpsimw","cpbuildko","cpsimko","cpsimall","cpfin","cpnew"]);
 async function handleCoopAction(a,dv,dk,i,b){
   if(COOP_NET_ACTS.has(a)){
     if(st.cpLock)return true;
@@ -1748,26 +1746,33 @@ async function handleCoopActionInner(a,dv,dk,i,b){
     S.t.cfg=cp(p[2]);fixC(S.t.cfg);
     if(isUcl(S.t.cfg)){
       S.t.rl=Object.assign(cp(DEFR),{rg:"eu",cap:4,gcap:1});
-      st.cpAdv=false;
     }else if(wasUcl){
       S.t.rl.cap=0;if(S.t.rl.rg==="eu")S.t.rl.rg="all";
     }
     await coopPushHost(S.host);render();return true;
   }
+  if(a==="cpcup"&&S.role==="host"&&S.t.phase==="setup"){
+    const p=typeof CUP_PRESETS!=="undefined"?CUP_PRESETS[+dv]:null;if(!p)return true;
+    S.t.cfg=cp(p.cfg);fixC(S.t.cfg);
+    S.t.rl=Object.assign(cp(DEFR),cp(p.rl));
+    const ok=await coopPushHost(S.host);
+    if(ok)ntf(p.name+" şablonu uygulandı");
+    render();return true;
+  }
   if(a==="cpcfg"&&S.role==="host"&&S.t.phase==="setup"){
     S.t.cfg[dk]=+dv;if(isLg(S.t.cfg)&&dk==="N")S.t.cfg.gs=S.t.cfg.N;fixC(S.t.cfg);
     await coopPushHost(S.host);render();return true;
   }
-  if(a==="cprl"&&S.role==="host"&&S.t.phase==="setup"&&!isUcl(S.t.cfg)){
+  if(a==="cprl"&&S.role==="host"&&S.t.phase==="setup"){
     S.t.rl[dk]=dv;
     await coopPushHost(S.host);render();return true;
   }
-  if(a==="cpxc"&&S.role==="host"&&S.t.phase==="setup"&&!isUcl(S.t.cfg)){
+  if(a==="cpxc"&&S.role==="host"&&S.t.phase==="setup"){
     const x=S.t.rl.xc||(S.t.rl.xc=[]),j=x.indexOf(dv);
     if(j<0)x.push(dv);else x.splice(j,1);
     await coopPushHost(S.host);render();return true;
   }
-  if(a==="cpxcall"&&S.role==="host"&&S.t.phase==="setup"&&!isUcl(S.t.cfg)){
+  if(a==="cpxcall"&&S.role==="host"&&S.t.phase==="setup"){
     S.t.rl.xc=[];
     await coopPushHost(S.host);render();return true;
   }
@@ -1783,7 +1788,7 @@ async function handleCoopActionInner(a,dv,dk,i,b){
     }
     render();return true;
   }
-  if(a==="cprlrst"&&S.role==="host"&&S.t.phase==="setup"&&!isUcl(S.t.cfg)){
+  if(a==="cprlrst"&&S.role==="host"&&S.t.phase==="setup"){
     S.t.rl=cp(DEFR);
     const ok=await coopPushHost(S.host);if(ok)ntf("Kurallar varsayılana sıfırlandı");render();return true;
   }

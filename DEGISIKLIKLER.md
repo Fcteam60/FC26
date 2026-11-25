@@ -1,3 +1,11 @@
+## v24.10 (2026-11-25) — 3 Hazır Kupa Şablonu (Konferans · Avrupa · Şampiyonlar Ligi) & 2P İnce Cilalar
+- **Hazır Kupa Şablonları (`app.js`, `coop.js`, `style.css`):** Hem Bireysel hem 2P kurulum ekranında 6 format kartının hemen altına tek dokunuşla format + GEN + ülke kurallarını birlikte uygulayan 3 hazır kupa şablonu eklendi:
+  - **Konferans Ligi:** 32 takım · 4×8 grup · gruptan 2 çıkar · Grup tek maç / Eleme çift maç / Final tek maç · Tüm bölgeler · En çok 80 GEN · Ülke limiti 8 · Aynı grupta 2 · Rastgele seçim · Torbalı kura (68/32 kulüp).
+  - **Avrupa Ligi:** 32 takım · 4×8 grup · gruptan 2 çıkar · Grup tek maç / Eleme çift maç / Final tek maç · Tüm bölgeler · En az 78 GEN · Ülke limiti 8 · Aynı grupta 2 · Rastgele seçim · Torbalı kura (32/32 kulüp).
+  - **Şampiyonlar Ligi:** 36 takım UEFA formatı · Play-Off & Eleme çift maç / Final tek maç · Sadece Avrupa · En az 77 GEN · Ülke limiti 10 · Lig aşaması ülke koruması sınırsız · En güçlü seçim · Torbalı kura (46/36 kulüp).
+- **2P Şampiyonlar Ligi Detay Kuralları (`coop.js`):** 2P kurulumunda `Turnuva Detay Ayarları (GEN & Ülke)` artık Şampiyonlar Ligi formatında da açık ve düzenlenebilir.
+- **Bireysel Format Kartı & 2P İnce Cilalar (`app.js`, `coop.js`, `style.css`):** Bireysel `TPL` etiketleri kırpılmayacak biçimde kısaltıldı (`Şamp. Ligi`, `Puan Ligi`); `Ortak Maç Günlüğü` xG çipi 2 ondalıklı (`2,05`) biçime geçirildi ve 2P puan tablosunda Kurucu satırının sol dikey şeridi altın renge sabitlendi.
+
 ## v24.9 (2026-11-25) — 2P Kurulum Görsel Düzeltmeleri & UX Cilaları
 - **Kurulum Onay Bandı Flex Dağılması Düzeltildi (`coop.js`, `style.css`):** `Kurulumu Onayla` içindeki yeşil/kırmızı havuz bilgi bandı ve Misafir H2H bilgilendirme şeridi tek `<span>` içine sarılarak `.pgmath` flex sütun bölünmesi giderildi.
 - **`YZ Simülasyon` Orta Düğme Kırpılması Düzeltildi (`style.css`):** `.su-mrow .stabs.seg3` esnek genişliğe (`flex: 1; max-width: 236px`) alınarak `Gerçekçi` seçeneğinin `Gerç...` şeklinde kesilmesi giderildi.
