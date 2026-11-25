@@ -1,3 +1,13 @@
+## v24.7 (2026-11-25) — 2P Tam Turnuva İstatistikleri & Kıyas 2’li Geçiş
+- **Kıyas Sekmesinde 2’li Geçiş (`coop.js`, `style.css`):** Üstteki 5’li 2P sekme çubuğu sıkıştırılmadan **`Kıyas`** sekmesinin tepesine **`Menajer Kıyası | Turnuva İstat.`** geçişi eklendi.
+- **2P Tam Turnuva İstatistikleri (`coop.js` `coopTourneyStatsView`):** Bireysel moddaki tüm istatistik kartları Kurucu (`★` altın) ve Misafir (`◆` gökyüzü mavisi) vurgularıyla 2P’ye taşındı: **En İyi 11 (TOTS)** + PNG paylaşımı, taçlı altın podyumlu **Turnuva MVP’si**, **Gol Krallığı** (ilk 10), **Asist Krallığı** (ilk 10), **Hat-Trick Yapanlar**, **En Golcü / En Az Gol Yiyen / En Çok Kazanan / En Çok Temiz Kasa / En İyi Averaj Takımlar** ve **Turnuva Özeti & Rekor Skorlar** (tüm oyuncu ve kulüp satırları tıklanabilir).
+- **Kulüp Yıldızları Kıyası & MVP Formülü Eşitlemesi (`coop.js` `coopClubStarsCard`, `coopTourneyStats`):** `Menajer Kıyası` sekmesine iki takımın en golcü, asist lideri ve takım MVP’sini yan yana gösteren tıklanabilir kart eklendi; 2P MVP puan formülü bireysel mod ve oyuncu detay modalıyla (`3×G + 2×A + 2×MOTM`) birebir eşitlendi.
+
+## v24.6 (2026-11-25) — iOS PWA Arka Plan Düello Gönderim Ertelemesi (`Load failed` Hata Raporu Temizliği)
+- **`document.hidden` / `pagehide` Gönderim Ertelemesi (`duel.js`):** Ekran kilitlendiğinde veya uygulama arka plana alındığında `duelSchedulePush` ve sessiz `duelPush`/`duelPull`/`duelSyncNow` çağrıları ağ isteği başlatmak yerine gönderimi erteler (`st.duelPendingPush = true`), bekleyen zamanlayıcıları iptal eder.
+- **1,5 sn Ağ Kararlılık Gecikmesi (`duel.js` `duelRetryLater`):** Telefon uyandığında (`visibilitychange` ön plana dönüş) veya bağlantı geri geldiğinde (`online`) iOS’un ağ rotasını oturtması için 1.500 ms beklenerek bekleyen Düello özeti güvenle gönderilir.
+- **Uçuş Sırası Kesinti Filtresi (`duel.js` `duelHiddenSeq`):** Gönderim başladıktan sonra ekran kilitlenirse iOS Safari’nin ürettiği zararsız arka plan `Load failed` kesintileri hata günlüğünü (`elog`) kirletmez; gerçek ön plan/sunucu hataları kaydedilmeye devam eder.
+
 ## v24.5 (2026-11-25) — 2P Fikstür & Eleme Ağacında Golcüler, Asistler ve Maçın Adamı
 - **2P Grup/Lig Fikstürü Tam Detay (`coop.js` `coopFxUserDet`, `coopPlayView`):** Bireysel moddakiyle birebir aynı sütunlu golcü, asist `(parantez içinde)`, kendi kalesine (`KK`) ve **★ Maçın Adamı** bloğu (`fxSimDet` / `fxDet`) tüm 2P YZ ve oyuncu maçlarına eklendi; ev/deplasman sütun hizalaması ve galibiyet/mağlubiyet/beraberlik skor vurguları (`win`/`lose`, `.w`/`.d`/`.l`) aktif edildi.
 - **2P Eleme Ağacı Maç Detayları (`coop.js` `coopKoDet`):** Tamamlanan tüm eleme eşleşmelerinin altında çift ayak skorları, iki takımın golcü ve asist listesi ile Maçın Adamı (`.simdet`) gösterilir.

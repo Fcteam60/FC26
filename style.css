@@ -5692,3 +5692,58 @@ header .btn.cp-hdref.spin svg{animation:dlSpin .85s linear infinite}
 }
 :root[data-theme="light"] .cp-fxtag{color:#9a6700}
 @media(prefers-color-scheme:light){:root:not([data-theme="dark"]) .cp-fxtag{color:#9a6700}}
+
+/* ==========================================================================
+   v24.7: 2P Kıyas 2'li Geçiş, Turnuva İstatistikleri Satırları & Kulüp Yıldızları
+   ========================================================================== */
+.cp-tsrow{padding:6px 6px;border-radius:9px}
+.cp-tsrow.cp-lh{
+  background:rgba(240,194,75,.11);
+  box-shadow:inset 3px 0 0 var(--gold);
+}
+.cp-tsrow.cp-lg{
+  background:rgba(56,189,248,.11);
+  box-shadow:inset 3px 0 0 #38bdf8;
+}
+.cp-tsrow:active{opacity:.76}
+.cp-stgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.cp-stcol{
+  padding:9px;border-radius:13px;background:var(--hi);border:1px solid var(--gbd);
+  display:flex;flex-direction:column;gap:6px;min-width:0;
+}
+.cp-stcol.h{border-top:2px solid var(--gold)}
+.cp-stcol.cp-g{border-top:2px solid #38bdf8}
+.cp-sthd{display:flex;align-items:center;gap:6px;margin-bottom:2px;min-width:0}
+.cp-sthd>div{min-width:0}
+.cp-sthd b{display:block;font-size:12.5px;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cp-sthd small{display:block;font-size:10.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cp-stcol.h .cp-sthd b{color:var(--ok)}
+.cp-stcol.cp-g .cp-sthd b{color:#38bdf8}
+.cp-stitem{
+  width:100%;padding:7px 8px;border-radius:9px;border:1px solid var(--gbd);
+  background:var(--gcard);color:var(--tx);font:inherit;text-align:left;cursor:pointer;
+  display:flex;flex-direction:column;gap:1px;min-width:0;
+}
+.cp-stitem:active{transform:scale(.98)}
+.cp-stitem.emp{cursor:default;opacity:.55}
+.cp-stitem small{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--mut)}
+.cp-stitem b{font-size:12.5px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cp-stitem span{font-family:var(--num);font-size:12px;font-weight:700;color:var(--ac)}
+.cp-stcol.cp-g .cp-stitem span{color:#38bdf8}
+
+:root[data-theme="light"] .cp-tsrow.cp-lg{
+  background:rgba(2,132,199,.10);
+  box-shadow:inset 3px 0 0 #0284c7;
+}
+:root[data-theme="light"] .cp-stcol.cp-g{border-top-color:#0284c7}
+:root[data-theme="light"] .cp-stcol.cp-g .cp-sthd b,
+:root[data-theme="light"] .cp-stcol.cp-g .cp-stitem span{color:#0284c7}
+@media(prefers-color-scheme:light){
+  :root:not([data-theme="dark"]) .cp-tsrow.cp-lg{
+    background:rgba(2,132,199,.10);
+    box-shadow:inset 3px 0 0 #0284c7;
+  }
+  :root:not([data-theme="dark"]) .cp-stcol.cp-g{border-top-color:#0284c7}
+  :root:not([data-theme="dark"]) .cp-stcol.cp-g .cp-sthd b,
+  :root:not([data-theme="dark"]) .cp-stcol.cp-g .cp-stitem span{color:#0284c7}
+}

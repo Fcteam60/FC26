@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v24.5)
+   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v24.7)
    - Obsidian Broadcast Arena, 4 sekmeli Düello Stüdyosu (Genel · Sezonlar · Takımlar · DNA & xG)
    - Sıfır harici SDK: Firebase Realtime Database REST API + çevrimdışı IndexedDB uyumu
    - Canlı Sezon İnceleme (Puan Durumu, Maçlar, Eleme, Sezon DNA) & Yedek Manuel Kıyas Kodu
@@ -404,7 +404,9 @@ function duelPickMode(p,mode){
   return{car:normCar,xp:normXp,compat:true};
 }
 
-let duelPushTimer=null;
+let duelPushTimer=null,duelOnlineTimer=null,duelHiddenSeq=0;
+const duelIsHidden=()=>typeof document!=="undefined"&&document.hidden===true;
+const duelIsOffline=()=>typeof navigator!=="undefined"&&navigator.onLine===false;
 const DUEL_FETCH_MS=8000;
 async function duelFetch(url,opts,ms){
   const limit=ms||DUEL_FETCH_MS;
@@ -423,11 +425,16 @@ async function duelFetch(url,opts,ms){
 async function duelPush(silent){
   const cfg=duelLoadCfg();
   if(!cfg.room||cfg.room.length<6)return false;
-  if(typeof navigator!=="undefined"&&navigator.onLine===false){
+  if(silent&&duelIsHidden()){
+    st.duelPendingPush=true;
+    return false;
+  }
+  if(duelIsOffline()){
     st.duelPendingPush=true;
     if(!silent)st.duelPushErr="Çevrimdışısın — bağlantı gelince otomatik gönderilecek.";
     return false;
   }
+  const seq0=duelHiddenSeq;
   try{
     const payload=buildDuelSummary(true);
     if(!payload.name)payload.name="Menajer";
@@ -451,10 +458,11 @@ async function duelPush(silent){
     st.duelPushErr="";st.duelPendingPush=false;
     return true;
   }catch(e){
+    st.duelPendingPush=true;
+    if(silent&&(duelIsHidden()||seq0!==duelHiddenSeq||duelIsOffline()))return false;
     const msg="Verin sunucuya gönderilemedi ("+(e&&e.message?e.message:"ağ hatası")+").";
     st.duelPushErr=msg;
     if(!silent)st.duelErr=msg;
-    st.duelPendingPush=true;
     elog("duelPush",e&&e.message?e.message:String(e));
     return false;
   }
@@ -463,10 +471,12 @@ async function duelPush(silent){
 async function duelPull(silent){
   const cfg=duelLoadCfg();
   if(!cfg.room||cfg.room.length<6)return false;
-  if(typeof navigator!=="undefined"&&navigator.onLine===false){
+  if(silent&&duelIsHidden())return false;
+  if(duelIsOffline()){
     if(!silent)st.duelPullErr="Çevrimdışısın — son kaydedilen veriler gösteriliyor.";
     return false;
   }
+  const seq0=duelHiddenSeq;
   const url=`${duelBaseUrl(cfg)}/rooms/${encodeURIComponent(cfg.room)}.json?t=${Date.now()}`;
   try{
     const r=await duelFetch(url,{cache:"no-store"});
@@ -493,6 +503,7 @@ async function duelPull(silent){
     st.duelPullErr="";
     return true;
   }catch(e){
+    if(silent&&(duelIsHidden()||seq0!==duelHiddenSeq||duelIsOffline()))return false;
     const msg="Odadan veri çekilemedi ("+(e&&e.message?e.message:"ağ hatası")+").";
     st.duelPullErr=msg;
     if(!silent)st.duelErr=msg;
@@ -515,6 +526,7 @@ async function duelSyncNow(silent){
   if(st.duelBusy)return;
   const cfg=duelLoadCfg();
   if(!cfg.room||cfg.room.length<6)return;
+  if(silent&&duelIsHidden())return;
   if(silent&&Date.now()-(st.duelLastAuto||0)<10000)return;
   st.duelBusy=true;
   st.duelLastAuto=Date.now();
@@ -536,8 +548,26 @@ async function duelSyncNow(silent){
 function duelSchedulePush(){
   const cfg=duelLoadCfg();
   if(!cfg.room||cfg.room.length<6||cfg.auto===false)return;
-  if(duelPushTimer)clearTimeout(duelPushTimer);
-  duelPushTimer=setTimeout(()=>{duelPush(true)},2000);
+  if(duelPushTimer){clearTimeout(duelPushTimer);duelPushTimer=null}
+  if(duelIsHidden()){st.duelPendingPush=true;return}
+  duelPushTimer=setTimeout(()=>{
+    duelPushTimer=null;
+    if(duelIsHidden()){st.duelPendingPush=true;return}
+    duelPush(true);
+  },2000);
+}
+function duelRetryLater(ms,onlyPending){
+  if(duelOnlineTimer){clearTimeout(duelOnlineTimer);duelOnlineTimer=null}
+  duelOnlineTimer=setTimeout(()=>{
+    duelOnlineTimer=null;
+    if(duelIsHidden()||duelIsOffline())return;
+    const cfg=duelLoadCfg();
+    if(!cfg.room||cfg.room.length<6)return;
+    if(onlyPending&&!st.duelPendingPush)return;
+    if(st.duelPendingPush||cfg.auto!==false){
+      duelPush(true).then(ok=>{if(ok&&st.tab==5&&st.ht=="d")duelPull(true).then(()=>render())});
+    }
+  },ms||1500);
 }
 
 // Obsidian Broadcast Çift Renkli Taktiksel DNA Radarı
@@ -1433,10 +1463,17 @@ async function handleDuelAction(a,dv){
 }
 
 if(typeof window!=="undefined"&&window.addEventListener){
-  window.addEventListener("online",()=>{
-    const cfg=duelLoadCfg();
-    if(cfg.room&&cfg.room.length>=6&&(st.duelPendingPush||cfg.auto!==false)){
-      duelPush(true).then(ok=>{if(ok&&st.tab==5&&st.ht=="d")duelPull(true).then(()=>render())});
-    }
-  });
+  const duelPauseBg=()=>{
+    duelHiddenSeq++;
+    if(duelPushTimer){clearTimeout(duelPushTimer);duelPushTimer=null;st.duelPendingPush=true}
+    if(duelOnlineTimer){clearTimeout(duelOnlineTimer);duelOnlineTimer=null}
+  };
+  window.addEventListener("online",()=>{duelRetryLater(1500,false)});
+  window.addEventListener("pagehide",duelPauseBg);
+  if(typeof document!=="undefined"&&document.addEventListener){
+    document.addEventListener("visibilitychange",()=>{
+      if(document.hidden)duelPauseBg();
+      else if(st.duelPendingPush)duelRetryLater(1500,true);
+    });
+  }
 }
