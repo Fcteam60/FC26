@@ -299,8 +299,9 @@ button{transition:transform .08s}button:active{transform:scale(.96)}
 .dbox.tisheet{position:relative;max-width:560px;max-height:88vh;overflow:auto;border-radius:18px 18px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px))}
 .tih{display:flex;align-items:center;gap:10px}
 .tim{flex:1;min-width:0;display:flex;flex-direction:column}
-.tim b{font-family:var(--num);font-size:22px;line-height:1.1;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tim span{font-size:13px;color:var(--mut);margin-top:2px}
+.tim>b{font-family:var(--num);font-size:22px;line-height:1.1;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tim span{font-size:13px;color:var(--mut);margin-top:2px;line-height:1.3}
+.tim span b{font-weight:700;color:var(--ac)}
 .tmo2{text-align:center;line-height:.9}.tmo2 b{display:block;font-family:var(--num);font-size:34px}.tmo2 i{font-style:normal;font-size:13px;letter-spacing:.08em;color:var(--mut)}
 .tix{display:flex;gap:14px;justify-content:center;margin:8px 0 0;padding:6px 0;border-top:1px solid var(--bd);border-bottom:1px solid var(--bd);font-size:13px;color:var(--mut)}.tix b{font-family:var(--num);font-size:17px;margin-left:4px;color:var(--tx)}
 .sqh,.sqr{display:flex;align-items:center;gap:8px;padding:5px 0}
@@ -5161,14 +5162,15 @@ details.su-limfold > summary::-webkit-details-marker{display:none}
   display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0;
 }
 .ti-mc{
-  flex:1 1 140px;display:flex;align-items:center;gap:6px;padding:6px 9px;border-radius:10px;
-  background:var(--hi);border:1px solid var(--gbd);font-size:12px;min-width:0;
+  flex:1 1 240px;display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:10px;
+  background:var(--hi);border:1px solid var(--gbd);font-size:12px;min-width:0;overflow:hidden;
 }
-.ti-mc em{font-style:normal;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}
-.ti-mc b{font-family:var(--num);font-size:14.5px;color:var(--tx);white-space:nowrap}
+.ti-mc em{flex:0 0 auto;font-style:normal;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);white-space:nowrap}
+.ti-mc b{flex:0 0 auto;font-family:var(--num);font-size:14.5px;color:var(--tx);white-space:nowrap}
 .ti-mc i{
-  margin-left:auto;font-style:normal;font-size:11px;font-weight:700;
-  padding:1px 6px;border-radius:99px;background:var(--gcard);border:1px solid var(--gbd);color:var(--gold);
+  margin-left:auto;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;
+  font-style:normal;font-size:11px;font-weight:700;
+  padding:1px 7px;border-radius:99px;background:var(--gcard);border:1px solid var(--gbd);color:var(--gold);
   white-space:nowrap;
 }
 

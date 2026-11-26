@@ -1,3 +1,11 @@
+## v25.5 (2026-11-27) — Kadro Modalı Hizalama/Başlık Düzeltmeleri & Kadro Veri Temizliği
+- **Kadro Modalı Kariyer Şeridi Çakışması Giderildi (`style.css` `.ti-mc`):** `Yönettiğin` ve `Karşılaşma` şerit kartlarının dar mobil ekranlarda yan yana sıkışıp `Lig aşaması` rozetinin `KARŞILAŞMA` yazısının üstüne binmesi (`flex: 1 1 240px`, `overflow: hidden` ve iç rozet taşma korumasıyla) tamamen çözüldü.
+- **Kadro Modalı Alt Etiket Boyutu Düzeltildi (`style.css` `.tim > b`):** `.tim b` seçicisi `.tim > b` olarak daraltılarak kulüp adının altındaki `Grup rakibin` / `Senin takımın` etiketinin 22 px başlık boyutuna büyümesi giderildi; 13 px vurgulu alt metne alındı.
+- **Kadro Veri Düzeltmeleri (`data.js` `SQ`):**
+  - **Al Hilal:** `G. Silva` (`RW, 80, #7`) gerçek adına uygun biçimde **`G. Martinelli`** olarak güncellendi (Braga’daki `G. Silva` korundu).
+  - **Frankfurt / Nice:** İki kulüpte birden kayıtlı olan **`N. Nkounkou`** Frankfurt’tan kaldırılarak yalnızca güncel kulübü **Nice** kadrosunda bırakıldı.
+  - **Sassuolo:** Çakışan `#28` forma numarası düzeltilerek **`S. Cinquegrano`** boş `#33` numarasına alındı (`D. Bakola` `#28` olarak kaldı).
+
 ## v25.4 (2026-11-26) — Konferans Ligi ve Avrupa Ligi Şablon GEN Ayarları
 - **Konferans Ligi (`app.js` `CUP_PRESETS`):** GEN üst sınırı **`≤76 GEN`** (`gmin: 0, gmax: 76`) olarak güncellendi; diğer tüm kurallar (32T · 4×8 · İlk 4, Tüm bölgeler, Ülke limiti 8, Aynı grupta 2, Rastgele seçim, Torbalı kura) korundu (54 uygun · 51/32 havuz).
 - **Avrupa Ligi (`app.js` `CUP_PRESETS`):** GEN aralığı **`75–78 GEN`** (`gmin: 75, gmax: 78`) olarak güncellendi; diğer tüm kurallar (32T · 4×8 · İlk 4, Tüm bölgeler, Ülke limiti 8, Aynı grupta 2, Rastgele seçim, Torbalı kura) korundu (53 uygun · 52/32 havuz).
