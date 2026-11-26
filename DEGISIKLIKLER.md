@@ -1,3 +1,8 @@
+## v25.4 (2026-11-26) — Konferans Ligi ve Avrupa Ligi Şablon GEN Ayarları
+- **Konferans Ligi (`app.js` `CUP_PRESETS`):** GEN üst sınırı **`≤76 GEN`** (`gmin: 0, gmax: 76`) olarak güncellendi; diğer tüm kurallar (32T · 4×8 · İlk 4, Tüm bölgeler, Ülke limiti 8, Aynı grupta 2, Rastgele seçim, Torbalı kura) korundu (54 uygun · 51/32 havuz).
+- **Avrupa Ligi (`app.js` `CUP_PRESETS`):** GEN aralığı **`75–78 GEN`** (`gmin: 75, gmax: 78`) olarak güncellendi; diğer tüm kurallar (32T · 4×8 · İlk 4, Tüm bölgeler, Ülke limiti 8, Aynı grupta 2, Rastgele seçim, Torbalı kura) korundu (53 uygun · 52/32 havuz).
+- **Şampiyonlar Ligi (`app.js` `CUP_PRESETS`):** Mevcut ayarları (36T · 8 Maç + PO · 77+ GEN · Avrupa · Ülke 10 · En Güçlü) aynen korundu.
+
 ## v25.3 (2026-11-25) — Bireysel & Poster İnce Cila Paketi
 - **xG 2 Ondalık Hassasiyeti (`analytics.js` `xgSummaryCard`):** `Üretilen xG`, `Yenen xG`, xG paylaşım çubuğu ve koç özeti xG değerleri 2 ondalıklı (`xgN2`: `1,20`, `0,85`) biçime geçirildi; `xG Farkı` (`+0,35`) ve `Gol−xG` farklarıyla yuvarlama çelişkisi tamamen giderildi.
 - **Slot Çekilişi Sonrası Otomatik Yukarı Kaydırma (`app.js`, `coop.js`):** Hem Bireysel hem 2P modda rastgele kulüp çekilişi tamamlandığında sayfa en üste (`scrollTo(0, 0)`) alınarak çıkan kulüp kartı doğrudan ekrana getirilir.
