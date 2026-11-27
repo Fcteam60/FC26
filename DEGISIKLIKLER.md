@@ -1,3 +1,67 @@
+## v26.2 (2026-11-27) — Native PWA Yakınlaştırma Kilidi, Temiz Havuz Filtresi & 2P Senkron Cilası
+- **Yakınlaştırma Kilidi Yeniden Aktif (`index.html`):** `<meta name="viewport">` üzerine `maximum-scale=1, minimum-scale=1, user-scalable=no` geri alınarak iOS Safari’de hem parmakla yanlışlıkla yakınlaştırma hem de üst çubuk/Düello seçicilerinde odak büyütmesi tamamen engellendi; gerçek uygulama hissi korundu.
+- **9-Takım Bekleme Notu Aktif Havuza Filtrelendi (`app.js`, `coop.js`):** Bireysel ve 2P takım seçimi ekranlarında son 9 takım kuralı notu artık yalnızca mevcut turnuva havuzunda (`s.P` / `t.P`) yer alıp hariç tutulan kulüpleri gösterir; başka lig/GEN havuzlarındaki ilgisiz takımlar ekranı kalabalıklaştırmaz.
+- **2P Sezon Adı Değiştirmede Yazma Öncesi Senkron (`coop.js` `coopRenameSeason`):** Sunucuya `PUT` göndermeden önce `await coopPull(true)` ile güncel oda verisi çekilerek çoklu cihazda eski önbellek ezmesi önlendi.
+
+## v26.1 (2026-11-27) — Son 9 Takım Bekleme Kuralı (1P + 2P) & Derin Denetim Kapanışı
+- **Rastgele Takım Seçiminde Son 9 Takım Bekleme Kuralı (`app.js`, `coop.js`):**
+  - Bireysel (*Benim İçin Takım Seç*) ve 2P (*Slot Çek*) rastgele takım çekilişlerinde bekleme sınırı **son 3 takımdan son 9 takıma** (`TEAM_COOLDOWN = 9`) çıkarıldı; arada takım seçilmeden bırakılan boş sezonlar hak yemez.
+  - Küçük havuzlarda (ör. 8 takımlı Direkt Eleme veya dar GEN aralığı) tüm havuz son 9 takımla dolarsa kural tek seferde sıfırlanmak yerine `9 → 8 → … → 1` şeklinde kademeli gevşetilerek en son oynanan takımlar her koşulda öncelikli hariç tutulur.
+- **Açık Tema 2P Misafir Satırı & Eleme Kutu Düzeltmesi (`style.css`):** `v26.0` ölü sınıf temizliğinde birleşen `:root[data-theme="light"] .cp-rg` ve `.bktie.cp-gtie` kuralı ayrı ve `!important` korumalı hâline geri alındı.
+- **Evren Onur Listesi Eski Arşiv Profil Desteği (`app.js` `tourneyPlayerDetail`):** `s.res.topG` ve `s.res.mvp` kayıtları yedek veri kaynağı olarak eklendi; eski arşiv sezonlarından açılan oyuncu profillerinde gol/asist/MOTM sıfırlanmaz.
+- **2P & Test Betiği İyileştirmeleri (`coop.js`, `style.css`, `tests/smoke.mjs`):** `cpcreate`/`cpjoin`/`cprejoin` öncesi eski hata şeridi temizlenir; `cpnew` yeni sezon adını *Son Odalar* listesine işler; uzun 2P sezon adları oda modalında `.cp-renlbl` ile temiz üç noktalanır; `tests/smoke.mjs` tüm Node sürümleri (16/18/20/22+) için `fileURLToPath` ile uyumlu hâle getirildi.
+
+## v26.0 (2026-11-27) — Final Mükemmelleştirme Sürümü (Mühendislik, UI/Erişilebilirlik & 2P UX)
+- **Otomatik Test Altyapısı (`tests/smoke.mjs`, `package.json`):** Kırık `npm test` komutu sıfır bağımlılıklı gerçek Node doğrulama betiğine (`node tests/smoke.mjs`) bağlandı; 9 JS sözdizimi, 108/108 kulüp-kadro-arma bütünlüğü, 0 sembol çakışması, CSS dengesi, `data-a` aksiyon kapsamı ve sürüm tutarlılığını tek komutta denetler.
+- **Güvenlik & Savunma Sıkılaştırması (`coop.js`, `duel.js`):** `coopGenCode()` kriptografik `crypto.getRandomValues()` kullanacak şekilde güçlendirildi; `coopHasRoom()` oda kodu uzunluğu Firebase kuralıyla `>= 6` olarak eşitlendi; `duelBaseUrl()` yalnızca `*.firebasedatabase.app` / `*.firebaseio.com` alan adlarını kabul eder.
+- **2P "Son Odalar" Geçmişi & Sezon Adı Düzenleme (`coop.js`, `app.js`, `style.css`):**
+  - Katılınan/kurulan son 5 ortak oda (`fc27_coop_recent`) lobide **Son Odalar** kartında listelenir; tek dokunuşla geri bağlanma (`cprejoin`) ve kaydı silme (`cprecdel`) eklendi.
+  - Kurucu artık Oda Yönetimi modalından aktif ortak sezonun adını düzenleyebilir (`cpren` → `coopRenameSeason`); ad Firebase’e ve ortak posterlere anında yansır.
+- **Performans & CSS Hijyeni (`coop.js`, `app.js`, `style.css`):** 2P takım arama kutusu (`cp_q`) tam sayfa `render()` yerine yalnızca takım ızgarasını (`coopFilterPick`) günceller; 20 kullanılmayan eski CSS sınıfı temizlendi.
+- **UI, Tipografi & Erişilebilirlik (`index.html`, `style.css`, `app.js`, `analytics.js`):**
+  - `<meta name="viewport">` üzerinden `user-scalable=no` kilidi kaldırılarak erişilebilir yakınlaştırma açıldı (form alanları `16 px` ile iOS odak zoom’unu engellemeye devam eder).
+  - `10 px` altındaki tüm metin rozetleri `10 px` tabanına yükseltildi; poster önizleme başlığı (`.pimg-t b`) ve 2P golcü/asist satırları (`.cp-grow`) kırpılmayacak biçimde sarılır; ince dikey kulüp armalarına (`.bd-tall`) optik denge eklendi.
+  - **Evren › Gol Krallığı & MVP Onur Listesi** ve **TOTS Efsaneleri** satırları kulüp kadrosu yerine doğrudan oyuncu profil kartını (`pinfo` / `tpinfo`) açar.
+- **Dokümantasyon Güncellemesi (`README.md`, `KILAVUZ.md`):** `coop.js`, 11 Broadcast poster, 3 dinamik turnuva arka planı, 108/108 arma ve güncel Otomatik MOTM mantığıyla birebir eşitlendi.
+
+## v25.10 (2026-11-27) — CSS `:where()` Özgüllük Kapanışı & Final Cila Paketi
+- **Akordeon İç Kartı & `Hareket: Kapalı` Özgüllük Düzeltmesi (`style.css`):** Turnuva arka planı kart seçicilerindeki `:not(...)` zincirleri sıfır özgüllüklü `:where(:not(...))` içine alındı; `:root[data-cup] .acbody > .card.pglass` şeffaflığı ve `data-motion="off"` `blur(10px)` azaltması artık hiçbir kural tarafından ezilmez.
+- **Kura Vurgusu (`.card.hl`) & Eleme Ağacı Sahnesi (`.bkt-wrap`) Turnuva Uyumu (`style.css`):** Kurada son çekilen grubun vurgu çerçevesi turnuva arka planında korundu; Eleme Ağacı sahnesindeki sabit yeşil tepe ışığı aktif turnuva rengine (`var(--ac)`) bağlandı.
+- **Poster Koyu Arma Halesi Gölge Sıfırlaması (`app.js` `drawBadge`):** Büyük poster armalarının arkasındaki yumuşak ışık halesi çizilirken dış gölge (`shadowColor`, `shadowBlur`, `shadowOffset`) sıfırlanarak temiz hale kenarı sağlandı.
+- **Eski Yedek Yüklemede `cupBg` Korunması (`app.js` `impr`):** `cupBg` alanı içermeyen eski JSON yedekleri yüklendiğinde mevcut *Turnuva Arka Planı* tercihi korunur.
+
+## v25.9 (2026-11-27) — Akordeon/Kart Özgüllük Kapanışı, `UI_ONLY`, 2P Açılış İzolasyonu & Kurulum Koruması
+- **Akordeon Çift Kutu & İç Kart Çerçevesi Düzeltildi (`style.css`):** Turnuva arka planında (`:root[data-cup]`) buzlu cam yalnızca `.pfold .acbtn` ve `.pfold .acbody` yüzeylerine uygulandı; `.acbody > .card.pglass` şeffaf korunarak tüm akordeonlardaki sivri çift kutu ve iç çerçeve yığılması giderildi.
+- **Maç Günü Hero, Sezon Kartı & Grup Çerçeveleri Korundu (`style.css`):** `:root[data-cup]` kart kuralı `.scard`, `.phero`, `.mine` ve `.dead` sınıflarını ezmeden buzlu cam uygular; Maç Günü Hero gradyanı, Sezonlar kulüp/altın ışıkları ve grup kartlarındaki altın/kırmızı çerçeveler birebir korundu.
+- **Düello Aktif Sekme İkonu & Ölü Seçici Temizliği (`style.css`):** `:root[data-cup] .dl-ntab.on svg` turnuva vurgusuna (`var(--ac)`) bağlandı; kullanılmayan `.su-card` seçicisi temizlendi.
+- **`uhon` Sekmesi `UI_ONLY` Kümesine Alındı (`app.js`):** Evren sekmesindeki *Gol Kralları | MVP’ler* geçişinde gereksiz IndexedDB kaydı, `ut` damgası ve Düello senkronizasyonu tetiklenmesi önlendi.
+- **2P Odasının Soğuk Açılış Flaşını Kirletmesi Giderildi (`app.js`):** `localStorage["fc26lig4_cup"]` yalnızca Bireysel aktif sezona (`soloCup`) göre güncellenir; 2P odasından çıkılıp uygulama yeniden açıldığında yanlış arka plan flaşı oluşmaz.
+- **`resetAll()` İçinde `store.cupBg` Korunması & Bireysel `gmin`/`gmax` Koruması (`app.js`):** Veri sıfırlamada *Turnuva Arka Planı* tercihi korunur; Bireysel kurulumda `Genel En Az > Genel En Çok` (veya tersi) seçildiğinde çakışan sınır 2P ile tutarlı biçimde otomatik açılır.
+
+## v25.8 (2026-11-27) — Turnuva Atmosferi Renk Uyumu, Buzlu Cam Kura Çubuğu & 6 Hata Düzeltmesi
+- **Alt Dock, CTA Butonları ve İlerleme Çubukları Turnuva Rengine Bağlandı (`style.css` `:root[data-cup]`):** Şampiyonlar Ligi (buz mavisi), Avrupa Ligi (amber-turuncu) ve Konferans Ligi (zümrüt) arka planları aktifken alt menü (`.nav`), aktif sekme alt çizgisi (`.ptabs`), ana CTA düğmeleri (`.pset-pri`, `.ph-cta`), adım/ilerleme çubukları ve kilit/grup başlıklarındaki sabit yeşil renk sızıntısı giderildi.
+- **Kura Yapışkan Çubuğu Buzlu Cam Düzeltmesi (`style.css` `.dock`):** `:root[data-cup] .dock` kuralı `!important` önceliğiyle üst çubukla aynı yarı saydam buzlu cam yüzeyine alındı.
+- **Ayarlar’da Aktif Turnuva Arka Planı Bilgi Notu (`app.js`):** Aktif sezonda turnuva arka planı açıkken **Ayarlar › Görünüm ve Deneyim** kartında tema/palet tercihlerinin diğer formatlarda veya *Turnuva Arka Planı* kapatıldığında devreye gireceğini belirten açıklayıcı bilgi satırı eklendi.
+- **iOS Safari Overscroll Zemin Uyumu (`index.html`, `style.css`):** `<html>` zemin rengi de turnuva tonlarına (`#050c20`, `#130f0a`, `#05110d`) bağlanarak sayfa yaylanırken kenarda farklı ton siyah şerit görünmesi giderildi.
+- **Kural Değişikliğinde `s.cup` / `S.t.cup` Otomatik Temizliği (`app.js`, `coop.js` `syncCupTag`):** Kurulumda format, takım sayısı, GEN veya ülke kuralları elle değiştirildiğinde şablon artık eşleşmiyorsa turnuva arka plan etiketi otomatik temizlenir; kilitlenmiş sezonların etiketi korunur.
+- **Katlanır Liste Daraltma Metni (`analytics.js` `foldMoreBtn`):** Türkçe yönelme ekleri düzeltildi (*İlk 3 sezona daralt*, *İlk 5 kulübe daralt*, *İlk 5 oyuncuya daralt*).
+
+## v25.7 (2026-11-27) — Dinamik Turnuva Arka Planı & Koyu Buzlu Cam Atmosferi (UCL · UEL · UECL)
+- **3 Hazır Kupa Şablonuna Özel Tam Ekran Arka Plan (`bg-ucl.jpg`, `bg-uel.jpg`, `bg-uecl.jpg`):** Hem Bireysel hem 2P modda **Şampiyonlar Ligi**, **Avrupa Ligi** (dikey 9:16 mobil orana kayıpsız uyarlandı) veya **Konferans Ligi** şablonu seçildiğinde ilgili turnuvanın görseli iOS uyumlu sabit tam ekran katmanında (`#cupbg`) otomatik etkinleşir; diğer formatlarda normal tema geri döner.
+- **Yüksek Kontrastlı Koyu Buzlu Cam Tasarımı (`style.css` `:root[data-cup]`):** Turnuva arka planı aktifken renk uyumlu koyu buzlu cam kartlar (`blur(16px)`), kontrast koruma perdesi (scrim), turnuvaya özel vurgu renkleri (UCL buz mavisi, UEL amber-turuncu, UECL zümrüt) ve kırık beyaz yüksek kontrastlı tipografi otomatik uygulanır; PWA durum çubuğu (`theme-color`) ve soğuk açılış betiği flaşsız uyum sağlar.
+- **Tek Dokunuşluk Kontrol (`Ayarlar › Görünüm`, `app.js`):** İstenildiğinde kapatıp açılabilen **Turnuva Arka Planı (`cupbg`)** anahtarı eklendi; 3 arka plan görseli `sw.js` içinde çevrimdışı önbelleğe alındı.
+
+## v25.6 (2026-11-27) — Tam Kadro Hizalama Düzeltmesi, Katlanabilir Uzun Listeler & Premium UI Cilası
+- **Tam Kadro Satır Hizalama Hatası Giderildi (`style.css` `.sqr-btn`, `.sqr.hasst`, `.sqp/.sqa/.sqo`):** Sezon istatistiği (`1G`, `1A`, `★`) olan oyuncu satırlarında `width: 100%` + `margin: 0 -6px; padding: 5px 6px` birleşiminin sağ sütunları (mevki, yaş, GEN) 12 px sola kaydırması düzeltildi; tüm oyuncu satırları sabit sütun genişlikleriyle kusursuz dikey hizaya oturtuldu.
+- **Uzayan Listeler Katlanabilir Hâle Getirildi (`analytics.js`, `app.js`, `style.css` `.pfold-more`):**
+  - **Beklenene Göre Performans (`xpCard`):** Varsayılan son 3 sezon + tüm sezonları açan katlanır düğme (`xp_all`); ayrıca `Beklenen / Ulaşılan` kutularındaki üç noktalı metin kesilmeleri (`Lig aşamasında el...`) temiz kısa etiketlerle giderildi.
+  - **Gol Krallığı & MVP Onur Listesi (`universeView`):** İki uzun listenin alt alta yığılması yerine **`Gol Kralları | MVP’ler`** 2’li sekme geçişi (`uhon`) ve ilk 5 + tümünü açma eklendi.
+  - **TOTS Efsaneleri, Evrenin Devleri, Lanetli Finalistler & Şampiyonluk Kronolojisi (`universeView`):** İlk 5 / 4 / 3 kayıtla kompakt açılış ve tek dokunuşla genişletme/daraltma eklendi; `Sezonlar` ve `Rakiplerim` varsayılan sınırları 6’ya çekildi.
+- **Premium Görsel Yükseltmeler (`analytics.js`, `app.js`, `style.css`):**
+  - **Takım Gücü ve Sonuç (`powerCard`):** `ilk ü...` / `son üç...` kesilmeleri kaldırılıp 2 satırlı katman kartlarına (`.pwr-t`) ve ızgaralı/haleli grafik + gömülü renk lejantına geçildi.
+  - **Lider Satır (`.hof-r.r1`) & Şampiyonluk Kronolojisi (`.uv-row`):** iOS’ta kavisli parantez izi bırakan `inset` gölge yerine keskin `::before` altın dikey şerit; Kronoloji kartlarına sol vurgu şeridi ve ayrı `2.` / `Gol` / `MVP` rozetleri eklendi.
+  - **Poster Koyu Arma Kontrastı (`app.js` `drawBadge`):** Koyu poster zemininde `Wolfsburg`, `Juventus`, `PAOK` gibi koyu armaların arkasında yumuşak ışık halesi eklendi.
+
 ## v25.5 (2026-11-27) — Kadro Modalı Hizalama/Başlık Düzeltmeleri & Kadro Veri Temizliği
 - **Kadro Modalı Kariyer Şeridi Çakışması Giderildi (`style.css` `.ti-mc`):** `Yönettiğin` ve `Karşılaşma` şerit kartlarının dar mobil ekranlarda yan yana sıkışıp `Lig aşaması` rozetinin `KARŞILAŞMA` yazısının üstüne binmesi (`flex: 1 1 240px`, `overflow: hidden` ve iç rozet taşma korumasıyla) tamamen çözüldü.
 - **Kadro Modalı Alt Etiket Boyutu Düzeltildi (`style.css` `.tim > b`):** `.tim b` seçicisi `.tim > b` olarak daraltılarak kulüp adının altındaki `Grup rakibin` / `Senin takımın` etiketinin 22 px başlık boyutuna büyümesi giderildi; 13 px vurgulu alt metne alındı.

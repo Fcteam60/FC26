@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="25.5",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="26.2",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -656,10 +656,17 @@ function setView(){const dk=store.theme||"",pl=store.pal||"",motOn=store.motion=
     `<div class="pal-grid" role="radiogroup" aria-label="Renk paleti seçimi">`+
     PALETTES.map(([v,l,c1,c2])=>`<button class="pal-btn${pl===v?" on":""}" data-a="pal" data-v="${v}"><span class="pal-sw" style="background:linear-gradient(135deg,${c1},${c2})"></span><span>${l}</span></button>`).join("")+
     `</div>`;
-  const appPref=psetCard("theme","emr","Görünüm ve Deneyim","Tema, renk paleti ve animasyon tercihleri",dk=="light"?"Açık":dk=="dark"?"Koyu":"Oto",
+  const setCupId=(store.cupBg!==0)?activeCupOf(s):"";
+  const setCupNm=setCupId==="ucl"?"Şampiyonlar Ligi":setCupId==="uel"?"Avrupa Ligi":setCupId==="uecl"?"Konferans Ligi":"";
+  const setCupNote=setCupNm?`<div class="pgmath info" style="margin:0 0 10px"><span>Şu an <b>${setCupNm}</b> arka planı aktif olduğu için koyu cam ve turnuva renkleri uygulanıyor. Tema ve palet tercihlerin diğer formatlarda veya <b>Turnuva Arka Planı</b> kapatıldığında geçerli olur.</span></div>`:"";
+  const appPref=psetCard("theme","emr","Görünüm ve Deneyim","Tema, renk paleti ve animasyon tercihleri",setCupNm||(dk=="light"?"Açık":dk=="dark"?"Koyu":"Oto"),
+    setCupNote+
     `<div class="pset-lbl">Tema</div>`+
     `<div class="stabs seg3" role="radiogroup" aria-label="Tema seçimi">${[["","Otomatik"],["light","Taktik Tahtası"],["dark","Gece Stadyumu"]].map(([v,l])=>`<button class="chip ${dk==v?"on":""}" data-a="theme" data-v="${v}">${l}</button>`).join("")}</div>`+
     palHtml+
+    `<div class="pset-lbl" style="margin-top:12px">Turnuva Arka Planı</div>`+
+    `<div class="note" style="margin:0 0 8px">Şampiyonlar, Avrupa ve Konferans Ligi şablonlarında özel turnuva arka planı ve yüksek kontrastlı koyu cam atmosferi.</div>`+
+    `<div class="stabs seg2" style="margin:0" role="radiogroup" aria-label="Turnuva arka planı">${[[1,"Açık"],[0,"Kapalı"]].map(([v,l])=>`<button class="chip ${(store.cupBg===0?0:1)==v?"on":""}" data-a="cupbg" data-v="${v}">${l}</button>`).join("")}</div>`+
     `<div class="pset-lbl" style="margin-top:12px">Hareket ve Efektler</div>`+
     `<div class="note" style="margin:0 0 8px">Sekme geçişi, kart parlaması, kura ve takım seçimi animasyonu, konfeti ve havai fişek.</div>`+
     `<div class="stabs seg2" style="margin:0" role="radiogroup" aria-label="Hareket tercihi">${[[1,"Açık"],[0,"Kapalı"]].map(([v,l])=>`<button class="chip ${motOn==v?"on":""}" data-a="mot" data-v="${v}">${l}</button>`).join("")}</div>`
@@ -900,9 +907,9 @@ async function snapKeep(k){
 const ownDlg=()=>`<div class="dlg"><div class="dbox pmodal" role="dialog" aria-modal="true"><div class="pm-hd"><span class="aci">${UICO.shield}</span><div><b>Bu Kimin Kayıtları?</b><small>Yedek dosya adına ve Düello profiline yazılır</small></div></div><input id="ow" class="f" maxlength="20" placeholder="Adın" value="${esc(store.owner||"")}" aria-label="Ad" autocomplete="off"><div class="bar"><button class="btn p pset-pri" data-a="owns" style="flex:1">Kaydet</button><button class="btn pset-sec" data-a="owno">Şimdilik atla</button></div></div></div>`;
 async function resetAll(){
   if(!(await snapKeep("fc26lig4_sifirlanan")))return "Sıfırlanmadı: eski kayıt güvenliğe alınamadı (depolama dolu olabilir). Önce yedek al ya da Kurtarma kayıtlarını sil.";
-  const th=store.theme,pa=store.pal,mo=store.motion,ow=store.owner;
+  const th=store.theme,pa=store.pal,mo=store.motion,cb=store.cupBg,ow=store.owner;
   store={v:4,tn:TN,cur:1,nx:1,seasons:[mk(1,1)]};if(ow)store.owner=ow;
-  if(th)store.theme=th;if(pa)store.pal=pa;if(mo!==undefined)store.motion=mo;
+  if(th)store.theme=th;if(pa)store.pal=pa;if(mo!==undefined)store.motion=mo;if(cb!==undefined)store.cupBg=cb;
   norm();sync();st.tab=7;st.bk="";return "Tüm veriler sıfırlandı"}
 function trashCard(){const L=store.trash||[];if(!L.length)return "";
   return psetCard("trash","org","Son Silinenler","Silinen sezonlar buradan geri alınabilir",`${L.length}/10`,
@@ -1208,13 +1215,34 @@ function tcard(s){
   const st3=[["HÜC",t.a],["ORT",t.o],["DEF",t.d]].map(([l,v])=>`<div><b>${v}</b><span>${l}</span></div>`).join("");
   return `<div class="tcw"><div class="tc t${tr}"><div class="tcin">${tr?`<i class="foil"></i>`:""}<i class="gl"></i><div class="tt"><div class="ovr"><b data-cu>${t.g}</b><span>GENEL</span>${fl(t.c)}</div>${badge(s.my,92)}</div><div class="tcn">★ ${esc(t.n)}</div><div class="tcc">${CN[t.c][0]}</div><div class="st3">${st3}</div>${difHtml(s)}</div></div></div><div class="tcap">${gi>=0?gname(s,gi)+" · "+gInfo(s):"Kura bekleniyor"}</div>`}
 function grpPts(s){const g=(s.mt||[]).filter(m=>m.rd=="Grup");return g.length?g.reduce((a,m)=>a+(m.gf>m.ga?3:m.gf==m.ga?1:0),0):""}
-function recentCooldownSet(s){
+const TEAM_COOLDOWN=9;
+function recentCooldownList(s){
   const idx=store.seasons.findIndex(x=>x.id==s.id);
-  const prev=idx>=0?store.seasons.slice(Math.max(0,idx-3),idx):store.seasons.filter(x=>x.id!=s.id).slice(-3);
-  return new Set(prev.map(x=>x.my).filter(v=>v!=null))}
+  const before=idx>=0?store.seasons.slice(0,idx):store.seasons.filter(x=>x.id!=s.id);
+  const out=[],seen=new Set();
+  for(let k=before.length-1;k>=0&&out.length<TEAM_COOLDOWN;k--){
+    const ti=before[k]&&before[k].my;
+    if(ti!=null&&T[ti]&&!seen.has(ti)){seen.add(ti);out.push(ti)}
+  }
+  return out;
+}
+function applyTeamCooldown(base,cdList,curTi){
+  const list=Array.isArray(cdList)?cdList:[];
+  for(let k=list.length;k>=0;k--){
+    const ban=new Set(list.slice(0,k));
+    const c=base.filter(i=>!ban.has(i)&&i!==curTi);
+    if(c.length)return c;
+  }
+  for(let k=list.length;k>=0;k--){
+    const ban=new Set(list.slice(0,k));
+    const c=base.filter(i=>!ban.has(i));
+    if(c.length)return c;
+  }
+  return base;
+}
 function teamView(s){
   if(!s.lk)return `<div class="big">Önce turnuvayı kur: kuralları ve formatı seç.<br><button class="btn p" data-t="0" style="margin-top:10px">Kuruluma git</button></div>`;
-  const PS=s.P.slice().sort((x,y)=>V(T[y])-V(T[x])),dv=store.diff||0,dk=dcut(s,dv),cdSet=recentCooldownSet(s),cdNames=[...cdSet].filter(i=>T[i]).map(i=>T[i].n);
+  const PS=s.P.slice().sort((x,y)=>V(T[y])-V(T[x])),dv=store.diff||0,dk=dcut(s,dv),cdList=recentCooldownList(s),pSet=new Set(s.P),cdNames=cdList.filter(i=>pSet.has(i)&&T[i]).map(i=>T[i].n);
   let h="";
   if(s.my!=null){
     const sqLen=squadOf(s.my).length;
@@ -1228,11 +1256,11 @@ function teamView(s){
   }else{
     const pickBody=`<div class="su-fld" style="margin-bottom:10px"><label for="df">Rastgele Seçim Zorluğu</label><select id="df" class="sel">${DIFF.map((d,i)=>{const kc=dcut(s,i);return `<option value="${i}" ${dv==i?"selected":""}>${d[0]}${kc?` (ilk ${kc} hariç)`:""}</option>`}).join("")}</select></div>`+
       `<div class="tm-opts">`+
-        `<button class="su-tcard${st.mode=="rnd"?" on":""}" data-a="pick"><span class="su-tic">${UICO.spark}</span><span class="su-tm"><b>Benim İçin Takım Seç</b><small>${(DIFF[dv]||DIFF[0])[0]} · 3 sezon bekleme kuralı</small></span></button>`+
+        `<button class="su-tcard${st.mode=="rnd"?" on":""}" data-a="pick"><span class="su-tic">${UICO.spark}</span><span class="su-tm"><b>Benim İçin Takım Seç</b><small>${(DIFF[dv]||DIFF[0])[0]} · son 9 takım tekrarsız</small></span></button>`+
         `<button class="su-tcard${st.mode=="man"?" on":""}" data-a="mman"><span class="su-tic">${UICO.sliders}</span><span class="su-tm"><b>Takımımı Kendim Seçeyim</b><small>${s.P.length} katılımcı arasından seç</small></span></button>`+
       `</div>`+
       (st.mode=="man"?`<div class="su-fld" style="margin-top:10px"><label for="mt">Katılımcı Kulüp</label><select id="mt" class="sel"><option value="">Takım seç…</option>${PS.map(i=>`<option value="${i}" ${s.my===i?"selected":""}>${T[i].n} (${T[i].c} · ${T[i].g})</option>`).join("")}</select></div>`:"")+
-      `<div class="note" style="margin:10px 0 0">${dk?`Rastgele seçimde en güçlü ${dk} takım hariç tutulur.`:`${s.P.length} katılımcının tamamı arasından çekilir.`}${cdNames.length?` <b>Son 3 sezon hariç:</b> ${esc(cdNames.join(", "))}.`:""}</div>`;
+      `<div class="note" style="margin:10px 0 0">${dk?`Rastgele seçimde en güçlü ${dk} takım hariç tutulur.`:`${s.P.length} katılımcının tamamı arasından çekilir.`}${cdNames.length?` <b>Bu havuzdan hariç (son 9 kuralı):</b> ${esc(cdNames.join(", "))}.`:""}</div>`;
     h+=psetCard("shield","emr","Kulüp Seçimi","Kuradan önce takımını belirle",`${s.P.length} aday`,pickBody);
   }
   if(!(s.G||s.res||(s.mt||[]).length))return h;
@@ -1547,6 +1575,20 @@ function cupPresetOn(c,r,p){
   if(!cfgOk)return false;
   return (r.rg||"all")===pr.rg&&!(r.xc&&r.xc.length)&&(+r.gmin||0)===pr.gmin&&(r.gmax==null?99:+r.gmax)===pr.gmax&&(+r.amin||0)===0&&(+r.mmin||0)===0&&(+r.dmin||0)===0&&(+r.cap||0)===pr.cap&&(+r.gcap||0)===pr.gcap&&(r.pick||"top")===pr.pick&&(r.dm||"pot")===pr.dm;
 }
+function activeCupOf(s){
+  if(!s||!s.cfg)return "";
+  if(s.cup&&/^(ucl|uel|uecl)$/.test(s.cup))return s.cup;
+  if(isUcl(s.cfg))return "ucl";
+  const m=CUP_PRESETS.find(p=>cupPresetOn(s.cfg,s.rl,p));
+  return m?m.id:"";
+}
+function syncCupTag(s){
+  if(!s||!s.cfg)return;
+  const m=CUP_PRESETS.find(p=>cupPresetOn(s.cfg,s.rl,p));
+  if(m)s.cup=m.id;
+  else if(isUcl(s.cfg))s.cup="ucl";
+  else delete s.cup;
+}
 function cupPresetsHtml(c,r,act){
   return `<div class="su-cpblk">`+
     `<div class="su-cphd"><span class="su-cpttl">${uiIco("trophy")}<span>Hazır Kupa Şablonları</span></span><span class="su-cpbadge">Tek tıkla kur</span></div>`+
@@ -1845,9 +1887,11 @@ function tourneyPlayerDetail(s,name,ti){
     const allA=[...(s.res.tots.F||[]),...(s.res.tots.M||[]),...(s.res.tots.D||[]),...(s.res.tots.K||[])];
     archP=allA.find(x=>x&&x.ti===ti&&nz(x.n)===k)||null;
   }
-  const g=Math.max(pStat?pStat.g:0,archP?archP.g||0:0,matches.reduce((acc,m)=>acc+m.g,0));
-  const a=Math.max(pStat?pStat.a:0,archP?archP.a||0:0,matches.reduce((acc,m)=>acc+m.a,0));
-  const mom=Math.max(pStat?pStat.mom:0,archP?archP.mom||0:0,matches.filter(m=>m.mom).length);
+  const tgA=s.res&&s.res.topG&&s.res.topG.ti===ti&&nz(s.res.topG.n)===k?s.res.topG:null;
+  const mvA=s.res&&s.res.mvp&&s.res.mvp.ti===ti&&nz(s.res.mvp.n)===k?s.res.mvp:null;
+  const g=Math.max(pStat?pStat.g:0,archP?archP.g||0:0,tgA?+tgA.g||0:0,mvA?+mvA.g||0:0,matches.reduce((acc,m)=>acc+m.g,0));
+  const a=Math.max(pStat?pStat.a:0,archP?archP.a||0:0,mvA?+mvA.a||0:0,matches.reduce((acc,m)=>acc+m.a,0));
+  const mom=Math.max(pStat?pStat.mom:0,archP?archP.mom||0:0,mvA?+mvA.mom||0:0,matches.filter(m=>m.mom).length);
   const ht=pStat?pStat.ht:matches.filter(m=>m.g>=3).length;
   const cs=tmStat?tmStat.cs:(archP?archP.cs||0:0);
   const tmO=tmStat?tmStat.o:0;
@@ -2764,9 +2808,8 @@ const reelHtml=i=>`<span class="rc">${fl(T[i].c)}<span class="n">${esc(T[i].n)}<
 const slotDlg=()=>{const r=st.slot.r;return `<div class="dlg"><div class="dbox slotbox" role="dialog" aria-modal="true"><div class="slot-ey">FC 27 · TAKIM ÇEKİLİŞİ</div><div class="rs">Takımın çekiliyor…</div><div class="reel"><div class="rl" id="r0">${reelHtml(r[0])}</div><div class="rl on" id="r1">${reelHtml(r[1])}</div><div class="rl" id="r2">${reelHtml(r[2])}</div></div><div class="bar"><button class="btn slot-skip" data-a="skip">Atla</button></div></div></div>`};
 function spin(s){
   if(st.slot)return;
-  const PS=s.P.slice().sort((x,y)=>V(T[y])-V(T[x])),baseC=PS.slice(dcut(s,store.diff||0)),cdSet=recentCooldownSet(s);
-  const filtC=baseC.filter(i=>!cdSet.has(i)&&i!==s.my);
-  const c=filtC.length?filtC:(baseC.filter(i=>i!==s.my).length?baseC.filter(i=>i!==s.my):baseC);
+  const PS=s.P.slice().sort((x,y)=>V(T[y])-V(T[x])),baseC=PS.slice(dcut(s,store.diff||0));
+  const c=applyTeamCooldown(baseC,recentCooldownList(s),s.my);
   const pk=()=>c[Math.random()*c.length|0],fin=pk(),snap=JSON.stringify(store);
   let over=false;
   const done=()=>{if(over)return;over=true;clearTimeout(st.slt);st.slot=null;s.my=fin;st.mode="rnd";save();render();scrollTo(0,0);flush("Takımın: "+T[fin].n,snap)};
@@ -2854,11 +2897,13 @@ function preloadLogos(idxs){
 }
 function badgeSvg(i,w){const b=bspec(i),fs=b.ini.length>2?14:b.ini.length==2?17:21;
   return `<svg class="bd" viewBox="0 0 46 53" width="${w}" height="${Math.round(w*53/46)}" ${w<40?'aria-hidden="true"':`role="img" aria-label="${esc(T[i].n)} arması"`}><g clip-path="url(#shd-clip)"><rect width="46" height="53" fill="${b.c1}"/><path d="${b.p}" fill="${b.c2}"/></g><path d="${SHD}" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2"/><text x="23" y="29" text-anchor="middle" dominant-baseline="central" font-size="${fs}" font-weight="700" fill="#fff" style="font-family:var(--num);paint-order:stroke;stroke:rgba(0,0,0,.55);stroke-width:2.6px;stroke-linejoin:round">${esc(b.ini)}</text></svg>`}
+const NARROW_CRESTS=new Set(["Estudiantes","PAOK","Sporting","Club Brugge","Freiburg","Juventus","Braga","Alavés","Hamburger SV","Union Berlin"]);
 function badge(i,w){
   const u=logoUrl(i);
   if(u){
     const h=Math.round(w*53/46);
-    return `<img class="bd bd-img" src="${u}" width="${w}" height="${h}" ${w<40?'alt="" aria-hidden="true"':`alt="${esc(T[i].n)} arması"`} loading="lazy" decoding="async" onerror="this.onerror=null;this.outerHTML=badgeSvg(${i},${w})">`;
+    const tall=w<=34&&T[i]&&NARROW_CRESTS.has(T[i].n)?" bd-tall":"";
+    return `<img class="bd bd-img${tall}" src="${u}" width="${w}" height="${h}" ${w<40?'alt="" aria-hidden="true"':`alt="${esc(T[i].n)} arması"`} loading="lazy" decoding="async" onerror="this.onerror=null;this.outerHTML=badgeSvg(${i},${w})">`;
   }
   return badgeSvg(i,w);
 }
@@ -2867,6 +2912,14 @@ function drawBadge(c,i,x,y,w){
   if(im&&im.complete&&im.naturalWidth>0){
     const h=Math.round(w*53/46),sc=Math.min(w/im.naturalWidth,h/im.naturalHeight);
     const dw=im.naturalWidth*sc,dh=im.naturalHeight*sc;
+    if(w>=32){
+      const cx=x+w/2,cy=y+h/2,rad=Math.max(dw,dh)*0.56;
+      const g=c.createRadialGradient(cx,cy,rad*0.1,cx,cy,rad);
+      g.addColorStop(0,"rgba(255,255,255,.16)");
+      g.addColorStop(0.68,"rgba(255,255,255,.06)");
+      g.addColorStop(1,"rgba(255,255,255,0)");
+      c.save();c.shadowColor="transparent";c.shadowBlur=0;c.shadowOffsetX=0;c.shadowOffsetY=0;c.fillStyle=g;c.beginPath();c.arc(cx,cy,rad,0,Math.PI*2);c.fill();c.restore();
+    }
     c.drawImage(im,x+(w-dw)/2,y+(h-dh)/2,dw,dh);
     return;
   }
@@ -2959,7 +3012,16 @@ function render(){
   const ptEl=document.querySelector(".ptabs.htabs6"),ptLeft=ptEl?ptEl.scrollLeft:0;
   const ae=document.activeElement,aeId=ae&&ae.id?ae.id:null,aeSel=ae&&typeof ae.selectionStart=="number"?ae.selectionStart:null;
   const s0=cur();
-  const de=document.documentElement;if(store.theme)de.setAttribute("data-theme",store.theme);else de.removeAttribute("data-theme");if(store.motion===0)de.setAttribute("data-motion","off");else de.removeAttribute("data-motion");
+  const de=document.documentElement;
+  const soloCup=store.cupBg!==0?activeCupOf(s0):"";
+  let activeCup=soloCup;
+  if(store.cupBg!==0&&st.coopMode&&typeof coopState==="function"){
+    try{const cs=coopState();activeCup=cs&&cs.t?activeCupOf(cs.t):""}catch(e){activeCup=""}
+  }
+  if(activeCup){de.setAttribute("data-cup",activeCup);de.setAttribute("data-theme","dark")}
+  else{de.removeAttribute("data-cup");if(store.theme)de.setAttribute("data-theme",store.theme);else de.removeAttribute("data-theme")}
+  try{if(soloCup)localStorage.setItem("fc26lig4_cup",soloCup);else localStorage.removeItem("fc26lig4_cup")}catch(e){}
+  if(store.motion===0)de.setAttribute("data-motion","off");else de.removeAttribute("data-motion");
   {let cb=null;try{cb=(s0&&s0.my!=null&&T[s0.my])?bspec(s0.my):null}catch(e){cb=null}
   if(cb&&cb.c1&&cb.c2){de.style.setProperty("--club1",cb.c1);de.style.setProperty("--club2",cb.c2);de.setAttribute("data-club","1")}else{de.removeAttribute("data-club");de.style.removeProperty("--club1");de.style.removeProperty("--club2")}
   applyPalette(cb);syncThemeColor();}
@@ -3004,7 +3066,7 @@ function render(){
   const focusEl=aeId?$(aeId):null;
   if(focusEl&&document.activeElement!==focusEl){focusEl.focus();if(aeSel!=null&&typeof focusEl.setSelectionRange=="function")try{focusEl.setSelectionRange(aeSel,aeSel)}catch(e){}}}
 
-const UI_ONLY=new Set(["stab","mexp","fxw","fxv","bkv","adv","cust","roall","vitall","sall","rstopen","sysopen","fined","ptdet","umod","bulx","sfopen","hm","tropen","trclose","bkadv","madv","qs","medit","mall","qx","gofin","mg","mo","mu","mp","mpf","mpa","glsc","glas","glclr","glasclr","glasno","glasopen","tel","tpl","ht","hmod","sfm","sfr","sv","sfd","sfx","ro","dcancel","next","all","no","tinfo","pinfo","tpinfo","tpclose","totsv","guide","cmpsw","gs","gsgo","tif","tiv","ren","own","owno","mman","ex","im","rcv","imgpg","oldlsx","dljoin","dlsync","dledit","dlcancel","dlleave","dlsel","dldel","dlcpcode","dlmycode","dladdcode","dlposter","dlsposter","dlcposter","dlmod","dltab","dlslatest","dllive","dllivetab","dllivewho"]);
+const UI_ONLY=new Set(["stab","mexp","fxw","fxv","bkv","adv","cust","roall","vitall","sall","rstopen","sysopen","fined","ptdet","umod","uhon","bulx","sfopen","hm","tropen","trclose","bkadv","madv","qs","medit","mall","qx","gofin","mg","mo","mu","mp","mpf","mpa","glsc","glas","glclr","glasclr","glasno","glasopen","tel","tpl","ht","hmod","sfm","sfr","sv","sfd","sfx","ro","dcancel","next","all","no","tinfo","pinfo","tpinfo","tpclose","totsv","guide","cmpsw","gs","gsgo","tif","tiv","ren","own","owno","mman","ex","im","rcv","imgpg","oldlsx","dljoin","dlsync","dledit","dlcancel","dlleave","dlsel","dldel","dlcpcode","dlmycode","dladdcode","dlposter","dlsposter","dlcposter","dlmod","dltab","dlslatest","dllive","dllivetab","dllivewho"]);
 document.addEventListener("click",async e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.t!==undefined){hideToast();st.coopMode=false;st.cpM=null;st.cpRoomDlg=false;st.tab=+b.dataset.t;if(st.tab==6)refreshQuota(true);render();scrollTo(0,0);return}
@@ -3014,9 +3076,9 @@ document.addEventListener("click",async e=>{
   if(st.staleTab){ntfReload("Başka bir sekmede değişiklik yapıldı, veri kaybı yaşamamak için sayfayı yenileyin.");return}
   if(a!="undo")hideToast();
   const s=cur(),id=+b.dataset.id,i=+b.dataset.i,dv=b.dataset.v,dk=b.dataset.k,uiOnly=UI_ONLY.has(a);let un=null;const snap=uiOnly?null:(lastSavedRaw||JSON.stringify(store));
-  if(a=="cfg"){s.cfg[dk]=+dv;if(isLg(s.cfg)&&dk=="N")s.cfg.gs=s.cfg.N;if(dk=="N"||dk=="gs")s.G=null;fixC(s.cfg)}
-  else if(a=="tmpl"){const p=TPL[+dv],wasUcl=isUcl(s.cfg),wasPre=CUP_PRESETS.some(x=>cupPresetOn(s.cfg,s.rl,x));if(p[5]){delete s.cfg.lg;s.cfg.ucl=1;s.cfg.N=36;s.cfg.gs=36;s.cfg.q=24;s.cfg.gl=1;s.cfg.kl=2;s.cfg.fl=1;if(!wasUcl||wasPre){s.rl=Object.assign(cp(DEFR),{rg:"eu",cap:4,gcap:1,dm:"pot"})}st.cust=true}else{delete s.cfg.ucl;if(wasPre||wasUcl){s.rl=cp(DEFR)}if(p[4]===0&&p[2]===p[3]){s.cfg.lg=1;if(!LGN.includes(s.cfg.N))s.cfg.N=p[2];s.cfg.gs=s.cfg.N;s.cfg.q=0;st.cust=true}else{delete s.cfg.lg;s.cfg.N=p[2];s.cfg.gs=p[3];s.cfg.q=p[4];if(wasUcl||wasPre){s.cfg.gl=1;s.cfg.kl=1;s.cfg.fl=1}}}s.G=null;s.ucl=null;fixC(s.cfg)}
-  else if(a=="cpreset"){const p=CUP_PRESETS[+dv];if(p){s.cfg=cp(p.cfg);fixC(s.cfg);s.rl=Object.assign(cp(DEFR),cp(p.rl));s.G=null;s.ucl=null;un=p.name+" şablonu uygulandı"}}
+  if(a=="cfg"){s.cfg[dk]=+dv;if(isLg(s.cfg)&&dk=="N")s.cfg.gs=s.cfg.N;if(dk=="N"||dk=="gs")s.G=null;fixC(s.cfg);syncCupTag(s)}
+  else if(a=="tmpl"){const p=TPL[+dv],wasUcl=isUcl(s.cfg),wasPre=CUP_PRESETS.some(x=>cupPresetOn(s.cfg,s.rl,x));if(p[5]){delete s.cfg.lg;s.cfg.ucl=1;s.cup="ucl";s.cfg.N=36;s.cfg.gs=36;s.cfg.q=24;s.cfg.gl=1;s.cfg.kl=2;s.cfg.fl=1;if(!wasUcl||wasPre){s.rl=Object.assign(cp(DEFR),{rg:"eu",cap:4,gcap:1,dm:"pot"})}st.cust=true}else{delete s.cfg.ucl;delete s.cup;if(wasPre||wasUcl){s.rl=cp(DEFR)}if(p[4]===0&&p[2]===p[3]){s.cfg.lg=1;if(!LGN.includes(s.cfg.N))s.cfg.N=p[2];s.cfg.gs=s.cfg.N;s.cfg.q=0;st.cust=true}else{delete s.cfg.lg;s.cfg.N=p[2];s.cfg.gs=p[3];s.cfg.q=p[4];if(wasUcl||wasPre){s.cfg.gl=1;s.cfg.kl=1;s.cfg.fl=1}}}s.G=null;s.ucl=null;fixC(s.cfg)}
+  else if(a=="cpreset"){const p=CUP_PRESETS[+dv];if(p){s.cfg=cp(p.cfg);fixC(s.cfg);s.rl=Object.assign(cp(DEFR),cp(p.rl));s.cup=p.id;s.G=null;s.ucl=null;un=p.name+" şablonu uygulandı"}}
   else if(a=="adv")st.adv=!st.adv;
   else if(a=="cust")st.cust=!st.cust;
   else if(a=="roall")st.roall=!st.roall;
@@ -3030,6 +3092,7 @@ document.addEventListener("click",async e=>{
   else if(a=="bksnooze"){store.bksn=Date.now()+7*864e5;un="Yedek hatırlatması 7 gün ertelendi"}
   else if(a=="hm"){st.hm=st.hm||nob();st.hm[dk]=!st.hm[dk]}
   else if(a=="umod"){st.umod=dv||"all"}
+  else if(a=="uhon"){st.uhon=dv||"sc"}
   else if(a=="bulx"){st.bulHide=st.bulHide||nob();st.bulHide[dv]=1}
 
   else if(a=="fxw"){st.fxw=+dv}
@@ -3250,10 +3313,10 @@ document.addEventListener("click",async e=>{
     const curP=(Array.isArray(im.pages)&&im.pages[im.pg||0])||im;
     try{const f=new File([curP.blob],curP.name,{type:"image/png"});if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:curP.title}).catch(()=>{});return}}catch(e){}
     im.msg="Bu tarayıcı doğrudan paylaşmayı desteklemiyor. İndir düğmesini kullan ya da görsele basılı tutup kaydet.";render();return}
-  else if(a=="gmode"){const m=+dv;delete s.cfg.ucl;s.ucl=null;if(m==2){s.cfg.lg=1;if(!LGN.includes(s.cfg.N))s.cfg.N=16;s.cfg.gs=s.cfg.N;s.cfg.q=0}else{delete s.cfg.lg;if(![4,8,16,32,64].includes(s.cfg.N))s.cfg.N=16;s.cfg.gs=m?(s.cfg.gs&&s.cfg.gs<s.cfg.N?s.cfg.gs:4):0;if(!s.cfg.q)s.cfg.q=2}s.G=null;fixC(s.cfg)}
-  else if(a=="rl")s.rl[dk]=dv;
-  else if(a=="xc"){const x=s.rl.xc,j=x.indexOf(dv);if(j<0)x.push(dv);else x.splice(j,1)}
-  else if(a=="xcall")s.rl.xc=[];
+  else if(a=="gmode"){const m=+dv;delete s.cfg.ucl;delete s.cup;s.ucl=null;if(m==2){s.cfg.lg=1;if(!LGN.includes(s.cfg.N))s.cfg.N=16;s.cfg.gs=s.cfg.N;s.cfg.q=0}else{delete s.cfg.lg;if(![4,8,16,32,64].includes(s.cfg.N))s.cfg.N=16;s.cfg.gs=m?(s.cfg.gs&&s.cfg.gs<s.cfg.N?s.cfg.gs:4):0;if(!s.cfg.q)s.cfg.q=2}s.G=null;fixC(s.cfg)}
+  else if(a=="rl"){s.rl[dk]=dv;syncCupTag(s)}
+  else if(a=="xc"){const x=s.rl.xc,j=x.indexOf(dv);if(j<0)x.push(dv);else x.splice(j,1);syncCupTag(s)}
+  else if(a=="xcall"){s.rl.xc=[];syncCupTag(s)}
   else if(a=="tel")st.te=!st.te;
   else if(a=="tpl")st.tp=!st.tp;
   else if(a=="ht"){st.ht=dv;if(dv=="d"&&typeof duelSyncNow==="function")setTimeout(()=>duelSyncNow(true),60)}
@@ -3269,6 +3332,7 @@ document.addEventListener("click",async e=>{
   else if(a=="sfx"){st.sfm="all";st.sfr="all";st.sft="";st.sfc=""}
   else if(a=="ro")st.ro=st.ro==dv?null:dv;
   else if(a=="mot")store.motion=+dv;
+  else if(a=="cupbg")store.cupBg=+dv;
   else if(a=="lock"){
     const A=avail(s);
     if(A<s.cfg.N)ask("Kurallara uyan yeterli takım yok ("+A+"/"+s.cfg.N+"). Kuralları gevşet veya takım sayısını azalt.");
@@ -3295,7 +3359,7 @@ document.addEventListener("click",async e=>{
   else if(a=="own"){st.own=1}
   else if(a=="owno"){st.own=0}
   else if(a=="owns"){const v=($("ow").value||"").replace(/\s+/g," ").trim().slice(0,20);if(!v){$("ow").focus();return}store.owner=v;if(typeof duelLoadCfg==="function"&&typeof duelSaveCfg==="function"){const dc=duelLoadCfg();dc.name=v;duelSaveCfg(dc)}st.own=0;un="Kayıtlar "+v+" adına"}
-  else if(a=="rens"){const v=($("rn").value||"").replace(/\s+/g," ").trim().slice(0,24),x=st.ren?store.seasons.find(q=>q.id==st.ren.id):null;if(!v){$("rn").focus();return}if(x){x.name=v;un="Sezon adı değiştirildi"}st.ren=null}
+  else if(a=="rens"){const v=($("rn").value||"").replace(/\s+/g," ").trim().slice(0,24);if(!v){$("rn").focus();return}if(st.ren&&st.ren.coop){st.ren=null;if(typeof coopRenameSeason==="function")await coopRenameSeason(v);return}const x=st.ren?store.seasons.find(q=>q.id==st.ren.id):null;if(x){x.name=v;un="Sezon adı değiştirildi"}st.ren=null}
   else if(a=="mman")st.mode="man";
   else if(a=="ns"){const mkNew=()=>{st.coopMode=false;st.cpM=null;store.nx=nextNo();const n=mk(Date.now(),store.nx,s);store.seasons.push(n);store.cur=n.id;sync();st.mode=null;st.tab=7;return n.name+" başlatıldı"};if(!s.res&&(s.lk||(s.mt||[]).length)){ask(`Aktif sezon («${s.name}») henüz bitmedi. Yine de yeni bir sezon açmak istiyor musun?`,mkNew);render();return}if(!s.res&&!s.lk&&!(s.mt||[]).length&&s.my==null){ask(`«${s.name}» zaten boş ve kuruluma hazır. Yine de yeni bir boş sezon açılsın mı?`,mkNew);render();return}un=mkNew()}
   else if(a=="pick"){if(tmLock(s)||st.dr){ask("Takım kilitli. Değiştirmek için önce Takımı değiştir ya da Kurayı iptal et’i kullan.");render();return}withSn(s,()=>spin(s));return}
@@ -3313,7 +3377,7 @@ document.addEventListener("click",async e=>{
   else if(a=="exf"){exportFile();return}
   else if(a=="imfb"){const e=$("imf");if(e)e.click();return}
   else if(a=="impm"&&st.imp){const o=st.imp.o;st.imp=null;un=await mergeBk(o)}
-  else if(a=="impr"&&st.imp){const o=st.imp.o;st.imp=null;if(!(await snapKeep("fc26lig4_degisim_oncesi"))){ask("Yedek yüklenmedi: mevcut kayıtlar güvenliğe alınamadı (depolama dolu olabilir). Önce Kurtarma kayıtlarını sil ya da yedek al.")}else{const th=store.theme,pa=store.pal,mo=store.motion,ow0=store.owner;DROP=[];store=mig(o);if(!store.owner&&ow0)store.owner=ow0;if(store.theme===undefined&&th!==undefined)store.theme=th;if(store.pal===undefined&&pa!==undefined)store.pal=pa;if(store.motion===undefined&&mo!==undefined)store.motion=mo;const dr=[...new Set(DROP)];DROP=[];norm();sync();st.tab=7;un="Yedek yüklendi, mevcut kayıtlar değiştirildi"+(dr.length?" · "+dr.length+" takım güncel listede yok, atlandı":"")}}
+  else if(a=="impr"&&st.imp){const o=st.imp.o;st.imp=null;if(!(await snapKeep("fc26lig4_degisim_oncesi"))){ask("Yedek yüklenmedi: mevcut kayıtlar güvenliğe alınamadı (depolama dolu olabilir). Önce Kurtarma kayıtlarını sil ya da yedek al.")}else{const th=store.theme,pa=store.pal,mo=store.motion,cb0=store.cupBg,ow0=store.owner;DROP=[];store=mig(o);if(!store.owner&&ow0)store.owner=ow0;if(store.theme===undefined&&th!==undefined)store.theme=th;if(store.pal===undefined&&pa!==undefined)store.pal=pa;if(store.motion===undefined&&mo!==undefined)store.motion=mo;if(store.cupBg===undefined&&cb0!==undefined)store.cupBg=cb0;const dr=[...new Set(DROP)];DROP=[];norm();sync();st.tab=7;un="Yedek yüklendi, mevcut kayıtlar değiştirildi"+(dr.length?" · "+dr.length+" takım güncel listede yok, atlandı":"")}}
   else if(a=="trs"){un=restoreSeason(id)}
   else if(a=="trse"){ask("Çöp kutusundaki tüm sezonlar kalıcı olarak silinsin mi?",()=>{store.trash=[]});render();return}
   else if(a=="rcv"){if(RCV.some(x=>x[0]==dk)){st.bk=(await kv.get(dk))||rcvGet(dk)||"";st.bkadv=true}}
@@ -3329,7 +3393,7 @@ document.addEventListener("change",e=>{
   if(st.staleTab){ntfReload("Başka bir sekmede değişiklik yapıldı, veri kaybı yaşamamak için sayfayı yenileyin.");return}
   hideToast();
   const d=e.target.dataset,v=e.target.value;
-  if(d.rs){cur().rl[d.rs]=+v;save();render()}
+  if(d.rs){const s0=cur();s0.rl[d.rs]=+v;if(d.rs=="gmin"&&s0.rl.gmax<s0.rl.gmin)s0.rl.gmax=99;if(d.rs=="gmax"&&s0.rl.gmin>s0.rl.gmax)s0.rl.gmin=0;syncCupTag(s0);save();render()}
   else if(d.cprs&&typeof coopSetRuleNum==="function"){coopSetRuleNum(d.cprs,+v);return}
   else if(d.sg){const s=cur();s.oy=s.oy?toNob(s.oy):Object.assign(nob(),{d:"",h:"",c:""});s.oy[d.sg]=v;save();render()}
   else if(e.target.id=="df"){store.diff=+v;save();render()}
@@ -3416,7 +3480,7 @@ function guideDlg(){
   return `<div class="dlg ti"><button class="tibk" data-a="no" aria-label="Kapat"></button><div class="dbox tisheet" role="dialog" aria-modal="true" aria-label="Kullanım Kılavuzu">`+
     `<div class="tots-dlg-hd"><div><b>FC 27 Lig · Kullanım Kılavuzu</b><small>Sürüm v${VER} · Çevrimdışı Hızlı Rehber</small></div><button class="mb sc-ic" data-a="no" aria-label="Kapat">✕</button></div>`+
     sec("1. Hızlı Başlangıç (5 Adım)",
-      `<ol class="glist"><li><b>Kurulum:</b> Hazır şablonlardan (Dünya Kupası, Klasik 64, Mini Lig, Direkt Eleme, Lig veya 36 takımlı Şampiyonlar Ligi) birini seç veya gelişmiş kurallarla özelleştirip onayla.</li><li><b>Takım Seçimi:</b> Rastgele çekiliş (son 3 sezon tekrarsız) veya manuel seçimle kulübünü belirle.</li><li><b>Kura:</b> Torbalı veya rastgele kurayı tek tek çek ya da en dengeli kurayı otomatik kur.</li><li><b>Oyna:</b> <i>Turnuva › Gruplar</i> ekranındaki Maç Merkezinden skorlarını gir ve haftaları simüle et.</li><li><b>Bitir:</b> Turnuva bittiğinde <b>Turnuvayı Sonlandır</b> ile şampiyonu, MVP’yi ve En İyi 11’i arşive kaydet.</li></ol>`,true)+
+      `<ol class="glist"><li><b>Kurulum:</b> Hazır şablonlardan (Dünya Kupası, Klasik 64, Mini Lig, Direkt Eleme, Lig veya 36 takımlı Şampiyonlar Ligi) birini seç veya gelişmiş kurallarla özelleştirip onayla.</li><li><b>Takım Seçimi:</b> Rastgele çekiliş (son 9 takım tekrarsız) veya manuel seçimle kulübünü belirle.</li><li><b>Kura:</b> Torbalı veya rastgele kurayı tek tek çek ya da en dengeli kurayı otomatik kur.</li><li><b>Oyna:</b> <i>Turnuva › Gruplar</i> ekranındaki Maç Merkezinden skorlarını gir ve haftaları simüle et.</li><li><b>Bitir:</b> Turnuva bittiğinde <b>Turnuvayı Sonlandır</b> ile şampiyonu, MVP’yi ve En İyi 11’i arşive kaydet.</li></ol>`,true)+
     sec("2. Simülasyon & Eleme Ağacı",
       `<ul class="glist"><li><b>3 Simülasyon Modu:</b> <i>Gerçekçi</i> (gerçek futbol skorları ve İlk 11/kaleci etkisi), <i>Dengeli</i> ve <i>Sürprizli</i>.</li><li><b>Haftalık İlerleme:</b> Kendi hafta maçını girdikten sonra <b>Haftayı Simüle Et</b> açılır; hata yaparsan <b>↩ Geri Al</b> ile son haftayı geri alabilirsin.</li><li><b>Eleme Ağacı:</b> Gruplar bitince çapraz eşleşmeler otomatik kurulur. Elensen bile <b>Finale Kadar Simüle Et</b> ile turnuvanın şampiyonunu görebilirsin.</li><li><b>Görünüm:</b> <i>Ağaç Görünümü</i> yatay kaydırılabilir diyagram sunar; gol/asist detayları için <i>Detaylı Liste</i>’ye geçebilirsin.</li></ul>`)+
     sec("3. Maç Girişi & Gelişmiş Analitik",
@@ -3447,7 +3511,7 @@ document.addEventListener("input",e=>{const t=e.target,mk=t.dataset&&t.dataset.m
   else if(t.id=="gsq"){st.gsq=t.value;const r=$("gsr");if(r)r.innerHTML=gsRes(t.value)}
   else if(t.id=="tiq"){st.tiq=t.value;const b=$("tiL");if(b&&st.ti!=null)b.innerHTML=tiBody(st.ti)}
   else if(t.dataset&&t.dataset.cpmst&&st.cpM){const ck=t.dataset.cpmst;st.cpM.mst=st.cpM.mst||defMst();st.cpM.mst[ck]=t.value;if(ck=="myPos"||ck=="oppPos"){const n=parseInt(t.value);if(Number.isFinite(n)&&n>=0&&n<=100){const ok=ck=="myPos"?"oppPos":"myPos",comp=String(100-n);st.cpM.mst[ok]=comp;const oe=$("cpmst_"+ok);if(oe)oe.value=comp}}}
-  else if(t.id=="cp_q"){st.cpQ=t.value;render()}
+  else if(t.id=="cp_q"){st.cpQ=t.value;if(!(typeof coopFilterPick==="function"&&coopFilterPick()))render()}
   else if(t.id=="cp_hname"){st.cpHName=t.value}
   else if(t.id=="cp_gname"){st.cpGName=t.value}
   else if(t.id=="cp_code"){st.cpCode=t.value}});
@@ -3556,12 +3620,12 @@ function parseColorToHsl(str){
   return null;
 }
 function isDarkMode(){
-  return store.theme==="dark"||(!store.theme&&typeof matchMedia==="function"&&matchMedia("(prefers-color-scheme:dark)").matches);
+  return document.documentElement.hasAttribute("data-cup")||store.theme==="dark"||(!store.theme&&typeof matchMedia==="function"&&matchMedia("(prefers-color-scheme:dark)").matches);
 }
 function applyPalette(cb){
-  const de=document.documentElement,pal=store.pal||"";
-  if(pal)de.setAttribute("data-pal",pal);else de.removeAttribute("data-pal");
-  if(pal==="club"&&cb){
+  const de=document.documentElement,cup=de.getAttribute("data-cup")||"",pal=store.pal||"";
+  if(pal&&!cup)de.setAttribute("data-pal",pal);else de.removeAttribute("data-pal");
+  if(pal==="club"&&cb&&!cup){
     const dark=isDarkMode();
     const p1=parseColorToHsl(cb.c1),p2=parseColorToHsl(cb.c2);
     const pick=(p1&&p1.s>=24&&p1.l>=12&&p1.l<=88)?p1:(p2&&p2.s>=24&&p2.l>=12&&p2.l<=88)?p2:{h:42,s:78,l:50};
@@ -3581,9 +3645,11 @@ function applyPalette(cb){
 // --- Dinamik PWA theme-color (v20.0) ---
 function syncThemeColor(){
   try{
-    const dark=store.theme==="dark"||(!store.theme&&typeof matchMedia==="function"&&matchMedia("(prefers-color-scheme:dark)").matches);
+    const cup=document.documentElement.getAttribute("data-cup")||"";
+    const dark=!!cup||store.theme==="dark"||(!store.theme&&typeof matchMedia==="function"&&matchMedia("(prefers-color-scheme:dark)").matches);
     const m=document.querySelector('meta[name="theme-color"]');
-    if(m)m.setAttribute("content",dark?"#090c10":"#f3f5f4");
+    const col=cup==="ucl"?"#060d20":cup==="uel"?"#120e0a":cup==="uecl"?"#05100c":(dark?"#090c10":"#f3f5f4");
+    if(m)m.setAttribute("content",col);
   }catch(e){}
 }
 try{

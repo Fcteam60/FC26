@@ -1,57 +1,46 @@
-# FC 27 Grup Ligi & Turnuva Takip (PWA · v25.5)
+# FC 27 Grup Ligi & Turnuva Takip (PWA · v26.2)
 
-Arkadaş grupları ve bireysel turnuvalar için tasarlanmış, sıfır bağımlılıklı, çevrimdışı çalışabilen Progressive Web App (PWA) turnuva ve menajerlik takip uygulaması.
+Arkadaş grupları ve bireysel kariyerler için tasarlanmış, sıfır bağımlılıklı, çevrimdışı çalışabilen Progressive Web App (PWA) futbol turnuva ve menajerlik takip uygulaması.
 
-Kura çekimi, grup/eleme veya puan usulü lig kurulumu, gerçekçi maç simülasyonu, adım adım gol ve asist eşleştirmesi, Opta/StatsBomb tarzı xG/xPts ve Taktiksel DNA (Radar) analizi, **Firebase Realtime Database REST tabanlı Canlı Menajer Düellosu (VS)**, 9 farklı 1080px+ Broadcast PNG poster üreticisi, rozetler ve JSON yedekleme özelliklerini içerir.
+**108 kulüplük güncel FC 27 veritabanı** (3.262 oyuncu ve 108/108 PNG arma), 3 hazır Avrupa kupası şablonu (**Şampiyonlar Ligi**, **Avrupa Ligi**, **Konferans Ligi**) ve her şablona özel tam ekran **9:16 dinamik turnuva arka planı**, gerçekçi Poisson simülasyonu, **2 Kişilik Ortak Turnuva (2P)**, **Canlı Menajer Düellosu (VS)**, **11 farklı 1080px+ Broadcast PNG poster** ve katlanabilir uzun kariyer analitiği sunar.
 
-Ana turnuva verileri tamamen kullanıcının cihazında (**IndexedDB**) saklanır; yalnızca kullanıcı ortak bir Düello Oda Kodu girdiğinde hafif kariyer/sezon özeti isteğe bağlı olarak buluta eşitlenir.
+Ana turnuva verileri tamamen cihazında (**IndexedDB**) saklanır; yalnızca isteğe bağlı **2P Ortak Turnuva** veya **Menajer Düellosu** odası açıldığında ilgili oda verisi Firebase Realtime Database (REST) üzerinden eşitlenir.
 
 ## Dosya Yapısı (Sıfır Bağımlılık & Doğal Modülerlik)
 
-Proje hiçbir derleyiciye (Vite, Webpack vb.) veya harici SDK'ya ihtiyaç duymaz; doğrudan statik dosya olarak çalışır. Betikler klasik `<script defer>` ile yüklenir; yükleme sırası önemlidir (`data → storage → sim → analytics → duel → posters → app`).
+Proje derleyici veya harici SDK gerektirmez; doğrudan statik dosya olarak çalışır. Betik yükleme sırası önemlidir (`data → storage → sim → analytics → duel → posters → coop → app`).
 
 | Dosya | Görev |
 |---|---|
-| `index.html` | Arayüz iskeleti (HTML kabuğu), tema/hareket ön yükleyicisi ve sürüm etiketli varlık bağları |
-| `style.css` | Tüm stiller, 3 katmanlı navigasyon (obsidiyen alt dock · alt çizgili sekmeler · ince filtreler) ve gömülü "FC Sayi" yazı tipi |
-| `data.js` | 108 kulüp (`RAW`), 3.200+ oyuncu kadrosu (`SQ`) ve 108 kulüp arması eşleme haritası (`LOGOS`) |
-| `storage.js` | Asenkron depolama katmanı (`kv`), IndexedDB arka ucu, doğrulamalı taşıma protokolü, sıralı yazma kuyruğu (`queueSave`), `BroadcastChannel` çoklu sekme kilidi ve kurtarma kopyaları |
-| `sim.js` | Gerçekçi, Dengeli ve Sürprizli maç simülasyon motoru, puan tablosu ve eleme ağacı eşleştiricisi |
-| `analytics.js` | xG/xPts analitiği, hak ediş sınıflandırması, 4 eksenli Taktiksel DNA radarı, kariyer ve ödül istatistikleri |
-| `duel.js` | Canlı Menajer Düellosu (VS), tek kaynaklı 10 kriterli değerlendirme motoru, 100 sezonluk arşiv, Sezon/Kulüp stüdyoları, Canlı Sezon inceleme modalı ve zaman aşımı korumalı (`AbortController`) Firebase REST istemcisi |
-| `posters.js` | 9 farklı 1080px+ Canvas PNG poster üreticisi (Kura, Eleme Ağacı, TOTS, Maç Kartı, Sezon Karnesi, Kariyer Özeti, 1v1 Düello, Sezon vs. Sezon, Kulüp vs. Kulüp) |
-| `app.js` | Ana uygulama orkestrasyonu, yönlendirme, olay yöneticileri ve `async initApp()` başlatıcısı |
-| `sw.js` | Service Worker (çevrimdışı önbellekleme, kalıcı `LOGO_CACHE` ve arka plan güncelleme mekanizması) |
-| `logos/` | 108 kulübün PNG armaları |
-| `manifest.webmanifest` | PWA kurulum, ikon ve ana ekran kısayol tanımları |
-| `KILAVUZ.md` | Son kullanıcı için güncel kullanım kılavuzu |
-| `DEGISIKLIKLER.md` | Sürüm geçmişi ve yapılan iyileştirmeler |
+| `index.html` | HTML iskeleti, yakınlaştırma kilitli native PWA viewport, flaşsız tema/turnuva arka planı ön yükleyicisi ve `#cupbg` katmanı |
+| `style.css` | Açık/koyu tema, 5 renk paleti, 3 dinamik turnuva koyu buzlu cam atmosferi (`UCL/UEL/UECL`) ve tüm bileşen stilleri |
+| `data.js` | 108 kulüp, 3.262 oyuncu kadrosu (`SQ`), 108 PNG arma eşlemesi (`LOGOS`), kulüp renkleri ve bayraklar |
+| `storage.js` | IndexedDB depolama katmanı, sıralı yazma kuyruğu, 5 kurtarma kopyası ve `BroadcastChannel` çoklu sekme kilidi |
+| `sim.js` | Poisson maç simülasyonu, 36T İsviçre ŞL fikstürü, grup/eleme/lig motoru, 4-3-3 En İyi 11 ve ortak `autoMatchMom()` |
+| `analytics.js` | Maç/Kadro istatistikleri, xG/xPts, Taktiksel DNA (Radar), Beklenene Göre Performans, Takım Gücü ve Turnuva Evreni |
+| `duel.js` | Firebase REST tabanlı Canlı Menajer Düellosu (VS), radar kıyas ve canlı sezon takibi |
+| `posters.js` | Canvas 2D tabanlı 11 farklı 1080px+ Broadcast PNG poster üreticisi (1P + 2P) |
+| `coop.js` | 2 Kişilik Ortak Turnuva (2P) — ortak oda, CSPRNG oda kodu, Son Odalar geçmişi, sezon adı düzenleme ve 2P posterleri |
+| `app.js` | Ana uygulama durumu, 5 sekmeli navigasyon, kurulum/kura/maç girişi, oyuncu/kadro profilleri ve yedekleme |
+| `sw.js` | Çevrimdışı Service Worker önbelleği (`fc27-lig-v26-2`), kalıcı arma önbelleği ve 3 turnuva arka planı ön-önbelleği |
+| `bg-ucl.jpg` / `bg-uel.jpg` / `bg-uecl.jpg` | Şampiyonlar Ligi, Avrupa Ligi ve Konferans Ligi için optimize edilmiş 9:16 dikey arka plan görselleri |
+| `tests/smoke.mjs` | Sıfır bağımlılıklı Node otomatik doğrulama betiği (`npm test`) |
 
-## Depolama & Senkronizasyon Mimarisi
+## Öne Çıkan Özellikler
 
-1. **Cihaz İçi Depolama (`storage.js` · IndexedDB):**
-   - Veritabanı adı `fc26lig4`, nesne deposu `kv` olarak yapılandırılmıştır; 5 MB `localStorage` sınırına takılmadan yüzlerce sezonu güvenle saklar.
-   - Yıkıcı işlemlerden önce otomatik 5 kurtarma kopyası (`RCV`) alınır; çoklu sekme veri ezilmelerine karşı `BroadcastChannel("fc26lig4_sync")` kilidi aktiftir.
-2. **İsteğe Bağlı Canlı Düello Eşitlemesi (`duel.js` · Firebase REST):**
-   - Harici Firebase SDK kullanılmadan doğrudan REST API (`PUT`/`GET`/`DELETE`) ve 8 saniyelik `AbortController` zaman aşımı ile çalışır.
-   - Her menajerin özeti (~8–12 KB, son 100 sezon dahil) ortak oda kodu altında tutulur; ekran içi etkileşimler önbellekli `buildDuelSummary()` üzerinden sıfır gecikmeyle çalışır.
+* **3 Hazır Kupa Şablonu & Yayın Atmosferi:** Tek dokunuşla *Konferans Ligi* (`≤76 GEN`), *Avrupa Ligi* (`75–78 GEN`) ve *Şampiyonlar Ligi* (`36T İsviçre, 77+ GEN`) kurulumu; seçilen şablona göre tam ekran arka plan, koyu buzlu cam kartlar ve turnuva renk vurguları otomatik devreye girer (`Ayarlar › Görünüm` üzerinden istenildiğinde kapatılabilir).
+* **2 Kişilik Ortak Turnuva (2P):** Arkadaşınla aynı grupta, puan liginde veya 36T Şampiyonlar Ligi’nde yarış; **Son Odalar** ile tek dokunuşla geri bağlan, ortak sezon adını özelleştir ve 4 özel 2P posteri üret.
+* **11 Broadcast PNG Poster:** Kura, Grup/Lig Tablosu, Eleme Ağacı, Maç Kartı, 2 Sayfalık Sezon Karnesi, Kariyer Özeti, Turnuvanın En İyi 11’i (TOTS), Menajer Düellosu ve 2P Ortak Turnuva posterleri.
+* **Uzun Kariyer Ergonomisi:** Katlanabilir Evren/Performans/Kronoloji/Sezon/Rakip listeleri, `Gol Kralları | MVP’ler` 2’li sekmesi ve doğrudan oyuncu profili açılışı.
 
-## Yeni Oyun Çıktığında (Örn. FC 28) Kadroları Güncelleme
+## Geliştirme & Doğrulama
 
-Takım ve oyuncu veritabanı **`data.js`** dosyasında tutulur:
-1. **Takım Güçleri (`RAW`):** `TakımAdı,ÜlkeKodu,Genel,Hücum,OrtaSaha,Defans` biçiminde `;` ile ayrılmış metindir.
-2. **Takım Kadroları (`SQ`):** `OyuncuAdı,Mevki,Genel,Yaş,FormaNo,Durum` (`S`: İlk 11, `B`: Yedek, `R`: Rezerv).
-3. Takım adları değiştiyse eski sezon yedeklerinin sorunsuz eşleşmesi için `app.js` içindeki `ALIAS` nesnesine `"Eski Ad": "Yeni Ad"` eklenmesi yeterlidir.
+```bash
+npm test
+```
 
-## Yeni Sürüm Yayınlama
+Komut `tests/smoke.mjs` üzerinden 9 JS dosyasının sözdizimini, 108/108 kulüp-kadro-arma bütünlüğünü, 0 sembol çakışmasını, CSS parantez dengesini, `data-a` aksiyon kapsamını ve sürüm tutarlılığını doğrular.
 
-1. `app.js` (`VER`), `duel.js` başlığı, `package.json` (`version`), `index.html` (`?v=...`), `manifest.webmanifest` (`?v=...`) ve `sw.js` (`CACHE` + `FILES`) içindeki sürüm etiketlerini güncelleyin.
-2. Değişiklikleri GitHub'a gönderin; kullanıcılar uygulamayı açtığında **"Yeni sürüm var — Yenile"** bildirimi ile verileri korunarak güncellenir.
+## Kurulum (GitHub Pages)
 
-## Önemli Teknik Not
-
-Tarayıcı depolama ve veritabanı anahtarları (`fc26lig4`, `fc26lig4_idb`, `fc27lig_duel_cfg` vb.) geriye dönük veri uyumluluğu için **değiştirilmemelidir**.
-
-## Yasal Uyarı (Disclaimer)
-
-Bu proje ticari olmayan, reklamsız, bağımsız bir hobi/takip uygulamasıdır. **Electronic Arts Inc. (EA Sports), EA SPORTS FC, FIFA, UEFA** veya adı geçen kulüp/federasyonlarla hiçbir resmi bağlantısı yoktur. Tüm ticari markalar ilgili sahiplerinin mülkiyetindedir.
+Paketteki dosyaları deponun ana dizinine yükleyip (mevcut `logos/` klasörünü ve PNG uygulama ikonlarını koruyarak) GitHub Pages üzerinden yayınlayabilirsin.

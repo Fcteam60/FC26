@@ -1,72 +1,47 @@
-# FC 27 Grup Ligi — Kullanım Kılavuzu (v25.5)
+# FC 27 Grup Ligi — Kullanım Kılavuzu (v26.2)
 
-FC 27 Grup Ligi; çevrimdışı çalışabilen (PWA), kupa ve lig turnuvalarını takip etmeni ve arkadaşlarınla canlı kariyer düellosu yapmanı sağlayan kapsamlı bir futbol takip uygulamasıdır.
+FC 27 Grup Ligi; 108 kulüplü güncel kadro veritabanı, çevrimdışı PWA desteği, 3 hazır Avrupa kupası atmosferi, 2 Kişilik Ortak Turnuva (2P) ve Canlı Menajer Düellosu (VS) sunan futbol turnuva takip uygulamasıdır.
 
 ---
 
 ## 1. Hızlı Başlangıç (5 Adım)
-1. **Kurulum (`Sezon › Kurulum`):** Hazır şablonlardan (*Dünya Kupası, Klasik 64, Mini Lig, Direkt Eleme, Lig, Şampiyonlar Ligi 36 Takım*) birini seç veya **Gelişmiş Kurallar** altından bölge, açılır **Ülke Filtresi**, güç aralığı ve kura yöntemini özelleştirip onayla.
-2. **Takım Seçimi (`Sezon › Takım`):** *Benim İçin Takım Seç* ile obsidiyen slot çekilişi üzerinden zorluk seviyesine göre rastgele kulüp çek (son 3 sezonda oynadığın takımlar tekrar gelmez) veya kulübünü kendin seç.
-3. **Kura (`Turnuva › Kura`):** *Yeni kura hazırla* ile takımları torba torba çek veya *En dengeli kurayı otomatik kur* ile grupları tek dokunuşta oluştur.
-4. **Oyna (`Turnuva › Gruplar`):** Sıradaki maçını **Maç Merkezi**nden gir, ardından diğer maçları **Haftayı Simüle Et** ile oynat.
-5. **Bitir:** Tüm turlar tamamlandığında **Turnuvayı Sonlandır** ile şampiyonu, Turnuva MVP'sini ve 4-3-3 En İyi 11'ini arşive kaydet.
+1. **Kurulum (`Sezon › Kurulum`):** **Hazır Kupa Şablonları**ndan (*Konferans Ligi*, *Avrupa Ligi*, *Şampiyonlar Ligi*) ya da klasik formatlardan (*Dünya Kupası, Klasik 64, Mini Lig, Direkt Eleme, Puan Ligi*) birini seç; istersen **Güç ve Ülke Sınırları**ndan GEN aralığı, bölge ve ülke limitlerini ayarla.
+2. **Takım Seçimi (`Sezon › Takım`):** *Benim İçin Takım Seç* ile slot çekilişi yap (son 9 takımın tekrar gelmez) veya 108 kulüp arasından takımını kendin seç.
+3. **Kura (`Turnuva › Kura`):** Torba torba çekiliş yap veya *En dengeli kurayı otomatik kur* ile grupları tek dokunuşta oluştur.
+4. **Oyna (`Turnuva › Gruplar` / `Maç Merkezi`):** Kendi maçını gir, ardından diğer maçları **Haftayı Simüle Et** ile oynat.
+5. **Bitir:** Tüm turlar bitince **Turnuvayı Sonlandır** ile şampiyonu, Gol Kralı’nı, MVP’yi ve 4-3-3 En İyi 11’i arşive ekle.
 
 ---
 
-## 2. Simülasyon & Eleme Ağacı
-* **3 Simülasyon Modu:** *Gerçekçi* (İlk 11 ortalaması, hücum yıldızları ve kaleci gücüne dayalı futbol skorları), *Dengeli* ve *Sürprizli*.
-* **Geri Alma:** Yanlışlıkla simüle edilen son haftayı **↩ Geri Al** ile geri alabilirsin.
-* **Otomatik Eleme Ağacı:** Grup aşaması bitince gerçek çapraz eşleşme mantığıyla eleme ağacı kurulur. Grupta veya ara turlarda elensen bile **Finale Kadar Simüle Et** ile turnuvanın şampiyonunu görebilirsin.
-* **Ağaç / Liste Geçişi:** *Turnuva › Fikstür* altında bağlantı çizgili yatay **Ağaç Görünümü** veya gol/asist dökümlü **Detaylı Liste** arasında geçiş yapabilirsin.
+## 2. Hazır Kupa Şablonları & Dinamik Turnuva Arka Planı
+* **Konferans Ligi (UECL):** 32T · 4×8 grup · İlk 4 · `≤76 GEN` · Zümrüt arka plan & koyu cam atmosferi.
+* **Avrupa Ligi (UEL):** 32T · 4×8 grup · İlk 4 · `75–78 GEN` · Amber-turuncu arka plan & koyu cam atmosferi.
+* **Şampiyonlar Ligi (UCL):** 36T İsviçre · 8 maç + Play-Off · `77+ GEN` · Buz mavisi arka plan & koyu cam atmosferi.
+* Bu şablonlardan biri aktifken yüksek okunurluk için koyu buzlu cam devreye girer; diğer formatlara geçince kişisel teman geri döner. İstersen **Ayarlar › Görünüm ve Deneyim › Turnuva Arka Planı** üzerinden tek dokunuşla kapatıp açabilirsin.
 
 ---
 
-## 3. Maç Girişi & Gelişmiş Analitik
-* **Gol, Asist ve KK:** Kendi attığın her gol için golcüyü ve isteğe bağlı asistçiyi seçebilir, rakibin kendi kalesine golünü **KK** olarak işaretleyebilirsin.
-* **Otomatik Maçın Adamı (MOTM):** Kendi takımından MOTM seçmezsen sistem rakipten en etkili oyuncuyu otomatik belirler (`Otomatik (Rakip)`).
-* **5 Altın Veri (Opsiyonel):** Maç formundaki *Gelişmiş İstatistik Ekle* bölümünden **Topla Oynama, Toplam Şut, İsabetli Şut, Pas İsabeti ve xG** girerek şunları açabilirsin:
-  * **xG & xPts Analizi:** Gol beklentisi, puan beklentisi, şut kalitesi, kaleci kurtarış oranı ve xG trendi.
-  * **Hak Ediş:** Her maçın *Hak Edilmiş*, *Şanslı* veya *Şanssız* olarak sınıflandırılması.
-  * **Taktiksel DNA & Menajer Kimliği:** 4 eksenli radar grafiği ve sezonlar arası gelişim karşılaştırması.
+## 3. Maç Girişi & Otomatik Maçın Adamı (MOTM)
+* **Gol & Asist:** Her gol için oyuncuyu kadrodan seç (kendi kalesine için `KK` veya kadro dışı oyuncu için `+ Başka`).
+* **Otomatik MOTM:** Maçın Adamı seçiminde **`Otomatik`** bırakıldığında maç sonucuna, gol/asist katkılarına ve takım performansına göre hem kendi takımından hem rakipten en yüksek etkiyi yapan oyuncu otomatik belirlenir; dilersen kendi takımından bir oyuncuyu elle seçebilirsin.
+* **Eleme Kuralları:** Tek veya çift maçlı elemelerde toplam skor eşitse **Penaltılar (P)** girişi otomatik açılır.
 
 ---
 
-## 4. Canlı Menajer Düellosu (VS)
-* **Ortak Oda:** `Geçmiş › Düello` ekranında arkadaşınla aynı 6+ karakterli oda kodunu gir. Maç kaydettikçe son 100 sezonunu içeren hafif özetin arka planda otomatik eşitlenir; ana kayıtların telefonunda kalır.
-* **4 Sekmeli Düello Stüdyosu:**
-  * **Genel:** Tek kaynaklı **10 kriterli** kariyer & kupa karnesi (*Ort. Takım GEN* nötr bağlam satırıdır, puan eklemez), **Son Dönem Formu** (son 5 sezon P/M trend grafiği), kariyer yıldızları ve canlı sezon nabzı.
-  * **Sezonlar:** Kendi istediğin sezonu arkadaşının istediğin sezonuyla (*Maç Başı Averaj*, xG, Beklenti Üstü ve Sezon Yıldızı dahil) yan yana çarpıştır.
-  * **Takımlar:** Adil Güç Endeksi, **GEN Kademeleri** (*Elit Devler 83+ · Güçlü Kadrolar 79–82 · Orta & Sürpriz ≤78*), **Ortak Alınan Kulüpler** ve özel **Kulüp vs. Kulüp** düellosu.
-  * **DNA & xG:** Çift renkli Taktiksel DNA radar laboratuvarı ve gelişmiş xG/bitiricilik/kaleci telemetrisi.
-* **Canlı Sezon İnceleme:** Arkadaşının aktif sezonundaki puan durumunu, oynadığı ve kalan maçlarını, eleme eşleşmelerini ve sezon DNA'sını tek dokunuşla aç.
-* **Çevrimdışı Yedek:** Oda kullanmadan tek seferlik **Manuel Kıyas Kodu** ile çevrimdışı karşılaştırma yapabilirsin.
+## 4. 2 Kişilik Ortak Turnuva (2P)
+* Üst çubuktaki **2P** düğmesiyle arkadaşınla aynı turnuvada yarış.
+* **Son Odalar:** Katıldığın veya kurduğun son 5 ortak oda lobide saklanır; oda kodunu yeniden yazmadan tek dokunuşla geri bağlanabilirsin.
+* **Sezon Adı Düzenleme:** Kurucu, üstteki oda koduna dokunup **Sezon Adını Düzenle** seçeneğiyle ortak turnuvaya özel ad verebilir (*Şampiyonlar Ligi 2026* vb.).
+* **Doğrudan Karşılaşmalar:** İki oyuncunun birbirine denk geldiği maçları Kurucu girer; skorlar, golcüler ve asistler her iki menajerin ekranına otomatik işlenir.
 
 ---
 
-## 5. Paylaşılabilir PNG Posterler (9 Tür)
-Uygulama 1080px+ yüksek çözünürlükte, gerçek kulüp armalı 9 farklı Broadcast PNG posteri üretir:
-* **Kura / Canlı Puan Durumu:** `Turnuva › Gruplar` (maçlar oynandıkça canlı sıralamayı, O/G/B/M/AV/P ve eleme çizgisini çizer)
-* **Eleme Ağacı (Bracket):** `Turnuva › Fikstür › Eleme Ağacı`
-* **Turnuvanın En İyi 11'i (TOTS):** `Turnuva › İstatistik` ve `Geçmiş › Sezonlar` arşivi
-* **Maç Kartı:** `İstat. › Maçlar` (her maç kartının görsel simgesi)
-* **Sezon Karnesi:** `Takımım › Sezonu Bitir` ve `Geçmiş › Sezonlar`
-* **Kariyer Özeti:** `Geçmiş › Özet`
-* **1v1 Menajer Düellosu Posteri:** `Geçmiş › Düello` ana sahnesi
-* **Sezon vs. Sezon Posteri:** `Geçmiş › Düello › Sezonlar`
-* **Kulüp vs. Kulüp Posteri:** `Geçmiş › Düello › Takımlar`
+## 5. Turnuva Evreni, Analitik & 11 Broadcast Poster
+* **Katlanabilir Uzun Listeler:** *Beklenene Göre Performans*, *TOTS Efsaneleri*, *Evrenin Devleri*, *Lanetli Finalistler*, *Şampiyonluk Kronolojisi*, *Sezonlar* ve *Rakiplerim* kompakt açılır; tek dokunuşla tüm sezonlar genişletilir.
+* **Gol Krallığı & MVP Onur Listesi:** 2’li sekme geçişiyle görüntülenir; bir oyuncuya dokunduğunda doğrudan oyuncu profil kartı açılır.
+* **11 Poster Türü:** Kura, Grup/Lig Tablosu, Eleme Ağacı, Maç Kartı, 2 Sayfalık Sezon Karnesi, Kariyer Özeti, Turnuvanın En İyi 11’i (TOTS), Menajer Düellosu ve 2P Ortak Turnuva posterleri (Tablo, Karne, Maç, Kupa Geçmişi) 1080px+ PNG olarak indirilebilir veya paylaşılabilir.
 
 ---
 
-## 6. Kadro İnceleme, Oyuncu Profili & Arama
-* **İlk 11 Saha & Kadro:** Herhangi bir takım adına dokunarak İlk 11 saha dizilişini, yedekleri, renkli mevki rozetlerini ve o sezonki gol/asist/MOTM katkılarını inceleyebilirsin.
-* **Oyuncu Profili:** *Sezon Ödülleri*, *Kariyer Yıldızları* ve *TOTS* kartlarında kendi oyuncularına dokunarak sezon ivmesi grafiği, en çok gol attığı rakipler ve asist partnerlerini görebilirsin.
-* **Turnuva Evreni Tarihi:** `Geçmiş › Evren` sekmesinden tüm sezonların şampiyonlarını (Sen + Yapay Zekâ), en çok final kaybeden lanetli kulüpleri, TOTS efsanelerini ve sezon kronolojisini inceleyebilirsin.
-* **Renk Paletleri:** `Ayarlar › Görünüm ve Deneyim` altından 5 küratörlü stadyum paleti (*Zümrüt Saha, Şampiyonlar Gecesi, Kraliyet Altını, Kızıl Arena, Kulübümün Rengi*) seçebilirsin.
-* **Global Arama:** Sağ üstteki büyüteç simgesiyle 108 kulüp ve 3.200+ oyuncu arasında anında arama yapabilirsin.
-
----
-
-## 7. Yedekleme & Telefon Kurulumu (PWA)
-* **Ana Ekrana Ekleme:** iOS Safari'de *Paylaş › Ana Ekrana Ekle*, Android Chrome'da *Uygulamayı Yükle* seçeneğiyle tam ekran yerel uygulama deneyimi ve iOS 7 günlük veri silinmesine karşı koruma sağla.
-* **Hızlı Kısayollar:** Ana ekrandaki uygulama ikonuna uzun basarak *Maç Merkezi*, *İstatistikler* veya *Yeni Sezon* ekranına doğrudan geçebilirsin.
-* **Yedekleme & Birleştirme:** Tüm kayıtların cihazındaki `IndexedDB` veritabanında saklanır. `Ayarlar › Yedeği İndir` ile düzenli JSON yedeği alabilir, başka bir cihazda *Birleştir* seçeneğiyle sezonlarını kayıpsız eşitleyebilirsin.
+## 6. Yedekleme & Kurtarma
+* Tüm bireysel veriler cihazındaki **IndexedDB** içinde saklanır. **Ayarlar › Yedekleme** üzerinden sezon sonlarında `.json` yedeği alman önerilir; kritik işlemler öncesi alınan son 5 otomatik kopyaya **Ayarlar › Sistem & Tanılama** içinden ulaşabilirsin.

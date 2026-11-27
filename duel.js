@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v25.5)
+   FC 27 Grup Ligi — Flagship Broadcast Menajer Düellosu (duel.js · v26.2)
    - Obsidian Broadcast Arena, 4 sekmeli Düello Stüdyosu (Genel · Sezonlar · Takımlar · DNA & xG)
    - Sıfır harici SDK: Firebase Realtime Database REST API + çevrimdışı IndexedDB uyumu
    - Canlı Sezon İnceleme (Puan Durumu, Maçlar, Eleme, Sezon DNA) & Yedek Manuel Kıyas Kodu
@@ -46,7 +46,7 @@ function duelNormRoom(raw){
 }
 function duelBaseUrl(cfg){
   const u=String((cfg&&cfg.url)||DUEL_DEFAULT_URL).trim().replace(/\/+$/,"");
-  return /^https:\/\/[a-z0-9.-]+/i.test(u)?u:DUEL_DEFAULT_URL;
+  return /^https:\/\/[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:firebasedatabase\.app|firebaseio\.com)$/i.test(u)?u:DUEL_DEFAULT_URL;
 }
 function duelLoadCfg(){
   let c=null;

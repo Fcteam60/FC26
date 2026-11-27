@@ -1,22 +1,27 @@
-const CACHE = "fc27-lig-v25-5";
+const CACHE = "fc27-lig-v26-2";
 const LOGO_CACHE = "fc27-logos-v1";
+const CUP_BGS = [
+  "./bg-ucl.jpg?v=26.2",
+  "./bg-uel.jpg?v=26.2",
+  "./bg-uecl.jpg?v=26.2"
+];
 const FILES = [
   "./",
   "./index.html",
-  "./style.css?v=25.5",
-  "./data.js?v=25.5",
-  "./storage.js?v=25.5",
-  "./sim.js?v=25.5",
-  "./analytics.js?v=25.5",
-  "./duel.js?v=25.5",
-  "./posters.js?v=25.5",
-  "./coop.js?v=25.5",
-  "./app.js?v=25.5",
+  "./style.css?v=26.2",
+  "./data.js?v=26.2",
+  "./storage.js?v=26.2",
+  "./sim.js?v=26.2",
+  "./analytics.js?v=26.2",
+  "./duel.js?v=26.2",
+  "./posters.js?v=26.2",
+  "./coop.js?v=26.2",
+  "./app.js?v=26.2",
   "./manifest.webmanifest",
-  "./icon-192.png?v=25.5",
-  "./icon-512.png?v=25.5",
-  "./icon-maskable-512.png?v=25.5",
-  "./apple-touch-icon.png?v=25.5"
+  "./icon-192.png?v=26.2",
+  "./icon-512.png?v=26.2",
+  "./icon-maskable-512.png?v=26.2",
+  "./apple-touch-icon.png?v=26.2"
 ];
 
 self.addEventListener("install", e => {
@@ -30,7 +35,9 @@ self.addEventListener("install", e => {
           })
         )
       )
-    ).then(() => self.skipWaiting())
+    ).then(() => caches.open(CACHE).then(c => Promise.all(
+      CUP_BGS.map(u => fetch(u, { cache: "no-cache" }).then(r => (r && r.ok ? c.put(u, r) : null)).catch(() => null))
+    ))).then(() => self.skipWaiting())
   );
 });
 
