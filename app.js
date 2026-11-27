@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="26.2",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="26.3",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -656,7 +656,7 @@ function setView(){const dk=store.theme||"",pl=store.pal||"",motOn=store.motion=
     `<div class="pal-grid" role="radiogroup" aria-label="Renk paleti seçimi">`+
     PALETTES.map(([v,l,c1,c2])=>`<button class="pal-btn${pl===v?" on":""}" data-a="pal" data-v="${v}"><span class="pal-sw" style="background:linear-gradient(135deg,${c1},${c2})"></span><span>${l}</span></button>`).join("")+
     `</div>`;
-  const setCupId=(store.cupBg!==0)?activeCupOf(s):"";
+  const setCupId=(store.cupBg!==0)?activeCupOf(cur()):"";
   const setCupNm=setCupId==="ucl"?"Şampiyonlar Ligi":setCupId==="uel"?"Avrupa Ligi":setCupId==="uecl"?"Konferans Ligi":"";
   const setCupNote=setCupNm?`<div class="pgmath info" style="margin:0 0 10px"><span>Şu an <b>${setCupNm}</b> arka planı aktif olduğu için koyu cam ve turnuva renkleri uygulanıyor. Tema ve palet tercihlerin diğer formatlarda veya <b>Turnuva Arka Planı</b> kapatıldığında geçerli olur.</span></div>`:"";
   const appPref=psetCard("theme","emr","Görünüm ve Deneyim","Tema, renk paleti ve animasyon tercihleri",setCupNm||(dk=="light"?"Açık":dk=="dark"?"Koyu":"Oto"),

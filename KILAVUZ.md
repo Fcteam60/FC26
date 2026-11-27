@@ -1,4 +1,4 @@
-# FC 27 Grup Ligi — Kullanım Kılavuzu (v26.2)
+# FC 27 Grup Ligi — Kullanım Kılavuzu (v26.3)
 
 FC 27 Grup Ligi; 108 kulüplü güncel kadro veritabanı, çevrimdışı PWA desteği, 3 hazır Avrupa kupası atmosferi, 2 Kişilik Ortak Turnuva (2P) ve Canlı Menajer Düellosu (VS) sunan futbol turnuva takip uygulamasıdır.
 

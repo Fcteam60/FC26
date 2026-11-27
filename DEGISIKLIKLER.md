@@ -1,3 +1,7 @@
+## v26.3 (2026-11-27) — Ayarlar Sekmesi `s is not defined` Acil Düzeltmesi
+- **Ayarlar Sekmesi Çökmesi Giderildi (`app.js` `setView`):** `v25.8`’de eklenen aktif turnuva bilgi notu `setView()` içinde tanımlı olmayan `s` parametresini (`activeCupOf(s)`) çağırdığı için **Ayarlar** sekmesine girildiğinde `s is not defined` hatası veriyordu; `activeCupOf(cur())` olarak düzeltildi.
+- **Tüm Kod Tabanı Kapsam (Scope) Taraması:** 8 JS dosyasındaki tüm üst düzey fonksiyonlar ve olay dinleyicileri tanımsız değişken referanslarına karşı otomatik tarandı; başka hiçbir tanımsız referans olmadığı doğrulandı ve regresyon kontrolü `tests/smoke.mjs` içine eklendi.
+
 ## v26.2 (2026-11-27) — Native PWA Yakınlaştırma Kilidi, Temiz Havuz Filtresi & 2P Senkron Cilası
 - **Yakınlaştırma Kilidi Yeniden Aktif (`index.html`):** `<meta name="viewport">` üzerine `maximum-scale=1, minimum-scale=1, user-scalable=no` geri alınarak iOS Safari’de hem parmakla yanlışlıkla yakınlaştırma hem de üst çubuk/Düello seçicilerinde odak büyütmesi tamamen engellendi; gerçek uygulama hissi korundu.
 - **9-Takım Bekleme Notu Aktif Havuza Filtrelendi (`app.js`, `coop.js`):** Bireysel ve 2P takım seçimi ekranlarında son 9 takım kuralı notu artık yalnızca mevcut turnuva havuzunda (`s.P` / `t.P`) yer alıp hariç tutulan kulüpleri gösterir; başka lig/GEN havuzlarındaki ilgisiz takımlar ekranı kalabalıklaştırmaz.

@@ -5972,7 +5972,7 @@ header .btn.cp-hdref.spin svg{animation:dlSpin .85s linear infinite}
   --gsh-hi:0 14px 36px rgba(0,0,0,.52),inset 0 1px 0 rgba(255,255,255,.13);
 }
 :root[data-cup="ucl"]{
-  --cup-img:url("bg-ucl.jpg?v=26.2");
+  --cup-img:url("bg-ucl.jpg?v=26.3");
   --cup-scrim:linear-gradient(180deg,rgba(4,10,28,.50) 0%,rgba(5,13,34,.34) 34%,rgba(5,12,32,.36) 72%,rgba(3,8,22,.64) 100%);
   --bg:#050c20;--bg2:#050c20;
   --card:rgba(8,17,40,.78);--gcard:rgba(8,17,40,.78);
@@ -5986,7 +5986,7 @@ header .btn.cp-hdref.spin svg{animation:dlSpin .85s linear infinite}
   --hi:rgba(147,197,253,.09);--hi2:rgba(147,197,253,.045);
 }
 :root[data-cup="uel"]{
-  --cup-img:url("bg-uel.jpg?v=26.2");
+  --cup-img:url("bg-uel.jpg?v=26.3");
   --cup-scrim:linear-gradient(180deg,rgba(16,13,9,.52) 0%,rgba(19,15,10,.36) 36%,rgba(22,12,6,.36) 72%,rgba(12,6,3,.64) 100%);
   --bg:#130f0a;--bg2:#130f0a;
   --card:rgba(24,18,12,.79);--gcard:rgba(24,18,12,.79);
@@ -6000,7 +6000,7 @@ header .btn.cp-hdref.spin svg{animation:dlSpin .85s linear infinite}
   --hi:rgba(253,186,116,.085);--hi2:rgba(253,186,116,.04);
 }
 :root[data-cup="uecl"]{
-  --cup-img:url("bg-uecl.jpg?v=26.2");
+  --cup-img:url("bg-uecl.jpg?v=26.3");
   --cup-scrim:linear-gradient(180deg,rgba(4,12,9,.48) 0%,rgba(5,17,12,.34) 36%,rgba(5,19,14,.36) 72%,rgba(3,12,9,.62) 100%);
   --bg:#05110d;--bg2:#05110d;
   --card:rgba(7,21,16,.79);--gcard:rgba(7,21,16,.79);

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// FC 27 Grup Ligi — Otomatik Doğrulama & Duman Testi (v26.2, sıfır bağımlılık)
+// FC 27 Grup Ligi — Otomatik Doğrulama & Duman Testi (v26.3, sıfır bağımlılık)
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -19,7 +19,7 @@ function check(label, cond, detail = "") {
   }
 }
 
-console.log("FC 27 Grup Ligi · Otomatik Doğrulama (v26.2)\n");
+console.log("FC 27 Grup Ligi · Otomatik Doğrulama (v26.3)\n");
 
 // 1. JSON & Manifest
 for (const jf of ["package.json", "manifest.webmanifest"]) {
@@ -106,6 +106,7 @@ check("Rastgele seçimde son 9 takım bekleme kuralı (Solo + 2P)", appSrc.inclu
 check("Açık tema 2P misafir satır koruması", read("style.css").includes(':root[data-theme="light"] .bktie.cp-gtie{background:rgba(2,132,199,.10)!important;border-color:rgba(2,132,199,.38)!important}'));
 
 check("Yakınlaştırma kilidi aktif (native PWA viewport)", read("index.html").includes("user-scalable=no"));
+check("Ayarlar ekranı setView() aktif sezon referansı güvenli", appSrc.includes("activeCupOf(cur())") && !appSrc.includes("?activeCupOf(s)"));
 
 console.log(`\nSonuç: ${pass} geçti, ${fail} başarısız.`);
 if (fail > 0) process.exit(1);
