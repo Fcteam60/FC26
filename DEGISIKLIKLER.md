@@ -1,3 +1,9 @@
+## v26.4 (2026-11-27) — Gerçek Cihaz Cilası (Koyu Cam Toast, Koyu Yerel Seçiciler, Not Kontrastı & MVP/Veri Akışı)
+- **Koyu & Turnuva Temalarında Buzlu Cam Toast (`style.css`):** Koyu modda ve 3 turnuva atmosferinde beyaz parlayan bildirim çubuğu yerine aktif turnuva rengiyle çerçevelenmiş koyu buzlu cam `.toast` tasarımına geçildi.
+- **Yerel Android/iOS `<select>` Koyu Tema Uyumu (`style.css`):** `:root[data-theme="dark"]` ve `:root[data-cup]` için `color-scheme: dark` ve opak koyu `<option>` zemini eklenerek MOTM/sezon açılır listelerinin beyaz parlaması giderildi.
+- **Arka Plan Üstü Çıplak Metin Kontrastı (`style.css` `:root[data-cup]`):** Kura sayacı (`#app > .note`), takım kartı alt etiketi (`#app > .tcap`) ve çıplak bölüm başlıklarına koyu buzlu cam hap/gölge eklenerek parlak turnuva logolarının üstünde silikleşme önlendi.
+- **MVP Satır Ayırıcısı & 5 Altın Veri Klavye Akışı (`app.js`, `coop.js`, `style.css`):** Turnuva MVP’si 2–5. sıralarında puan ile gol/asist/MOTM arasına ince dikey ayırıcı (`.mvpd`) eklendi; 5 Altın Veri kutularındaki `Enter`/`Next` odak atlaması hem modal hem satır içi Maç Merkezi’nde çalışacak ve sonraki kutuyu seçili açacak şekilde genişletildi.
+
 ## v26.3 (2026-11-27) — Ayarlar Sekmesi `s is not defined` Acil Düzeltmesi
 - **Ayarlar Sekmesi Çökmesi Giderildi (`app.js` `setView`):** `v25.8`’de eklenen aktif turnuva bilgi notu `setView()` içinde tanımlı olmayan `s` parametresini (`activeCupOf(s)`) çağırdığı için **Ayarlar** sekmesine girildiğinde `s is not defined` hatası veriyordu; `activeCupOf(cur())` olarak düzeltildi.
 - **Tüm Kod Tabanı Kapsam (Scope) Taraması:** 8 JS dosyasındaki tüm üst düzey fonksiyonlar ve olay dinleyicileri tanımsız değişken referanslarına karşı otomatik tarandı; başka hiçbir tanımsız referans olmadığı doğrulandı ve regresyon kontrolü `tests/smoke.mjs` içine eklendi.

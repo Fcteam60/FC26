@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FC 27 Grup Ligi — coop.js · v26.3
+   FC 27 Grup Ligi — coop.js · v26.4
    İzole 2 Kişilik Online Ortak Turnuva (Co-op Oda) Modülü
    - Tek kişilik IndexedDB / JSON yedeğe hiç dokunmaz
    - Çakışmasız 2 düğümlü Firebase mimarisi (/rooms/{room}/host.json & guest.json)
@@ -1236,7 +1236,7 @@ function coopTourneyStatsView(S,st2){
       `<button class="btn p pset-pri ui-btn" data-a="cppos" data-v="tots" style="width:100%;margin-top:10px">${UICO.trophy}<span>TOTS Posterini Paylaş (PNG)</span></button>`
     );
   }
-  if(mvp.length)h+=psetCard("trophy","gold","Turnuva MVP’si","3×gol + 2×asist + 2×MOTM",`ilk ${mvp.length}`,podium(mvp,o=>o.mvp,"puan",o=>`${o.g}G · ${o.a}A · ${o.mom}★`,o=>`${o.mvp}p <small>${o.g}G ${o.a}A ${o.mom}★</small>`));
+  if(mvp.length)h+=psetCard("trophy","gold","Turnuva MVP’si","3×gol + 2×asist + 2×MOTM",`ilk ${mvp.length}`,podium(mvp,o=>o.mvp,"puan",o=>`${o.g}G · ${o.a}A · ${o.mom}★`,o=>`${o.mvp}p<small class="mvpd">${o.g}G · ${o.a}A · ${o.mom}★</small>`));
   if(gol.length)h+=psetCard("boot","gold","Gol Krallığı","Turnuvanın en golcü oyuncuları",`ilk ${gol.length}`,podium(gol,o=>o.g,"gol",o=>`${o.a} asist`,o=>`${o.g}G`));
   h+=psetCard("play","sky","Asist Krallığı","En çok gol pası verenler",asi.length?`ilk ${asi.length}`:"0",asi.length?podium(asi,o=>o.a,"asist",o=>`${o.g} gol`,o=>`${o.a}A`):`<div class="note" style="margin:0">Asist verisi oynanan maçlardan toplanır; henüz asist kaydı yok.</div>`);
   if(ht.length)h+=psetCard("spark","gold","Hat-Trick Yapanlar","Tek maçta 3+ gol atanlar",`${ht.length} oyuncu`,ht.map((o,i)=>prow(o,i,`${o.ht}×`)).join(""));
