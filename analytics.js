@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — Analitik, xG/xPts, Taktiksel DNA ve Kariyer Motoru (analytics.js · v26.4) */
+/* FC 27 Grup Ligi — Analitik, xG/xPts, Taktiksel DNA ve Kariyer Motoru (analytics.js · v26.5) */
 const RS=["Grup","S64","S32","S16","ÇF","YF","Final","Şamp."];
 /* ---------- RAKİPLER ---------- */
 function oppData(){const M=nob();
@@ -435,7 +435,43 @@ function posDistCard(seasons){
   const rows=keys.map(k=>{
     const o=G[k],gp=totG?Math.round(o.g/totG*100):0;
     return `<div class="ppos-r p-${k}"><div class="ppos-top"><span class="ppos-tag">${o.s}</span><span class="ppos-nm">${o.l}</span><span class="ppos-vals"><b>${o.g}G</b>${totA?`<em class="ppos-a">${o.a}A</em>`:""}<span class="ppos-pct">%${gp}</span></span></div><div class="ppos-bar"><i style="width:${Math.max(o.g?6:0,gp)}%"></i></div></div>`}).join("");
-  return `<div class="card pglass ppos"><h3>Mevki dağılımı<small>${totG}G${totA?` · ${totA}A`:""}</small></h3>${rows}<div class="note" style="margin:8px 0 0">Kadro ve FC 27 veritabanındaki mevkilere göre hesaplanır.</div></div>`}
+  let extra="";
+  if(totG>=5){
+    const scTot=nob(),winM=nob();
+    seasons.forEach(x=>(x.mt||[]).forEach(m=>{
+      const r0=mres(m),seenM=new Set();
+      Object.entries(m.sc||{}).forEach(([nm,v])=>{
+        if(+v>0&&!isKK(nm)){
+          const k=nz(nm);
+          const o=scTot[k]=scTot[k]||{n:nm,g:0};
+          o.g+=+v;
+          if(!seenM.has(k)){
+            seenM.add(k);
+            const wm=winM[k]=winM[k]||{n:nm,m:0,w:0,g:0};
+            wm.m++;wm.g+=+v;if(r0==="w")wm.w++;
+          }
+        }
+      });
+    }));
+    const scList=Object.values(scTot).sort((a,b)=>b.g-a.g);
+    const topSc=scList[0];
+    const depPct=topSc?Math.round(topSc.g/totG*100):0;
+    const depLbl=depPct>=45?"Tek yıldıza bağımlı":depPct>=28?"Dengeli dağılım":"Kolektif hücum";
+    const depCls=depPct>=45?"neg":depPct<28?"pos":"neu";
+    const minScoredM=seasons.length>1?2:1;
+    const winners=Object.values(winM).filter(o=>o.w>0&&o.m>=minScoredM).sort((a,b)=>b.w-a.w||(b.w/b.m)-(a.w/a.m)||b.g-a.g);
+    const bestW=winners[0];
+    const rowsEx=[];
+    if(topSc){
+      rowsEx.push(`<div class="px-row"><span class="px-lbl">Yıldız Bağımlılığı</span><span class="px-val"><b class="${depCls}">%${depPct}</b><small>${esc(topSc.n)} (${topSc.g}/${totG}G) · ${scList.length} golcü · ${depLbl}</small></span></div>`);
+    }
+    if(bestW){
+      const wPct=Math.round(bestW.w/bestW.m*100);
+      rowsEx.push(`<button class="px-row tap" data-a="pinfo" data-n="${esc(bestW.n)}" aria-label="${esc(bestW.n)} profilini aç"><span class="px-lbl">Kazandıran Oyuncu</span><span class="px-val"><b class="pos">${esc(bestW.n)}</b><small>Gol attığı ${bestW.m} maçın ${bestW.w}’inde galibiyet (%${wPct})</small></span></button>`);
+    }
+    if(rowsEx.length)extra=`<div class="px-extra">${rowsEx.join("")}</div>`;
+  }
+  return `<div class="card pglass ppos"><h3>Mevki dağılımı<small>${totG}G${totA?` · ${totA}A`:""}</small></h3>${rows}${extra}<div class="note" style="margin:8px 0 0">Kadro ve FC 27 veritabanındaki mevkilere göre hesaplanır.</div></div>`}
 function duoStats(seasons){
   const D=nob(),B=nob();
   seasons.forEach(x=>(x.mt||[]).forEach(m=>{
@@ -1283,4 +1319,181 @@ function universeView(){
   }).join("");
   const tlCard=psetCard("cal","sky","Şampiyonluk Kronolojisi","Sezon sezon tüm şampiyonlar ve ödüller",`${u.timeline.length} sezon`,`<div class="uv-list">${tlRows}</div>`+foldMoreBtn("uv_tl",tlOpen,3,u.timeline.length,"sezon"));
   return modBar+sumCard+champCard+cursedCard+totsCard+honorHtml+tlCard;
+}
+
+
+/* ---------- v26.5: KADRO RÖNTGENİ, CANLI SEZON KIYAS ŞERİDİ, SÜRPRİZ TAKIMLAR & KIRILMA MAÇI ---------- */
+function squadXrayCard(s){
+  if(!s||s.my==null||!T[s.my]||!Array.isArray(s.P)||s.P.length<2)return "";
+  const P=s.P.filter(i=>T[i]),N=P.length;if(N<2)return "";
+  const me=RT(s,s.my),avg=f=>P.reduce((a,i)=>a+RT(s,i)[f],0)/N;
+  const rkOf=f=>1+P.filter(i=>RT(s,i)[f]>me[f]).length;
+  const lines=[
+    {k:"a",lbl:"HÜC",full:"Hücum",val:me.a,avg:avg("a"),rk:rkOf("a")},
+    {k:"o",lbl:"ORT",full:"Orta Saha",val:me.o,avg:avg("o"),rk:rkOf("o")},
+    {k:"d",lbl:"DEF",full:"Defans",val:me.d,avg:avg("d"),rk:rkOf("d")}
+  ];
+  const bestL=lines.slice().sort((x,y)=>x.rk-y.rk||(y.val-y.avg)-(x.val-x.avg))[0];
+  const worstL=lines.slice().sort((x,y)=>y.rk-x.rk||(x.val-x.avg)-(y.val-y.avg))[0];
+  const bars=lines.map(l=>{
+    const d=Math.round((l.val-l.avg)*10)/10,dStr=(d>0?"+":d<0?"−":"")+Math.abs(d).toFixed(1).replace(".",",");
+    const cls=l.k===bestL.k&&d>=0?"pos":l.k===worstL.k&&d<0?"neg":"neu";
+    const pct=Math.max(12,Math.min(100,Math.round((l.val-60)/35*100)));
+    const avgPct=Math.max(12,Math.min(100,Math.round((l.avg-60)/35*100)));
+    return `<div class="xr-row">`+
+      `<span class="xr-tag ${cls}">${l.lbl}</span>`+
+      `<div class="xr-barw"><div class="xr-bar"><i class="${cls}" style="width:${pct}%"></i><u style="left:${avgPct}%" title="Turnuva ortalaması: ${l.avg.toFixed(1)}"></u></div>`+
+      `<div class="xr-sub"><span>Turnuva ort. ${l.avg.toFixed(1).replace(".",",")}</span><em class="${cls}">${dStr}</em></div></div>`+
+      `<span class="xr-rk"><b>${l.val}</b><small>#${l.rk}/${N}</small></span>`+
+    `</div>`;
+  }).join("");
+
+  const sq=squadOf(s.my);
+  const xi=sq.filter(p=>p.t==="S"),bn=sq.filter(p=>p.t!=="S");
+  const ageSrc=xi.length?xi:sq;
+  const avgAge=ageSrc.length?(ageSrc.reduce((a,p)=>a+(p.a||25),0)/ageSrc.length):0;
+  const ageTag=avgAge<=24.5?"Genç":avgAge>=27.5?"Tecrübeli":"Dengeli";
+  const xiOvr=xi.length?xi.reduce((a,p)=>a+(p.o||75),0)/xi.length:me.g;
+  const bnOvr=bn.length?bn.slice().sort((a,b)=>b.o-a.o).slice(0,7).reduce((a,p)=>a+(p.o||70),0)/Math.min(7,bn.length):xiOvr;
+  const depGap=Math.max(0,Math.round((xiOvr-bnOvr)*10)/10);
+  const topStar=sq.length?sq.slice().sort((a,b)=>b.o-a.o||(a.a-b.a))[0]:null;
+  let starSub="";
+  if(topStar){
+    const plHit=(s.pl||[]).find(p=>nz(p.n)===nz(topStar.n));
+    const sg0=plHit?plHit.g||0:0,sa0=plHit?plHit.a||0:0;
+    starSub=(s.mt||[]).length?`${sg0}G · ${sa0}A`:`${topStar.o} GEN`;
+  }
+  const pills=[
+    avgAge?`<div class="xr-pill"><span>İlk 11 Yaş</span><b>${avgAge.toFixed(1).replace(".",",")}</b><em>${ageTag}</em></div>`:"",
+    bn.length?`<div class="xr-pill"><span>İlk 11 / Yedek</span><b>+${depGap.toFixed(1).replace(".",",")}</b><em>${depGap>=6?"İlk 11 bağımlı":depGap<=3.5?"Derin kulübe":"Dengeli"}</em></div>`:"",
+    topStar?`<div class="xr-pill"><span>Kadro Lideri</span><b>${esc(topStar.n.split(" ").pop())}</b><em>${esc(starSub)}</em></div>`:""
+  ].filter(Boolean).join("");
+
+  let insight=`En güçlü hattın <b>${bestL.full}</b> (#${bestL.rk}/${N}), en kırılgan bölgen <b>${worstL.full}</b> (#${worstL.rk}/${N}).`;
+  if(s.G&&s.G.length&&(s.mt||[]).length>=2){
+    const st2=tourneyStats(s);
+    const activeTms=(st2.teams||[]).filter(t=>t.o>0);
+    if(activeTms.length>=4){
+      const byGf=activeTms.slice().sort((a,b)=>b.gf/b.o-a.gf/a.o||b.gf-a.gf);
+      const gfRk=byGf.findIndex(t=>t.ti===s.my)+1;
+      const byGa=activeTms.slice().sort((a,b)=>a.ga/a.o-b.ga/b.o||a.ga-b.ga);
+      const gaRk=byGa.findIndex(t=>t.ti===s.my)+1;
+      const gapT=Math.max(4,Math.round(N*0.18));
+      const atkRk=lines[0].rk,defRk=lines[2].rk;
+      if(gfRk>0&&gfRk-atkRk>=gapT){
+        insight=`Hücum hattın turnuvada <b>${atkRk}.</b>, ama gol sıralaman <b>${gfRk}.</b> — kadro potansiyelinin altında üretiyorsun.`;
+      }else if(gfRk>0&&atkRk-gfRk>=gapT){
+        insight=`Hücum hattın turnuvada <b>${atkRk}.</b>, ama gol sıralaman <b>${gfRk}.</b> — kadro gücünün üstünde skor üretiyorsun.`;
+      }else if(gaRk>0&&gaRk-defRk>=gapT){
+        insight=`Savunma hattın turnuvada <b>${defRk}.</b>, ama yenen gol sıralaman <b>${gaRk}.</b> — savunmada beklenenden fazla açık veriyorsun.`;
+      }else if(gaRk>0&&defRk-gaRk>=gapT){
+        insight=`Savunma hattın turnuvada <b>${defRk}.</b>, ama en az gol yiyenlerde <b>${gaRk}.</b> sıradasın — disiplinli savunma.`;
+      }
+    }
+  }
+  const genRk=1+P.filter(i=>V(RT(s,i))>V(me)).length;
+  return psetCard("radar","sky","Kadro Röntgeni",`Turnuva ortalamasına kıyasla 3 hat · Güç #${genRk}/${N}`,`${me.g} GEN`,
+    `<div class="xr-bars">${bars}</div>`+
+    (pills?`<div class="xr-pills">${pills}</div>`:"")+
+    `<div class="pgmath info" style="margin:8px 0 0"><span>${insight}</span></div>`
+  );
+}
+
+function seasonPaceStrip(s){
+  if(!s||!Array.isArray(store.seasons)||store.seasons.length<2)return "";
+  const curM=s.mt||[];
+  if(curM.length<2)return "";
+  const prevM=store.seasons.filter(x=>x&&x.id!==s.id).flatMap(x=>x.mt||[]);
+  if(prevM.length<3)return "";
+  const calc=ms=>{
+    let gf=0,ga=0,pts=0;
+    ms.forEach(m=>{
+      gf+=+m.gf||0;ga+=+m.ga||0;
+      const r=mres(m);pts+=r==="w"?3:r==="d"?1:0;
+    });
+    const n=ms.length;
+    return{gf:gf/n,ga:ga/n,pts:pts/n,n};
+  };
+  const c=calc(curM),p=calc(prevM);
+  const pct=(a,b)=>b>0.05?Math.round((a-b)/b*100):null;
+  const gPct=pct(c.gf,p.gf),aPct=pct(c.ga,p.ga),pDiff=Math.round((c.pts-p.pts)*100)/100;
+  const chips=[];
+  if(gPct!=null&&Math.abs(gPct)>=5){
+    chips.push(`<span class="pace-chip ${gPct>0?"pos":"neg"}">Gol/M ${gPct>0?"+":"−"}%${Math.abs(gPct)}</span>`);
+  }else{
+    chips.push(`<span class="pace-chip neu">Gol/M ${c.gf.toFixed(2).replace(".",",")}</span>`);
+  }
+  if(aPct!=null&&Math.abs(aPct)>=5){
+    chips.push(`<span class="pace-chip ${aPct<0?"pos":"neg"}">Yenen ${aPct>0?"+":"−"}%${Math.abs(aPct)}</span>`);
+  }else{
+    chips.push(`<span class="pace-chip neu">Yenen ${c.ga.toFixed(2).replace(".",",")}</span>`);
+  }
+  const pdCls=pDiff>=0.2?"pos":pDiff<=-0.2?"neg":"neu";
+  chips.push(`<span class="pace-chip ${pdCls}">Puan/M ${pDiff>0?"+":pDiff<0?"−":""}${Math.abs(pDiff).toFixed(2).replace(".",",")}</span>`);
+
+  const parts=[];
+  if(gPct!=null&&Math.abs(gPct)>=10)parts.push(`%${Math.abs(gPct)} ${gPct>0?"daha golcü":"daha az golcü"}`);
+  if(aPct!=null&&Math.abs(aPct)>=10)parts.push(`%${Math.abs(aPct)} ${aPct<0?"daha az gol yiyorsun":"daha fazla gol yiyorsun"}`);
+  const leadTxt=parts.length?`Geçmiş ortalamana göre ${parts.join(", ")}.`:(pDiff>=0.25?`Kariyer ortalamanın +${pDiff.toFixed(2).replace(".",",")} puan/maç üstündesin.`:pDiff<=-0.25?`Kariyer ortalamanın ${pDiff.toFixed(2).replace(".",",")} puan/maç altındasın.`:"Geçmiş kariyer ortalamanla dengeli tempodasın.");
+
+  return `<div class="card pglass pace-strip" role="region" aria-label="Sezon kıyas şeridi">`+
+    `<div class="pace-top"><span class="pace-ttl">Kariyer Kıyas (${prevM.length}M ort.)</span><div class="pace-chips">${chips.join("")}</div></div>`+
+    `<div class="pace-msg">${leadTxt}</div>`+
+  `</div>`;
+}
+
+function surpriseTeamsCard(s,st2){
+  if(!s||!Array.isArray(s.P)||s.P.length<6||!st2||!Array.isArray(st2.teams))return "";
+  const tms=st2.teams.filter(t=>t.o>=2&&T[t.ti]);
+  if(tms.length<6)return "";
+  const pwrOrd=s.P.filter(i=>T[i]).slice().sort((a,b)=>V(RT(s,b))-V(RT(s,a)));
+  const pwrMap=new Map(pwrOrd.map((ti,idx)=>[ti,idx+1]));
+  const koBonus=nob();
+  const ko=(s.sim&&s.sim.ko)||{};
+  const rdW={"Play-Off":1,"Son 64":1,"Son 32":2,"Son 16":3,"Çeyrek final":4,"Yarı final":5,"Final":6};
+  Object.entries(ko).forEach(([rd,pairs])=>{
+    const w0=rdW[rd]||0;if(!w0||!Array.isArray(pairs))return;
+    pairs.forEach(p=>{
+      if(!p)return;
+      if(p.t1!=null)koBonus[p.t1]=Math.max(koBonus[p.t1]||0,w0);
+      if(p.t2!=null)koBonus[p.t2]=Math.max(koBonus[p.t2]||0,w0);
+      if(p.w!=null&&rd==="Final")koBonus[p.w]=7;
+    });
+  });
+  const actOrd=tms.slice().sort((a,b)=>
+    (koBonus[b.ti]||0)-(koBonus[a.ti]||0)||
+    (b.pts/b.o)-(a.pts/a.o)||
+    ((b.gf-b.ga)/b.o)-((a.gf-a.ga)/a.o)||
+    (b.gf/b.o)-(a.gf/a.o)
+  );
+  const minDiff=s.P.length<=16?2:3;
+  const sur=actOrd.map((t,idx)=>{
+    const pRk=pwrMap.get(t.ti)||0,aRk=idx+1;
+    return{ti:t.ti,pRk,aRk,diff:pRk-aRk,pts:t.pts,o:t.o,gd:t.gf-t.ga};
+  }).filter(x=>x.pRk>0&&x.diff>=minDiff).sort((a,b)=>b.diff-a.diff||a.aRk-b.aRk).slice(0,4);
+  if(!sur.length)return "";
+  const rows=sur.map((o,i)=>{
+    const isMe=o.ti===s.my;
+    return `<button class="row tb${isMe?" myrow":""}" data-a="tinfo" data-i="${o.ti}">`+
+      `${i<3?`<span class="mdl m${i+1}">${i+1}</span>`:`<span class="lb" style="width:20px;font-weight:700;text-align:center">${i+1}</span>`}`+
+      `${badge(o.ti,22)}<span class="n"><b>${isMe?"★ ":""}${esc(T[o.ti].n)}</b> <small class="pm">Güç #${o.pRk} → #${o.aRk} · ${o.pts}p</small></span>`+
+      `<span class="g"><span class="xfpill emr">+${o.diff}</span></span>`+
+    `</button>`;
+  }).join("");
+  return psetCard("flame","emr","Sürpriz Takımlar","Güç sırasının üstünde performans gösterenler",`ilk ${sur.length}`,rows);
+}
+
+function seasonSigMatch(x){
+  const ms=(x&&x.mt)||[];
+  if(ms.length<2||x.my==null||!T[x.my])return null;
+  const myG=RT(x,x.my).g;
+  const koW={"Final":32,"Yarı final":22,"Çeyrek final":15,"Son 16":10,"Play-Off":7,"Son 32":7,"Son 64":5};
+  const scoreOf=m=>{
+    const r=mres(m),opG=m.opp!=null&&T[m.opp]?RT(x,m.opp).g:myG,gap=opG-myG,gd=(+m.gf||0)-(+m.ga||0);
+    if(r==="w")return 40+gd*4.5+gap*2.8+(koW[m.rd]||0)+(m.pf!=null&&m.pf>m.pa?6:0);
+    if(r==="d")return 10+gap*2.4+(+m.gf||0)*1.2+(koW[m.rd]||0)*0.4;
+    return -99;
+  };
+  const cands=ms.map(m=>({m,sc:scoreOf(m),r:mres(m)})).filter(o=>o.sc>0).sort((a,b)=>b.sc-a.sc);
+  return cands.length?cands[0].m:null;
 }

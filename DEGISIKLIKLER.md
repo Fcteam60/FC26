@@ -1,3 +1,13 @@
+## v26.5 (2026-11-28) — Kadro Röntgeni, Canlı Sezon Kıyas Şeridi, Mikro Analitikler & Fikstür/iOS Cilaları
+- **Kadro Röntgeni (`analytics.js` `squadXrayCard`, `app.js` `teamView`):** Takım seçildiği anda HÜC/ORT/DEF hatlarını turnuva ortalaması ve sırasıyla kıyaslayan 3 çubuk, İlk 11 yaş ortalaması, İlk 11 / Yedek derinlik farkı, kadro lideri ve (2+ maç sonrası) potansiyel–üretim içgörüsü eklenmiştir.
+- **Canlı Sezon Kıyas Şeridi (`analytics.js` `seasonPaceStrip`, `app.js` `homeView`):** 2. sezondan itibaren (en az 2 maç oynandığında) aktif sezonun gol, yenen gol ve puan/maç temposunu geçmiş kariyer ortalamasıyla 1 satırda kıyaslar.
+- **Mevcut Kartlara Sıfır Şişkinlikli Mikro Analitikler (`analytics.js`, `app.js`, `posters.js`):**
+  - **Sürpriz Takımlar (`tstatView`):** Güç sırasının belirgin biçimde üstünde yer alan kulüpleri (`Güç #X → #Y`) listeler.
+  - **Yıldız Bağımlılığı % & Kazandıran Oyuncu (`posDistCard`):** 5+ gol kaydedildiğinde en skorer oyuncunun takım gollerindeki payını ve gol attığında en yüksek galibiyet oranını getiren oyuncuyu (tıklanabilir profil linkiyle) gösterir.
+  - **Sezonun Maçı (`karneCv`):** 1080px+ Sezon Karnesi PNG posterindeki ödüller alanına sezonun en çarpıcı galibiyeti/sonucu otomatik eklenir.
+- **Fikstür Hafta/Grup Başlığı Buzlu Cam Kontrastı (`style.css`):** Turnuva arka planlarında `.fwh` (*1. Hafta / X/Y maç*) ve `.fgh span` (*Grup A*) başlıklarına koyu buzlu cam yüzey eklendi.
+- **iOS Yedek Paylaşımında Fazladan `metin.txt` Oluşması Giderildi (`app.js` `exportFile`):** `navigator.share({ files: [f] })` çağrısından `title` parametresi kaldırılarak iOS *Dosyalara Kaydet* ekranında yalnızca temiz `.json` yedeğinin kaydedilmesi sağlandı.
+
 ## v26.4 (2026-11-27) — Gerçek Cihaz Cilası (Koyu Cam Toast, Koyu Yerel Seçiciler, Not Kontrastı & MVP/Veri Akışı)
 - **Koyu & Turnuva Temalarında Buzlu Cam Toast (`style.css`):** Koyu modda ve 3 turnuva atmosferinde beyaz parlayan bildirim çubuğu yerine aktif turnuva rengiyle çerçevelenmiş koyu buzlu cam `.toast` tasarımına geçildi.
 - **Yerel Android/iOS `<select>` Koyu Tema Uyumu (`style.css`):** `:root[data-theme="dark"]` ve `:root[data-cup]` için `color-scheme: dark` ve opak koyu `<option>` zemini eklenerek MOTM/sezon açılır listelerinin beyaz parlaması giderildi.

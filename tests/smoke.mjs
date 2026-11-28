@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// FC 27 Grup Ligi — Otomatik Doğrulama & Duman Testi (v26.4, sıfır bağımlılık)
+// FC 27 Grup Ligi — Otomatik Doğrulama & Duman Testi (v26.5, sıfır bağımlılık)
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -19,7 +19,7 @@ function check(label, cond, detail = "") {
   }
 }
 
-console.log("FC 27 Grup Ligi · Otomatik Doğrulama (v26.4)\n");
+console.log("FC 27 Grup Ligi · Otomatik Doğrulama (v26.5)\n");
 
 // 1. JSON & Manifest
 for (const jf of ["package.json", "manifest.webmanifest"]) {
@@ -108,6 +108,7 @@ check("Açık tema 2P misafir satır koruması", read("style.css").includes(':ro
 check("Yakınlaştırma kilidi aktif (native PWA viewport)", read("index.html").includes("user-scalable=no"));
 check("Ayarlar ekranı setView() aktif sezon referansı güvenli", appSrc.includes("activeCupOf(cur())") && !appSrc.includes("?activeCupOf(s)"));
 check("Koyu tema color-scheme:dark & koyu cam toast tanımlı", read("style.css").includes("color-scheme:dark") && read("style.css").includes(":root[data-cup] .toast{"));
+check("v26.5 Kadro Röntgeni, Kıyas Şeridi, Sürpriz Takımlar, .fwh cam & iOS yedek düzeltmesi", read("analytics.js").includes("function squadXrayCard") && read("analytics.js").includes("function seasonPaceStrip") && read("analytics.js").includes("function surpriseTeamsCard") && read("style.css").includes(":root[data-cup] .fwh{") && !appSrc.includes('title:"FC 27 Lig yedeği"'));
 
 console.log(`\nSonuç: ${pass} geçti, ${fail} başarısız.`);
 if (fail > 0) process.exit(1);

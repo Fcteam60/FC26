@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="26.4",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="26.5",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -845,7 +845,7 @@ async function exportFile(){
   try{
     const f=new File([json],name,{type:"application/json"});
     if(navigator.canShare&&navigator.canShare({files:[f]})){
-      try{await navigator.share({files:[f],title:"FC 27 Lig yedeği"});ok=true}
+      try{await navigator.share({files:[f]});ok=true}
       catch(e){if(e&&e.name=="AbortError"){store.lb=pl;store.lbm=pm;return}}}
     if(!ok){const u=URL.createObjectURL(f),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);ok=true}
   }catch(e){}
@@ -1246,7 +1246,7 @@ function teamView(s){
   let h="";
   if(s.my!=null){
     const sqLen=squadOf(s.my).length;
-    h+=tcard(s)+(!s.G?`<button class="btn p pset-pri tm-go" data-t="2">${UICO.spark}<span>${isLg(s.cfg)?"Lig Tablosunu Oluştur ›":"Kuraya Geç ›"}</span></button>`:"")+`<button class="tm-sqbtn" data-a="tinfo" data-i="${s.my}" aria-label="${esc(T[s.my].n)} kadrosunu incele"><span class="aci">${UICO.shield}</span><span class="tm-sqt"><b>Takımı İncele · Kadro</b><small>${sqLen?sqLen+" oyuncu · İlk 11 ve yedekler":"Kulüp detayları"}</small></span><span class="tm-sqc" aria-hidden="true">›</span></button>`;
+    h+=tcard(s)+(!s.G?`<button class="btn p pset-pri tm-go" data-t="2">${UICO.spark}<span>${isLg(s.cfg)?"Lig Tablosunu Oluştur ›":"Kuraya Geç ›"}</span></button>`:"")+`<button class="tm-sqbtn" data-a="tinfo" data-i="${s.my}" aria-label="${esc(T[s.my].n)} kadrosunu incele"><span class="aci">${UICO.shield}</span><span class="tm-sqt"><b>Takımı İncele · Kadro</b><small>${sqLen?sqLen+" oyuncu · İlk 11 ve yedekler":"Kulüp detayları"}</small></span><span class="tm-sqc" aria-hidden="true">›</span></button>`+squadXrayCard(s);
   }else{
     h+=`<div class="su-hero"><div class="su-htop"><span class="ph-ey"><i class="ph-dot"></i>ADIM 2 · TAKIM SEÇİMİ</span><span class="xfpill emr">${s.P.length} kulüp</span></div><h2>Kulübünü Belirle</h2><p>${esc(fmt(s.cfg))}</p></div>`;
   }
@@ -2001,6 +2001,7 @@ function tstatView(s){
   h+=psetCard("flame","gold","En Çok Kazanan Takımlar","Galibiyet sayısı liderleri","ilk 5",topW.map((o,i)=>trow(o,i,`${o.w} G`)).join(""));
   if(topCs.length)h+=psetCard("shield","emr","En Çok Temiz Kasa","Gol yemeden bitirilen maçlar",`ilk ${topCs.length}`,topCs.map((o,i)=>trow(o,i,`${o.cs} maç <small>(${o.o}M)</small>`)).join(""));
   if(topAv.length)h+=psetCard("bolt","sky","En İyi Averaj","Atılan − yenen gol farkı","ilk 5",topAv.map((o,i)=>{const av=o.gf-o.ga;return trow(o,i,`${av>0?"+":""}${av} <small>(${o.gf}/${o.ga})</small>`)}).join(""));
+  h+=surpriseTeamsCard(s,st2);
   const sumBody=`<div class="pset-kpi" style="margin-bottom:10px">`+
     `<div class="pk2 sky"><b>${M.length}</b><span>Toplam Maç</span></div>`+
     `<div class="pk2 emr"><b>${totG}</b><span>Toplam Gol</span></div>`+
@@ -2422,7 +2423,7 @@ function homeView(s){
   if(!s.lk)h+=PITCH_ART;h+=iosPwaRemind()+bkRemind();
   const fold=(id,ic,tone,ttl,sub,pill,bodyFn)=>{const op=!!(st.hm&&st.hm[id]);return `<div class="pfold ${tone}${op?" open":""}"><button class="acbtn${op?" open":""}" data-a="hm" data-k="${id}" aria-expanded="${op}"><span class="aci">${UICO[ic]}</span><span class="act"><b>${ttl}</b>${sub?`<small>${sub}</small>`:""}</span><span class="acr">${pill?`<span class="xfpill">${pill}</span>`:""}<span class="acc" aria-hidden="true">${UICO.chev}</span></span></button>${op?`<div class="acbody">${bodyFn()}</div>`:""}</div>`};
   if(has){
-    h+=tmini(s)+grpBox(s)+koBox(s)+seasonStatBox(s);
+    h+=tmini(s)+seasonPaceStrip(s)+grpBox(s)+koBox(s)+seasonStatBox(s);
     const hasAw=(s.pl||[]).some(p=>(p.g||0)+(p.a||0)+(p.mom||0)+(p.m||0)>0);
     if(hasAw){const aw=seasonAwards(s);if(aw)h+=fold("aw","trophy","gold","Sezon Ödülleri",s.res?"Kesinleşti":"Canlı liderler",esc(aw.mvp.n.split(" ").pop())+" · "+aw.mvp.g+"G",()=>awardsCard(s,true))}
     const rvL=!fin?rivals(s):[];
