@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// FC 27 Grup Ligi — Otomatik Doğrulama & Duman Testi (v27.0, sıfır bağımlılık)
+// FC 27 Grup Ligi — Otomatik Doğrulama & Duman Testi (v27.3, sıfır bağımlılık)
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -19,7 +19,7 @@ function check(label, cond, detail = "") {
   }
 }
 
-console.log("FC 27 Grup Ligi · Otomatik Doğrulama (v27.0)\n");
+console.log("FC 27 Grup Ligi · Otomatik Doğrulama (v27.3)\n");
 
 // 1. JSON & Manifest
 for (const jf of ["package.json", "manifest.webmanifest"]) {
@@ -108,12 +108,18 @@ check("Açık tema 2P misafir satır koruması", read("style.css").includes(':ro
 check("Yakınlaştırma kilidi aktif (native PWA viewport)", read("index.html").includes("user-scalable=no"));
 check("Ayarlar ekranı setView() aktif sezon referansı güvenli", appSrc.includes("activeCupOf(cur())") && !appSrc.includes("?activeCupOf(s)"));
 check("Koyu tema color-scheme:dark & koyu cam toast tanımlı", read("style.css").includes("color-scheme:dark") && read("style.css").includes(":root[data-cup] .toast{"));
-check("v27.0 Kadro Röntgeni, Kıyas Şeridi, Sürpriz Takımlar, .fwh cam & iOS yedek düzeltmesi", read("analytics.js").includes("function squadXrayCard") && read("analytics.js").includes("function seasonPaceStrip") && read("analytics.js").includes("function surpriseTeamsCard") && read("style.css").includes(":root[data-cup] .fwh{") && !appSrc.includes('title:"FC 27 Lig yedeği"'));
+check("v27.3 Kadro Röntgeni, Kıyas Şeridi, Sürpriz Takımlar, .fwh cam & iOS yedek düzeltmesi", read("analytics.js").includes("function squadXrayCard") && read("analytics.js").includes("function seasonPaceStrip") && read("analytics.js").includes("function surpriseTeamsCard") && read("style.css").includes(":root[data-cup] .fwh{") && !appSrc.includes('title:"FC 27 Lig yedeği"'));
 
-// 9. v27.0 Canlı Monte Carlo & "Ya Kazanırsam?" Motoru Kontrolü
+// 9. v27.3 Canlı Monte Carlo & "Ya Kazanırsam?" Motoru Kontrolü
 const simSrc = read("sim.js"), anaSrc = read("analytics.js");
-check("v27.0 Monte Carlo motoru (mcGet, mcGetWhatIf, mcQuickSync)", simSrc.includes("function mcGet(") && simSrc.includes("function mcGetWhatIf(") && simSrc.includes("function mcQuickSync("));
-check("v27.0 Canlı Olasılık Şeridi & Ya Kazanırsam arayüzü", anaSrc.includes("function mcLiveBar(") && anaSrc.includes("function mcWhatIfBox(") && appSrc.includes("mcLiveBar(s)") && appSrc.includes("mcWhatIfBox("));
+check("v27.3 Monte Carlo motoru (mcGet, mcGetWhatIf, mcQuickSync)", simSrc.includes("function mcGet(") && simSrc.includes("function mcGetWhatIf(") && simSrc.includes("function mcQuickSync("));
+check("v27.3 Canlı Olasılık Şeridi & Ya Kazanırsam arayüzü", anaSrc.includes("function mcLiveBar(") && anaSrc.includes("function mcWhatIfBox(") && appSrc.includes("mcLiveBar(s)") && appSrc.includes("mcWhatIfBox("));
+
+check("v27.3 MC 2. ayak rövanş, önbellek parmak izi & CSS özgüllük korumaları", simSrc.includes("presetLeg2") && simSrc.includes("const gSig=") && read("style.css").includes(".card.pglass.mc-bar{") && read("style.css").includes(".mc-grid.n2{"));
+
+check("v27.3 Eleme curKoRd sonraki tur, Puan Ligi bitiş, _mcCache hızlandırma & Eleme Ağacı mcLiveBar", simSrc.includes("if(!curKoRd){") && simSrc.includes("const myRk=lg?") && simSrc.includes("function mcQuickSync(s,iters,cacheIt)") && appSrc.includes("mcLiveBar(s)+koHtml"));
+
+check("v27.3 LTS uzun-ömür korumaları (eski sezon budama, remap t2:null, SW OPT_ASSETS, mcGetWhatIf devam & vS pSnap/imp)", simSrc.includes("const keep=new Set(allFin.slice(-6)") && simSrc.includes("entry.ctx&&entry.accs&&entry.outs") && appSrc.includes("if((p.t1!=null&&t1==null)||(p.t2!=null&&t2==null))return null;") && appSrc.includes("if(s.pSnap!=null){") && read("sw.js").includes("const OPT_ASSETS = ["));
 
 console.log(`\nSonuç: ${pass} geçti, ${fail} başarısız.`);
 if (fail > 0) process.exit(1);

@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — Analitik, xG/xPts, Taktiksel DNA ve Kariyer Motoru (analytics.js · v27.0) */
+/* FC 27 Grup Ligi — Analitik, xG/xPts, Taktiksel DNA ve Kariyer Motoru (analytics.js · v27.3) */
 const RS=["Grup","S64","S32","S16","ÇF","YF","Final","Şamp."];
 /* ---------- RAKİPLER ---------- */
 function oppData(){const M=nob();
@@ -143,8 +143,8 @@ const pct=(a,b)=>b?Math.round(a/b*100)+"%":"—",f2=(a,b)=>b?(a/b).toFixed(2).re
 const tally=L=>{const o={n:L.length,w:0,d:0,l:0,gf:0,ga:0,cs:0};L.forEach(m=>{o[mres(m)]++;o.gf+=m.gf;o.ga+=m.ga;if(!m.ga)o.cs++});return o};
 const gbmT=o=>`${o.w}G ${o.d}B ${o.l}M`;
 function h2h(i){if(i==null||!T[i])return null;const L=allM().filter(e=>e.m.on==T[i].n).map(e=>e.m);return L.length?{o:tally(L),last:L[L.length-1]}:null}
-const h2hLine=i=>{const h=h2h(i);if(!h)return `<div class="note" style="margin:0 0 6px">Bu rakiple ilk karşılaşman.</div>`;
-  return `<div class="note" style="margin:0 0 6px">${esc(T[i].n)}’e karşı <b>${gbmT(h.o)}</b>, son maç ${h.last.gf}-${h.last.ga}${h.o.l?` <span style="font-weight:700;color:var(--wr)">· rövanş</span>`:""}</div>`};
+const h2hLine=i=>{const h=h2h(i);if(!h)return "";
+  return `<div class="note" style="margin:0 0 4px">${esc(T[i].n)}’e karşı <b>${gbmT(h.o)}</b>, son maç ${h.last.gf}-${h.last.ga}${h.o.l?` <span style="font-weight:700;color:var(--wr)">· rövanş</span>`:""}</div>`};
 function elimData(){const M=nob();store.seasons.forEach(x=>{if(!x.res||x.my==null||x.res.st<1||x.res.st>=7)return;
   const ko=(x.mt||[]).filter(m=>m.rd!="Grup"),l=ko[ko.length-1];if(!l||!l.on)return;M[l.on]=(M[l.on]||0)+1});
   return Object.entries(M).sort((a,b)=>b[1]-a[1])}
@@ -634,7 +634,7 @@ function predict(s,oi){if(s.my==null||oi==null||!T[oi]||!T[s.my])return null;
   return{w,d,l:Math.max(0,100-w-d),n,same:use,hn}}
 function predLine(s,i){const p=predict(s,i);if(!p)return "";
   const fav=p.w>=55?"favori sensin":p.l>=55?"rakip favori":"dengeli maç";
-  return `<div class="pbx" style="margin:0 0 8px"><div class="mstt"><b>Tahmin: %${p.w} galibiyet</b><span class="lb">${fav}</span></div><div class="msb" role="img" aria-label="Galibiyet %${p.w}, beraberlik %${p.d}, mağlubiyet %${p.l}">${[["w",p.w],["d",p.d],["l",p.l]].map(([k,v])=>v?`<i class="${k}" style="flex:${v}"></i>`:"").join("")}</div><div class="note" style="margin:4px 0 0">Beraberlik %${p.d} · mağlubiyet %${p.l}. Güç farkına${p.n?" ve son "+p.n+" maçına":""} dayanır${p.same?" (aynı zorlukta)":""}${p.hn>=2?"; bu rakiple "+p.hn+" maçın da hesaba katıldı":""}.</div></div>`}
+  return `<div class="pbx"><div class="mstt"><b>Tahmin: %${p.w} galibiyet</b><span class="lb">${fav}</span></div><div class="msb" role="img" aria-label="Galibiyet %${p.w}, beraberlik %${p.d}, mağlubiyet %${p.l}">${[["w",p.w],["d",p.d],["l",p.l]].map(([k,v])=>v?`<i class="${k}" style="flex:${v}"></i>`:"").join("")}</div><div class="note" style="margin:3px 0 0">Beraberlik %${p.d} · Mağlubiyet %${p.l}${p.hn>=2?` · ${p.hn} H2H`:""}</div></div>`}
 function surCard(ML){const ids=new Set(ML.map(m=>m.id)),L=pastM().filter(e=>ids.has(e.m.id)).map(e=>{const pr=e.m.pr||e.b.map(v=>Math.round(v*100)),pw=pr[0],pl=pr[2],po=e.r=="w"?pw:e.r=="l"?pl:null;return Object.assign({pr,pw,pl,po},e)});
   if(L.length<3)return psetCard("spark","org","Sürpriz Maçlar","Tahmine ters sonuçlar",null,emp("En az 3 maç girildikten sonra tahmine ters sonuçlar burada listelenir."));
   const dec=L.filter(e=>e.r!="d"&&Math.abs(e.pw-e.pl)>=10),hit=dec.filter(e=>(e.pw>e.pl)==(e.r=="w")).length,E=L.reduce((a,e)=>a+e.pw/100,0),A=L.filter(e=>e.r=="w").length;
@@ -1366,7 +1366,7 @@ function squadXrayCard(s){
   const pills=[
     avgAge?`<div class="xr-pill"><span>İlk 11 Yaş</span><b>${avgAge.toFixed(1).replace(".",",")}</b><em>${ageTag}</em></div>`:"",
     bn.length?`<div class="xr-pill"><span>İlk 11 / Yedek</span><b>+${depGap.toFixed(1).replace(".",",")}</b><em>${depGap>=6?"İlk 11 bağımlı":depGap<=3.5?"Derin kulübe":"Dengeli"}</em></div>`:"",
-    topStar?`<div class="xr-pill"><span>Kadro Lideri</span><b>${esc(topStar.n.split(" ").pop())}</b><em>${esc(starSub)}</em></div>`:""
+    topStar?`<div class="xr-pill"><span>Kadro Lideri</span><b>${esc(typeof totsDispName==="function"?totsDispName(topStar.n,3):topStar.n)}</b><em>${esc(starSub)}</em></div>`:""
   ].filter(Boolean).join("");
 
   let insight=`En güçlü hattın <b>${bestL.full}</b> (#${bestL.rk}/${N}), en kırılgan bölgen <b>${worstL.full}</b> (#${worstL.rk}/${N}).`;
@@ -1510,8 +1510,14 @@ function mcLiveInner(s,o){
   if(!o)return "";
   const sn=s&&s.pSnap;
   if(o.done){
-    const lbl=o.ch>=100?"Şampiyon 🏆":(o.fin>=100?"Finalist":o.q>=100?"Turnuva Tamamlandı":"Elendi");
-    return `<div class="mc-hd"><span class="mc-ttl">${uiIco("chart")}<span>Turnuva Sonucu</span></span><span class="mc-tag done">${lbl}</span></div>`;
+    let lbl="";
+    if(o.lg){
+      lbl=o.ch>=100?"Şampiyon 🏆":(o.myRk===2||o.fin>=100?"İkincilik":(o.myRk?`Lig Tamamlandı · #${o.myRk}. Sıra`:"Lig Tamamlandı"));
+    }else{
+      lbl=o.ch>=100?"Şampiyon 🏆":(o.fin>=100?"Finalist":o.q>=100?"Turnuva Tamamlandı":"Elendi");
+    }
+    const tagCls=o.ch>=100||o.fin>=100||(o.lg&&o.myRk&&o.myRk<=3)?"done":(o.elim?"dead":"");
+    return `<div class="mc-hd"><span class="mc-ttl">${uiIco("chart")}<span>Turnuva Sonucu</span></span><span class="mc-tag ${tagCls}">${lbl}</span></div>`;
   }
   if(o.elim){
     return `<div class="mc-hd"><span class="mc-ttl">${uiIco("chart")}<span>Canlı Tur Olasılığı</span></span><span class="mc-tag dead">Elendi · %0</span></div>`;
@@ -1529,15 +1535,24 @@ function mcLiveInner(s,o){
     cells.push({lbl:"Gruptan Çıkma",val:o.q,d:sn?mcDeltaTag(o.q,sn.q):"",cls:o.q>=50?"pos":o.q<=20?"neg":""});
     cells.push({lbl:"Final",val:o.fin,d:sn?mcDeltaTag(o.fin,sn.fin):"",cls:"sky"});
     cells.push({lbl:"Şampiyonluk",val:o.ch,d:sn?mcDeltaTag(o.ch,sn.ch):"",cls:"gold"});
+  }else if(o.curKoRd===RN[2]){
+    const ruP=Math.max(0,100-o.ch);
+    cells.push({lbl:"Şampiyonluk",val:o.ch,d:sn?mcDeltaTag(o.ch,sn.ch):"",cls:"gold"});
+    cells.push({lbl:"İkincilik",val:ruP,d:"",cls:"sky"});
+  }else if(o.curKoRd===RN[4]){
+    const sameRd=sn&&sn.curKoRd===o.curKoRd;
+    cells.push({lbl:"Finale Çıkma",val:o.fin,d:sameRd?mcDeltaTag(o.fin,sn.fin):"",cls:o.fin>=50?"pos":"sky"});
+    cells.push({lbl:"Şampiyonluk",val:o.ch,d:sn?mcDeltaTag(o.ch,sn.ch):"",cls:"gold"});
   }else{
     const rdLbl=o.curKoRd?`${o.curKoRd} Geçme`:"Turu Geçme";
-    cells.push({lbl:rdLbl,val:o.nextRd,d:"",cls:o.nextRd>=50?"pos":""});
+    const sameRd=sn&&sn.curKoRd===o.curKoRd;
+    cells.push({lbl:rdLbl,val:o.nextRd,d:sameRd?mcDeltaTag(o.nextRd,sn.nextRd):"",cls:o.nextRd>=50?"pos":""});
     cells.push({lbl:"Final",val:o.fin,d:sn?mcDeltaTag(o.fin,sn.fin):"",cls:"sky"});
     cells.push({lbl:"Şampiyonluk",val:o.ch,d:sn?mcDeltaTag(o.ch,sn.ch):"",cls:"gold"});
   }
   const foot=o.ucl&&o.inGrp&&o.elimP>0?`<div class="mc-ft">Elenme riski: <b>%${o.elimP}</b> · kalan fikstür Poisson simülasyonu</div>`:"";
   return `<div class="mc-hd"><span class="mc-ttl">${uiIco("chart")}<span>Canlı Olasılıklar</span></span><span class="mc-tag">Tahmin · ${o.n} sim.</span></div>`+
-    `<div class="mc-grid">${cells.map(c=>`<div class="mc-cell ${c.cls}"><span>${c.lbl}</span><b>%${c.val}${c.d}</b><i class="mc-pb"><u style="width:${Math.max(c.val?4:0,c.val)}%"></u></i></div>`).join("")}</div>`+
+    `<div class="mc-grid${cells.length===2?" n2":""}">${cells.map(c=>`<div class="mc-cell ${c.cls}"><span>${c.lbl}</span><b>%${c.val}${c.d}</b><i class="mc-pb"><u style="width:${Math.max(c.val?4:0,c.val)}%"></u></i></div>`).join("")}</div>`+
     foot;
 }
 function mcLiveBar(s){
@@ -1549,8 +1564,12 @@ function mcLiveBar(s){
 function mcWhatIfInner(wi){
   if(!wi||!wi.base||!wi.w||!wi.l)return "";
   const b=wi.base;
-  const pickPrimary=r=>wi.lg?r.ch:(wi.ucl&&wi.inGrp?(r.q+r.po):wi.inGrp?r.q:r.nextRd);
-  const pLbl=wi.lg?"Şamp.":(wi.ucl&&wi.inGrp?"İlk 24":wi.inGrp?"Tur":"Tur");
+  const isFin=!wi.inGrp&&!wi.lg&&wi.rd===RN[2];
+  const isSf=!wi.inGrp&&!wi.lg&&wi.rd===RN[4];
+  const uclTop8=wi.ucl&&wi.inGrp&&(b.q+b.po>=95);
+  const lgTop3=wi.lg&&b.ch<5&&b.top3>=5&&b.top3<=95;
+  const pickPrimary=r=>isFin?r.ch:isSf?r.fin:wi.lg?(lgTop3?r.top3:r.ch):(uclTop8?r.q:(wi.ucl&&wi.inGrp?(r.q+r.po):wi.inGrp?r.q:r.nextRd));
+  const pLbl=isFin?"Kupa":isSf?"Final":wi.lg?(lgTop3?"İlk 3":"Şamp."):(uclTop8?"İlk 8":(wi.ucl&&wi.inGrp?"İlk 24":"Tur"));
   const bP=pickPrimary(b),wP=pickPrimary(wi.w),lP=pickPrimary(wi.l);
   const bCh=b.ch,wCh=wi.w.ch,lCh=wi.l.ch;
   const swingP=Math.abs(wP-lP),swingCh=Math.abs(wCh-lCh);
@@ -1558,13 +1577,15 @@ function mcWhatIfInner(wi){
   const mkRow=(cls,lbl,res)=>{
     const np=pickPrimary(res),dp=np-bP;
     const dStr=Math.abs(dp)>=2?` <em class="${dp>0?"pos":"neg"}">(${dp>0?"+":"−"}%${Math.abs(dp)})</em>`:"";
-    const chPart=!wi.lg&&(bCh>=1||res.ch>=1)?`<span class="mc-wch">Kupa %${res.ch}</span>`:"";
-    const q8Part=wi.ucl&&wi.inGrp?`<span class="mc-wch">İlk 8 %${res.q}</span>`:"";
-    return `<div class="mc-wrow ${cls}"><span class="mc-wlbl">${lbl}</span><span class="mc-wval"><b>${pLbl} %${bP} → %${np}</b>${dStr}${q8Part||chPart}</span></div>`;
+    let secPart="";
+    if(wi.ucl&&wi.inGrp&&!uclTop8)secPart=`<span class="mc-wch">İlk 8 %${res.q}</span>`;
+    else if(!isFin&&!wi.lg&&(bCh>=1||res.ch>=1))secPart=`<span class="mc-wch">Kupa %${res.ch}</span>`;
+    else if(wi.lg&&!lgTop3&&(b.top3<99||res.top3<99))secPart=`<span class="mc-wch">İlk 3 %${res.top3}</span>`;
+    return `<div class="mc-wrow ${cls}"><span class="mc-wlbl">${lbl}</span><span class="mc-wval"><b>${pLbl} %${bP} → %${np}</b>${dStr}${secPart}</span></div>`;
   };
-  const rows=[mkRow("w","Kazanırsan",wi.w)];
-  if(wi.canDraw&&wi.d)rows.push(mkRow("d","Beraberlik",wi.d));
-  rows.push(mkRow("l","Kaybedersen",wi.l));
+  const rows=[mkRow("w",wi.isLeg2?"2. Maç Gal.":"Kazanırsan",wi.w)];
+  if(wi.canDraw&&wi.d)rows.push(mkRow("d",wi.isLeg2?"2. Maç Ber.":"Beraberlik",wi.d));
+  rows.push(mkRow("l",wi.isLeg2?"2. Maç Mağ.":"Kaybedersen",wi.l));
   return `<div class="mc-wihd"><span class="mc-wittl">Ya Kazanırsam?${isPivot?` <em class="mc-piv">Kırılma Maçı</em>`:""}</span><span class="mc-tag">Tahmin</span></div>`+
     `<div class="mc-wrows">${rows.join("")}</div>`;
 }

@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — 4 Katmanlı Gerçekçi Simülasyon, Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v27.0) */
+/* FC 27 Grup Ligi — 4 Katmanlı Gerçekçi Simülasyon, Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v27.3) */
 /* ---------- AŞAMA 1, 2 & 3: HAFTALIK SİMÜLASYON, ELEME AĞACI (BRACKET), GOL KRALLIĞI VE TURNUVA BİTİŞİ ---------- */
 const SIM_MODES=[[0,"Gerçekçi","Güç farkı ve gerçek futbol skorları (1-0, 2-1, 1-1 ağırlıklı)"],[1,"Dengeli","Standart güç ve günlük form dengesi"],[2,"Sürprizli","Yüksek şans faktörü, kupa sürprizlerine açık"]];
 
@@ -489,23 +489,39 @@ function rebuildSimScorers(s){
 
 // Bitmiş sezonlarda s.sim.sc özeti oluştuktan sonra alt maçlardaki golcü dizilerini budayarak JSON/IndexedDB boyutunu ~%70 küçültür
 function pruneSimDetails(s,force){
-  if(!s||!s.sim)return;
-  rebuildSimScorers(s);
-  if(!force){
-    const finIds=store.seasons.filter(x=>x&&x.res).map(x=>x.id).slice(-6);
-    if(finIds.includes(s.id))return;
-  }
-  Object.values(s.sim.gm||{}).forEach(wkList=>{
-    if(!Array.isArray(wkList))return;
-    wkList.forEach(matches=>{
-      if(!Array.isArray(matches))return;
-      matches.forEach(m=>{if(Array.isArray(m)&&m.length>4)m.length=4});
+  const hasDet=x=>{
+    if(!x||!x.sim)return false;
+    for(const wkList of Object.values(x.sim.gm||{})){
+      if(!Array.isArray(wkList))continue;
+      for(const ms of wkList){
+        if(Array.isArray(ms)&&ms.some(m=>Array.isArray(m)&&m.length>4))return true;
+      }
+    }
+    for(const pairs of Object.values(x.sim.ko||{})){
+      if(Array.isArray(pairs)&&pairs.some(p=>p&&(p.s1||p.s2||p.a1||p.a2)))return true;
+    }
+    return false;
+  };
+  const doOne=x=>{
+    if(!x||!x.sim||!hasDet(x))return;
+    rebuildSimScorers(x);
+    Object.values(x.sim.gm||{}).forEach(wkList=>{
+      if(!Array.isArray(wkList))return;
+      wkList.forEach(matches=>{
+        if(!Array.isArray(matches))return;
+        matches.forEach(m=>{if(Array.isArray(m)&&m.length>4)m.length=4});
+      });
     });
-  });
-  Object.values(s.sim.ko||{}).forEach(pairs=>{
-    if(!Array.isArray(pairs))return;
-    pairs.forEach(p=>{if(p){delete p.s1;delete p.s2;delete p.a1;delete p.a2}});
-  });
+    Object.values(x.sim.ko||{}).forEach(pairs=>{
+      if(!Array.isArray(pairs))return;
+      pairs.forEach(p=>{if(p){delete p.s1;delete p.s2;delete p.a1;delete p.a2}});
+    });
+  };
+  if(force){if(s)doOne(s);return}
+  const allFin=(store&&Array.isArray(store.seasons)?store.seasons:[]).filter(x=>x&&x.res);
+  const keep=new Set(allFin.slice(-6).map(x=>x.id));
+  allFin.forEach(x=>{if(!keep.has(x.id))doOne(x)});
+  if(s&&s.res&&!keep.has(s.id))doOne(s);
 }
 
 function tourneyTopScorers(s,limit){
@@ -701,6 +717,7 @@ function simUndoWeek(s){
   sim.w=w-1;
   sim.ko=nob();
   if(sim.w<totW){s.gqs=nob();s.gq=null;s.grk=null;st.grk=null}
+  delete s.pSnap;
   rebuildSimScorers(s);
   return `${w}. hafta simülasyonu geri alındı`}
 
@@ -1295,10 +1312,16 @@ let _mcJobId=0,_mcWiJobId=0;
 
 function mcStateKey(s){
   if(!s||!s.G||s.my==null)return "";
-  const sim=ensureSim(s),mt=s.mt||[],lm=mt.length?mt[mt.length-1]:null;
-  let koDone=0;
-  Object.values(sim.ko||{}).forEach(arr=>{if(Array.isArray(arr))arr.forEach(p=>{if(p&&p.w!=null)koDone++})});
-  return `${s.id}|${sim.m||0}|${sim.w||0}|${mt.length}|${lm?`${lm.id}:${lm.gf}:${lm.ga}:${lm.pf||0}:${lm.pa||0}`:"0"}|${koDone}|${s.my}|${s.res?s.res.st:"-"}`;
+  const sim=ensureSim(s),mt=s.mt||[];
+  const gSig=s.G.map(g=>Array.isArray(g)?g.join(","):"").join(";");
+  const mSig=mt.map(m=>`${m.id}:${m.opp}:${m.rd}:${m.lg||0}:${m.gf}:${m.ga}:${m.pf??""}:${m.pa??""}`).join(",");
+  let koSig="";
+  Object.entries(sim.ko||{}).forEach(([rd,arr])=>{
+    if(Array.isArray(arr)&&arr.length){
+      koSig+=rd+":"+arr.map(p=>p?`${p.t1??""}-${p.t2??""}=${p.w??""}${Array.isArray(p.leg1)?`(${p.leg1[0]}:${p.leg1[1]})`:""}`:"").join(",")+";";
+    }
+  });
+  return `${s.id}|${sim.m||0}|${sim.w||0}|${s.my}|${s.res?s.res.st:"-"}|${gSig}|${mSig}|${koSig}`;
 }
 
 function mcFastScore(ctx,t1,t2,seedAdv,highStakes,leg2Deficit){
@@ -1339,13 +1362,14 @@ function mcSampleCond(ctx,t1,t2,want,seedAdv,highStakes,leg2Deficit){
   return want==="w"?[2,1]:want==="l"?[1,2]:[1,1];
 }
 
-function mcFastKoWinner(ctx,t1,t2,sa,legs,highStakes,presetLeg1){
+function mcFastKoWinner(ctx,t1,t2,sa,legs,highStakes,presetLeg1,presetLeg2){
   let g1=0,g2=0;
   if(legs===2){
-    let l1a=0,l1b=0;
+    let l1a=0,l1b=0,l2a=0,l2b=0;
     if(Array.isArray(presetLeg1)&&presetLeg1.length>=2){l1a=+presetLeg1[0]||0;l1b=+presetLeg1[1]||0}
     else{[l1a,l1b]=mcFastScore(ctx,t1,t2,sa*0.4,highStakes,0)}
-    const [l2a,l2b]=mcFastScore(ctx,t1,t2,sa*0.4,highStakes,l1b-l1a);
+    if(Array.isArray(presetLeg2)&&presetLeg2.length>=2){l2a=+presetLeg2[0]||0;l2b=+presetLeg2[1]||0}
+    else{[l2a,l2b]=mcFastScore(ctx,t1,t2,sa*0.4,highStakes,l1b-l1a)}
     g1=l1a+l2a;g2=l1b+l2b;
   }else{
     [g1,g2]=mcFastScore(ctx,t1,t2,sa,highStakes,0);
@@ -1385,8 +1409,11 @@ function mcBuildCtx(s){
   if(s.res||(out&&out.done)){
     const isCh=s.res?s.res.st===7:(out&&out.ch===my);
     const isFin=s.res?s.res.st>=6:(out&&(out.ch===my||out.ru===my));
-    const qOk=isCh||isFin||(s.res?s.res.st>=1:!!s.gq);
-    return{done:true,elim:!isCh&&!qOk,ucl,lg,hasGrp,koOnly:!hasGrp,ch:isCh?100:0,fin:isFin?100:0,q:qOk?100:0,po:0,top3:(s.res&&s.res.st>=5)?100:0,topHalf:(s.res&&s.res.st>=4)?100:0,nextRd:isCh?100:0,qLbl:ucl?"İlk 8":lg?"İlk 3":hasGrp?"Tur":"Tur"};
+    const myRk=lg?((out&&out.myRk)||s.grk||(s.res&&s.res.grk)||null):null;
+    const qOk=lg||isCh||isFin||(s.res?s.res.st>=1:!!s.gq);
+    const top3Ok=s.res?s.res.st>=5:(myRk!=null&&myRk<=3);
+    const topHalfOk=s.res?s.res.st>=4:(myRk!=null&&myRk<=Math.ceil(cfg.N/2));
+    return{done:true,elim:!lg&&!isCh&&!qOk,ucl,lg,hasGrp,koOnly:!hasGrp,myRk,ch:isCh?100:0,fin:isFin?100:0,q:qOk?100:0,po:0,top3:top3Ok?100:0,topHalf:topHalfOk?100:0,nextRd:isCh?100:0,qLbl:ucl?"İlk 8":lg?"İlk 3":hasGrp?"Tur":"Tur"};
   }
   if(isUserEliminated(s)){
     return{done:false,elim:true,ucl,lg,hasGrp,koOnly:!hasGrp,ch:0,fin:0,q:0,po:0,top3:0,topHalf:0,nextRd:0,qLbl:ucl?"İlk 8":lg?"İlk 3":hasGrp?"Tur":"Tur"};
@@ -1502,6 +1529,15 @@ function mcBuildCtx(s){
         break;
       }
     }
+    if(!curKoRd){
+      for(let rIdx=RDs.length-1;rIdx>=0;rIdx--){
+        const pairs=koSnap[RDs[rIdx]];
+        if(Array.isArray(pairs)&&pairs.some(p=>p&&p.w===my)){
+          if(rIdx+1<RDs.length)curKoRd=RDs[rIdx+1];
+          break;
+        }
+      }
+    }
   }
   const qLbl=ucl?"İlk 8":lg?"İlk 3":inGrp?"Gruptan Çıkma":"Turu Geçme";
   return{done:false,elim:false,cfg,ucl,lg,hasGrp,inGrp,my,myGi,mode:sim.m||0,RDs,curKoRd,pwr,pwrET,frm,tieV,baseTbl,remPairs,koSnap,Gcnt:s.G.length,N:cfg.N,qMax:ucl?24:(cfg.q||2),qLbl};
@@ -1524,12 +1560,16 @@ function mcSimKo(ctx,koMap,forced){
         if(isMine&&forced&&forced.rd===rd&&!usedF){
           usedF=true;
           const isT1=p.t1===my;
-          if(legs===1||p.leg1!=null){
+          if(legs===1){
             p.w=forced.out==="w"?my:(isT1?p.t2:p.t1);
+          }else if(p.leg1!=null){
+            const want2=isT1?forced.out:(forced.out==="w"?"l":forced.out==="l"?"w":"d");
+            const l2=mcSampleCond(ctx,p.t1,p.t2,want2,(p.sa||0)*0.4,hs,(+p.leg1[1]||0)-(+p.leg1[0]||0));
+            p.w=mcFastKoWinner(ctx,p.t1,p.t2,p.sa||0,2,hs,p.leg1,l2);
           }else{
             const want1=isT1?forced.out:(forced.out==="w"?"l":forced.out==="l"?"w":"d");
             const l1=mcSampleCond(ctx,p.t1,p.t2,want1,(p.sa||0)*0.4,hs,0);
-            p.w=mcFastKoWinner(ctx,p.t1,p.t2,p.sa||0,2,hs,l1);
+            p.w=mcFastKoWinner(ctx,p.t1,p.t2,p.sa||0,2,hs,l1,null);
           }
         }else{
           p.w=mcFastKoWinner(ctx,p.t1,p.t2,p.sa||0,legs,hs,p.leg1);
@@ -1646,50 +1686,73 @@ function mcFinalize(ctx,acc){
   return{done:false,elim:false,ucl:ctx.ucl,lg:ctx.lg,inGrp:ctx.inGrp,curKoRd:ctx.curKoRd,qLbl:ctx.qLbl,n:acc.n,q,po,elimP,fin,ch,top3,topHalf,nextRd};
 }
 
-function mcQuickSync(s,iters){
+function mcQuickSync(s,iters,cacheIt){
+  const key=mcStateKey(s);
+  if(key){
+    const hit=_mcCache.get(key);
+    if(hit)return hit.res;
+  }
   const ctx=mcBuildCtx(s);
   if(!ctx)return null;
-  if(ctx.done||ctx.elim)return ctx;
-  const N=iters||180,acc={n:0,q:0,po:0,top3:0,topHalf:0,fin:0,ch:0,nextRd:0};
+  if(ctx.done||ctx.elim){
+    if(cacheIt&&key){
+      if(_mcCache.size>24)_mcCache.clear();
+      _mcCache.set(key,{res:ctx,full:true,running:false});
+    }
+    return ctx;
+  }
+  const N=iters||120,acc={n:0,q:0,po:0,top3:0,topHalf:0,fin:0,ch:0,nextRd:0};
   for(let i=0;i<N;i++){
     const r=mcSimOne(ctx,null);
     acc.n++;acc.q+=r.q;acc.po+=r.po;acc.top3+=r.top3;acc.topHalf+=r.topHalf;acc.fin+=r.fin;acc.ch+=r.ch;acc.nextRd+=r.nextRd;
   }
-  return mcFinalize(ctx,acc);
+  const res=mcFinalize(ctx,acc);
+  if(cacheIt&&key){
+    if(_mcCache.size>24)_mcCache.clear();
+    _mcCache.set(key,{res,acc,ctx,full:false,running:false});
+  }
+  return res;
 }
 
 function mcSaveSnap(s){
   if(!s||!s.G||s.my==null||s.res)return;
-  const key=mcStateKey(s),hit=_mcCache.get(key);
-  const o=hit?hit.res:mcQuickSync(s,140);
+  const o=mcQuickSync(s,120,true);
   if(o&&!o.done&&!o.elim){
-    s.pSnap={ch:o.ch,q:o.q,po:o.po,top3:o.top3,fin:o.fin,qLbl:o.qLbl};
+    s.pSnap={ch:o.ch,q:o.q,po:o.po,top3:o.top3,fin:o.fin,nextRd:o.nextRd,curKoRd:o.curKoRd||"",qLbl:o.qLbl};
   }
 }
 
 function mcGet(s){
   const key=mcStateKey(s);
   if(!key)return null;
-  const hit=_mcCache.get(key);
-  if(hit)return hit.res;
-  const ctx=mcBuildCtx(s);
-  if(!ctx)return null;
-  if(ctx.done||ctx.elim){
-    _mcCache.set(key,{res:ctx,full:true});
-    return ctx;
+  const targetN=400;
+  let entry=_mcCache.get(key);
+  if(entry&&(entry.full||entry.running))return entry.res;
+  let ctx=null,acc=null;
+  if(entry&&entry.ctx&&entry.acc){
+    ctx=entry.ctx;acc=entry.acc;
+  }else{
+    ctx=mcBuildCtx(s);
+    if(!ctx)return null;
+    if(ctx.done||ctx.elim){
+      if(_mcCache.size>24)_mcCache.clear();
+      _mcCache.set(key,{res:ctx,full:true,running:false});
+      return ctx;
+    }
+    acc={n:0,q:0,po:0,top3:0,topHalf:0,fin:0,ch:0,nextRd:0};
+    const initN=80;
+    for(let i=0;i<initN;i++){
+      const r=mcSimOne(ctx,null);
+      acc.n++;acc.q+=r.q;acc.po+=r.po;acc.top3+=r.top3;acc.topHalf+=r.topHalf;acc.fin+=r.fin;acc.ch+=r.ch;acc.nextRd+=r.nextRd;
+    }
+    entry={res:mcFinalize(ctx,acc),acc,ctx,full:false,running:false};
+    if(_mcCache.size>24)_mcCache.clear();
+    _mcCache.set(key,entry);
   }
-  const acc={n:0,q:0,po:0,top3:0,topHalf:0,fin:0,ch:0,nextRd:0};
-  const initN=80,targetN=400;
-  for(let i=0;i<initN;i++){
-    const r=mcSimOne(ctx,null);
-    acc.n++;acc.q+=r.q;acc.po+=r.po;acc.top3+=r.top3;acc.topHalf+=r.topHalf;acc.fin+=r.fin;acc.ch+=r.ch;acc.nextRd+=r.nextRd;
-  }
-  const entry={res:mcFinalize(ctx,acc),full:false};
-  if(_mcCache.size>24)_mcCache.clear();
-  _mcCache.set(key,entry);
+  entry.running=true;
   const myJob=++_mcJobId;
   const step=()=>{
-    if(myJob!==_mcJobId)return;
+    if(myJob!==_mcJobId){entry.running=false;return}
     const chunk=Math.min(80,targetN-acc.n);
     for(let i=0;i<chunk;i++){
       const r=mcSimOne(ctx,null);
@@ -1698,7 +1761,7 @@ function mcGet(s){
     entry.res=mcFinalize(ctx,acc);
     if(acc.n<targetN){setTimeout(step,0)}
     else{
-      entry.full=true;
+      entry.full=true;entry.running=false;delete entry.ctx;delete entry.acc;
       const box=document.getElementById("mc_live_box");
       if(box&&box.dataset.k===key&&typeof mcLiveInner==="function"){
         box.innerHTML=mcLiveInner(s,entry.res);
@@ -1714,43 +1777,55 @@ function mcGetWhatIf(s,opp,rd,lg){
   const baseKey=mcStateKey(s);
   if(!baseKey)return null;
   const wiKey=`${baseKey}|${opp}|${rd}|${lg||0}`;
-  const hit=_mcWiCache.get(wiKey);
-  if(hit)return hit.res;
-  const ctx=mcBuildCtx(s);
-  if(!ctx||ctx.done||ctx.elim)return null;
-  const isGrp=rd==="Grup";
-  if(isGrp&&!ctx.inGrp)return null;
-  if(!isGrp&&ctx.inGrp)return null;
-  // Determine if Draw is possible for this specific match
-  let canDraw=isGrp;
-  if(!isGrp){
-    const needL=lgs(s.cfg,rd);
-    const up=ctx.koSnap&&ctx.koSnap[rd]&&ctx.koSnap[rd].find(p=>p.w==null&&(p.t1===s.my||p.t2===s.my));
-    if(!up)return null;
-    canDraw=needL===2&&!up.leg1;
-  }
-  const outs=canDraw?["w","d","l"]:["w","l"];
-  const accs=nob();
-  outs.forEach(o=>{accs[o]={n:0,q:0,po:0,top3:0,topHalf:0,fin:0,ch:0,nextRd:0}});
-  const initN=60,targetN=220;
-  outs.forEach(o=>{
-    const f={opp,rd,out:o};
-    for(let i=0;i<initN;i++){
-      const r=mcSimOne(ctx,f);
-      const a=accs[o];a.n++;a.q+=r.q;a.po+=r.po;a.top3+=r.top3;a.topHalf+=r.topHalf;a.fin+=r.fin;a.ch+=r.ch;a.nextRd+=r.nextRd;
-    }
-  });
+  const targetN=220;
+  let entry=_mcWiCache.get(wiKey);
+  if(entry&&(entry.full||entry.running))return entry.res;
+  let ctx=null,accs=null,outs=null,canDraw=false,isLeg2=false;
   const buildRes=()=>{
-    const b=mcGet(s),outObj={base:b,canDraw,ucl:ctx.ucl,lg:ctx.lg,inGrp:ctx.inGrp,rd,qLbl:ctx.qLbl,n:accs.w.n};
+    const b=mcGet(s),outObj={base:b,canDraw,isLeg2,ucl:ctx.ucl,lg:ctx.lg,inGrp:ctx.inGrp,rd,qLbl:ctx.qLbl,n:accs.w.n};
     outs.forEach(o=>{outObj[o]=mcFinalize(ctx,accs[o])});
     return outObj;
   };
-  const entry={res:buildRes(),full:false};
-  if(_mcWiCache.size>24)_mcWiCache.clear();
-  _mcWiCache.set(wiKey,entry);
+  if(entry&&entry.ctx&&entry.accs&&entry.outs){
+    ctx=entry.ctx;accs=entry.accs;outs=entry.outs;canDraw=entry.canDraw;isLeg2=entry.isLeg2;
+  }else{
+    ctx=mcBuildCtx(s);
+    if(!ctx||ctx.done||ctx.elim)return null;
+    const isGrp=rd==="Grup";
+    if(isGrp&&!ctx.inGrp)return null;
+    if(!isGrp&&ctx.inGrp)return null;
+    if(isGrp){
+      const remG=ctx.myGi>=0?ctx.remPairs[ctx.myGi]:null;
+      if(!Array.isArray(remG)||!remG.some(pr=>pr.u&&pr.t2===opp))return null;
+    }
+    canDraw=isGrp;isLeg2=false;
+    if(!isGrp){
+      const needL=lgs(s.cfg,rd);
+      if(needL===1&&rd===RN[2])return null;
+      const up=ctx.koSnap&&ctx.koSnap[rd]&&ctx.koSnap[rd].find(p=>p.w==null&&(p.t1===s.my||p.t2===s.my));
+      if(!up||(up.t1!==opp&&up.t2!==opp))return null;
+      canDraw=needL===2;
+      isLeg2=needL===2&&!!up.leg1;
+    }
+    outs=canDraw?["w","d","l"]:["w","l"];
+    accs=nob();
+    outs.forEach(o=>{accs[o]={n:0,q:0,po:0,top3:0,topHalf:0,fin:0,ch:0,nextRd:0}});
+    const initN=60;
+    outs.forEach(o=>{
+      const f={opp,rd,out:o};
+      for(let i=0;i<initN;i++){
+        const r=mcSimOne(ctx,f);
+        const a=accs[o];a.n++;a.q+=r.q;a.po+=r.po;a.top3+=r.top3;a.topHalf+=r.topHalf;a.fin+=r.fin;a.ch+=r.ch;a.nextRd+=r.nextRd;
+      }
+    });
+    entry={res:buildRes(),accs,ctx,outs,canDraw,isLeg2,full:false,running:false};
+    if(_mcWiCache.size>24)_mcWiCache.clear();
+    _mcWiCache.set(wiKey,entry);
+  }
+  entry.running=true;
   const myJob=++_mcWiJobId;
   const step=()=>{
-    if(myJob!==_mcWiJobId)return;
+    if(myJob!==_mcWiJobId){entry.running=false;return}
     const chunk=Math.min(80,targetN-accs.w.n);
     outs.forEach(o=>{
       const f={opp,rd,out:o},a=accs[o];
@@ -1762,7 +1837,7 @@ function mcGetWhatIf(s,opp,rd,lg){
     entry.res=buildRes();
     if(accs.w.n<targetN){setTimeout(step,0)}
     else{
-      entry.full=true;
+      entry.full=true;entry.running=false;delete entry.ctx;delete entry.accs;delete entry.outs;
       const box=document.getElementById("mc_wi_box");
       if(box&&box.dataset.k===wiKey&&typeof mcWhatIfInner==="function"){
         box.innerHTML=mcWhatIfInner(entry.res);

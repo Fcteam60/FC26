@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — Broadcast PNG Poster Motoru (posters.js · v27.0) */
+/* FC 27 Grup Ligi — Broadcast PNG Poster Motoru (posters.js · v27.3) */
 /* ---------- PAYLAŞILABİLİR GÖRSELLER ---------- */
 const NUMF='"FC Sayi","Barlow Condensed","Oswald","Bahnschrift","Avenir Next Condensed","Roboto Condensed","Arial Narrow",sans-serif';
 const TCOL={1:["#fbeaa8","#e0b43a","#2b2000"],2:["#f3f6f8","#b9c3cb","#1b2328"],3:["#f0c9a2","#be7f47","#2a1500"],0:["#ffffff","#dfeee6","#12211a"]};
@@ -510,7 +510,7 @@ async function karneCv(x,p,targetCv){p=p==null?1:p;const cu=n=>Math.round(n*p);
         c.fillStyle=col;rr(c,ix,iy+18,5,70,3);c.fill();
         tx(c,lbl,ix+22,iy+30,19,col,"left",700);
         c.font="700 20px "+NUMF;
-        const sw=Math.min(250,Math.max(104,Math.ceil(c.measureText(stat).width)+30));
+        const maxSw=isFull?410:250,sw=Math.min(maxSw,Math.max(104,Math.ceil(c.measureText(stat).width)+30));
         drawPill(c,stat,ix+iw-sw-16,iy+16,sw,30,"rgba(255,255,255,.07)",null,col,col,17);
         c.font="700 35px "+NUMF;tx(c,fit(c,name,iw-44),ix+22,iy+74,35,"#f8fafc","left",700);
       });

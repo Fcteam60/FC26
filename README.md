@@ -1,4 +1,4 @@
-# FC 27 Grup Ligi & Turnuva Takip (PWA · v27.0)
+# FC 27 Grup Ligi & Turnuva Takip (PWA · v27.3 (LTS))
 
 Arkadaş grupları ve bireysel kariyerler için tasarlanmış, sıfır bağımlılıklı, çevrimdışı çalışabilen Progressive Web App (PWA) futbol turnuva ve menajerlik takip uygulaması.
 
@@ -22,7 +22,7 @@ Proje derleyici veya harici SDK gerektirmez; doğrudan statik dosya olarak çal�
 | `posters.js` | Canvas 2D tabanlı 11 farklı 1080px+ Broadcast PNG poster üreticisi (1P + 2P) |
 | `coop.js` | 2 Kişilik Ortak Turnuva (2P) — ortak oda, CSPRNG oda kodu, Son Odalar geçmişi, sezon adı düzenleme ve 2P posterleri |
 | `app.js` | Ana uygulama durumu, 5 sekmeli navigasyon, kurulum/kura/maç girişi, oyuncu/kadro profilleri ve yedekleme |
-| `sw.js` | Çevrimdışı Service Worker önbelleği (`fc27-lig-v27-0`), kalıcı arma önbelleği ve 3 turnuva arka planı ön-önbelleği |
+| `sw.js` | Çevrimdışı Service Worker önbelleği (`fc27-lig-v27-3`), kalıcı arma önbelleği ve 3 turnuva arka planı ön-önbelleği |
 | `bg-ucl.jpg` / `bg-uel.jpg` / `bg-uecl.jpg` | Şampiyonlar Ligi, Avrupa Ligi ve Konferans Ligi için optimize edilmiş 9:16 dikey arka plan görselleri |
 | `tests/smoke.mjs` | Sıfır bağımlılıklı Node otomatik doğrulama betiği (`npm test`) |
 

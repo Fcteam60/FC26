@@ -1,27 +1,27 @@
-const CACHE = "fc27-lig-v27-0";
+const CACHE = "fc27-lig-v27-3";
 const LOGO_CACHE = "fc27-logos-v1";
-const CUP_BGS = [
-  "./bg-ucl.jpg?v=27.0",
-  "./bg-uel.jpg?v=27.0",
-  "./bg-uecl.jpg?v=27.0"
+const OPT_ASSETS = [
+  "./bg-ucl.jpg?v=27.3",
+  "./bg-uel.jpg?v=27.3",
+  "./bg-uecl.jpg?v=27.3",
+  "./icon-192.png?v=27.3",
+  "./icon-512.png?v=27.3",
+  "./icon-maskable-512.png?v=27.3",
+  "./apple-touch-icon.png?v=27.3"
 ];
 const FILES = [
   "./",
   "./index.html",
-  "./style.css?v=27.0",
-  "./data.js?v=27.0",
-  "./storage.js?v=27.0",
-  "./sim.js?v=27.0",
-  "./analytics.js?v=27.0",
-  "./duel.js?v=27.0",
-  "./posters.js?v=27.0",
-  "./coop.js?v=27.0",
-  "./app.js?v=27.0",
-  "./manifest.webmanifest",
-  "./icon-192.png?v=27.0",
-  "./icon-512.png?v=27.0",
-  "./icon-maskable-512.png?v=27.0",
-  "./apple-touch-icon.png?v=27.0"
+  "./style.css?v=27.3",
+  "./data.js?v=27.3",
+  "./storage.js?v=27.3",
+  "./sim.js?v=27.3",
+  "./analytics.js?v=27.3",
+  "./duel.js?v=27.3",
+  "./posters.js?v=27.3",
+  "./coop.js?v=27.3",
+  "./app.js?v=27.3",
+  "./manifest.webmanifest"
 ];
 
 self.addEventListener("install", e => {
@@ -36,7 +36,7 @@ self.addEventListener("install", e => {
         )
       )
     ).then(() => caches.open(CACHE).then(c => Promise.all(
-      CUP_BGS.map(u => fetch(u, { cache: "no-cache" }).then(r => (r && r.ok ? c.put(u, r) : null)).catch(() => null))
+      OPT_ASSETS.map(u => fetch(u, { cache: "no-cache" }).then(r => (r && r.ok ? c.put(u, r) : null)).catch(() => null))
     ))).then(() => self.skipWaiting())
   );
 });

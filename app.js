@@ -1,5 +1,5 @@
 /* ---------- SÜRÜM VE HATA GÜNLÜĞÜ ---------- */
-const VER="27.0",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
+const VER="27.3",ELK="fc26lig4_log";const nob=()=>Object.create(null);let SWR=null;
 function elogGet(){try{const a=JSON.parse(localStorage.getItem(ELK)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
 function elog(k,m,w){try{const a=elogGet();a.push({t:Date.now(),k:k,m:String(m||"").slice(0,300),w:String(w||"").slice(0,200)});localStorage.setItem(ELK,JSON.stringify(a.slice(-20)))}catch(e){}}
 addEventListener("error",e=>{elog("hata",e.message,String(e.filename||"").split("/").pop()+":"+e.lineno+":"+e.colno)});
@@ -267,7 +267,7 @@ function remap(o){
     if(s.gqs&&typeof s.gqs=="object")Object.keys(s.gqs).forEach(k=>{if(Array.isArray(s.gqs[k]))s.gqs[k]=s.gqs[k].map(m).filter(x=>x!==null)});
     if(s.sim&&typeof s.sim=="object"){
       if(s.sim.gm&&typeof s.sim.gm=="object")Object.keys(s.sim.gm).forEach(k=>{if(Array.isArray(s.sim.gm[k]))s.sim.gm[k]=s.sim.gm[k].map(wk=>Array.isArray(wk)?wk.map(a=>{if(!Array.isArray(a)||a.length<4)return null;const t1=m2(a[0]),t2=m2(a[1]);if(t1==null||t2==null)return null;if(a.length>=8)return [t1,t2,+a[2]||0,+a[3]||0,Array.isArray(a[4])?a[4]:[],Array.isArray(a[5])?a[5]:[],Array.isArray(a[6])?a[6]:[],Array.isArray(a[7])?a[7]:[]];return a.length>4?[t1,t2,+a[2]||0,+a[3]||0,Array.isArray(a[4])?a[4]:[],Array.isArray(a[5])?a[5]:[]]:[t1,t2,+a[2]||0,+a[3]||0]}).filter(Boolean):[])});
-      if(s.sim.ko&&typeof s.sim.ko=="object")Object.keys(s.sim.ko).forEach(rd=>{if(Array.isArray(s.sim.ko[rd]))s.sim.ko[rd]=s.sim.ko[rd].map(p=>{if(!p||typeof p!="object")return null;const t1=m2(p.t1),t2=m2(p.t2),w=p.w!=null?m2(p.w):null;return t1!=null&&t2!=null?Object.assign({},p,{t1,t2,w}):null}).filter(Boolean)});
+      if(s.sim.ko&&typeof s.sim.ko=="object")Object.keys(s.sim.ko).forEach(rd=>{if(Array.isArray(s.sim.ko[rd]))s.sim.ko[rd]=s.sim.ko[rd].map(p=>{if(!p||typeof p!="object")return null;const t1=p.t1!=null?m2(p.t1):null,t2=p.t2!=null?m2(p.t2):null,w=p.w!=null?m2(p.w):null;if((p.t1!=null&&t1==null)||(p.t2!=null&&t2==null))return null;if(t1==null&&t2==null)return null;return Object.assign({},p,{t1,t2,w})}).filter(Boolean)});
       if(s.sim.sc)s.sim.sc=rmMap(s.sim.sc);
       if(s.sim.as)s.sim.as=rmMap(s.sim.as);
       if(s.sim.mom)s.sim.mom=rmMap(s.sim.mom);
@@ -723,11 +723,26 @@ function vS(s){
   if(s.res!=null&&!(typeof s.res=="object"&&Number.isInteger(s.res.st)&&s.res.st>=0&&s.res.st<=7))return false;
   s.date=String(s.date||"");
   if(s.res){s.res.date=String(s.res.date||"");if(s.res.pts!=null&&!Number.isFinite(+s.res.pts))s.res.pts=null;if(s.res.grk!=null&&!Number.isFinite(+s.res.grk))s.res.grk=null}
+  if(s.pSnap!=null){
+    if(typeof s.pSnap!="object")delete s.pSnap;
+    else{
+      const ps=s.pSnap;
+      ["ch","q","po","top3","fin","nextRd"].forEach(k=>{if(ps[k]!=null){if(Number.isFinite(+ps[k]))ps[k]=+ps[k];else delete ps[k]}});
+      if(ps.curKoRd!=null)ps.curKoRd=String(ps.curKoRd).slice(0,24);
+      if(ps.qLbl!=null)ps.qLbl=String(ps.qLbl).slice(0,24);
+      if(ps.ch==null&&ps.q==null)delete s.pSnap;
+    }
+  }
   for(const m of (s.mt||[])){
     if(!m||typeof m!="object"||!Number.isFinite(+m.gf)||!Number.isFinite(+m.ga))return false;
     m.gf=+m.gf;m.ga=+m.ga;m.on=String(m.on||"");m.rd=String(m.rd||"");
     if(m.gls!=null){if(!Array.isArray(m.gls))delete m.gls;else m.gls=m.gls.filter(g=>g&&typeof g=="object"&&g.sc).map(g=>({sc:String(g.sc||"").slice(0,30),as:String(g.as||"").slice(0,30)}))}
-    if(m.stats!=null&&typeof m.stats!="object")m.stats=null}
+    if(m.stats!=null&&typeof m.stats!="object")m.stats=null;
+    if(m.imp!=null){
+      if(typeof m.imp!="object"||(!Number.isFinite(+m.imp.dq)&&!Number.isFinite(+m.imp.dch)))delete m.imp;
+      else m.imp={dq:Number.isFinite(+m.imp.dq)?Math.round(+m.imp.dq):0,dch:Number.isFinite(+m.imp.dch)?Math.round(+m.imp.dch):0,ql:String(m.imp.ql||"Tur").slice(0,16)};
+    }
+  }
   return true}
 function vBk(o){
   if(!o||typeof o!="object"||!okS(o))return null;
@@ -923,7 +938,7 @@ const resetCard=()=>`<div class="pfold dgr${st.rstopen?" open":""}"><button clas
 /* ---------- TAKIM VE KURA KİLİDİ ---------- */
 const hasData=s=>(s.mt||[]).length>0||(s.pl||[]).length>0||!!s.res||Object.values(s.tb||{}).some(v=>v);
 const tmLock=s=>!!s.G||(s.mt||[]).length>0;
-function wipeS(s){s.delM=Array.from(new Set([...(s.delM||[]),...(s.mt||[]).map(m=>m.id).filter(Boolean)]));s.mt=[];s.pl=[];s.res=null;s.gq=null;s.gqs=nob();s.sim={m:0,w:0,gm:nob(),ko:nob(),sc:nob(),as:nob(),mom:nob()};s.ts=nob();s.tb=nob();reTs(s)}
+function wipeS(s){s.delM=Array.from(new Set([...(s.delM||[]),...(s.mt||[]).map(m=>m.id).filter(Boolean)]));s.mt=[];s.pl=[];s.res=null;s.gq=null;s.gqs=nob();s.sim={m:0,w:0,gm:nob(),ko:nob(),sc:nob(),as:nob(),mom:nob()};s.ts=nob();s.tb=nob();delete s.pSnap;reTs(s)}
 function doUnlock(s){const had=hasData(s);wipeS(s);s.lk=false;s.P=null;s.G=null;s.ucl=null;s.fxMix=0;s.my=null;s.sn=null;s.dn=0;st.mode=null;st.tp=false;st.dr=null;st.k=0;sync();return had?"Kurulum açıldı, sezon verileri sıfırlandı":"Kurulum açıldı, takım ve kura silindi"}
 function doReset(s){const had=hasData(s);wipeS(s);s.G=null;s.ucl=null;s.fxMix=0;s.my=null;st.mode=null;st.dr=null;st.k=0;sync();return had?"Takım ve kura sıfırlandı, sezon verileri silindi":"Takım ve kura sıfırlandı"}
 const lockNote=(s,lk)=>lk?`<div class="klock tlock"><div class="klh"><span class="kli">${KI.lock}</span><div class="klt"><b>Takım Kilitli</b><small>Kura onaylandı${(s.mt||[]).length?" ve maç girildi":""}. Değiştirmek ${hasData(s)?"kurayı ve bu sezonun maç, oyuncu, sonuç kayıtlarını sıfırlar.":"kurayı sıfırlar."}</small></div></div><button class="btn kreset" data-a="chteam">${KI.reset}<span>Takımı Değiştir</span></button></div>`:`<div class="klock tlock"><div class="klh"><span class="kli">${KI.lock}</span><div class="klt"><b>Kura Çekimi Başladı</b><small>Takım değiştirilemez. Devam etmek için önce çekilen kurayı iptal et.</small></div></div><button class="btn kreset" data-a="dcancel">${KI.reset}<span>Kurayı İptal Et</span></button></div>`;
@@ -2017,7 +2032,7 @@ function fixtureView(s){
   const totW=ucl?8:(Math.max(0,...s.G.map(g=>Math.max(0,g.length-1)))*gl);
   const maxW=Math.min(totW||Infinity,Math.max(sim.w||0,myGm.length));
   const koHtml=koBracketCard(s);
-  if(!totW)return koHtml||emp("Bu turnuvada oynanacak grup/lig maçı bulunamadı.");
+  if(!totW)return koHtml?(mcLiveBar(s)+koHtml):emp("Bu turnuvada oynanacak grup/lig maçı bulunamadı.");
   const selW=(st.fxw===999||(st.fxw>=1&&st.fxw<=totW))?st.fxw:(maxW||1);
   const fxSide=(i,cls,st2)=>`<button class="ftm ${cls}${st2?" "+st2:""}" data-a="tinfo" data-i="${i}" aria-label="${esc(T[i].n)} kadrosunu incele">${badge(i,34)}<span class="nm">${esc(T[i].n)}</span></button>`;
   const row=(t1,t2,done,g1,g2,mine,det)=>{
@@ -2078,7 +2093,7 @@ function fixtureView(s){
   if(koHtml){
     const fxv=st.fxv==="grp"?"grp":"ko";
     const swBar=`<div class="stabs seg2" style="margin:0 0 10px" role="tablist" aria-label="Fikstür görünümü"><button class="chip ui-btn ${fxv==="ko"?"on":""}" role="tab" aria-selected="${fxv==="ko"}" data-a="fxv" data-v="ko">${uiIco("tree")}<span>Eleme Ağacı</span></button><button class="chip ui-btn ${fxv==="grp"?"on":""}" role="tab" aria-selected="${fxv==="grp"}" data-a="fxv" data-v="grp">${uiIco("cal")}<span>${ucl?"Lig Aşaması Fikstürü":"Grup Fikstürü"}</span></button></div>`;
-    return swBar+(fxv==="ko"?koHtml:wkTabs+body);
+    return swBar+(fxv==="ko"?(mcLiveBar(s)+koHtml):wkTabs+body);
   }
   return wkTabs+body}
 const emp=t=>`<div class="emp">${PITCH}${t}</div>`;
@@ -2813,7 +2828,7 @@ function analCard(s){
   }).join("");
   const leg=`<div class="ran-leg"><span><i class="pos"></i>Yeşil: sen öndesin</span><span><i class="neg"></i>Kırmızı: rakip önde</span><span>Kadro için dokun</span></div>`;
   return sub+spot+`<div class="pset-lbl" style="margin:11px 0 6px">Rakiplerin Sana Göre Farkı</div><div class="ran-list">${rows}</div>`+leg}
-const vsLine=(s,i)=>{if(s.my==null||i==null||!T[i])return "";const a=T[s.my],b=T[i];return h2hLine(i)+`<div class="note" style="margin:0 0 6px">Rakip sana göre: ${DIM.map(([k,l])=>`${l} ${b[k]} (<span class="${dcl(b[k]-a[k])}">${sg(b[k]-a[k])}</span>)`).join(" · ")}</div>`};
+const vsLine=(s,i)=>{if(s.my==null||i==null||!T[i])return "";const a=T[s.my],b=T[i];return h2hLine(i)+`<div class="note" style="margin:0 0 4px">Rakip sana göre: ${DIM.map(([k,l])=>`${l} ${b[k]} (<span class="${dcl(b[k]-a[k])}">${sg(b[k]-a[k])}</span>)`).join(" · ")}</div>`};
 
 /* ---------- RASTGELE TAKIM: SLOT ANİMASYONU ---------- */
 const reelHtml=i=>`<span class="rc">${fl(T[i].c)}<span class="n">${esc(T[i].n)}</span>${rb(T[i].g)}</span>`;
@@ -3186,7 +3201,7 @@ document.addEventListener("click",async e=>{
     const csr=cleanStatsW(st.mst),mStats=csr.s;st.stwarn=csr.warns.length?csr.warns.join(" · "):null;
     const cleanGls=(st.mgls||[]).slice(0,st.mg||0).filter(g=>g&&g.sc).map(g=>({sc:g.sc,as:isKK(g.sc)?"":(g.as||"")}));
     const m={id:oldM?oldM.id:Date.now(),opp:op,on:T[op].n,rd:st.mrd,lg:legInfo(s).lg,gf:st.mg||0,ga:st.mo||0,et,pf,pa,gls:cleanGls,sc:toNob(Object.fromEntries(Object.entries(st.msc||{}).filter(e=>e[1]>0))),as:toNob(Object.fromEntries(Object.entries(st.mas||{}).filter(e=>e[1]>0))),mom:st.mmom||"",stats:mStats};
-    {const pr=oldM&&oldM.pr?oldM.pr:(predict(s,op)?[predict(s,op).w,predict(s,op).d,predict(s,op).l]:null);if(pr)m.pr=pr}
+    {const pr=oldM&&oldM.pr?oldM.pr:(predict(s,op)?[predict(s,op).w,predict(s,op).d,predict(s,op).l]:null);if(pr)m.pr=pr;if(oldM&&oldM.imp&&oldM.opp===m.opp&&oldM.rd===m.rd&&oldM.gf===m.gf&&oldM.ga===m.ga&&oldM.pf===m.pf&&oldM.pa===m.pa)m.imp=oldM.imp}
     {const sqO=squadOf(op),nO=m.ga||0,old=oldM&&oldM.opp===op&&Array.isArray(oldM.og)?oldM.og.slice(0,nO):[];
       const need=nO-old.length;
       if(need>0&&sqO.length){const ix=simGoalAssign(op,need),as=simAssistsFor(op,ix);ix.forEach((v,k)=>old.push({sc:sqO[v].n,as:as[k]>=0&&sqO[as[k]]?sqO[as[k]].n:""}))}
@@ -3231,8 +3246,8 @@ document.addEventListener("click",async e=>{
     }
     const doCommit=()=>{
       let noteExtra="";
-      const preMc=(!oldM&&!s.res&&s.G&&typeof mcQuickSync==="function")?mcQuickSync(s,160):null;
-      if(preMc&&!preMc.done&&!preMc.elim)s.pSnap={ch:preMc.ch,q:preMc.q,po:preMc.po,top3:preMc.top3,fin:preMc.fin,qLbl:preMc.qLbl};
+      const preMc=(!oldM&&!s.res&&s.G&&typeof mcQuickSync==="function")?mcQuickSync(s,120,true):null;
+      if(preMc&&!preMc.done&&!preMc.elim)s.pSnap={ch:preMc.ch,q:preMc.q,po:preMc.po,top3:preMc.top3,fin:preMc.fin,nextRd:preMc.nextRd,curKoRd:preMc.curKoRd||"",qLbl:preMc.qLbl};
       if(plan==="rollback"&&planIdx>=0){
         Object.keys(sim.gm).forEach(gi=>{if(Array.isArray(sim.gm[gi]))sim.gm[gi].length=Math.min(sim.gm[gi].length,planIdx)});
         sim.w=planIdx;sim.ko=nob();
@@ -3263,13 +3278,39 @@ document.addEventListener("click",async e=>{
       mApply(s);syncUserMatchesToBracket(s);rebuildSimScorers(s);
       let mcNote="";
       if(preMc&&!preMc.done&&!preMc.elim&&typeof mcQuickSync==="function"){
-        const postMc=mcQuickSync(s,160);
+        const postMc=mcQuickSync(s,120,true);
         if(postMc){
-          const dq=(postMc.ucl&&preMc.inGrp?(postMc.q+postMc.po)-(preMc.q+preMc.po):postMc.lg?(postMc.top3-preMc.top3):(postMc.q-preMc.q));
           const dch=postMc.ch-preMc.ch;
-          m.imp={dq,dch,ql:preMc.ucl&&preMc.inGrp?"İlk 24":preMc.lg?"İlk 3":"Tur"};
-          if(Math.abs(dq)>=4)mcNote=` · ${m.imp.ql} ${dq>0?"+":"−"}%${Math.abs(dq)}`;
-          else if(Math.abs(dch)>=3)mcNote=` · Kupa ${dch>0?"+":"−"}%${Math.abs(dch)}`;
+          let dq=0,ql="Tur";
+          if(preMc.inGrp){
+            if(preMc.ucl){
+              if(preMc.q+preMc.po>=95){
+                const pQ=postMc.inGrp?postMc.q:(postMc.elim?0:100);
+                dq=pQ-preMc.q;ql="İlk 8";
+              }else{
+                const p24=postMc.inGrp?(postMc.q+postMc.po):(postMc.elim?0:100);
+                dq=p24-(preMc.q+preMc.po);ql="İlk 24";
+              }
+            }else if(preMc.lg){
+              if(preMc.top3>=95){dq=0;ql="Kupa"}
+              else{dq=postMc.top3-preMc.top3;ql="İlk 3"}
+            }else{
+              const pQ=postMc.inGrp?postMc.q:(postMc.elim?0:100);
+              dq=pQ-preMc.q;ql="Tur";
+            }
+          }else{
+            if(m.rd===RN[2]){dq=0;ql="Kupa"}
+            else{
+              ql=m.rd===RN[4]?"Final":"Tur";
+              const baseR=m.rd===RN[4]?preMc.fin:preMc.nextRd;
+              if(postMc.elim)dq=-baseR;
+              else if(postMc.done||(postMc.curKoRd&&postMc.curKoRd!==preMc.curKoRd))dq=100-baseR;
+              else dq=(m.rd===RN[4]?postMc.fin:postMc.nextRd)-baseR;
+            }
+          }
+          m.imp={dq:Math.round(dq),dch:Math.round(dch),ql};
+          if(Math.abs(m.imp.dq)>=4)mcNote=` · ${ql} ${m.imp.dq>0?"+":"−"}%${Math.abs(m.imp.dq)}`;
+          else if(Math.abs(m.imp.dch)>=3)mcNote=` · Kupa ${m.imp.dch>0?"+":"−"}%${Math.abs(m.imp.dch)}`;
         }
       }
       if(s.res){const sn=snapshotSeasonAwards(s);if(sn.topG)s.res.topG=sn.topG;if(sn.mvp)s.res.mvp=sn.mvp;if(sn.tots)s.res.tots=sn.tots;if(isLg(s.cfg)||s.res.st===0){const gp=grpPts(s);if(gp!=="")s.res.pts=gp}}
@@ -3294,6 +3335,7 @@ document.addEventListener("click",async e=>{
     const doDel=()=>{
       s.delM=Array.from(new Set([...(s.delM||[]),m.id]));
       s.mt=s.mt.filter(x=>x.id!=id);
+      delete s.pSnap;
       let extra="";
       if(willRollGrp){
         Object.keys(sim.gm).forEach(gi=>{if(Array.isArray(sim.gm[gi]))sim.gm[gi].length=Math.min(sim.gm[gi].length,grpIdx)});
