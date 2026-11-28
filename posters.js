@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — Broadcast PNG Poster Motoru (posters.js · v26.5) */
+/* FC 27 Grup Ligi — Broadcast PNG Poster Motoru (posters.js · v27.0) */
 /* ---------- PAYLAŞILABİLİR GÖRSELLER ---------- */
 const NUMF='"FC Sayi","Barlow Condensed","Oswald","Bahnschrift","Avenir Next Condensed","Roboto Condensed","Arial Narrow",sans-serif';
 const TCOL={1:["#fbeaa8","#e0b43a","#2b2000"],2:["#f3f6f8","#b9c3cb","#1b2328"],3:["#f0c9a2","#be7f47","#2a1500"],0:["#ffffff","#dfeee6","#12211a"]};
@@ -353,7 +353,7 @@ async function karneCv(x,p,targetCv){p=p==null?1:p;const cu=n=>Math.round(n*p);
   if(aw&&aw.wk)awItems.push(["GENÇ YILDIZ ("+aw.wk.age+")",aw.wk.n,aw.wk.g+"G · "+aw.wk.a+"A","#c084fc"]);
   if(aw&&aw.duo)awItems.push(["ALTIN İKİLİ",aw.duo.n,aw.duo.tot+" ORTAK GOL · "+aw.duo.m+"M","#2dd4bf",true]);
   const sigM=typeof seasonSigMatch==="function"?seasonSigMatch(x):null;
-  if(sigM){const sRd=sigM.rd==="Grup"?(isUcl(x.cfg)?"LİG AŞ.":isLg(x.cfg)?"LİG":"GRUP"):sigM.rd.toLocaleUpperCase("tr");awItems.push(["SEZONUN MAÇI",sRd+" · "+sigM.on,mscTxt(sigM),"#fb923c",true])}
+  if(sigM){const sRd=sigM.rd==="Grup"?(isUcl(x.cfg)?"LİG AŞ.":isLg(x.cfg)?"LİG":"GRUP"):sigM.rd.toLocaleUpperCase("tr");const isPiv=sigM.imp&&((+sigM.imp.dq||0)>=6||(+sigM.imp.dch||0)>=4);const pTag=isPiv?((+sigM.imp.dq||0)>=6?` · +%${sigM.imp.dq} ${(sigM.imp.ql||"TUR").toLocaleUpperCase("tr")}`:` · +%${sigM.imp.dch} KUPA`):"";awItems.push([isPiv?"DÖNÜM NOKTASI":"SEZONUN MAÇI",sRd+" · "+sigM.on,mscTxt(sigM)+pTag,"#fb923c",true])}
   const hasAw=(aw&&aw.mvp)||awItems.length>0;
   // Layout award items (wide items take full row)
   const awLayout=[];let curRow=[];

@@ -1,27 +1,27 @@
-const CACHE = "fc27-lig-v26-5";
+const CACHE = "fc27-lig-v27-0";
 const LOGO_CACHE = "fc27-logos-v1";
 const CUP_BGS = [
-  "./bg-ucl.jpg?v=26.5",
-  "./bg-uel.jpg?v=26.5",
-  "./bg-uecl.jpg?v=26.5"
+  "./bg-ucl.jpg?v=27.0",
+  "./bg-uel.jpg?v=27.0",
+  "./bg-uecl.jpg?v=27.0"
 ];
 const FILES = [
   "./",
   "./index.html",
-  "./style.css?v=26.5",
-  "./data.js?v=26.5",
-  "./storage.js?v=26.5",
-  "./sim.js?v=26.5",
-  "./analytics.js?v=26.5",
-  "./duel.js?v=26.5",
-  "./posters.js?v=26.5",
-  "./coop.js?v=26.5",
-  "./app.js?v=26.5",
+  "./style.css?v=27.0",
+  "./data.js?v=27.0",
+  "./storage.js?v=27.0",
+  "./sim.js?v=27.0",
+  "./analytics.js?v=27.0",
+  "./duel.js?v=27.0",
+  "./posters.js?v=27.0",
+  "./coop.js?v=27.0",
+  "./app.js?v=27.0",
   "./manifest.webmanifest",
-  "./icon-192.png?v=26.5",
-  "./icon-512.png?v=26.5",
-  "./icon-maskable-512.png?v=26.5",
-  "./apple-touch-icon.png?v=26.5"
+  "./icon-192.png?v=27.0",
+  "./icon-512.png?v=27.0",
+  "./icon-maskable-512.png?v=27.0",
+  "./apple-touch-icon.png?v=27.0"
 ];
 
 self.addEventListener("install", e => {

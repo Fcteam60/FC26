@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — Analitik, xG/xPts, Taktiksel DNA ve Kariyer Motoru (analytics.js · v26.5) */
+/* FC 27 Grup Ligi — Analitik, xG/xPts, Taktiksel DNA ve Kariyer Motoru (analytics.js · v27.0) */
 const RS=["Grup","S64","S32","S16","ÇF","YF","Final","Şamp."];
 /* ---------- RAKİPLER ---------- */
 function oppData(){const M=nob();
@@ -1490,10 +1490,87 @@ function seasonSigMatch(x){
   const koW={"Final":32,"Yarı final":22,"Çeyrek final":15,"Son 16":10,"Play-Off":7,"Son 32":7,"Son 64":5};
   const scoreOf=m=>{
     const r=mres(m),opG=m.opp!=null&&T[m.opp]?RT(x,m.opp).g:myG,gap=opG-myG,gd=(+m.gf||0)-(+m.ga||0);
-    if(r==="w")return 40+gd*4.5+gap*2.8+(koW[m.rd]||0)+(m.pf!=null&&m.pf>m.pa?6:0);
-    if(r==="d")return 10+gap*2.4+(+m.gf||0)*1.2+(koW[m.rd]||0)*0.4;
+    const impB=m.imp?(Math.max(0,+m.imp.dq||0)*0.95+Math.max(0,+m.imp.dch||0)*1.8):0;
+    if(r==="w")return 40+gd*4.5+gap*2.8+(koW[m.rd]||0)+(m.pf!=null&&m.pf>m.pa?6:0)+impB;
+    if(r==="d")return 10+gap*2.4+(+m.gf||0)*1.2+(koW[m.rd]||0)*0.4+impB*0.7;
     return -99;
   };
   const cands=ms.map(m=>({m,sc:scoreOf(m),r:mres(m)})).filter(o=>o.sc>0).sort((a,b)=>b.sc-a.sc);
   return cands.length?cands[0].m:null;
+}
+
+/* ---------- v27.0: CANLI OLASILIK ŞERİDİ & "YA KAZANIRSAM?" KARTI ---------- */
+function mcDeltaTag(curV,prevV){
+  if(prevV==null||!Number.isFinite(prevV))return "";
+  const d=Math.round(curV-prevV);
+  if(Math.abs(d)<2)return "";
+  return `<em class="mc-d ${d>0?"pos":"neg"}">${d>0?"+":"−"}%${Math.abs(d)}</em>`;
+}
+function mcLiveInner(s,o){
+  if(!o)return "";
+  const sn=s&&s.pSnap;
+  if(o.done){
+    const lbl=o.ch>=100?"Şampiyon 🏆":(o.fin>=100?"Finalist":o.q>=100?"Turnuva Tamamlandı":"Elendi");
+    return `<div class="mc-hd"><span class="mc-ttl">${uiIco("chart")}<span>Turnuva Sonucu</span></span><span class="mc-tag done">${lbl}</span></div>`;
+  }
+  if(o.elim){
+    return `<div class="mc-hd"><span class="mc-ttl">${uiIco("chart")}<span>Canlı Tur Olasılığı</span></span><span class="mc-tag dead">Elendi · %0</span></div>`;
+  }
+  const cells=[];
+  if(o.ucl&&o.inGrp){
+    cells.push({lbl:"İlk 8",val:o.q,d:sn?mcDeltaTag(o.q,sn.q):"",cls:o.q>=50?"pos":""});
+    cells.push({lbl:"Play-Off",val:o.po,d:sn?mcDeltaTag(o.po,sn.po):"",cls:"sky"});
+    cells.push({lbl:"Şampiyonluk",val:o.ch,d:sn?mcDeltaTag(o.ch,sn.ch):"",cls:"gold"});
+  }else if(o.lg){
+    cells.push({lbl:"Şampiyonluk",val:o.ch,d:sn?mcDeltaTag(o.ch,sn.ch):"",cls:"gold"});
+    cells.push({lbl:"İlk 3",val:o.top3,d:sn?mcDeltaTag(o.top3,sn.top3):"",cls:"pos"});
+    cells.push({lbl:"İlk Yarı",val:o.topHalf,d:"",cls:"sky"});
+  }else if(o.inGrp){
+    cells.push({lbl:"Gruptan Çıkma",val:o.q,d:sn?mcDeltaTag(o.q,sn.q):"",cls:o.q>=50?"pos":o.q<=20?"neg":""});
+    cells.push({lbl:"Final",val:o.fin,d:sn?mcDeltaTag(o.fin,sn.fin):"",cls:"sky"});
+    cells.push({lbl:"Şampiyonluk",val:o.ch,d:sn?mcDeltaTag(o.ch,sn.ch):"",cls:"gold"});
+  }else{
+    const rdLbl=o.curKoRd?`${o.curKoRd} Geçme`:"Turu Geçme";
+    cells.push({lbl:rdLbl,val:o.nextRd,d:"",cls:o.nextRd>=50?"pos":""});
+    cells.push({lbl:"Final",val:o.fin,d:sn?mcDeltaTag(o.fin,sn.fin):"",cls:"sky"});
+    cells.push({lbl:"Şampiyonluk",val:o.ch,d:sn?mcDeltaTag(o.ch,sn.ch):"",cls:"gold"});
+  }
+  const foot=o.ucl&&o.inGrp&&o.elimP>0?`<div class="mc-ft">Elenme riski: <b>%${o.elimP}</b> · kalan fikstür Poisson simülasyonu</div>`:"";
+  return `<div class="mc-hd"><span class="mc-ttl">${uiIco("chart")}<span>Canlı Olasılıklar</span></span><span class="mc-tag">Tahmin · ${o.n} sim.</span></div>`+
+    `<div class="mc-grid">${cells.map(c=>`<div class="mc-cell ${c.cls}"><span>${c.lbl}</span><b>%${c.val}${c.d}</b><i class="mc-pb"><u style="width:${Math.max(c.val?4:0,c.val)}%"></u></i></div>`).join("")}</div>`+
+    foot;
+}
+function mcLiveBar(s){
+  if(!s||!s.G||s.my==null||typeof mcGet!=="function")return "";
+  const o=mcGet(s);if(!o)return "";
+  const key=mcStateKey(s);
+  return `<div id="mc_live_box" class="card pglass mc-bar" data-k="${esc(key)}" role="region" aria-label="Canlı turnuva olasılıkları">${mcLiveInner(s,o)}</div>`;
+}
+function mcWhatIfInner(wi){
+  if(!wi||!wi.base||!wi.w||!wi.l)return "";
+  const b=wi.base;
+  const pickPrimary=r=>wi.lg?r.ch:(wi.ucl&&wi.inGrp?(r.q+r.po):wi.inGrp?r.q:r.nextRd);
+  const pLbl=wi.lg?"Şamp.":(wi.ucl&&wi.inGrp?"İlk 24":wi.inGrp?"Tur":"Tur");
+  const bP=pickPrimary(b),wP=pickPrimary(wi.w),lP=pickPrimary(wi.l);
+  const bCh=b.ch,wCh=wi.w.ch,lCh=wi.l.ch;
+  const swingP=Math.abs(wP-lP),swingCh=Math.abs(wCh-lCh);
+  const isPivot=swingP>=24||swingCh>=12;
+  const mkRow=(cls,lbl,res)=>{
+    const np=pickPrimary(res),dp=np-bP;
+    const dStr=Math.abs(dp)>=2?` <em class="${dp>0?"pos":"neg"}">(${dp>0?"+":"−"}%${Math.abs(dp)})</em>`:"";
+    const chPart=!wi.lg&&(bCh>=1||res.ch>=1)?`<span class="mc-wch">Kupa %${res.ch}</span>`:"";
+    const q8Part=wi.ucl&&wi.inGrp?`<span class="mc-wch">İlk 8 %${res.q}</span>`:"";
+    return `<div class="mc-wrow ${cls}"><span class="mc-wlbl">${lbl}</span><span class="mc-wval"><b>${pLbl} %${bP} → %${np}</b>${dStr}${q8Part||chPart}</span></div>`;
+  };
+  const rows=[mkRow("w","Kazanırsan",wi.w)];
+  if(wi.canDraw&&wi.d)rows.push(mkRow("d","Beraberlik",wi.d));
+  rows.push(mkRow("l","Kaybedersen",wi.l));
+  return `<div class="mc-wihd"><span class="mc-wittl">Ya Kazanırsam?${isPivot?` <em class="mc-piv">Kırılma Maçı</em>`:""}</span><span class="mc-tag">Tahmin</span></div>`+
+    `<div class="mc-wrows">${rows.join("")}</div>`;
+}
+function mcWhatIfBox(s,opp,rd,lg){
+  if(!s||opp==null||!rd||s.res||!s.G||typeof mcGetWhatIf!=="function")return "";
+  const wi=mcGetWhatIf(s,opp,rd,lg);if(!wi)return "";
+  const wiKey=`${mcStateKey(s)}|${opp}|${rd}|${lg||0}`;
+  return `<div id="mc_wi_box" class="mc-wi" data-k="${esc(wiKey)}">${mcWhatIfInner(wi)}</div>`;
 }

@@ -1,4 +1,4 @@
-/* FC 27 Grup Ligi — 4 Katmanlı Gerçekçi Simülasyon, Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v26.5) */
+/* FC 27 Grup Ligi — 4 Katmanlı Gerçekçi Simülasyon, Puan Tablosu ve Eleme Ağacı Motoru (sim.js · v27.0) */
 /* ---------- AŞAMA 1, 2 & 3: HAFTALIK SİMÜLASYON, ELEME AĞACI (BRACKET), GOL KRALLIĞI VE TURNUVA BİTİŞİ ---------- */
 const SIM_MODES=[[0,"Gerçekçi","Güç farkı ve gerçek futbol skorları (1-0, 2-1, 1-1 ağırlıklı)"],[1,"Dengeli","Standart güç ve günlük form dengesi"],[2,"Sürprizli","Yüksek şans faktörü, kupa sürprizlerine açık"]];
 
@@ -659,6 +659,7 @@ function simNextWeek(s){
       return `Önce kendi ${targetW}. hafta maçını girmelisin`;
     }
   }
+  if(typeof mcSaveSnap==="function")mcSaveSnap(s);
   s.G.forEach((g,gi)=>{
     sim.gm[gi]=Array.isArray(sim.gm[gi])?sim.gm[gi]:[];
     const pairs=simWeekPairs(s,gi,targetW);
@@ -1001,6 +1002,7 @@ function simKoStage(s,onlyCurrentRd){
       }
       return `Önce ${rd} turundaki kendi maçını${opIdx!=null&&T[opIdx]?" ("+T[opIdx].n+")":""} oynamalısın`;
     }
+    if(!lastSimRd&&typeof mcSaveSnap==="function")mcSaveSnap(s);
     pairs.forEach(p=>{
       if(p.w==null&&p.t1!=null&&p.t2!=null)simOneKoTie(s,p,rd);
     });
@@ -1280,4 +1282,493 @@ function resetUclR16Results(s){
     p.g1=null;p.g2=null;p.et=0;p.pf=null;p.pa=null;p.w=null;
     p.leg1=null;p.leg2=null;p.s1=[];p.s2=[];p.a1=[];p.a2=[];
   });
+}
+
+
+/* ==========================================================================
+   v27.0: Canlı Monte Carlo Olasılık Motoru & "Ya Kazanırsam?" (ΔP) Senaryosu
+   - Tüm 4 formatı (36T İsviçre ŞL, Grup+Eleme, Puan Ligi, Direkt Eleme) destekler
+   - Önbellekli + parçalı (setTimeout 0) çalışır; mobil arayüzü dondurmaz
+   ========================================================================== */
+const _mcCache=new Map(),_mcWiCache=new Map();
+let _mcJobId=0,_mcWiJobId=0;
+
+function mcStateKey(s){
+  if(!s||!s.G||s.my==null)return "";
+  const sim=ensureSim(s),mt=s.mt||[],lm=mt.length?mt[mt.length-1]:null;
+  let koDone=0;
+  Object.values(sim.ko||{}).forEach(arr=>{if(Array.isArray(arr))arr.forEach(p=>{if(p&&p.w!=null)koDone++})});
+  return `${s.id}|${sim.m||0}|${sim.w||0}|${mt.length}|${lm?`${lm.id}:${lm.gf}:${lm.ga}:${lm.pf||0}:${lm.pa||0}`:"0"}|${koDone}|${s.my}|${s.res?s.res.st:"-"}`;
+}
+
+function mcFastScore(ctx,t1,t2,seedAdv,highStakes,leg2Deficit){
+  const p1=ctx.pwr[t1],p2=ctx.pwr[t2];
+  if(!p1||!p2)return [1,1];
+  const f1=ctx.frm[t1]||0,f2=ctx.frm[t2]||0;
+  let effGap=(p1.g+f1)-(p2.g+f2)+(seedAdv||0)*0.65;
+  if(highStakes)effGap+=(p1.ageClutch-p2.ageClutch);
+  const attDef1=(p1.a-p2.d)*0.030,attDef2=(p2.a-p1.d)*0.030;
+  const midCtrl=(p1.o-p2.o)*0.026;
+  const dom=Math.tanh(effGap/8.5)*0.42;
+  const gkW1=Math.max(-0.08,Math.min(0.24,(p1.gk-80)*0.020));
+  const gkW2=Math.max(-0.08,Math.min(0.24,(p2.gk-80)*0.020));
+  let tempo=1.0+p1.tempoMod+p2.tempoMod+((p1.a-p1.d)+(p2.a-p2.d))*0.007;
+  tempo=Math.max(0.84,Math.min(1.18,tempo));
+  if(highStakes)tempo*=0.90;
+  const mode=ctx.mode,scale=mode===0?1.0:mode===1?0.72:0.42,baseJ=mode===0?0.09:mode===1?0.22:0.40;
+  const j1=Math.max(0.04,baseJ+p1.ageVar),j2=Math.max(0.04,baseJ+p2.ageVar);
+  let l1=1.24*tempo*Math.exp((attDef1+midCtrl+dom-gkW2)*scale)*(1+(Math.random()*2-1)*j1);
+  let l2=1.24*tempo*Math.exp((attDef2-midCtrl-dom-gkW1)*scale)*(1+(Math.random()*2-1)*j2);
+  const d1=leg2Deficit||0;
+  if(d1>0){l1*=1+Math.min(0.26,d1*0.11);l2*=1+Math.min(0.22,d1*0.09)}
+  else if(d1<0){const d2=-d1;l2*=1+Math.min(0.26,d2*0.11);l1*=1+Math.min(0.22,d2*0.09)}
+  if(mode===0){
+    if(l1>2.30)l1=2.30+(l1-2.30)*0.35;
+    if(l2>2.30)l2=2.30+(l2-2.30)*0.35;
+  }
+  l1=Math.max(0.18,Math.min(3.4,l1));
+  l2=Math.max(0.18,Math.min(3.4,l2));
+  return [Math.min(6,poissonSample(l1)),Math.min(6,poissonSample(l2))];
+}
+
+function mcSampleCond(ctx,t1,t2,want,seedAdv,highStakes,leg2Deficit){
+  for(let k=0;k<8;k++){
+    const [a,b]=mcFastScore(ctx,t1,t2,seedAdv,highStakes,leg2Deficit);
+    if((want==="w"&&a>b)||(want==="d"&&a===b)||(want==="l"&&a<b))return [a,b];
+  }
+  return want==="w"?[2,1]:want==="l"?[1,2]:[1,1];
+}
+
+function mcFastKoWinner(ctx,t1,t2,sa,legs,highStakes,presetLeg1){
+  let g1=0,g2=0;
+  if(legs===2){
+    let l1a=0,l1b=0;
+    if(Array.isArray(presetLeg1)&&presetLeg1.length>=2){l1a=+presetLeg1[0]||0;l1b=+presetLeg1[1]||0}
+    else{[l1a,l1b]=mcFastScore(ctx,t1,t2,sa*0.4,highStakes,0)}
+    const [l2a,l2b]=mcFastScore(ctx,t1,t2,sa*0.4,highStakes,l1b-l1a);
+    g1=l1a+l2a;g2=l1b+l2b;
+  }else{
+    [g1,g2]=mcFastScore(ctx,t1,t2,sa,highStakes,0);
+  }
+  if(g1!==g2)return g1>g2?t1:t2;
+  const pw1=ctx.pwrET[t1],pw2=ctx.pwrET[t2];
+  const scale=ctx.mode===0?1.0:ctx.mode===1?0.72:0.42;
+  if(pw1&&pw2){
+    const diff=(pw1.g-pw2.g)+(pw1.ageClutch-pw2.ageClutch)+(sa||0)*0.4;
+    const p1=Math.min(0.50,0.24*Math.exp(Math.tanh(diff/8)*0.45*scale));
+    const p2=Math.min(0.50,0.24*Math.exp(-Math.tanh(diff/8)*0.45*scale));
+    if(Math.random()<p1)g1++;
+    if(Math.random()<p2)g2++;
+    if(g1!==g2)return g1>g2?t1:t2;
+    const pkAdv=((pw1.gk-pw2.gk)*0.008+(pw1.g-pw2.g)*0.005+(pw1.ageClutch-pw2.ageClutch)*0.015)*scale;
+    const r1=Math.max(0.64,Math.min(0.85,0.75+pkAdv)),r2=Math.max(0.64,Math.min(0.85,0.75-pkAdv));
+    let k1=0,k2=0;
+    for(let k=0;k<5;k++){
+      if(Math.random()<r1)k1++;
+      if(k1>k2+(5-k)||k2>k1+(4-k))break;
+      if(Math.random()<r2)k2++;
+      if(k1>k2+(4-k)||k2>k1+(4-k))break;
+    }
+    if(k1!==k2)return k1>k2?t1:t2;
+    const pWin1=r1/(r1+r2);
+    return Math.random()<pWin1?t1:t2;
+  }
+  return Math.random()<0.5?t1:t2;
+}
+
+function mcBuildCtx(s){
+  if(!s||!s.G||!s.G.length||s.my==null||!T[s.my])return null;
+  const cfg=s.cfg,ucl=isUcl(cfg),lg=isLg(cfg),hasGrp=!!(cfg.gs||ucl||lg);
+  const sim=ensureSim(s),totW=totWeeks(cfg),my=s.my;
+  const RDs=lg?[]:rds(cfg).filter(r=>r!=="Grup");
+  const out=getTourneyOutcome(s);
+  if(s.res||(out&&out.done)){
+    const isCh=s.res?s.res.st===7:(out&&out.ch===my);
+    const isFin=s.res?s.res.st>=6:(out&&(out.ch===my||out.ru===my));
+    const qOk=isCh||isFin||(s.res?s.res.st>=1:!!s.gq);
+    return{done:true,elim:!isCh&&!qOk,ucl,lg,hasGrp,koOnly:!hasGrp,ch:isCh?100:0,fin:isFin?100:0,q:qOk?100:0,po:0,top3:(s.res&&s.res.st>=5)?100:0,topHalf:(s.res&&s.res.st>=4)?100:0,nextRd:isCh?100:0,qLbl:ucl?"İlk 8":lg?"İlk 3":hasGrp?"Tur":"Tur"};
+  }
+  if(isUserEliminated(s)){
+    return{done:false,elim:true,ucl,lg,hasGrp,koOnly:!hasGrp,ch:0,fin:0,q:0,po:0,top3:0,topHalf:0,nextRd:0,qLbl:ucl?"İlk 8":lg?"İlk 3":hasGrp?"Tur":"Tur"};
+  }
+  const pwr=nob(),pwrET=nob(),frm=nob(),tieV=nob();
+  const teamSet=new Set((s.P||[]).concat(s.G.flat()));
+  teamSet.forEach(ti=>{
+    if(ti!=null&&T[ti]){
+      pwr[ti]=simPowerOf(s,ti,false);
+      pwrET[ti]=simPowerOf(s,ti,true);
+      frm[ti]=simTeamForm(s,ti);
+      tieV[ti]=V(RT(s,ti));
+    }
+  });
+  const inGrp=hasGrp&&(sim.w||0)<totW;
+  const baseTbl=[],remPairs=[];
+  let myGi=-1;
+  if(inGrp){
+    const gl=cfg.gl||1;
+    s.G.forEach((g,gi)=>{
+      if(g.includes(my))myGi=gi;
+      const tbl=nob();
+      g.forEach(ti=>{tbl[ti]={ti,pts:0,gf:0,ga:0,w:0}});
+      const addM=(t1,t2,g1,g2)=>{
+        const r1=tbl[t1],r2=tbl[t2];
+        if(r1){r1.gf+=g1;r1.ga+=g2;if(g1>g2){r1.w++;r1.pts+=3}else if(g1===g2)r1.pts+=1}
+        if(r2){r2.gf+=g2;r2.ga+=g1;if(g2>g1){r2.w++;r2.pts+=3}else if(g1===g2)r2.pts+=1}
+      };
+      const userCnt=nob(),aiCnt=nob();
+      if(g.includes(my)){
+        (s.mt||[]).filter(m=>m.rd==="Grup"&&m.opp!=null&&g.includes(m.opp)).forEach(m=>{
+          userCnt[m.opp]=(userCnt[m.opp]||0)+1;
+          if(userCnt[m.opp]<=gl)addM(my,m.opp,+m.gf||0,+m.ga||0);
+        });
+      }
+      const gSim=Array.isArray(sim.gm[gi])?sim.gm[gi]:[];
+      for(let wi=0;wi<Math.min(sim.w||0,gSim.length);wi++){
+        const wk=gSim[wi];
+        if(Array.isArray(wk))wk.forEach(arr=>{
+          if(Array.isArray(arr)&&arr.length>=4){
+            const a=arr[0],b=arr[1];
+            addM(a,b,+arr[2]||0,+arr[3]||0);
+            const pk=a<b?a+"|"+b:b+"|"+a;
+            aiCnt[pk]=(aiCnt[pk]||0)+1;
+          }
+        });
+      }
+      baseTbl[gi]=g.map(ti=>tbl[ti]);
+      const rem=[];
+      if(ucl&&s.ucl&&Array.isArray(s.ucl.fx)){
+        const uSched=uclMySchedule(s);
+        for(let w=1;w<=totW;w++){
+          const uMe=uSched.find(x=>x.w===w);
+          if(uMe&&!uclHasPlayedWeek(s,w))rem.push({t1:my,t2:uMe.opp,u:1,w});
+          if(w>(sim.w||0)){
+            const fxW=s.ucl.fx[w-1]||[];
+            fxW.forEach(p=>{if(Array.isArray(p)&&p.length>=2&&p[0]!==my&&p[1]!==my)rem.push({t1:p[0],t2:p[1],u:0,w})});
+          }
+        }
+      }else{
+        for(let a=0;a<g.length;a++){
+          for(let b=a+1;b<g.length;b++){
+            const ta=g[a],tb=g[b];
+            if(ta===my||tb===my){
+              const opp=ta===my?tb:ta,dn=userCnt[opp]||0;
+              for(let r=dn;r<gl;r++)rem.push({t1:my,t2:opp,u:1});
+            }else{
+              const pk=ta<tb?ta+"|"+tb:tb+"|"+ta,dn=aiCnt[pk]||0;
+              for(let r=dn;r<gl;r++)rem.push({t1:ta,t2:tb,u:0});
+            }
+          }
+        }
+      }
+      remPairs[gi]=rem;
+    });
+  }
+  let koSnap=null,curKoRd="";
+  if(!inGrp&&!lg&&RDs.length){
+    koSnap=nob();
+    const srcKo=sim.ko||nob();
+    const hasExisting=RDs.some(rd=>Array.isArray(srcKo[rd])&&srcKo[rd].length);
+    if(hasExisting){
+      RDs.forEach(rd=>{
+        const arr=srcKo[rd];
+        if(Array.isArray(arr)&&arr.length){
+          koSnap[rd]=arr.map(p=>({t1:p.t1,t2:p.t2,sa:p.sa||0,w:p.w!=null?p.w:null,leg1:Array.isArray(p.leg1)?[+p.leg1[0]||0,+p.leg1[1]||0]:null}));
+        }
+      });
+    }else if(ucl){
+      const ub=buildUclBracket(s);
+      if(ub){
+        koSnap["Play-Off"]=ub.po.map(p=>({t1:p.t1,t2:p.t2,sa:p.sa||0,w:null,leg1:null}));
+        koSnap["Son 16"]=ub.r16.map(p=>({t1:p.t1,t2:p.t2,sa:p.sa||0,w:null,leg1:null}));
+      }
+    }else{
+      const initP=buildInitialKoPairs(s);
+      if(initP.length)koSnap[RDs[0]]=initP.map(p=>({t1:p.t1,t2:p.t2,sa:p.sa||0,w:null,leg1:null}));
+    }
+    // Sync any partial Leg 1 played by user in active KO round
+    for(let rIdx=0;rIdx<RDs.length;rIdx++){
+      const rd=RDs[rIdx],pairs=koSnap[rd];
+      if(!Array.isArray(pairs))continue;
+      const up=pairs.find(p=>p.w==null&&(p.t1===my||p.t2===my));
+      if(up){
+        curKoRd=rd;
+        const needL=lgs(cfg,rd),opp=up.t1===my?up.t2:up.t1;
+        if(needL===2&&!up.leg1&&opp!=null){
+          const myMs=(s.mt||[]).filter(m=>m.rd===rd&&m.opp===opp).sort((a,b)=>(+a.lg||0)-(+b.lg||0)||(a.id||0)-(b.id||0));
+          if(myMs.length===1){
+            up.leg1=up.t1===my?[+myMs[0].gf||0,+myMs[0].ga||0]:[+myMs[0].ga||0,+myMs[0].gf||0];
+          }
+        }
+        break;
+      }
+    }
+  }
+  const qLbl=ucl?"İlk 8":lg?"İlk 3":inGrp?"Gruptan Çıkma":"Turu Geçme";
+  return{done:false,elim:false,cfg,ucl,lg,hasGrp,inGrp,my,myGi,mode:sim.m||0,RDs,curKoRd,pwr,pwrET,frm,tieV,baseTbl,remPairs,koSnap,Gcnt:s.G.length,N:cfg.N,qMax:ucl?24:(cfg.q||2),qLbl};
+}
+
+function mcSimKo(ctx,koMap,forced){
+  const RDs=ctx.RDs,my=ctx.my,cfg=ctx.cfg,ucl=ctx.ucl;
+  let usedF=false,wonCur=0,reachedFin=0,wonCh=0;
+  for(let rIdx=0;rIdx<RDs.length;rIdx++){
+    const rd=RDs[rIdx],pairs=koMap[rd];
+    if(!Array.isArray(pairs)||!pairs.length)break;
+    const legs=lgs(cfg,rd),isFin=rIdx===RDs.length-1,hs=(rd===RN[4]||rd===RN[2]);
+    let myAlive=false;
+    for(let pi=0;pi<pairs.length;pi++){
+      const p=pairs[pi];
+      if(!p||p.t1==null||p.t2==null)continue;
+      const isMine=p.t1===my||p.t2===my;
+      if(isMine&&isFin)reachedFin=1;
+      if(p.w==null){
+        if(isMine&&forced&&forced.rd===rd&&!usedF){
+          usedF=true;
+          const isT1=p.t1===my;
+          if(legs===1||p.leg1!=null){
+            p.w=forced.out==="w"?my:(isT1?p.t2:p.t1);
+          }else{
+            const want1=isT1?forced.out:(forced.out==="w"?"l":forced.out==="l"?"w":"d");
+            const l1=mcSampleCond(ctx,p.t1,p.t2,want1,(p.sa||0)*0.4,hs,0);
+            p.w=mcFastKoWinner(ctx,p.t1,p.t2,p.sa||0,2,hs,l1);
+          }
+        }else{
+          p.w=mcFastKoWinner(ctx,p.t1,p.t2,p.sa||0,legs,hs,p.leg1);
+        }
+      }
+      if(isMine){
+        if(p.w===my){
+          myAlive=true;
+          if(rd===ctx.curKoRd)wonCur=1;
+          if(isFin)wonCh=1;
+        }
+      }
+    }
+    // Check if user is waiting in R16 directly (UCL top 8) during Play-Off
+    if(ucl&&rd==="Play-Off"){
+      const r16=koMap["Son 16"];
+      if(Array.isArray(r16)&&r16.length===pairs.length){
+        for(let i=0;i<pairs.length;i++){
+          if(r16[i]&&r16[i].w==null)r16[i].t2=pairs[i].w;
+          if(r16[i]&&r16[i].t1===my)myAlive=true;
+        }
+      }
+      if(!myAlive)break;
+      continue;
+    }
+    if(!myAlive)break;
+    if(rIdx+1<RDs.length){
+      const nextRd=RDs[rIdx+1];
+      if(!Array.isArray(koMap[nextRd])||!koMap[nextRd].length){
+        const np=[];
+        for(let i=0;i<pairs.length;i+=2){
+          if(pairs[i+1])np.push({t1:pairs[i].w,t2:pairs[i+1].w,sa:0,w:null,leg1:null});
+        }
+        koMap[nextRd]=np;
+      }else{
+        for(let i=0;i<pairs.length;i+=2){
+          const np=koMap[nextRd][i/2];
+          if(np&&pairs[i+1]&&np.w==null){np.t1=pairs[i].w;np.t2=pairs[i+1].w}
+        }
+      }
+    }
+  }
+  return{nextRd:wonCur,fin:reachedFin,ch:wonCh};
+}
+
+function mcSimOne(ctx,forced){
+  const my=ctx.my;
+  if(ctx.inGrp){
+    const gqs=nob(),ucl=ctx.ucl,lg=ctx.lg;
+    let myRk=99,usedF=false;
+    for(let gi=0;gi<ctx.Gcnt;gi++){
+      const rows=ctx.baseTbl[gi].map(r=>({ti:r.ti,pts:r.pts,gf:r.gf,ga:r.ga,w:r.w}));
+      const byTi=nob();
+      rows.forEach(r=>{byTi[r.ti]=r});
+      const rem=ctx.remPairs[gi];
+      for(let j=0;j<rem.length;j++){
+        const pr=rem[j];
+        let g1=0,g2=0;
+        if(forced&&forced.rd==="Grup"&&pr.u&&pr.t2===forced.opp&&!usedF){
+          usedF=true;
+          [g1,g2]=mcSampleCond(ctx,pr.t1,pr.t2,forced.out,0,false,0);
+        }else{
+          [g1,g2]=mcFastScore(ctx,pr.t1,pr.t2,0,false,0);
+        }
+        const r1=byTi[pr.t1],r2=byTi[pr.t2];
+        if(r1){r1.gf+=g1;r1.ga+=g2;if(g1>g2){r1.w++;r1.pts+=3}else if(g1===g2)r1.pts+=1}
+        if(r2){r2.gf+=g2;r2.ga+=g1;if(g2>g1){r2.w++;r2.pts+=3}else if(g1===g2)r2.pts+=1}
+      }
+      rows.sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga)||b.gf-a.gf||(ucl?b.w-a.w:0)||(ctx.tieV[b.ti]-ctx.tieV[a.ti]));
+      if(gi===ctx.myGi)myRk=rows.findIndex(r=>r.ti===my)+1;
+      if(!lg)gqs[gi]=rows.slice(0,ctx.qMax).map(r=>r.ti);
+    }
+    if(lg){
+      return{q:myRk<=3?1:0,po:0,top3:myRk<=3?1:0,topHalf:myRk<=Math.ceil(ctx.N/2)?1:0,fin:myRk<=2?1:0,ch:myRk===1?1:0,nextRd:0};
+    }
+    if(ucl){
+      const q8=myRk<=8?1:0,po=(myRk>=9&&myRk<=24)?1:0;
+      if(!q8&&!po)return{q:0,po:0,top3:0,topHalf:0,fin:0,ch:0,nextRd:0};
+      const q=gqs[0];
+      const coin=a=>Math.random()<0.5?[a[0],a[1]]:[a[1],a[0]];
+      const [s1,s2]=coin([0,1]),[s3,s4]=coin([2,3]),[s5,s6]=coin([4,5]),[s7,s8]=coin([6,7]);
+      const [p9,p10]=coin([8,9]),[p11,p12]=coin([10,11]),[p13,p14]=coin([12,13]),[p15,p16]=coin([14,15]);
+      const [p17,p18]=coin([16,17]),[p19,p20]=coin([18,19]),[p21,p22]=coin([20,21]),[p23,p24]=coin([22,23]);
+      const koMap=nob();
+      koMap["Play-Off"]=[[p15,p17],[p9,p23],[p11,p21],[p13,p19],[p14,p20],[p12,p22],[p10,p24],[p16,p18]].map(([a,b])=>({t1:q[a],t2:q[b],sa:0.8,w:null,leg1:null}));
+      koMap["Son 16"]=[s1,s7,s5,s3,s4,s6,s8,s2].map(sd=>({t1:q[sd],t2:null,sa:1.0,w:null,leg1:null}));
+      const kr=mcSimKo(ctx,koMap,null);
+      return{q:q8,po,top3:0,topHalf:0,fin:kr.fin,ch:kr.ch,nextRd:0};
+    }
+    // Standard Group + KO
+    const adv=myRk<=ctx.qMax?1:0;
+    if(!adv)return{q:0,po:0,top3:0,topHalf:0,fin:0,ch:0,nextRd:0};
+    const fakeS={cfg:ctx.cfg,G:new Array(ctx.Gcnt),gqs};
+    const initP=buildInitialKoPairs(fakeS);
+    const koMap=nob();
+    koMap[ctx.RDs[0]]=initP.map(p=>({t1:p.t1,t2:p.t2,sa:p.sa||0,w:null,leg1:null}));
+    const kr=mcSimKo(ctx,koMap,null);
+    return{q:1,po:0,top3:0,topHalf:0,fin:kr.fin,ch:kr.ch,nextRd:0};
+  }
+  // KO stage (Direct KO or post-group KO)
+  if(!ctx.koSnap)return{q:0,po:0,top3:0,topHalf:0,fin:0,ch:0,nextRd:0};
+  const koMap=nob();
+  Object.keys(ctx.koSnap).forEach(rd=>{
+    koMap[rd]=ctx.koSnap[rd].map(p=>({t1:p.t1,t2:p.t2,sa:p.sa,w:p.w,leg1:p.leg1?p.leg1.slice():null}));
+  });
+  const kr=mcSimKo(ctx,koMap,forced);
+  return{q:kr.nextRd,po:0,top3:0,topHalf:0,fin:kr.fin,ch:kr.ch,nextRd:kr.nextRd};
+}
+
+function mcFinalize(ctx,acc){
+  const n=Math.max(1,acc.n),pct=v=>Math.round(v/n*100);
+  const q=pct(acc.q),po=pct(acc.po),ch=pct(acc.ch),fin=pct(acc.fin),top3=pct(acc.top3),topHalf=pct(acc.topHalf),nextRd=pct(acc.nextRd);
+  const elimP=ctx.ucl?Math.max(0,100-q-po):(ctx.inGrp&&!ctx.lg?Math.max(0,100-q):0);
+  return{done:false,elim:false,ucl:ctx.ucl,lg:ctx.lg,inGrp:ctx.inGrp,curKoRd:ctx.curKoRd,qLbl:ctx.qLbl,n:acc.n,q,po,elimP,fin,ch,top3,topHalf,nextRd};
+}
+
+function mcQuickSync(s,iters){
+  const ctx=mcBuildCtx(s);
+  if(!ctx)return null;
+  if(ctx.done||ctx.elim)return ctx;
+  const N=iters||180,acc={n:0,q:0,po:0,top3:0,topHalf:0,fin:0,ch:0,nextRd:0};
+  for(let i=0;i<N;i++){
+    const r=mcSimOne(ctx,null);
+    acc.n++;acc.q+=r.q;acc.po+=r.po;acc.top3+=r.top3;acc.topHalf+=r.topHalf;acc.fin+=r.fin;acc.ch+=r.ch;acc.nextRd+=r.nextRd;
+  }
+  return mcFinalize(ctx,acc);
+}
+
+function mcSaveSnap(s){
+  if(!s||!s.G||s.my==null||s.res)return;
+  const key=mcStateKey(s),hit=_mcCache.get(key);
+  const o=hit?hit.res:mcQuickSync(s,140);
+  if(o&&!o.done&&!o.elim){
+    s.pSnap={ch:o.ch,q:o.q,po:o.po,top3:o.top3,fin:o.fin,qLbl:o.qLbl};
+  }
+}
+
+function mcGet(s){
+  const key=mcStateKey(s);
+  if(!key)return null;
+  const hit=_mcCache.get(key);
+  if(hit)return hit.res;
+  const ctx=mcBuildCtx(s);
+  if(!ctx)return null;
+  if(ctx.done||ctx.elim){
+    _mcCache.set(key,{res:ctx,full:true});
+    return ctx;
+  }
+  const acc={n:0,q:0,po:0,top3:0,topHalf:0,fin:0,ch:0,nextRd:0};
+  const initN=80,targetN=400;
+  for(let i=0;i<initN;i++){
+    const r=mcSimOne(ctx,null);
+    acc.n++;acc.q+=r.q;acc.po+=r.po;acc.top3+=r.top3;acc.topHalf+=r.topHalf;acc.fin+=r.fin;acc.ch+=r.ch;acc.nextRd+=r.nextRd;
+  }
+  const entry={res:mcFinalize(ctx,acc),full:false};
+  if(_mcCache.size>24)_mcCache.clear();
+  _mcCache.set(key,entry);
+  const myJob=++_mcJobId;
+  const step=()=>{
+    if(myJob!==_mcJobId)return;
+    const chunk=Math.min(80,targetN-acc.n);
+    for(let i=0;i<chunk;i++){
+      const r=mcSimOne(ctx,null);
+      acc.n++;acc.q+=r.q;acc.po+=r.po;acc.top3+=r.top3;acc.topHalf+=r.topHalf;acc.fin+=r.fin;acc.ch+=r.ch;acc.nextRd+=r.nextRd;
+    }
+    entry.res=mcFinalize(ctx,acc);
+    if(acc.n<targetN){setTimeout(step,0)}
+    else{
+      entry.full=true;
+      const box=document.getElementById("mc_live_box");
+      if(box&&box.dataset.k===key&&typeof mcLiveInner==="function"){
+        box.innerHTML=mcLiveInner(s,entry.res);
+      }
+    }
+  };
+  setTimeout(step,0);
+  return entry.res;
+}
+
+function mcGetWhatIf(s,opp,rd,lg){
+  if(!s||opp==null||!rd||s.res)return null;
+  const baseKey=mcStateKey(s);
+  if(!baseKey)return null;
+  const wiKey=`${baseKey}|${opp}|${rd}|${lg||0}`;
+  const hit=_mcWiCache.get(wiKey);
+  if(hit)return hit.res;
+  const ctx=mcBuildCtx(s);
+  if(!ctx||ctx.done||ctx.elim)return null;
+  const isGrp=rd==="Grup";
+  if(isGrp&&!ctx.inGrp)return null;
+  if(!isGrp&&ctx.inGrp)return null;
+  // Determine if Draw is possible for this specific match
+  let canDraw=isGrp;
+  if(!isGrp){
+    const needL=lgs(s.cfg,rd);
+    const up=ctx.koSnap&&ctx.koSnap[rd]&&ctx.koSnap[rd].find(p=>p.w==null&&(p.t1===s.my||p.t2===s.my));
+    if(!up)return null;
+    canDraw=needL===2&&!up.leg1;
+  }
+  const outs=canDraw?["w","d","l"]:["w","l"];
+  const accs=nob();
+  outs.forEach(o=>{accs[o]={n:0,q:0,po:0,top3:0,topHalf:0,fin:0,ch:0,nextRd:0}});
+  const initN=60,targetN=220;
+  outs.forEach(o=>{
+    const f={opp,rd,out:o};
+    for(let i=0;i<initN;i++){
+      const r=mcSimOne(ctx,f);
+      const a=accs[o];a.n++;a.q+=r.q;a.po+=r.po;a.top3+=r.top3;a.topHalf+=r.topHalf;a.fin+=r.fin;a.ch+=r.ch;a.nextRd+=r.nextRd;
+    }
+  });
+  const buildRes=()=>{
+    const b=mcGet(s),outObj={base:b,canDraw,ucl:ctx.ucl,lg:ctx.lg,inGrp:ctx.inGrp,rd,qLbl:ctx.qLbl,n:accs.w.n};
+    outs.forEach(o=>{outObj[o]=mcFinalize(ctx,accs[o])});
+    return outObj;
+  };
+  const entry={res:buildRes(),full:false};
+  if(_mcWiCache.size>24)_mcWiCache.clear();
+  _mcWiCache.set(wiKey,entry);
+  const myJob=++_mcWiJobId;
+  const step=()=>{
+    if(myJob!==_mcWiJobId)return;
+    const chunk=Math.min(80,targetN-accs.w.n);
+    outs.forEach(o=>{
+      const f={opp,rd,out:o},a=accs[o];
+      for(let i=0;i<chunk;i++){
+        const r=mcSimOne(ctx,f);
+        a.n++;a.q+=r.q;a.po+=r.po;a.top3+=r.top3;a.topHalf+=r.topHalf;a.fin+=r.fin;a.ch+=r.ch;a.nextRd+=r.nextRd;
+      }
+    });
+    entry.res=buildRes();
+    if(accs.w.n<targetN){setTimeout(step,0)}
+    else{
+      entry.full=true;
+      const box=document.getElementById("mc_wi_box");
+      if(box&&box.dataset.k===wiKey&&typeof mcWhatIfInner==="function"){
+        box.innerHTML=mcWhatIfInner(entry.res);
+      }
+    }
+  };
+  setTimeout(step,0);
+  return entry.res;
 }

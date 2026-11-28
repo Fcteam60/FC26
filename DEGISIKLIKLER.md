@@ -1,3 +1,13 @@
+## v27.0 (2026-11-28) — Canlı Monte Carlo Olasılıkları, "Ya Kazanırsam?" (ΔP) Senaryosu & Canlı Sürpriz/Dönüm Noktası Analizi
+- **Canlı Monte Carlo Olasılık Motoru (`sim.js`, `analytics.js`, `app.js`):**
+  - `sim.js` içine mevcut Poisson güç/form/kaleci/uzatma modelini birebir kullanan, önbellekli ve parçalı (`setTimeout 0`, 400 iterasyon) hafif Monte Carlo motoru eklendi.
+  - Tüm 4 turnuva formatında (**36T İsviçre ŞL**, **Grup + Eleme**, **Puan Ligi**, **Direkt Eleme** ve aktif eleme turları) çalışır; `Turnuva › Gruplar / Lig` sekmesinin üstünde **İlk 8 / Play-Off / Gruptan Çıkma / Final / Şampiyonluk** yüzdelerini ve önceki haftaya göre `+%X` / `−%X` değişimini (`s.pSnap`) gösterir.
+- **"Ya Kazanırsam?" Maç Öncesi Senaryo Kutusu (`sim.js` `mcGetWhatIf`, `analytics.js` `mcWhatIfBox`):**
+  - `Maç Merkezi` tahmin kutusunun hemen altında sıradaki maçı **Kazanırsan / Beraberlik / Kaybedersen** tur ve şampiyonluk olasılıklarının nasıl değişeceğini (`Tahmin` etiketiyle) canlı hesaplar; salınımı yüksek maçları **Kırılma Maçı** rozetiyle işaretler.
+- **Canlı Sürpriz Maç & Dönüm Noktası Entegrasyonu (`app.js`, `analytics.js`, `posters.js`):**
+  - Her maç kaydında oluşan olasılık sıçraması (`m.imp`) ve maç önü sürpriz oranı (`m.pr`) `İstat. › Maçlar` kartlarında (`Sürpriz Zafer`, `Değerli Puan`, `Sürpriz Kayıp`, `Tur +%X`) canlı rozet olarak görünür.
+  - 1080px+ **Sezon Karnesi PNG** posterindeki ödüller bölümünde yüksek salınımlı maç otomatik **DÖNÜM NOKTASI** (`+%X TUR/KUPA`) olarak öne çıkarılır.
+
 ## v26.5 (2026-11-28) — Kadro Röntgeni, Canlı Sezon Kıyas Şeridi, Mikro Analitikler & Fikstür/iOS Cilaları
 - **Kadro Röntgeni (`analytics.js` `squadXrayCard`, `app.js` `teamView`):** Takım seçildiği anda HÜC/ORT/DEF hatlarını turnuva ortalaması ve sırasıyla kıyaslayan 3 çubuk, İlk 11 yaş ortalaması, İlk 11 / Yedek derinlik farkı, kadro lideri ve (2+ maç sonrası) potansiyel–üretim içgörüsü eklenmiştir.
 - **Canlı Sezon Kıyas Şeridi (`analytics.js` `seasonPaceStrip`, `app.js` `homeView`):** 2. sezondan itibaren (en az 2 maç oynandığında) aktif sezonun gol, yenen gol ve puan/maç temposunu geçmiş kariyer ortalamasıyla 1 satırda kıyaslar.
